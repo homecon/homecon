@@ -1,10 +1,6 @@
 <?php
 // connect to the database
-if (!mysql_connect("localhost","root","admin")) {
-  die('Could not connect: ' . mysql_error());
-}
-mysql_select_db("knxcontrol");
-
+include('./pages/mysql.php');
 	
 for($id=1;$id<=17;$id++){
 	echo $id;

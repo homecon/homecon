@@ -1,12 +1,12 @@
 <?php
 	// functions
-	include('pages/mysql.php');
-	include('data/functions_structure.php');
-	include('data/functions_basic.php');
-	include('data/functions_charts.php');
-	include('data/functions_weather.php');
-	include('data/functions_alarms.php');
-	include('data/functions_heating.php');
+	include('data/mysql.php');
+	include('modules/functions_structure.php');
+	include('modules/functions_basic.php');
+	include('modules/functions_charts.php');
+	include('modules/functions_weather.php');
+	include('modules/functions_alarms.php');
+	include('modules/functions_heating.php');
 	
 	
 	ini_set('display_startup_errors',1);
@@ -18,7 +18,7 @@
 		$page_class = 'main';
 	}
 	else{
-		$page = 'data/home';
+		$page = 'modules/home';
 		$page_class = 'home';
 	}
 	
@@ -116,7 +116,7 @@
 		<div data-role='page' data-theme='a'>
 			<header data-role='header' class='header'>";
 			
-		include("data/header.php");
+		include("modules/header.php");
 
 		echo "
 			</header>
@@ -135,12 +135,12 @@
 	</body>
 </html>";
 	}
-	elseif($page=='data/set_cookie'){
-		include("data/set_cookie.php");
+	elseif($page=='modules/set_cookie'){
+		include("modules/set_cookie.php");
 	}
 	else{
 		echo "No permission!";
-		echo "<meta http-equiv='refresh' content='0; URL=index.php?web=$web&page=data/set_cookie'>";
+		echo "<meta http-equiv='refresh' content='0; URL=index.php?web=$web&page=modules/set_cookie'>";
 	}
 	
 ?>

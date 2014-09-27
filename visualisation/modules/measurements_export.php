@@ -1,6 +1,6 @@
 <?php
 
-	include('./pages/mysql.php'); 
+	include('./data/mysql.php'); 
 	
 	// create and download the data
 	if(array_key_exists('export',$_POST)){

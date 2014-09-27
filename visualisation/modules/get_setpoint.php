@@ -4,7 +4,7 @@ ini_set('display_startup_errors',1);
 ini_set('display_errors',1);
 error_reporting(-1);
 
-include('mysql.php');
+include('./data/mysql.php');
 
 $zone = $_GET['zone'];
 $table = "temperature_setpoints";

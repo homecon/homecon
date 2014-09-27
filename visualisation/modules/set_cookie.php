@@ -45,7 +45,7 @@
 			<div data-role='content' class='content'>
 				<section>
 					<h1>Toestel aansluiten</h1>
-					<form action='index.php?page=data/set_cookie' method='post' name='login' class='login'>
+					<form action='index.php?page=modules/set_cookie' method='post' name='login' class='login'>
 						
 						<div data-role='fieldcontain' class='ui-hide-label'>
 							<label for='username'>Usernaam:</label>

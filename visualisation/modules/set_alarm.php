@@ -1,6 +1,6 @@
 <?php
 
-	include('./pages/mysql.php');
+	include('./data/mysql.php');
 
 	$id = $_POST['id'];
 	$column = $_POST['column'];

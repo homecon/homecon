@@ -1,7 +1,7 @@
 <?php
 date_default_timezone_set('Europe/Brussels');
 
-include('./pages/mysql.php');
+include('./data/mysql.php');
 
 $signal_str = $_GET['signal'];
 $signals = explode(',',$signal_str);

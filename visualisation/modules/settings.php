@@ -9,7 +9,7 @@ if(array_key_exists('exec',$_GET)){
 	if($_GET['exec'] == 'restart_eibd'){
 		shell_exec('/etc/init.d/eibd restart');
 	}	
-	echo "<meta http-equiv='refresh' content='1; URL=index.php?page=data/settings'>";
+	echo "<meta http-equiv='refresh' content='1; URL=index.php?page=modules/settings'>";
 }
 
 
@@ -22,8 +22,8 @@ echo "
 				<h1>Algemeen</h1>
 				<div>
 
-					<a href='index.php?page=data/settings&exec=restart_smarthome' data-role='button'>Restart SmartHome.py</a>
-					<a href='index.php?page=data/settings&exec=restart_eibd' data-role='button'>Restart eibd</a>
+					<a href='index.php?page=modules/settings&exec=restart_smarthome' data-role='button'>Restart SmartHome.py</a>
+					<a href='index.php?page=modules/settings&exec=restart_eibd' data-role='button'>Restart eibd</a>
 					
 				
 ";			

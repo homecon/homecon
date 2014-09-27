@@ -28,7 +28,7 @@
 		begin_collapsible("Export data",false);
 			begin_group(1);
 	echo "
-				<form action='data/measurements_export.php' method='post' target='_blank' name='export' id='export'>
+				<form action='modules/measurements_export.php' method='post' target='_blank' name='export' id='export'>
 					<label for='startdate'>Start datum:</label>
 					<input type='date' name='startdate' id='startdate'>
 					
@@ -44,7 +44,7 @@
 		begin_collapsible("Define signals",true);	
 			begin_group(1);
 	echo "
-				<form action='index.php?page=data/measurements' method='post' name='define' class='define'>";
+				<form action='index.php?page=modules/measurements' method='post' name='define' class='define'>";
 	$result = mysql_query("SELECT * FROM measurements_legend");
 	$count = 0;
 	while($row = mysql_fetch_array($result)){
@@ -88,7 +88,7 @@
 		begin_collapsible("Clear data",true);	
 			begin_group(1);	
 	echo "	
-				<form action='index.php?page=data/measurements' method='post' name='clear'>
+				<form action='index.php?page=modules/measurements' method='post' name='clear'>
 					<button type='submit' name='clear'>Clear all data</button>
 				</form>";	
 				
