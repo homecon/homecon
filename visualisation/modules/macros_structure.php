@@ -44,13 +44,13 @@ function end_collapsible_set(){
 }
 function begin_collapsible($title,$collapsed = NULL){
 	if($collapsed){
-		$collapsed_str = "true";
+		$data_collapsed = "true";
 	}
 	else{
-		$collapsed_str = "false";
+		$data_collapsed = "false";
 	}
 	echo "
-			<section data-role='collapsible' data-theme='c' data-content-theme='a' data-collapsed='$collapsed_str'>
+			<section data-role='collapsible' data-theme='c' data-content-theme='a' data-collapsed='$data_collapsed'>
 				<h1>$title</h1>";
 }
 function end_collapsible(){
@@ -93,6 +93,45 @@ function end_controlgroup(){
 				</div>
 			</div>";
 }
+
+
+// menu
+
+function begin_menu(){
+	global $page_class;
+	echo "
+	<nav class=$page_class data-role='collapsible-set' data-corners='false'>";
+}
+function end_menu(){
+	echo "
+	</nav>";
+}
+function begin_menu_collapsible($title,$collapsed_check,$home_check=NULL){
+	global $page;
+	
+	$data_collapsed = 'true';
+	if(  (strpos($page,$collapsed_check) !== false) ){
+		$data_collapsed = 'false';
+	}
+	if($home_check && strpos($page,'home') !== false){
+		$data_collapsed = 'false';
+	}
+	
+	echo "
+		<section data-role='collapsible' class='ui-collapsible-inset' data-theme='c' data-content-theme='a' data-inset='false' data-collapsed='$data_collapsed'>
+			<h1>$title</h1>
+			<ul data-role='listview'>";
+}
+function end_menu_collapsible(){
+	echo "
+			</ul>
+		</section>";
+}
+function add_menu_item($title,$link,$icon){
+	echo "
+				<li><a href='index.php?web=$web&page=pages/$link'><img src='icons/ws/$icon'>$title</a></li>";
+}
+
 
 
 ?>
