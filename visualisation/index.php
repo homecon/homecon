@@ -1,12 +1,12 @@
 <?php
 	// functions
 	include('data/mysql.php');
-	include('modules/functions_structure.php');
-	include('modules/functions_basic.php');
-	include('modules/functions_charts.php');
-	include('modules/functions_weather.php');
-	include('modules/functions_alarms.php');
-	include('modules/functions_heating.php');
+	include('modules/macros_structure.php');
+	include('modules/macros_basic.php');
+	include('modules/macros_charts.php');
+	include('modules/macros_weather.php');
+	include('modules/macros_alarms.php');
+	include('modules/macros_heating.php');
 	
 	
 	ini_set('display_startup_errors',1);
