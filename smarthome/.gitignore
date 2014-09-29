@@ -1,0 +1,5 @@
+*.pyc
+*.jar
+*.tgz
+*.zip
+/visu
