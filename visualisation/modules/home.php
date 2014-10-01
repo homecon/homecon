@@ -8,13 +8,13 @@ echo "
 			<hr>
 ";	
 	
-include("lokaal_weer.php");
+include("weather_measurement.php");
 
 echo "
 			<hr>
 ";	
 	
-include("weerbericht.php");
+include("weather_forecast.php");
 
 echo "		<hr>
 		</article>	
