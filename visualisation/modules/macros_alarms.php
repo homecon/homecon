@@ -25,15 +25,41 @@ function add_alarm($sectionid,$text,$itemlist,$actionlist){
 		}
 	}
 	
-	
-	
 	echo "
-		<div class='alarm_container'>";
+		<div class='alarm_container'>
+			<div id='alarms_$sectionid'>";
 
 	// find alarms with $sectionid in mysql and cycle through them
 	$result = mysql_query("SELECT * FROM alarms WHERE sectionid = ".$sectionid);
 	while($row = mysql_fetch_array($result)){
+		echo_alarm($row);
+	}
+	echo "
+			</div>
+			<a class='add' id='add_alarm_$sectionid' class='add_alarm' data-role='button'>wekker toevoegen</a>
+		</div>
+		
+		<script>
+			$(document).ready(function(){
+			  $('#add_alarm_$sectionid').click(function(){
+				$.post(
+				  'alarm_add',
+				  {sectionid: $sectionid},
+				  function(result){
+					$('#alarms_$sectionid').text(result)
+				  }
+				);
+			  });
+			});
+		</script>
+		";
+	
+}
 
+function echo_alarm($row){
+	global $page;
+	global $web;
+	
 		// create id's
 		$id = $row['id'];
 		$id_alarm = $page ."_alarm".$id;
@@ -238,12 +264,7 @@ function add_alarm($sectionid,$text,$itemlist,$actionlist){
 					);
 				</script>
 			</div>";
-		
-	}
-	echo "
-			<a name='add_alarm_$sectionid'></a>
-			<a class='add' href='index.php?web=$web&page=pages/$page&add_alarm=$sectionid' data-role='button'>wekker toevoegen</a>
-		</div>";
 	
 }
+
 ?>
