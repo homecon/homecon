@@ -114,7 +114,7 @@ function add_setpoint($zone){
 					
 					// setInterval(function () {
 						// jQuery.ajax({
-							// url:    'modules/get_setpoint.php?zone=$zone',
+							// url:    'requests/get_setpoint.php?zone=$zone',
 							// success: function(result) {
 								// try {
 									// // split the data return into signals and lines lines and parse them
@@ -231,19 +231,19 @@ function add_setpoint($zone){
 				<script>
 					$('#$id_time').change(
 						function(){
-							$.post( 'modules/set_setpoint.php', {'id': $id , 'column': 'time' , 'value': $(this).val()}); 
+							$.post( 'requests/set_setpoint.php', {'id': $id , 'column': 'time' , 'value': $(this).val()}); 
 							//for debugging: 
-							//$.post( 'modules/set_setpoint.php', {'id': $id , 'column': 'time' , 'value': $(this).val()}, function(response){alert(response);}); 
+							//$.post( 'requests/set_setpoint.php', {'id': $id , 'column': 'time' , 'value': $(this).val()}, function(response){alert(response);}); 
 						}
 					);
 					$('#$id_day').change(
 						function(){
-							$.post( 'modules/set_setpoint.php', { 'id': $id , 'column': 'day', 'value': $(this).val()});
+							$.post( 'requests/set_setpoint.php', { 'id': $id , 'column': 'day', 'value': $(this).val()});
 						}
 					);
 					$('#$id_setpoint').change(
 						function(){
-							$.post( 'modules/set_setpoint.php', { 'id': $id , 'column': 'setpoint', 'value': $(this).val()});
+							$.post( 'requests/set_setpoint.php', { 'id': $id , 'column': 'setpoint', 'value': $(this).val()});
 						}
 					);
 				</script>

@@ -186,54 +186,54 @@ function add_alarm($sectionid,$text,$itemlist,$actionlist){
 				<script>
 					$('#$id_time').change(
 						function(){
-							$.post( 'modules/set_alarm.php', {'id': $id , 'column': 'time' , 'value': $(this).val()}); 
+							$.post( 'requests/set_alarm.php', {'id': $id , 'column': 'time' , 'value': $(this).val()}); 
 							//for debugging: 
-							//$.post( 'modules/set_alarm.php', {'id': $id , 'column': 'time' , 'value': $(this).val()}, function(response){alert(response);}); 
+							//$.post( 'requests/set_alarm.php', {'id': $id , 'column': 'time' , 'value': $(this).val()}, function(response){alert(response);}); 
 						}
 					);
 					$('#$id_mon').change(
 						function(){
-							$.post( 'modules/set_alarm.php', { 'id': $id , 'column': 'mon', 'value': $(this).is(':checked')});
+							$.post( 'requests/set_alarm.php', { 'id': $id , 'column': 'mon', 'value': $(this).is(':checked')});
 						}
 					);
 					$('#$id_tue').change(
 						function(){
-							$.post( 'modules/set_alarm.php', { 'id': $id , 'column': 'tue', 'value': $(this).is(':checked')});
+							$.post( 'requests/set_alarm.php', { 'id': $id , 'column': 'tue', 'value': $(this).is(':checked')});
 						}
 					);
 					$('#$id_wed').change(
 						function(){
-							$.post( 'modules/set_alarm.php', { 'id': $id , 'column': 'wed', 'value': $(this).is(':checked')});
+							$.post( 'requests/set_alarm.php', { 'id': $id , 'column': 'wed', 'value': $(this).is(':checked')});
 						}
 					);
 					$('#$id_thu').change(
 						function(){
-							$.post( 'modules/set_alarm.php', { 'id': $id , 'column': 'thu', 'value': $(this).is(':checked')});
+							$.post( 'requests/set_alarm.php', { 'id': $id , 'column': 'thu', 'value': $(this).is(':checked')});
 						}
 					);
 					$('#$id_fri').change(
 						function(){
-							$.post( 'modules/set_alarm.php', { 'id': $id , 'column': 'fri', 'value': $(this).is(':checked')});
+							$.post( 'requests/set_alarm.php', { 'id': $id , 'column': 'fri', 'value': $(this).is(':checked')});
 						}
 					);
 					$('#$id_sat').change(
 						function(){
-							$.post( 'modules/set_alarm.php', { 'id': $id , 'column': 'sat', 'value': $(this).is(':checked')});
+							$.post( 'requests/set_alarm.php', { 'id': $id , 'column': 'sat', 'value': $(this).is(':checked')});
 						}
 					);
 					$('#$id_sun').change(
 						function(){
-							$.post( 'modules/set_alarm.php', { 'id': $id , 'column': 'sun', 'value': $(this).is(':checked')});
+							$.post( 'requests/set_alarm.php', { 'id': $id , 'column': 'sun', 'value': $(this).is(':checked')});
 						}
 					);
 					$('#$iditemselect').change(
 						function(){
-							$.post( 'modules/set_alarm.php', { 'id': $id , 'column': 'item', 'value': $(this).val()});
+							$.post( 'requests/set_alarm.php', { 'id': $id , 'column': 'item', 'value': $(this).val()});
 						}
 					);
 					$('#$idactionselect').change(
 						function(){
-							$.post( 'modules/set_alarm.php', { 'id': $id , 'column': 'action', 'value': $(this).val()});
+							$.post( 'requests/set_alarm.php', { 'id': $id , 'column': 'action', 'value': $(this).val()});
 						}
 					);
 				</script>
