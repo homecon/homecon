@@ -4,14 +4,12 @@ now = datetime.datetime.utcnow();
 # remove seconds from time and add :00
 now.replace( second=0, microsecond=0)
 
+# convert time to seconds from epoch
+timestamp = int( (now - datetime.datetime(1970,1,1)).total_seconds() )
 
 # connect to the mysql database
 con = pymysql.connect('localhost', 'knxcontrol', 'ysUnGTQEadTsDnTD', 'knxcontrol')
 cur = con.cursor()
-
-
-# convert time to seconds from epoch
-timestamp = int( (now - datetime.datetime(1970,1,1)).total_seconds() )
 
 # add a row to the measurements table
 cur.execute( "INSERT INTO measurements(time) VALUES (%s)" % (timestamp)  )

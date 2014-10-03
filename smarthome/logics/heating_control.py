@@ -43,7 +43,7 @@ for zone in sh.building.zones:
 	
 
 
-	# calculate 15 min averages
+	# calculate 15 min averages of the operational temperature
 	try:
 		# get signal number
 		item = zone.id()+'.heat_flow_internal'
@@ -52,7 +52,7 @@ for zone in sh.building.zones:
 			id = temp[0]
 		
 		# get average from mysql
-		timestamp_new = timestamp-15*60
+		timestamp_new = timestamp-10*60
 		cur.execute("SELECT AVG(signal%s) FROM measurements WHERE time>%s" %(id,timestamp_new))
 		for temp in cur:
 			heat_flow_internal = temp[0]	
