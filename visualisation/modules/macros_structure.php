@@ -128,6 +128,7 @@ function end_menu_collapsible(){
 		</section>";
 }
 function add_menu_item($title,$link,$icon){
+	global $web;
 	echo "
 				<li><a href='index.php?web=$web&page=pages/$link'><img src='icons/ws/$icon'>$title</a></li>";
 }
