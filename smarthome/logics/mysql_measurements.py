@@ -4,31 +4,36 @@ now = datetime.datetime.utcnow();
 # remove seconds from time and add :00
 now.replace( second=0, microsecond=0)
 
-# convert time to seconds from epoch
-timestamp = int( (now - datetime.datetime(1970,1,1)).total_seconds() )
 
 # connect to the mysql database
 con = pymysql.connect('localhost', 'knxcontrol', 'ysUnGTQEadTsDnTD', 'knxcontrol')
 cur = con.cursor()
 
-# add a row to the measurements table
-cur.execute( "INSERT INTO measurements(time) VALUES (%s)" % (timestamp)  )
-con.commit()
+
+# convert time to seconds from epoch
+timestamp = int( (now - datetime.datetime(1970,1,1)).total_seconds() )
 
 
 legend = con.cursor()
 legend.execute("SELECT id,item FROM measurements_legend WHERE item <> ''")
 
-# run through all items with a mysql_id attribute
-for measurement in legend:
+# create mysql querry
+query1 = "INSERT INTO measurements (time"
+query2 = "VALUES (%s" % (timestamp)
 
+# run through legend
+for measurement in legend:
 	item = sh.return_item(measurement[1])
+	query1 = query1 + ",signal%s" % (measurement[0])
+	query2 = query2 + ",%f" % (item())
 	
-	# add the value to the database
-	try :
-		cur.execute( "UPDATE measurements SET signal%s=%f WHERE time=%s" % (measurement[0],item(),timestamp)  )
-	except:
-		logger.warning('could not add value to database: ' + measurement[1])
-		
+query = query1 + ") " + query2 + ")"
+
+# try to execute query
+try :
+	cur.execute( query )
+except:
+	logger.warning("could not add measurements to database")
+	
 con.commit()	
 con.close()
