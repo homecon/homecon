@@ -36,3 +36,29 @@ $(document).ready(
 		);
 	}
 );
+
+//////////////////////////////////////////////////////////////////////////////
+// add alarm
+//////////////////////////////////////////////////////////////////////////////
+$(document).ready(
+	function(){
+		var helperfunction = function(id) {
+			return function(result, textStatus, jqXHR) {
+				$('#'+id).html(result).trigger('create');
+			};
+		};
+	
+		$('.add_alarm').click(
+			function(){
+				id = $( this ).parents('.alarm_container').attr('id');
+				sectionid = id.split('_');
+				sectionid = id[2];
+				
+				$.post( 'requests/alarm_add.php',
+						{sectionid: id},
+						helperfunction(id)
+				);
+			}
+		);
+	}
+);
