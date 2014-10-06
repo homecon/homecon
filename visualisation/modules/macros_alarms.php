@@ -132,36 +132,36 @@ function echo_alarm($sectionid,$text,$itemlist,$actionlist,$row){
 	
 		// display individual alarm controls
 		echo "
-			<div class='alarm'>
-				<input type='time' name='$id_time' id='$id_time' value='$str_time'>
+			<div class='alarm' id='alarm_$id'>
+				<input type='time' class='alarm_time' name='$id_time' id='$id_time' value='$str_time'>
 				<h1>$text</h1>
 				<a class='delete' href='index.php?web=$web&page=pages/$page&delete_section=$sectionid&delete_alarm=$id'><img src=icons/ws/control_x.png></a>
 				<div class='days'>
 					<div data-role='controlgroup' data-type='horizontal'>
-						<input type='checkbox' name='$id_mon' id='$id_mon' class='custom' data-widget='basic.checkbox' data-mini='true' $str_mon>
+						<input type='checkbox' class='mon' name='$id_mon' id='$id_mon' class='custom' data-widget='basic.checkbox' data-mini='true' $str_mon>
 						<label for='$id_mon'>maa</label>
 					 
-						<input type='checkbox' name='$id_tue' id='$id_tue' class='custom' data-widget='basic.checkbox' data-mini='true' $str_tue>
+						<input type='checkbox' class='tue' name='$id_tue' id='$id_tue' class='custom' data-widget='basic.checkbox' data-mini='true' $str_tue>
 						<label for='$id_tue'>din</label>
 					 
-						<input type='checkbox' name='$id_wed' id='$id_wed' class='custom' data-widget='basic.checkbox' data-mini='true' $str_wed> 
+						<input type='checkbox' class='wed' name='$id_wed' id='$id_wed' class='custom' data-widget='basic.checkbox' data-mini='true' $str_wed> 
 						<label for='$id_wed'>woe</label>
 						
-						<input type='checkbox' name='$id_thu' id='$id_thu' class='custom' data-widget='basic.checkbox' data-mini='true' $str_thu>
+						<input type='checkbox' class='thu' name='$id_thu' id='$id_thu' class='custom' data-widget='basic.checkbox' data-mini='true' $str_thu>
 						<label for='$id_thu'>don</label>
 						
-						<input type='checkbox' name='$id_fri' id='$id_fri' class='custom' data-widget='basic.checkbox' data-mini='true' $str_fri>
+						<input type='checkbox' class='fri' name='$id_fri' id='$id_fri' class='custom' data-widget='basic.checkbox' data-mini='true' $str_fri>
 						<label for='$id_fri'>vri</label>
 						
-						<input type='checkbox' name='$id_sat' id='$id_sat' class='custom' data-widget='basic.checkbox' data-mini='true' $str_sat>
+						<input type='checkbox' class='sat' name='$id_sat' id='$id_sat' class='custom' data-widget='basic.checkbox' data-mini='true' $str_sat>
 						<label for='$id_sat'>zat</label>
 						
-						<input type='checkbox' name='$id_sun' id='$id_sun' class='custom' data-widget='basic.checkbox' data-mini='true' $str_sun>
+						<input type='checkbox' class='sun' name='$id_sun' id='$id_sun' class='custom' data-widget='basic.checkbox' data-mini='true' $str_sun>
 						<label for='$id_sun'>zon</label>
 					</div>
 				</div>
 				<div class='alarm_items'>
-					<select multiple='multiple' name='$iditemselect' id='$iditemselect' data-native-menu='false'>
+					<select multiple='multiple' class='alarm_item' name='$iditemselect' id='$iditemselect' data-native-menu='false'>
 						<option>Select items</option>";
 						
 		for($i=0;$i<count($itemlist);$i++){
@@ -179,7 +179,7 @@ function echo_alarm($sectionid,$text,$itemlist,$actionlist,$row){
 					</select>
 				</div>
 				<div class='alarm_action'>
-					<select name='$idactionselect' id='$idactionselect' data-native-menu='false'>
+					<select name='$idactionselect' class='alarm_action' id='$idactionselect' data-native-menu='false'>
 						<option>Select action</option>";
 						
 		for($i=0;$i<count($actionlist);$i++){
@@ -195,74 +195,7 @@ function echo_alarm($sectionid,$text,$itemlist,$actionlist,$row){
 		
 		echo "		
 					</select>
-				</div>";
-	
-		// <div class='sun'>
-			// <div data-role='controlgroup' data-type='horizontal' data-mini='true'>
-				// <input type='checkbox' name='$id_sunrise' id='$id_sunrise' class='custom' data-widget='basic.checkbox' $str_sunrise>
-				// <label for='$id_sunrise'>Zonsopgang</label>
-			 
-				// <input type='checkbox' name='$id_sunset' id='$id_sunset' class='custom' data-widget='basic.checkbox' $str_sunset>
-				// <label for='$id_sunset'>Zonsondergang</label>
-			// </div>
-		// </div>
-		
-		// echo the script to change values through ajax
-		echo "
-				<script>
-					$('#$id_time').change(
-						function(){
-							$.post( 'requests/set_alarm.php', {'id': $id , 'column': 'time' , 'value': $(this).val()}); 
-							//for debugging: 
-							//$.post( 'requests/set_alarm.php', {'id': $id , 'column': 'time' , 'value': $(this).val()}, function(response){alert(response);}); 
-						}
-					);
-					$('#$id_mon').change(
-						function(){
-							$.post( 'requests/set_alarm.php', { 'id': $id , 'column': 'mon', 'value': $(this).is(':checked')});
-						}
-					);
-					$('#$id_tue').change(
-						function(){
-							$.post( 'requests/set_alarm.php', { 'id': $id , 'column': 'tue', 'value': $(this).is(':checked')});
-						}
-					);
-					$('#$id_wed').change(
-						function(){
-							$.post( 'requests/set_alarm.php', { 'id': $id , 'column': 'wed', 'value': $(this).is(':checked')});
-						}
-					);
-					$('#$id_thu').change(
-						function(){
-							$.post( 'requests/set_alarm.php', { 'id': $id , 'column': 'thu', 'value': $(this).is(':checked')});
-						}
-					);
-					$('#$id_fri').change(
-						function(){
-							$.post( 'requests/set_alarm.php', { 'id': $id , 'column': 'fri', 'value': $(this).is(':checked')});
-						}
-					);
-					$('#$id_sat').change(
-						function(){
-							$.post( 'requests/set_alarm.php', { 'id': $id , 'column': 'sat', 'value': $(this).is(':checked')});
-						}
-					);
-					$('#$id_sun').change(
-						function(){
-							$.post( 'requests/set_alarm.php', { 'id': $id , 'column': 'sun', 'value': $(this).is(':checked')});
-						}
-					);
-					$('#$iditemselect').change(
-						function(){
-							$.post( 'requests/set_alarm.php', { 'id': $id , 'column': 'item', 'value': $(this).val()});
-						}
-					);
-					$('#$idactionselect').change(
-						function(){
-							$.post( 'requests/set_alarm.php', { 'id': $id , 'column': 'action', 'value': $(this).val()});
-						}
-					);
-				</script>
+				</div>
 			</div>";
 	
 }
