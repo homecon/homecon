@@ -118,35 +118,35 @@ function echo_alarm($sectionid,$text,$itemlist,$actionlist,$row){
 		// display individual alarm controls
 		echo "
 			<div class='alarm' id='alarm_$id'>
-				<input type='time' data-column='time' name='$id_time' id='$id_time' value='$str_time'>
+				<input type='time' data-column='time' id='$id_time' value='$str_time'>
 				<h1>$text</h1>
 				<a class='delete' href='index.php?web=$web&page=pages/$page&delete_section=$sectionid&delete_alarm=$id'><img src=icons/ws/control_x.png></a>
 				<div class='days'>
 					<div data-role='controlgroup' data-type='horizontal'>
-						<input type='checkbox' data-column='mon' name='$id_mon' id='$id_mon' class='custom' data-widget='basic.checkbox' data-mini='true' $str_mon>
+						<input type='checkbox' data-column='mon' id='$id_mon' class='custom' data-widget='basic.checkbox' data-mini='true' $str_mon>
 						<label for='$id_mon'>maa</label>
 					 
-						<input type='checkbox' data-column='tue' name='$id_tue' id='$id_tue' class='custom' data-widget='basic.checkbox' data-mini='true' $str_tue>
+						<input type='checkbox' data-column='tue' id='$id_tue' class='custom' data-widget='basic.checkbox' data-mini='true' $str_tue>
 						<label for='$id_tue'>din</label>
 					 
-						<input type='checkbox' data-column='wed' name='$id_wed' id='$id_wed' class='custom' data-widget='basic.checkbox' data-mini='true' $str_wed> 
+						<input type='checkbox' data-column='wed' id='$id_wed' class='custom' data-widget='basic.checkbox' data-mini='true' $str_wed> 
 						<label for='$id_wed'>woe</label>
 						
-						<input type='checkbox' data-column='thu' name='$id_thu' id='$id_thu' class='custom' data-widget='basic.checkbox' data-mini='true' $str_thu>
+						<input type='checkbox' data-column='thu' id='$id_thu' class='custom' data-widget='basic.checkbox' data-mini='true' $str_thu>
 						<label for='$id_thu'>don</label>
 						
-						<input type='checkbox' data-column='fri' name='$id_fri' id='$id_fri' class='custom' data-widget='basic.checkbox' data-mini='true' $str_fri>
+						<input type='checkbox' data-column='fri' id='$id_fri' class='custom' data-widget='basic.checkbox' data-mini='true' $str_fri>
 						<label for='$id_fri'>vri</label>
 						
-						<input type='checkbox' data-column='sat' name='$id_sat' id='$id_sat' class='custom' data-widget='basic.checkbox' data-mini='true' $str_sat>
+						<input type='checkbox' data-column='sat' id='$id_sat' class='custom' data-widget='basic.checkbox' data-mini='true' $str_sat>
 						<label for='$id_sat'>zat</label>
 						
-						<input type='checkbox' data-column='sun' name='$id_sun' id='$id_sun' class='custom' data-widget='basic.checkbox' data-mini='true' $str_sun>
+						<input type='checkbox' data-column='sun' id='$id_sun' class='custom' data-widget='basic.checkbox' data-mini='true' $str_sun>
 						<label for='$id_sun'>zon</label>
 					</div>
 				</div>
 				<div class='alarm_items'>
-					<select multiple='multiple' data-column='item' name='$iditemselect' id='$iditemselect' data-native-menu='false'>
+					<select multiple='multiple' data-column='item' id='$iditemselect' data-native-menu='false'>
 						<option>Select items</option>";
 						
 		for($i=0;$i<count($itemlist);$i++){
@@ -164,7 +164,7 @@ function echo_alarm($sectionid,$text,$itemlist,$actionlist,$row){
 					</select>
 				</div>
 				<div class='alarm_action'>
-					<select name='$idactionselect' data-column='action' id='$idactionselect' data-native-menu='false'>
+					<select data-column='action' id='$idactionselect' data-native-menu='false'>
 						<option>Select action</option>";
 						
 		for($i=0;$i<count($actionlist);$i++){

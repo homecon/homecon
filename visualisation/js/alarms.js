@@ -12,28 +12,29 @@ $('.alarm input, .alarm select').change(function(){
 	column = $(this).attr('data-column');
 	value = $(this).val();
 	
+	//alert(column);
+	
 	// post id column and value to add to database
 	$.post( 'requests/alarm_set.php', {'id': alarmid , 'column': column , 'value': value}); 
+	
 	//for debugging: 
 	//$.post( 'requests/alarm_set.php', {'id': $id , 'column': 'time' , 'value': $(this).val()}, function(response){alert(response);}); 
 						
-
-
 });
 
 //////////////////////////////////////////////////////////////////////////////
 // add alarm
 //////////////////////////////////////////////////////////////////////////////
-var helperfunction = function(id) {
-	return function(result, textStatus, jqXHR) {
-		$('#'+id).html(result).trigger('create');
-	};
-};
+//var helperfunction = function(id) {
+//	return function(result, textStatus, jqXHR) {
+//		$('#'+id).html(result).trigger('create');
+//	};
+//};
 	
 $('.add_alarm').click(function(){
 	id = $( this ).parents('.alarm_container').attr('id');
 	sectionid = id.split('_');
 	sectionid = id[2];
 	
-	$.post( 'requests/alarm_add.php',{sectionid: id},helperfunction(id));
+	$.post( 'requests/alarm_add.php',{sectionid: id});
 });
