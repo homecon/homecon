@@ -19,7 +19,7 @@ $(document).ready(
 				item = $('#'+id+' .alarm_item').val();
 				action = $('#'+id+' .alarm_action').val();
 				
-				// get actual alarm id
+				// get actual alarm id as used in database
 				id = id.split('_');
 				id = id[1];
 				
