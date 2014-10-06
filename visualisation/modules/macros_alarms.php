@@ -32,31 +32,31 @@ function add_alarm($sectionid,$text,$itemlist,$actionlist){
 	// find alarms with $sectionid in mysql and cycle through them
 	$result = mysql_query("SELECT * FROM alarms WHERE sectionid = ".$sectionid);
 	while($row = mysql_fetch_array($result)){
-		echo_alarm($row);
+		echo_alarm($sectionid,$text,$itemlist,$actionlist,$row);
 	}
 	echo "
-			</div>
-			<a class='add' id='add_alarm_$sectionid' class='add_alarm' data-role='button'>wekker toevoegen</a>
-		</div>
+				</div>
+					<a class='add' id='add_alarm_$sectionid' class='add_alarm' data-role='button'>wekker toevoegen</a>
+				</div>
 		
-		<script>
-			$(document).ready(function(){
-			  $('#add_alarm_$sectionid').click(function(){
-				$.post(
-				  'alarm_add',
-				  {sectionid: $sectionid},
-				  function(result){
-					$('#alarms_$sectionid').text(result)
-				  }
-				);
-			  });
-			});
-		</script>
+				<script>
+					$(document).ready(function(){
+					  $('#add_alarm_$sectionid').click(function(){
+						$.post(
+						  'requests/alarm_add.php',
+						  {sectionid: $sectionid},
+						  function(result){
+							$('#alarms_$sectionid').html(result).trigger('create');
+						  }
+						);
+					  });
+					});
+				</script>
 		";
 	
 }
 
-function echo_alarm($row){
+function echo_alarm($sectionid,$text,$itemlist,$actionlist,$row){
 	global $page;
 	global $web;
 	
