@@ -34,7 +34,7 @@ $(document).ready(function(){
 		};
 	};
 		
-	$('.add_alarm').click(function(){
+	$('.alarm a.add').click(function(){
 		id = $( this ).parents('.alarm_container').attr('id');
 		sectionid = id.split('_');
 		sectionid = id[2];
