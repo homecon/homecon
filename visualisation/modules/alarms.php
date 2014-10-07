@@ -33,55 +33,35 @@ begin_article($page_class);
 		$item5 = $row['item5'];
 		$action5 = $row['action5'];
 		
-		
-		$name_id = "name".$id;
-		$sectionid_id = "sectionid".$id;
-		
-		$delay1_id = "delay1".$id;
-		$item1_id = "item1".$id;
-		$action1_id = "action1".$id;
-		$delay2_id = "delay2".$id;
-		$item2_id = "item2".$id;
-		$action2_id = "action2".$id;
-		$delay3_id = "delay3".$id;
-		$item3_id = "item3".$id;
-		$action3_id = "action3".$id;
-		$delay4_id = "delay4".$id;
-		$item4_id = "item4".$id;
-		$action4_id = "action4".$id;
-		$delay5_id = "delay5".$id;
-		$item5_id = "item5".$id;
-		$action5_id = "action5".$id;
-		
 		echo "
 				<div data-id='$id'>
 					<a class='alarm_action delete' href='#'><img src=icons/ws/control_x.png></a>
-					<input type='text' name='$name_id'        id='$name_id'      value='$id' disabled placeholder='name'>
-					<input type='text' name='$sectionid_id'   id='$sectionid_id' value='$id' disabled placeholder='name'>
+					<input type='text' name='name$id'        id='name$id'      value='$name'      placeholder='name'>
+					<input type='text' name='sectionid$id'   id='sectionid$id' value='$sectionid' placeholder='section id filter'>
 					<div>
-						<input type='number' name='$delay1_id'   id='$delay1_id'  value='$delay1'  placeholder='delay 1'>
-						<input type='text'   name='$item1_id'    id='$item1_id'   value='$item1'   placeholder='item 1'>
-						<input type='text'   name='$action1_id'  id='$action1_id' value='$action1' placeholder='action 1'>
+						<input type='number' name='delay1$id'   id='delay1$id'  value='$delay1'  placeholder='delay 1'>
+						<input type='text'   name='item1$id'    id='item1$id'   value='$item1'   placeholder='item 1'>
+						<input type='text'   name='action1$id'  id='action1$id' value='$action1' placeholder='action 1'>
 					</div>
 					<div>
-						<input type='number' name='$delay2_id'   id='$delay2_id'  value='$delay2'  placeholder='delay 2'>
-						<input type='text'   name='$item2_id'    id='$item2_id'   value='$item2'   placeholder='item 2'>
-						<input type='text'   name='$action2_id'  id='$action2_id' value='$action2' placeholder='action 2'>
+						<input type='number' name='delay2$id'   id='delay2$id'  value='$delay2'  placeholder='delay 2'>
+						<input type='text'   name='item2$id'    id='item2$id'   value='$item2'   placeholder='item 2'>
+						<input type='text'   name='action2$id'  id='action2$id' value='$action2' placeholder='action 2'>
 					</div>
 					<div>
-						<input type='number' name='$delay3_id'   id='$delay3_id'  value='$delay3'  placeholder='delay 3'>
-						<input type='text'   name='$item3_id'    id='$item3_id'   value='$item3'   placeholder='item 3'>
-						<input type='text'   name='$action3_id'  id='$action3_id' value='$action3' placeholder='action 3'>
+						<input type='number' name='delay3$id'   id='delay3$id'  value='$delay3'  placeholder='delay 3'>
+						<input type='text'   name='item3$id'    id='item3$id'   value='$item3'   placeholder='item 3'>
+						<input type='text'   name='action3$id'  id='action3$id' value='$action3' placeholder='action 3'>
 					</div>
 					<div>
-						<input type='number' name='$delay4_id'   id='$delay4_id'  value='$delay4'  placeholder='delay 4'>
-						<input type='text'   name='$item4_id'    id='$item4_id'   value='$item4'   placeholder='item 4'>
-						<input type='text'   name='$action4_id'  id='$action4_id' value='$action4' placeholder='action 4'>
+						<input type='number' name='delay4$id'   id='delay4$id'  value='$delay4'  placeholder='delay 4'>
+						<input type='text'   name='item4$id'    id='item4$id'   value='$item4'   placeholder='item 4'>
+						<input type='text'   name='action4$id'  id='action4$id' value='$action4' placeholder='action 4'>
 					</div>
 					<div>
-						<input type='number' name='$delay5_id'   id='$delay5_id'  value='$delay5'  placeholder='delay 5'>
-						<input type='text'   name='$item5_id'    id='$item5_id'   value='$item5'   placeholder='item 5'>
-						<input type='text'   name='$action5_id'  id='$action5_id' value='$action5' placeholder='action 5'>
+						<input type='number' name='delay5$id'   id='delay5$id'  value='$delay5'  placeholder='delay 5'>
+						<input type='text'   name='item5$id'    id='item5$id'   value='$item5'   placeholder='item 5'>
+						<input type='text'   name='action5$id'  id='action5$id' value='$action5' placeholder='action 5'>
 					</div>
 				</div>";
 	}
