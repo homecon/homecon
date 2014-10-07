@@ -33,7 +33,7 @@ begin_article($page_class);
 		$item5 = $row['item5'];
 		$action5 = $row['action5'];
 		
-		$id_id = "id".$id;
+		
 		$name_id = "name".$id;
 		$sectionid_id = "sectionid".$id;
 		
@@ -54,9 +54,8 @@ begin_article($page_class);
 		$action5_id = "action5".$id;
 		
 		echo "
-				<div>
-					<a class='delete' href='index.php?web=$web&page=modules/alarms&delete_action=$id'><img src=icons/ws/control_x.png></a>
-					<input type='text' name='$id_id'          id='$id_id'        value='$id' disabled placeholder='id'>
+				<div data-id='$id'>
+					<a class='alarm_action delete' href='#'><img src=icons/ws/control_x.png></a>
 					<input type='text' name='$name_id'        id='$name_id'      value='$id' disabled placeholder='name'>
 					<input type='text' name='$sectionid_id'   id='$sectionid_id' value='$id' disabled placeholder='name'>
 					<div>
@@ -87,7 +86,7 @@ begin_article($page_class);
 				</div>";
 	}
 	echo "
-				<a class='add' href='#' data-role='button'>Add action</a>
+				<a class='alarm_action add' href='#' data-role='button'>Add action</a>
 				<button type='submit' name='define'>Submit</button>
 			</form>";
 				
@@ -95,6 +94,10 @@ begin_article($page_class);
 	end_collapsible();		
 end_article();
 
+
+// some jQuery to add and delete input fields
+echo "
+	<script type='text/javascript' src='js/alarm_actions.js'></script>";
 
 
 ?>
