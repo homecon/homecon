@@ -12,15 +12,9 @@ $(document).ready(function(){
 		value = $(this).val();
 		
 		if($(this).attr('type')=='checkbox'){
-			if($(this).is(':checked')){
-				value = 1;
-			}
-			else{
-				value = 0;
-			}
+			value = $(this).is(':checked');
 		}
 		
-		alert(value);
 		// post id column and value to add to database
 		$.post( 'requests/alarm_set.php', {'id': id , 'column': column , 'value': value}); 
 		
