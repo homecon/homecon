@@ -26,7 +26,7 @@ function add_alarm($sectionid,$text,$itemlist,$actionlist){
 	}
 	
 	echo "
-		<div class='alarm_container' id='alarm_section_$sectionid'>";
+		<div class='alarm_container' id='alarm_section_$sectionid' data-id=$sectionid>";
 
 	// find alarms with $sectionid in mysql and cycle through them
 	$result = mysql_query("SELECT * FROM alarms WHERE sectionid = ".$sectionid);

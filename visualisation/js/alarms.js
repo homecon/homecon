@@ -28,17 +28,24 @@ $(document).ready(function(){
 // add alarm
 //////////////////////////////////////////////////////////////////////////////
 $(document).ready(function(){
-	var helperfunction = function(id) {
-		return function(result, textStatus, jqXHR) {
-			$('#'+id).html(result).trigger('create');
-		};
-	};
 		
 	$('.alarm a.add').click(function(){
-		id = $( this ).parents('.alarm_container').attr('id');
-		sectionid = id.split('_');
-		sectionid = id[2];
+		container = $( this ).parents('.alarm_container');
+		sectionid = container.attr('data-id');
 		
-		$.post( 'requests/alarm_add.php',{sectionid: sectionid},helperfunction(sectionid));
+		//container.children().filter('.alarm').map( function(){ return $(this).attr('data-id'); }).get();
+		//get last alarm in the container
+		alarm = container.children().filter('.alarm').last();
+		
+		// post sectionid to add to database
+		$.post('requests/alarm_add.php',{sectionid: sectionid},function(response){
+			id = response;
+			
+			alert(response);
+		
+			alarm.clone().insertAfter(alarm);
+		});
+		
+		
 	});
 });

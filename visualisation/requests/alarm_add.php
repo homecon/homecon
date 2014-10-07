@@ -9,11 +9,15 @@
 	$query = "INSERT INTO alarms (sectionid,hour,minute,mon,tue,wed,thu,fri,sat,sun) VALUES ($sectionid,12,0,1,1,1,1,1,0,0)";
 	$result = mysql_query($query) or die('Error: ' . mysql_error());
 		
+		
+	// get the id of the last added element
+	echo mysql_insert_id();
+		
 	// find alarms with $sectionid in mysql and cycle through them
-	$result = mysql_query("SELECT * FROM alarms WHERE sectionid = ".$sectionid);
-	while($row = mysql_fetch_array($result)){
-		echo_alarm($sectionid,"","","",$row);
-	}
+	//$result = mysql_query("SELECT * FROM alarms WHERE sectionid = ".$sectionid);
+	//while($row = mysql_fetch_array($result)){
+	//	echo_alarm($sectionid,"","","",$row);
+	//}
 
 
 ?>
