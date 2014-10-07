@@ -78,7 +78,7 @@
 		<script type='text/javascript' src='js/io_smarthome.py.js'></script>
 		<script type='text/javascript' src='js/widget.js'></script>
 		<script type='text/javascript' src='js/object.js'></script>
-		<script type='text/javascript' src='js/alarms.js'></script>
+		
 		
 		<link rel='stylesheet' type='text/css' href='css/layout.css'/>
 		<link rel='stylesheet' type='text/css' href='css/widget.css'/>
@@ -109,7 +109,8 @@
 			
 
 			//$.mobile.page.prototype.options.domCache = true;
-		</script>";
+		</script>
+		<script type='text/javascript' src='js/alarms.js'></script>";
 	
 
 // basic layout		
