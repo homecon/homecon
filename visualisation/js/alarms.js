@@ -2,7 +2,7 @@
 // set alarm
 //////////////////////////////////////////////////////////////////////////////
 $(document).ready(function(){
-	$('.alarm input').change(function(){
+	$('.alarm input,.alarm select').change(function(){
 		
 		// get the alarm id
 		id = $(this).parents('.alarm').attr('data-id');
