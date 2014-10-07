@@ -2,25 +2,30 @@
 // set alarm
 //////////////////////////////////////////////////////////////////////////////
 $(document).ready(function(){
-	$('input').change(function(){
+	$('.alarm input').change(function(){
 		
 		// get the alarm id
-		id = $(this).parents('.alarm').attr('id');
-		alarmid = id.split('_');
-		alarmid = alarmid[1];
+		id = $(this).parents('.alarm').attr('data-id');
 		
 		// get the column tot add value to
 		column = $(this).attr('data-column');
 		value = $(this).val();
 		
-		alert(column);
-		alert(value);
+		if($(this).attr('type')=='checkbox'){
+			if($(this).is(':checked')){
+				value = 1;
+			}
+			else{
+				value = 0;
+			}
+		}
 		
+		alert(value);
 		// post id column and value to add to database
-		$.post( 'requests/alarm_set.php', {'id': alarmid , 'column': column , 'value': value}); 
+		$.post( 'requests/alarm_set.php', {'id': id , 'column': column , 'value': value}); 
 		
 		//for debugging: 
-		//$.post( 'requests/alarm_set.php', {'id': $id , 'column': 'time' , 'value': $(this).val()}, function(response){alert(response);}); 
+		//$.post( 'requests/alarm_set.php', {'id': id , 'column': column , 'value': value}, function(response){alert(response);}); 
 							
 	});
 });

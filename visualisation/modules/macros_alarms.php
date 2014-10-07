@@ -117,7 +117,7 @@ function echo_alarm($sectionid,$text,$itemlist,$actionlist,$row){
 	
 		// display individual alarm controls
 		echo "
-			<div class='alarm' id='alarm_$id'>
+			<div class='alarm' id='alarm_$id' data-id='$id'>
 				<input type='time' data-column='time' id='$id_time' value='$str_time'>
 				<h1>$text</h1>
 				<a class='delete' href='index.php?web=$web&page=pages/$page&delete_section=$sectionid&delete_alarm=$id'><img src=icons/ws/control_x.png></a>
