@@ -79,7 +79,6 @@
 		<script type='text/javascript' src='js/widget.js'></script>
 		
 		<!-- knxcontrol -->
-		<script type='text/javascript' src='js/variables.js'></script>
 		<script type='text/javascript' src='js/alarms.js'></script>
 		
 		<link rel='stylesheet' type='text/css' href='css/layout.css'/>
@@ -116,7 +115,7 @@
 
 // basic layout		
 		echo "
-		<div data-role='page' data-theme='a'>
+		<div id='page' data-role='page' data-theme='a'>
 			<header data-role='header' class='header'>";
 			
 		include("modules/header.php");

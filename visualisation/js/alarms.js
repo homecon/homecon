@@ -72,3 +72,81 @@ $(document).ready(function(){
 		
 	});
 });
+
+//////////////////////////////////////////////////////////////////////////////
+// add alarm code
+//////////////////////////////////////////////////////////////////////////////
+add_alarm = function(sectionid,itemlist,actionlist,values){
+
+	var id = values['id'];
+	
+	
+	// duplicate template and change what needs to be changed
+	var newAlarm = $('#alarm_template').clone();
+	newAlarm.attr('id','alarm'+id); 
+	newAlarm.attr('data-id',id);
+	
+	
+	//parse time
+	function padtime(num) {
+		var s = num+"";
+		while (s.length < 2) s = "0" + s;
+		return s;
+	}
+	var time = padtime(values['hour']) + ":" + padtime(values['minute']);
+	
+	newAlarm.find('input[type=time]').val(time);
+	
+	
+	// parse days
+	var days         = ['mon','tue','wed','thu','fri','sat','sun'];
+	var days_string  = ['maa','din','woe','don','vri','zat','zon'];
+	var days_checked = [''   ,''   ,''   ,''   ,''   ,''   ,''];
+	for(i=0;i<days.length;i++){
+		if( values[days[i]] ){
+			newAlarm.find('#id_'+days[i]).prop('checked', true);
+		}
+		else{
+			newAlarm.find('#id_'+days[i]).prop('checked', false);
+		}
+		newAlarm.find('#id_'+days[i]).attr('id',days[i]+id);
+		newAlarm.find('#id_'+days[i]+'_lab').attr('for',days[i]+id);
+	}
+	
+	
+	// parse items
+	var items   = values['item'].split(',');
+	var itemlist   = itemlist.split(',');
+	
+	var newOption = newAlarm.find('.alarm_items option:first').clone();
+	
+	for(i=0;i<itemlist.length;i++){
+		var itemselected = '';
+		var item = itemlist[i];
+		
+		if($.inArray(item, values['item'])){
+			itemselected =  'selected=selected';
+		}
+		newAlarm.find("select[data-column='item']").append("<option "+itemselected+" value='"+item+"'>"+item+"</option>");
+	}
+	
+	
+	// parse actions
+	var actions   = values['action'].split(',');
+	var actionlist   = actionlist.split(',');
+
+	var newOption = newAlarm.find('.alarm_actions option:first').clone();
+	for(i=0;i<actionlist.length;i++){
+		var actionselected = '';
+		var action = actionlist[i];
+			
+		if($.inArray(action, values['action'])){
+			actionselected =  'selected=selected';
+		}	
+		newAlarm.find("select[data-column='action']").append("<option "+actionselected+" value='"+action+"'>"+action+"</option>");
+	}
+	
+	newAlarm.show();
+	$('#alarm_add_'+sectionid).before(newAlarm);
+	
+};
