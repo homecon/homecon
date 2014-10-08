@@ -6,8 +6,8 @@ function add_alarm($sectionid,$text,$itemlist,$actionlist){
 	$page = explode('/',$page);
 	$page = end($page);
 	
-	$itemlist = explode(',',$itemlist);
-	$actionlist = explode(',',$actionlist);
+	//$itemlist = explode(',',$itemlist);
+	//$actionlist = explode(',',$actionlist);
 	
 	
 	
@@ -31,18 +31,61 @@ function add_alarm($sectionid,$text,$itemlist,$actionlist){
 	// find alarms with $sectionid in mysql and cycle through them
 	$result = mysql_query("SELECT * FROM alarms WHERE sectionid = ".$sectionid);
 	while($row = mysql_fetch_array($result)){
-		//echo_alarm($sectionid,$text,$itemlist,$actionlist,$row);
+		$id = $row['id'];
+		$items = $row['items'];
+		$actions = $row['actions'];
+		
 		echo" 
 			<script>
-				$(document).on('pagebeforeshow',function(){
-					// prepare function inputs
-					var id = ".$row['id'].";
-					var itemlist = ".$itemlist.";
-					var actionlist = ".$actionlist.";
-					var values = [id: ".$row['id'].", hour: ".$row['hour'].", minute: ".$row['minute'].", mon: ".$row['mon'].", tue: ".$row['tue'].", wed: ".$row['wed'].", thu: ".$row['thu'].",fri: ".$row['fri'].",sat: ".$row['sat'].",sun: ".$row['sun']."];
+				$(document).ready(function(){
+			
+					var newAlarm = $('#alarm_template').clone();
+					newAlarm.attr('id','alarm$id'); 
+					newAlarm.attr('data-id',$id); 
+					newAlarm.find('#id_mon').attr('id','mon$id');
+					newAlarm.find('#id_tue').attr('id','tue$id');
+					newAlarm.find('#id_wed').attr('id','wed$id');
+					newAlarm.find('#id_thu').attr('id','thu$id');
+					newAlarm.find('#id_fri').attr('id','fri$id');
+					newAlarm.find('#id_sat').attr('id','sat$id');
+					newAlarm.find('#id_sun').attr('id','sun$id');
 					
-					// add element to page
-					$('#alarm_add_$sectionid').before(display_alarm(id,itemlist,actionlist,values));
+					newAlarm.find('#id_mon_lab').attr('for','mon$id');
+					newAlarm.find('#id_tue_lab').attr('for','tue$id');
+					newAlarm.find('#id_wed_lab').attr('for','wed$id');
+					newAlarm.find('#id_thu_lab').attr('for','thu$id');
+					newAlarm.find('#id_fri_lab').attr('for','fri$id');
+					newAlarm.find('#id_sat_lab').attr('for','sat$id');
+					newAlarm.find('#id_sun_lab').attr('for','sun$id');
+					
+					var itemlist = [$itemlist];
+					var items = [$items];
+					
+					for(i=0;i<itemlist.length;i++){
+						itemselected = "";
+						item = itemlist[i];
+							
+						if($.inArray(item, items)){
+							itemselected =  'selected=selected';
+						}	
+						$(\"select[:data-column='item']\").append(\"<option \"+itemselected+\" value='\"+item+\"'>\"+item+\"</option>\");
+					}
+					
+					var actionlist = [$actionlist];
+					var action = [$actions];
+					
+					for(i=0;i<actionlist.length;i++){
+						actionselected = "";
+						action = actionlist[i];
+							
+						if($.inArray(action, actions)){
+							actionselected =  'selected=selected';
+						}	
+						$(\"select[:data-column='action']\").append(\"<option \"+actionselected+\" value='\"+action+\"'>\"+action+\"</option>\");
+					}
+					
+					newAlarm.show();
+					$('#alarm_add_$sectionid').before(newAlarm);
 				});
 			</script>";
 	}
@@ -51,150 +94,35 @@ function add_alarm($sectionid,$text,$itemlist,$actionlist){
 				<a class='add' id='add_alarm_$sectionid' class='add_alarm' data-role='button'>wekker toevoegen</a>
 			</div>
 		</div>";
-	
-}
-
-function echo_alarm($sectionid,$text,$itemlist,$actionlist,$row){
-	global $page;
-	global $web;
-	
-		// create id's
-		$id = $row['id'];
-		$id_alarm = $page ."_alarm".$id;
-		$id_time = $page ."_alarm".$id ."_time";
-
-		$id_sunrise = $page ."_alarm". $id."_sunrise";
-		$id_sunset = $page ."_alarm". $id."_sunset";
 		
-		$id_mon = $page ."_alarm". $id."_maa";
-		$id_tue = $page ."_alarm". $id."_din";
-		$id_wed = $page ."_alarm". $id."_woe";
-		$id_thu = $page ."_alarm". $id."_don";
-		$id_fri	= $page ."_alarm". $id."_vri";
-		$id_sat = $page ."_alarm". $id."_zat";
-		$id_sun = $page ."_alarm". $id."_zon";
-	
-		$iditemselect =  $page ."_alarm". $id."_itemselect";
-		$idactionselect =  $page ."_alarm". $id."_actionselect";
-	
-	
-		// parse mysql data
-		$str_mon = "";
-		$str_tue = "";
-		$str_wed = "";
-		$str_thu = "";
-		$str_fri = "";
-		$str_sat = "";
-		$str_sun = "";
-		
-		$str_time = "00:00";
-		
-		$str_sunrise = "";
-		$str_sunset = "";
-	
-		if($row['mon']){
-			$str_mon = "checked";
-		}
-		if($row['tue']){
-			$str_tue = "checked";
-		}
-		if($row['wed']){
-			$str_wed = "checked";
-		}
-		if($row['thu']){
-			$str_thu = "checked";
-		}
-		if($row['fri']){
-			$str_fri = "checked";
-		}
-		if($row['sat']){
-			$str_sat = "checked";
-		}
-		if($row['sun']){
-			$str_sun = "checked";
-		}
-		if($row['sunrise']){
-			$str_sunrise = "checked";
-		}
-		if($row['sunset']){
-			$str_sunset = "checked";
-		}
-	
-		// parse items and actions
-		$items = explode(',',$row['item']);
-		$actions = $row['action'];
-
-		// parse time
-		$str_time = sprintf('%02d', $row['hour']).":".sprintf('%02d', $row['minute']);
-		
-	
-		// display individual alarm controls
-		echo "
-			<div class='alarm' id='alarm_$id' data-id='$id'>
-				<input type='time' data-column='time' id='$id_time' value='$str_time'>
-				<h1>$text</h1>
-				<a class='delete' href='index.php?web=$web&page=pages/$page&delete_section=$sectionid&delete_alarm=$id'><img src=icons/ws/control_x.png></a>
-				<div class='days'>
-					<div data-role='controlgroup' data-type='horizontal'>
-						<input type='checkbox' data-column='mon' id='$id_mon' class='custom' data-widget='basic.checkbox' data-mini='true' $str_mon>
-						<label for='$id_mon'>maa</label>
-					 
-						<input type='checkbox' data-column='tue' id='$id_tue' class='custom' data-widget='basic.checkbox' data-mini='true' $str_tue>
-						<label for='$id_tue'>din</label>
-					 
-						<input type='checkbox' data-column='wed' id='$id_wed' class='custom' data-widget='basic.checkbox' data-mini='true' $str_wed> 
-						<label for='$id_wed'>woe</label>
-						
-						<input type='checkbox' data-column='thu' id='$id_thu' class='custom' data-widget='basic.checkbox' data-mini='true' $str_thu>
-						<label for='$id_thu'>don</label>
-						
-						<input type='checkbox' data-column='fri' id='$id_fri' class='custom' data-widget='basic.checkbox' data-mini='true' $str_fri>
-						<label for='$id_fri'>vri</label>
-						
-						<input type='checkbox' data-column='sat' id='$id_sat' class='custom' data-widget='basic.checkbox' data-mini='true' $str_sat>
-						<label for='$id_sat'>zat</label>
-						
-						<input type='checkbox' data-column='sun' id='$id_sun' class='custom' data-widget='basic.checkbox' data-mini='true' $str_sun>
-						<label for='$id_sun'>zon</label>
-					</div>
+	// echo a hidden template for the alarm
+	echo "
+		<div class='alarm' id='alarm_template' data-id='id' style='display:none'>
+			<input type='time' data-column='time'>
+			<h1></h1>
+			<a class='delete' href='#'><img src=icons/ws/control_x.png></a>
+			<div class='days'>
+				<div data-role='controlgroup' data-type='horizontal'>
+					<input type='checkbox' data-column='mon' id='id_mon' class='custom' data-widget='basic.checkbox' data-mini='true'> <label id='id_mon_lab' for='id_mon'>maa</label>
+					<input type='checkbox' data-column='tue' id='id_tue' class='custom' data-widget='basic.checkbox' data-mini='true'> <label id='id_tue_lab' for='id_tue'>din</label>
+					<input type='checkbox' data-column='wed' id='id_wed' class='custom' data-widget='basic.checkbox' data-mini='true'> <label id='id_wed_lab' for='id_wed'>woe</label>
+					<input type='checkbox' data-column='thu' id='id_thu' class='custom' data-widget='basic.checkbox' data-mini='true'> <label id='id_thu_lab' for='id_thu'>don</label>
+					<input type='checkbox' data-column='fri' id='id_fri' class='custom' data-widget='basic.checkbox' data-mini='true'> <label id='id_fri_lab' for='id_fri'>vri</label>
+					<input type='checkbox' data-column='sat' id='id_sat' class='custom' data-widget='basic.checkbox' data-mini='true'> <label id='id_sat_lab' for='id_sat'>zat</label>
+					<input type='checkbox' data-column='sun' id='id_sun' class='custom' data-widget='basic.checkbox' data-mini='true'> <label id='id_sun_lab' for='id_sun'>zon</label>
 				</div>
-				<div class='alarm_items'>
-					<select multiple='multiple' data-column='item' id='$iditemselect' data-native-menu='false'>
-						<option>Select items</option>";
-						
-		for($i=0;$i<count($itemlist);$i++){
-		    $itemselected = "";
-			$item = $itemlist[$i];
-			
-			if(in_array($item,$items)){
-				$itemselected =  'selected=selected';
-			}
-			echo "
-						<option $itemselected value='$item'>$item</option>";
-		}
-		
-		echo "		
-					</select>
-				</div>
-				<div class='alarm_action'>
-					<select data-column='action' id='$idactionselect' data-native-menu='false'>
-						<option>Select action</option>";
-						
-		for($i=0;$i<count($actionlist);$i++){
-		    $actionselected = "";
-			$action = $actionlist[$i];
-			
-			if(strcmp($action,$actions)==0){
-				$actionselected =  'selected=selected';
-			}
-			echo "
-						<option $actionselected value='$action'>$action</option>";
-		}
-		
-		echo "		
-					</select>
-				</div>
-			</div>";
+			</div>
+			<div class='alarm_items'>
+				<select multiple='multiple' data-column='item' data-native-menu='false'>
+					<option>Select items</option>
+				</select>
+			</div>
+			<div class='alarm_action'>
+				<select data-column='action' data-native-menu='false'>
+					<option>Select action</option>
+				</select>
+			</div>
+		</div>";
 	
 }
 

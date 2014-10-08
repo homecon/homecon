@@ -28,22 +28,45 @@ $(document).ready(function(){
 // add alarm
 //////////////////////////////////////////////////////////////////////////////
 $(document).ready(function(){
-		
-	$('.alarm a.add').click(function(){
+
+	$('.alarm_container a.add').click(function(){
+
 		container = $( this ).parents('.alarm_container');
 		sectionid = container.attr('data-id');
 		
-		//container.children().filter('.alarm').map( function(){ return $(this).attr('data-id'); }).get();
-		//get last alarm in the container
-		alarm = container.children().filter('.alarm').last();
+		var newAlarm = $('#alarm_template').clone();
+		
+		// give temprary ids and add the alarm, final id's are assigned after adding to the database
+		
+		$('#alarm_add_'+sectionid).before(newAlarm);
 		
 		// post sectionid to add to database
 		$.post('requests/alarm_add.php',{sectionid: sectionid},function(response){
+			
 			id = response;
 			
-			alert(response);
-		
-			alarm.clone().insertAfter(alarm);
+			alert(id);
+			
+			newAlarm.attr('id','alarm'+id); 
+			newAlarm.attr('data-id',id); 
+			newAlarm.find('#id_mon').attr('id','mon'+id);
+			newAlarm.find('#id_tue').attr('id','tue'+id);
+			newAlarm.find('#id_wed').attr('id','wed'+id);
+			newAlarm.find('#id_thu').attr('id','thu'+id);
+			newAlarm.find('#id_fri').attr('id','fri'+id);
+			newAlarm.find('#id_sat').attr('id','sat'+id);
+			newAlarm.find('#id_sun').attr('id','sun'+id);
+			
+			newAlarm.find('#id_mon_lab').attr('for','mon'+id);
+			newAlarm.find('#id_tue_lab').attr('for','tue'+id);
+			newAlarm.find('#id_wed_lab').attr('for','wed'+id);
+			newAlarm.find('#id_thu_lab').attr('for','thu'+id);
+			newAlarm.find('#id_fri_lab').attr('for','fri'+id);
+			newAlarm.find('#id_sat_lab').attr('for','sat'+id);
+			newAlarm.find('#id_sun_lab').attr('for','sun'+id);
+			
+			newAlarm.show();
+			$('#alarm_add_'+sectionid).before(newAlarm);
 		});
 		
 		
