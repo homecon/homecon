@@ -31,10 +31,23 @@ function add_alarm($sectionid,$text,$itemlist,$actionlist){
 	// find alarms with $sectionid in mysql and cycle through them
 	$result = mysql_query("SELECT * FROM alarms WHERE sectionid = ".$sectionid);
 	while($row = mysql_fetch_array($result)){
-		echo_alarm($sectionid,$text,$itemlist,$actionlist,$row);
+		//echo_alarm($sectionid,$text,$itemlist,$actionlist,$row);
+		echo" 
+			<script>
+				$(document).on('pagebeforeshow',function(){
+					// prepare function inputs
+					var id = ".$row['id'].";
+					var itemlist = ".$itemlist.";
+					var actionlist = ".$actionlist.";
+					var values = [id: ".$row['id'].", hour: ".$row['hour'].", minute: ".$row['minute'].", mon: ".$row['mon'].", tue: ".$row['tue'].", wed: ".$row['wed'].", thu: ".$row['thu'].",fri: ".$row['fri'].",sat: ".$row['sat'].",sun: ".$row['sun']."];
+					
+					// add element to page
+					$('#alarm_add_$sectionid').before(display_alarm(id,itemlist,actionlist,values));
+				});
+			</script>";
 	}
 	echo "
-			<div>
+			<div id='alarm_add_$sectionid'>
 				<a class='add' id='add_alarm_$sectionid' class='add_alarm' data-role='button'>wekker toevoegen</a>
 			</div>
 		</div>";
