@@ -5,42 +5,42 @@ function begin_article($class = NULL){
 
 	if($class){
 		echo "
-		<article class=$class>";
+				<article class=$class>";
 	}
 	else{
 		echo "
-		<article>";
+				<article>";
 	}
 }
 function end_article(){
 	echo "
-		</article>";
+				</article>";
 }
 function add_header($text,$icon,$temperature_item = NULL){
 	echo "
-		<header>
-			<img src='icons/ws/$icon'>
-			<h1>$text</h1>";
+				<header>
+					<img src='icons/ws/$icon'>
+					<h1>$text</h1>";
 			
 	if($temperature_item){
 		echo "
-			<div class='climate'>";
-				add_quantity("",$temperature_item,"&deg;C",1);
+					<div class='climate'>";
+		add_quantity("",$temperature_item,"&deg;C",1);
 		echo "
-				</div>";
+					</div>";
 	}		
 	echo "
-		</header>";
+				</header>";
 }
 
 // collapsibels and collapsible sets
 function begin_collapsible_set(){
 	echo "
-			<section data-role='collapsible-set'>";
+				<section data-role='collapsible-set'>";
 }
 function end_collapsible_set(){
 	echo "
-			</section>";
+				</section>";
 }
 function begin_collapsible($title,$collapsed = NULL){
 	if($collapsed){
@@ -50,48 +50,48 @@ function begin_collapsible($title,$collapsed = NULL){
 		$data_collapsed = "false";
 	}
 	echo "
-			<section data-role='collapsible' data-theme='c' data-content-theme='a' data-collapsed='$data_collapsed'>
-				<h1>$title</h1>";
+				<section data-role='collapsible' data-theme='c' data-content-theme='a' data-collapsed='$data_collapsed'>
+					<h1>$title</h1>";
 }
 function end_collapsible(){
 	echo "
-		</section>";
+				</section>";
 }
 
 // add title text
 function add_title($text){
 	echo "
-		$text";
+					$text";
 }
 
 // groups of controls with variable number of collumns and control groups
 function begin_group($columns = NULL){
 	if($columns==2){
 		echo "
-			<div class='twocols'>";
+					<div class='twocols'>";
 	}
 	else{
 		echo "
-			<div>";
+					<div>";
 	}
 }
 function end_group(){
 	echo "
-			</div>";
+					</div>";
 }
 function add_space(){
 	echo "
-			</br>";
+						</br>";
 }
 function begin_controlgroup(){
 	echo "
-			<div>
-				<div data-role='controlgroup' data-type='horizontal' align='center'>";
+						<div>
+							<div data-role='controlgroup' data-type='horizontal' align='center'>";
 }
 function end_controlgroup(){
 	echo "
-				</div>
-			</div>";
+							</div>
+						</div>";
 }
 
 
@@ -100,11 +100,11 @@ function end_controlgroup(){
 function begin_menu(){
 	global $page_class;
 	echo "
-	<nav class=$page_class data-role='collapsible-set' data-corners='false'>";
+				<nav class=$page_class data-role='collapsible-set' data-corners='false'>";
 }
 function end_menu(){
 	echo "
-	</nav>";
+				</nav>";
 }
 function begin_menu_collapsible($title,$collapsed_check,$home_check=NULL){
 	global $page;
@@ -118,19 +118,19 @@ function begin_menu_collapsible($title,$collapsed_check,$home_check=NULL){
 	}
 	
 	echo "
-		<section data-role='collapsible' class='ui-collapsible-inset' data-theme='c' data-content-theme='a' data-inset='false' data-collapsed='$data_collapsed'>
-			<h1>$title</h1>
-			<ul data-role='listview'>";
+					<section data-role='collapsible' class='ui-collapsible-inset' data-theme='c' data-content-theme='a' data-inset='false' data-collapsed='$data_collapsed'>
+						<h1>$title</h1>
+						<ul data-role='listview'>";
 }
 function end_menu_collapsible(){
 	echo "
-			</ul>
-		</section>";
+						</ul>
+					</section>";
 }
 function add_menu_item($title,$link,$icon){
 	global $web;
 	echo "
-				<li><a href='index.php?web=$web&page=pages/$link'><img src='icons/ws/$icon'>$title</a></li>";
+							<li><a href='index.php?web=$web&page=pages/$link'><img src='icons/ws/$icon'>$title</a></li>";
 }
 
 
