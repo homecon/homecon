@@ -27,53 +27,51 @@ $(document).ready(function(){
 //////////////////////////////////////////////////////////////////////////////
 // add alarm
 //////////////////////////////////////////////////////////////////////////////
-$(document).ready(function(){
+$(document).on('click','.alarm_container a.add',function(){
 
-	$('.alarm_container a.add').click(function(){
-
-		var container = $( this ).parents('.alarm_container');
-		var sectionid = container.attr('data-id');
+	var container = $( this ).parents('.alarm_container');
+	var sectionid = container.attr('data-id');
+	
+	// give temprary ids and add the alarm, final id's are assigned after adding to the database
+	oldid = -1;
+	var values = {'id': oldid, 'hour': 12, 'minute': 0, 'mon': 1, 'tue': 1, 'wed': 1, 'thu': 1, 'fri': 1, 'sat': 0, 'sun': 0, 'item': '', 'action': '' };
+	
+	display_alarm(sectionid,values);
+	
+	// post sectionid to add to database
+	$.post('requests/alarm_add.php',{sectionid: sectionid},function(id){
 		
-		// give temprary ids and add the alarm, final id's are assigned after adding to the database
-		oldid = -1;
-		var values = {'id': oldid, 'hour': 12, 'minute': 0, 'mon': 1, 'tue': 1, 'wed': 1, 'thu': 1, 'fri': 1, 'sat': 0, 'sun': 0, 'item': '', 'action': '' };
+		// change ids according to the database
+		$('#alarm'+oldid).attr('data-id',id);
+		$('#alarm'+oldid).attr('id','alarm'+id);
 		
-		display_alarm(sectionid,values);
-		
-		// post sectionid to add to database
-		$.post('requests/alarm_add.php',{sectionid: sectionid},function(id){
+		// days
+		var days         = ['mon','tue','wed','thu','fri','sat','sun'];
+		var days_string  = ['maa','din','woe','don','vri','zat','zon'];
+		var days_checked = [''   ,''   ,''   ,''   ,''   ,''   ,''];
+		for(i=0;i<days.length;i++){
+			$('#'+days[i]+oldid).attr('id',days[i]+id);
+			$('#'+days[i]+oldid+'_lab').attr('for',days[i]+id);
 			
-			// change ids according to the database
-			// days
-			var days         = ['mon','tue','wed','thu','fri','sat','sun'];
-			var days_string  = ['maa','din','woe','don','vri','zat','zon'];
-			var days_checked = [''   ,''   ,''   ,''   ,''   ,''   ,''];
-			for(i=0;i<days.length;i++){
-				$('#'+days[i]+oldid).attr('id',days[i]+id);
-				$('#'+days[i]+oldid+'_lab').attr('for',days[i]+id);
-			}
-		});
-		
-		
+		}
 	});
+		
 });
 
 //////////////////////////////////////////////////////////////////////////////
 // delete alarm
 //////////////////////////////////////////////////////////////////////////////
-$(document).ready(function(){
-	$('.alarm a.delete').click(function(){
+$(document).on('click','.alarm a.delete',function(){
+
+	var alarm = $( this ).parents('.alarm');
+	var id = alarm.attr('data-id');
 	
-		var alarm = $( this ).parents('.alarm');
-		var id = alarm.attr('data-id');
-		
-		// remove the display of the alarm
-		alarm.remove();
-		
-		// post id to remove from database
-		$.post('requests/alarm_delete.php',{'id': id});
+	// remove the display of the alarm
+	alarm.remove();
 	
-	});
+	// post id to remove from database
+	$.post('requests/alarm_delete.php',{'id': id});
+
 });
 
 //////////////////////////////////////////////////////////////////////////////
@@ -82,7 +80,6 @@ $(document).ready(function(){
 display_alarm = function(sectionid,values){
 
 	var id = values['id'];
-	
 	
 	// duplicate template and change what needs to be changed
 	var newAlarm = $('#alarm_template'+sectionid).clone();
@@ -151,6 +148,6 @@ display_alarm = function(sectionid,values){
 	}
 	
 	newAlarm.show();
-	$('#alarm_add_'+sectionid).before(newAlarm);
+	$('#alarm_add'+sectionid).before(newAlarm);
 	
 };

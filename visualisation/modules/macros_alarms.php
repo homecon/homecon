@@ -27,9 +27,9 @@ function add_alarm($sectionid,$text,$itemlist,$actionlist){
 	}
 	
 	echo "
-		<div class='alarm_container' id='alarm_section_$sectionid' data-id=$sectionid>
-			<div id='alarm_add_$sectionid'>
-				<a class='add' id='add_alarm_$sectionid' class='add_alarm' data-role='button'>wekker toevoegen</a>
+		<div class='alarm_container' id='alarm_section$sectionid' data-id=$sectionid>
+			<div id='alarm_add$sectionid'>
+				<a class='add' class='add_alarm' data-role='button'>wekker toevoegen</a>
 			</div>
 		</div>";
 		
