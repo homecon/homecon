@@ -36,14 +36,12 @@ $(document).ready(function(){
 		
 		// give temprary ids and add the alarm, final id's are assigned after adding to the database
 		oldid = -1;
-		var values = {id: oldid, hour: 12, minute: 0, mon: 1, tue: 1, wed: 1, thu: 1, fri: 1, sat: 0, sun: 0, item: '', action: '' };
+		var values = {'id': oldid, 'hour': 12, 'minute': 0, 'mon': 1, 'tue': 1, 'wed': 1, 'thu': 1, 'fri': 1, 'sat': 0, 'sun': 0, 'item': '', 'action': '' };
 		
 		display_alarm(sectionid,values);
 		
 		// post sectionid to add to database
 		$.post('requests/alarm_add.php',{sectionid: sectionid},function(id){
-			
-			alert(id);
 			
 			// change ids according to the database
 			// days
@@ -52,7 +50,7 @@ $(document).ready(function(){
 			var days_checked = [''   ,''   ,''   ,''   ,''   ,''   ,''];
 			for(i=0;i<days.length;i++){
 				$('#'+days[i]+oldid).attr('id',days[i]+id);
-				newAlarm.find('#'+days[i]+oldid+'_lab').attr('for',days[i]+id);
+				$('#'+days[i]+oldid+'_lab').attr('for',days[i]+id);
 			}
 		});
 		
@@ -64,7 +62,7 @@ $(document).ready(function(){
 // delete alarm
 //////////////////////////////////////////////////////////////////////////////
 $(document).ready(function(){
-	$('.alarm_container a.add').click(function(){
+	$('.alarm a.delete').click(function(){
 	
 		var alarm = $( this ).parents('.alarm');
 		var id = alarm.attr('data-id');
@@ -73,7 +71,7 @@ $(document).ready(function(){
 		alarm.remove();
 		
 		// post id to remove from database
-		$.post('requests/alarm_delete.php',{id: id});
+		$.post('requests/alarm_delete.php',{'id': id});
 	
 	});
 });
