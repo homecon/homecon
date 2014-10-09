@@ -34,14 +34,11 @@ $(document).ready(function(){
 		var container = $( this ).parents('.alarm_container');
 		var sectionid = container.attr('data-id');
 		
-		var itemlist = $(this).attr('data-itemlist');
-		var actionlist = $(this).attr('data-actionlist');
-		
 		// give temprary ids and add the alarm, final id's are assigned after adding to the database
 		oldid = -1;
 		var values = {id: oldid, hour: 12, minute: 0, mon: 1, tue: 1, wed: 1, thu: 1, fri: 1, sat: 0, sun: 0, item: '', action: '' };
 		
-		display_alarm(sectionid,itemlist,actionlist,values);
+		display_alarm(sectionid,values);
 		
 		// post sectionid to add to database
 		$.post('requests/alarm_add.php',{sectionid: sectionid},function(id){
@@ -84,13 +81,13 @@ $(document).ready(function(){
 //////////////////////////////////////////////////////////////////////////////
 // display alarm code
 //////////////////////////////////////////////////////////////////////////////
-display_alarm = function(sectionid,itemlist,actionlist,values){
+display_alarm = function(sectionid,values){
 
 	var id = values['id'];
 	
 	
 	// duplicate template and change what needs to be changed
-	var newAlarm = $('#alarm_template').clone();
+	var newAlarm = $('#alarm_template'+sectionid).clone();
 	newAlarm.attr('id','alarm'+id); 
 	newAlarm.attr('data-id',id);
 	
@@ -124,8 +121,8 @@ display_alarm = function(sectionid,itemlist,actionlist,values){
 	
 	
 	// parse items
-	var items   = values['item'].split(',');
-	var itemlist   = itemlist.split(',');
+	var items    = values['item'].split(',');
+	var itemlist = newAlarm.attr('data-itemlist').split(',');
 	
 	var newOption = newAlarm.find('.alarm_items option:first').clone();
 	
@@ -141,8 +138,8 @@ display_alarm = function(sectionid,itemlist,actionlist,values){
 	
 	
 	// parse actions
-	var actions   = values['action'].split(',');
-	var actionlist   = actionlist.split(',');
+	var actions    = values['action'].split(',');
+	var actionlist = newAlarm.attr('data-actionlist').split(',');
 
 	var newOption = newAlarm.find('.alarm_actions option:first').clone();
 	for(i=0;i<actionlist.length;i++){

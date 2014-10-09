@@ -29,7 +29,7 @@ function add_alarm($sectionid,$text,$itemlist,$actionlist){
 	echo "
 		<div class='alarm_container' id='alarm_section_$sectionid' data-id=$sectionid>
 			<div id='alarm_add_$sectionid'>
-				<a class='add' id='add_alarm_$sectionid' class='add_alarm' data-role='button' data-itemlist='$itemlist' data-actionlist='$actionlist'>wekker toevoegen</a>
+				<a class='add' id='add_alarm_$sectionid' class='add_alarm' data-role='button'>wekker toevoegen</a>
 			</div>
 		</div>";
 		
@@ -46,7 +46,7 @@ function add_alarm($sectionid,$text,$itemlist,$actionlist){
 		<script>
 			$('#page').live('pagecreate',function(event){
 				var values = {id: ".$row['id'].", hour: ".$row['hour'].", minute: ".$row['minute'].", mon: ".$row['mon'].", tue: ".$row['tue'].", wed: ".$row['wed'].", thu: ".$row['thu'].", fri: ".$row['fri'].", sat: ".$row['sat'].", sun: ".$row['sun'].", item: '".$row['item']."', action: '".$row['action']."' };
-				display_alarm($sectionid,'$itemlist','$actionlist',values);
+				display_alarm($sectionid,values);
 			});
 		</script>";
 	}
@@ -54,7 +54,7 @@ function add_alarm($sectionid,$text,$itemlist,$actionlist){
 		
 	// echo a hidden template for the alarm
 	echo "
-			<div class='alarm' id='alarm_template' data-id='id' style='display:none'>
+			<div class='alarm' id='alarm_template$sectionid' data-id='id' style='display:none' data-itemlist='$itemlist' data-actionlist='$actionlist'>
 				<input type='time' data-column='time' value='12:00'>
 				<h1></h1>
 				<a class='delete'><img src='icons/ws/control_x.png'></a>
