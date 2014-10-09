@@ -74,9 +74,9 @@ $(document).ready(function(){
 });
 
 //////////////////////////////////////////////////////////////////////////////
-// add alarm code
+// display alarm code
 //////////////////////////////////////////////////////////////////////////////
-add_alarm = function(sectionid,itemlist,actionlist,values){
+display_alarm = function(sectionid,itemlist,actionlist,values){
 
 	var id = values['id'];
 	

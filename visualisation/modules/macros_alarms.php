@@ -27,9 +27,7 @@ function add_alarm($sectionid,$text,$itemlist,$actionlist){
 	}
 	
 	echo "
-		<div class='alarm_container' id='alarm_section_$sectionid' data-id=$sectionid>";
-		
-	echo "
+		<div class='alarm_container' id='alarm_section_$sectionid' data-id=$sectionid>
 			<div id='alarm_add_$sectionid'>
 				<a class='add' id='add_alarm_$sectionid' class='add_alarm' data-role='button'>wekker toevoegen</a>
 			</div>
@@ -45,50 +43,43 @@ function add_alarm($sectionid,$text,$itemlist,$actionlist){
 		$actions = "['".str_replace(",","','",$row['action'])."']";
 		
 		echo " 
-			<script>
-				$('#page').live('pagecreate',function(event){
-					//var itemlist = $itemlist;
-					//var items = $items;
-						
-					//var actionlist = $actionlist;
-					//var actions = $actions;
-					
-					var values = {id: ".$row['id'].", hour: ".$row['hour'].", minute: ".$row['minute'].", mon: ".$row['mon'].", tue: ".$row['tue'].", wed: ".$row['wed'].", thu: ".$row['thu'].", fri: ".$row['fri'].", sat: ".$row['sat'].", sun: ".$row['sun'].", item: '".$row['item']."', action: '".$row['action']."' };
-					
-					add_alarm($sectionid,'$itemlist','$actionlist',values);
-				});
-			</script>";
+		<script>
+			$('#page').live('pagecreate',function(event){
+				var values = {id: ".$row['id'].", hour: ".$row['hour'].", minute: ".$row['minute'].", mon: ".$row['mon'].", tue: ".$row['tue'].", wed: ".$row['wed'].", thu: ".$row['thu'].", fri: ".$row['fri'].", sat: ".$row['sat'].", sun: ".$row['sun'].", item: '".$row['item']."', action: '".$row['action']."' };
+				display_alarm($sectionid,'$itemlist','$actionlist',values);
+			});
+		</script>";
 	}
 
 		
 	// echo a hidden template for the alarm
 	echo "
-		<div class='alarm' id='alarm_template' data-id='id' style='display:none'>
-			<input type='time' data-column='time' value='12:00'>
-			<h1></h1>
-			<a class='delete'><img src='icons/ws/control_x.png'></a>
-			<div class='days'>
-				<div data-role='controlgroup' data-type='horizontal'>
-					<input type='checkbox' data-column='mon' id='id_mon' class='custom' data-widget='basic.checkbox' data-mini='true' checked> <label id='id_mon_lab' for='id_mon'>maa</label>
-					<input type='checkbox' data-column='tue' id='id_tue' class='custom' data-widget='basic.checkbox' data-mini='true' checked> <label id='id_tue_lab' for='id_tue'>din</label>
-					<input type='checkbox' data-column='wed' id='id_wed' class='custom' data-widget='basic.checkbox' data-mini='true' checked> <label id='id_wed_lab' for='id_wed'>woe</label>
-					<input type='checkbox' data-column='thu' id='id_thu' class='custom' data-widget='basic.checkbox' data-mini='true' checked> <label id='id_thu_lab' for='id_thu'>don</label>
-					<input type='checkbox' data-column='fri' id='id_fri' class='custom' data-widget='basic.checkbox' data-mini='true' checked> <label id='id_fri_lab' for='id_fri'>vri</label>
-					<input type='checkbox' data-column='sat' id='id_sat' class='custom' data-widget='basic.checkbox' data-mini='true'> <label id='id_sat_lab' for='id_sat'>zat</label>
-					<input type='checkbox' data-column='sun' id='id_sun' class='custom' data-widget='basic.checkbox' data-mini='true'> <label id='id_sun_lab' for='id_sun'>zon</label>
+			<div class='alarm' id='alarm_template' data-id='id' style='display:none'>
+				<input type='time' data-column='time' value='12:00'>
+				<h1></h1>
+				<a class='delete'><img src='icons/ws/control_x.png'></a>
+				<div class='days'>
+					<div data-role='controlgroup' data-type='horizontal'>
+						<input type='checkbox' data-column='mon' id='id_mon' class='custom' data-widget='basic.checkbox' data-mini='true' checked> <label id='id_mon_lab' for='id_mon'>maa</label>
+						<input type='checkbox' data-column='tue' id='id_tue' class='custom' data-widget='basic.checkbox' data-mini='true' checked> <label id='id_tue_lab' for='id_tue'>din</label>
+						<input type='checkbox' data-column='wed' id='id_wed' class='custom' data-widget='basic.checkbox' data-mini='true' checked> <label id='id_wed_lab' for='id_wed'>woe</label>
+						<input type='checkbox' data-column='thu' id='id_thu' class='custom' data-widget='basic.checkbox' data-mini='true' checked> <label id='id_thu_lab' for='id_thu'>don</label>
+						<input type='checkbox' data-column='fri' id='id_fri' class='custom' data-widget='basic.checkbox' data-mini='true' checked> <label id='id_fri_lab' for='id_fri'>vri</label>
+						<input type='checkbox' data-column='sat' id='id_sat' class='custom' data-widget='basic.checkbox' data-mini='true'> <label id='id_sat_lab' for='id_sat'>zat</label>
+						<input type='checkbox' data-column='sun' id='id_sun' class='custom' data-widget='basic.checkbox' data-mini='true'> <label id='id_sun_lab' for='id_sun'>zon</label>
+					</div>
 				</div>
-			</div>
-			<div class='alarm_items'>
-				<select multiple='multiple' data-column='item' data-native-menu='false'>
-					<option>Select items</option>
-				</select>
-			</div>
-			<div class='alarm_action'>
-				<select data-column='action' data-native-menu='false'>
-					<option>Select action</option>
-				</select>
-			</div>
-		</div>";
+				<div class='alarm_items'>
+					<select multiple='multiple' data-column='item' data-native-menu='false'>
+						<option>Select items</option>
+					</select>
+				</div>
+				<div class='alarm_action'>
+					<select data-column='action' data-native-menu='false'>
+						<option>Select action</option>
+					</select>
+				</div>
+			</div>";
 	
 }
 
