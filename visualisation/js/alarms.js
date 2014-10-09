@@ -125,29 +125,29 @@ display_alarm = function(sectionid,values){
 	var newOption = newAlarm.find('.alarm_items option:first').clone();
 	
 	for(i=0;i<itemlist.length;i++){
-		var itemselected = '';
+		var itemselected = ' selected=selected';
 		var item = itemlist[i];
 		
-		if($.inArray(item, values['item'])){
-			itemselected =  'selected=selected';
+		if($.inArray(item, items)<0){
+			itemselected = '';
 		}
-		newAlarm.find("select[data-column='item']").append("<option "+itemselected+" value='"+item+"'>"+item+"</option>");
+		newAlarm.find("select[data-column='item']").append("<option"+itemselected+" value='"+item+"'>"+item+"</option>");
 	}
 	
 	
 	// parse actions
 	var actions    = values['action'].split(',');
 	var actionlist = newAlarm.attr('data-actionlist').split(',');
-
+		
 	var newOption = newAlarm.find('.alarm_actions option:first').clone();
 	for(i=0;i<actionlist.length;i++){
-		var actionselected = '';
+		var actionselected = ' selected=selected';
 		var action = actionlist[i];
-			
-		if($.inArray(action, values['action'])){
-			actionselected =  'selected=selected';
+	
+		if($.inArray(action, actions)<0){
+			actionselected = '';
 		}	
-		newAlarm.find("select[data-column='action']").append("<option "+actionselected+" value='"+action+"'>"+action+"</option>");
+		newAlarm.find("select[data-column='action']").append("<option"+actionselected+" value='"+action+"'>"+action+"</option>");
 	}
 	
 	newAlarm.show();
