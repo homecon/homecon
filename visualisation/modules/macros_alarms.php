@@ -44,7 +44,7 @@ function add_alarm($sectionid,$text,$itemlist,$actionlist){
 		
 		echo " 
 		<script>
-			$('#page').live('pagecreate',function(event){
+			$(document).on('pagecreate',function(event){
 				var values = {id: ".$row['id'].", hour: ".$row['hour'].", minute: ".$row['minute'].", mon: ".$row['mon'].", tue: ".$row['tue'].", wed: ".$row['wed'].", thu: ".$row['thu'].", fri: ".$row['fri'].", sat: ".$row['sat'].", sun: ".$row['sun'].", item: '".$row['item']."', action: '".$row['action']."' };
 				display_alarm($sectionid,values);
 			});
