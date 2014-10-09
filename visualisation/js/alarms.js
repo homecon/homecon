@@ -31,45 +31,53 @@ $(document).ready(function(){
 
 	$('.alarm_container a.add').click(function(){
 
-		container = $( this ).parents('.alarm_container');
-		sectionid = container.attr('data-id');
+		var container = $( this ).parents('.alarm_container');
+		var sectionid = container.attr('data-id');
 		
-		var newAlarm = $('#alarm_template').clone();
+		var itemlist = $(this).attr('data-itemlist');
+		var actionlist = $(this).attr('data-actionlist');
 		
 		// give temprary ids and add the alarm, final id's are assigned after adding to the database
+		oldid = -1;
+		var values = {id: oldid, hour: 12, minute: 0, mon: 1, tue: 1, wed: 1, thu: 1, fri: 1, sat: 0, sun: 0, item: '', action: '' };
 		
-		$('#alarm_add_'+sectionid).before(newAlarm);
+		display_alarm(sectionid,itemlist,actionlist,values);
 		
 		// post sectionid to add to database
-		$.post('requests/alarm_add.php',{sectionid: sectionid},function(response){
-			
-			id = response;
+		$.post('requests/alarm_add.php',{sectionid: sectionid},function(id){
 			
 			alert(id);
 			
-			newAlarm.attr('id','alarm'+id); 
-			newAlarm.attr('data-id',id); 
-			newAlarm.find('#id_mon').attr('id','mon'+id);
-			newAlarm.find('#id_tue').attr('id','tue'+id);
-			newAlarm.find('#id_wed').attr('id','wed'+id);
-			newAlarm.find('#id_thu').attr('id','thu'+id);
-			newAlarm.find('#id_fri').attr('id','fri'+id);
-			newAlarm.find('#id_sat').attr('id','sat'+id);
-			newAlarm.find('#id_sun').attr('id','sun'+id);
-			
-			newAlarm.find('#id_mon_lab').attr('for','mon'+id);
-			newAlarm.find('#id_tue_lab').attr('for','tue'+id);
-			newAlarm.find('#id_wed_lab').attr('for','wed'+id);
-			newAlarm.find('#id_thu_lab').attr('for','thu'+id);
-			newAlarm.find('#id_fri_lab').attr('for','fri'+id);
-			newAlarm.find('#id_sat_lab').attr('for','sat'+id);
-			newAlarm.find('#id_sun_lab').attr('for','sun'+id);
-			
-			newAlarm.show();
-			$('#alarm_add_'+sectionid).before(newAlarm);
+			// change ids according to the database
+			// days
+			var days         = ['mon','tue','wed','thu','fri','sat','sun'];
+			var days_string  = ['maa','din','woe','don','vri','zat','zon'];
+			var days_checked = [''   ,''   ,''   ,''   ,''   ,''   ,''];
+			for(i=0;i<days.length;i++){
+				$('#'+days[i]+oldid).attr('id',days[i]+id);
+				newAlarm.find('#'+days[i]+oldid+'_lab').attr('for',days[i]+id);
+			}
 		});
 		
 		
+	});
+});
+
+//////////////////////////////////////////////////////////////////////////////
+// delete alarm
+//////////////////////////////////////////////////////////////////////////////
+$(document).ready(function(){
+	$('.alarm_container a.add').click(function(){
+	
+		var alarm = $( this ).parents('.alarm');
+		var id = alarm.attr('data-id');
+		
+		// remove the display of the alarm
+		alarm.remove();
+		
+		// post id to remove from database
+		$.post('requests/alarm_delete.php',{id: id});
+	
 	});
 });
 
@@ -111,6 +119,7 @@ display_alarm = function(sectionid,itemlist,actionlist,values){
 		}
 		newAlarm.find('#id_'+days[i]).attr('id',days[i]+id);
 		newAlarm.find('#id_'+days[i]+'_lab').attr('for',days[i]+id);
+		newAlarm.find('#id_'+days[i]+'_lab').attr('id',days[i]+id+'_lab');
 	}
 	
 	

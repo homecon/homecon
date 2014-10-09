@@ -1,7 +1,6 @@
 <?php
 
 	include('../data/mysql.php');
-	include('../modules/macros_alarms.php');
 	
 	$sectionid = $_POST['sectionid'];
 
@@ -10,14 +9,8 @@
 	$result = mysql_query($query) or die('Error: ' . mysql_error());
 		
 		
-	// get the id of the last added element
+	// get the id of the last added element to return to jquery
 	echo mysql_insert_id();
-		
-	// find alarms with $sectionid in mysql and cycle through them
-	//$result = mysql_query("SELECT * FROM alarms WHERE sectionid = ".$sectionid);
-	//while($row = mysql_fetch_array($result)){
-	//	echo_alarm($sectionid,"","","",$row);
-	//}
 
 
 ?>
