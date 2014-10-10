@@ -33,10 +33,10 @@ $(document).on('click','.alarm_container a.add',function(){
 	var sectionid = container.attr('data-id');
 	
 	// give temprary ids and add the alarm, final id's are assigned after adding to the database
-	oldid = -1;
+	var oldid = -1;
 	var values = {'id': oldid, 'hour': 12, 'minute': 0, 'mon': 1, 'tue': 1, 'wed': 1, 'thu': 1, 'fri': 1, 'sat': 0, 'sun': 0, 'item': '', 'action': '' };
 	
-	newAlarm = display_alarm(sectionid,values);
+	var newAlarm = display_alarm(sectionid,values);
 	$(this).parent().before(newAlarm);
 	
 	// post sectionid to add to database
@@ -77,14 +77,29 @@ $(document).on('click','.alarm a.delete',function(){
 //////////////////////////////////////////////////////////////////////////////
 // initialize alarms
 //////////////////////////////////////////////////////////////////////////////
-$(document).on('pageinit',function(){
+$(document).on('pagebeforecreate',function(){
 
 	//cycle through all alarm_placeholder
 	$( ".alarm_placeholder" ).each(function(){
-	
-		var sectionid = $(this).parents('.alarm_container').attr('data-id');
-		var values = {id: $(this).attr('data-id'), hour: $(this).attr('data-hour'), minute: $(this).attr('data-minute'), mon: $(this).attr('data-mon'), tue: $(this).attr('data-tue'), wed: $(this).attr('data-wed'), thu: $(this).attr('data-thu'), fri: $(this).attr('data-fri'), sat: $(this).attr('data-sat'), sun: $(this).attr('data-sun'), item: $(this).attr('data-item'), action: $(this).attr('data-action') };
 		
+		// create variables
+		var sectionid = $(this).parents('.alarm_container').attr('data-id');
+		var values = {
+			id: $(this).attr('data-id'),
+			hour: $(this).attr('data-hour'),
+			minute: $(this).attr('data-minute'),
+			mon: $(this).attr('data-mon'),
+			tue: $(this).attr('data-tue'),
+			wed: $(this).attr('data-wed'),
+			thu: $(this).attr('data-thu'),
+			fri: $(this).attr('data-fri'),
+			sat: $(this).attr('data-sat'),
+			sun: $(this).attr('data-sun'),
+			item: $(this).attr('data-item'),
+			action: $(this).attr('data-action')
+		};
+		
+		//creat the alarm and display
 		newAlarm = display_alarm(sectionid,values);
 		$(this).replaceWith(newAlarm);
 		
@@ -120,7 +135,7 @@ display_alarm = function(sectionid,values){
 	var days_string  = ['maa','din','woe','don','vri','zat','zon'];
 	var days_checked = [''   ,''   ,''   ,''   ,''   ,''   ,''];
 	for(i=0;i<days.length;i++){
-		if( values[days[i]] ){
+		if( values[days[i]]==1 ){
 			newAlarm.find('#id_'+days[i]).prop('checked', true);
 		}
 		else{
