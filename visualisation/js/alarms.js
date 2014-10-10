@@ -77,15 +77,14 @@ $(document).on('click','.alarm a.delete',function(){
 //////////////////////////////////////////////////////////////////////////////
 // initialize alarms
 //////////////////////////////////////////////////////////////////////////////
-$(document).on('pagecreate',function(){
+$(document).on('pageinit',function(){
 
 	//cycle through all alarm_placeholder
 	$( ".alarm_placeholder" ).each(function(){
 	
-		sectionid = $(this).parents('.alarm_container').attr('data-id');
-		
+		var sectionid = $(this).parents('.alarm_container').attr('data-id');
 		var values = {id: $(this).attr('data-id'), hour: $(this).attr('data-hour'), minute: $(this).attr('data-minute'), mon: $(this).attr('data-mon'), tue: $(this).attr('data-tue'), wed: $(this).attr('data-wed'), thu: $(this).attr('data-thu'), fri: $(this).attr('data-fri'), sat: $(this).attr('data-sat'), sun: $(this).attr('data-sun'), item: $(this).attr('data-item'), action: $(this).attr('data-action') };
-		alert(values);
+		
 		newAlarm = display_alarm(sectionid,values);
 		$(this).replaceWith(newAlarm);
 		
@@ -136,9 +135,7 @@ display_alarm = function(sectionid,values){
 	// parse items
 	var items    = values['item'].split(',');
 	var itemlist = newAlarm.attr('data-itemlist').split(',');
-	
-	var newOption = newAlarm.find('.alarm_items option:first').clone();
-	
+
 	for(i=0;i<itemlist.length;i++){
 		var itemselected = ' selected=selected';
 		var item = itemlist[i];
@@ -154,7 +151,6 @@ display_alarm = function(sectionid,values){
 	var actions    = values['action'].split(',');
 	var actionlist = newAlarm.attr('data-actionlist').split(',');
 		
-	var newOption = newAlarm.find('.alarm_actions option:first').clone();
 	for(i=0;i<actionlist.length;i++){
 		var actionselected = ' selected=selected';
 		var action = actionlist[i];
