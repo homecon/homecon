@@ -27,29 +27,33 @@ function add_alarm($sectionid,$text,$itemlist,$actionlist){
 	}
 	
 	echo "
-		<div class='alarm_container' id='alarm_section$sectionid' data-id=$sectionid>
+		<div class='alarm_container' id='alarm_section$sectionid' data-id=$sectionid>";
+	// find alarms with $sectionid in mysql and cycle through them
+	$result = mysql_query("SELECT * FROM alarms WHERE sectionid = ".$sectionid);
+	while($row = mysql_fetch_array($result)){
+	
+		//$id = $row['id'];
+		//$items = "['".str_replace(",","','",$row['item'])."']";
+		//$actions = "['".str_replace(",","','",$row['action'])."']";
+		
+		echo " 
+			<div class='alarm_placeholder' data-id=".$row['id']." data-hour=".$row['hour']." data-minute=".$row['minute']." data-mon=".$row['mon']." data-tue=".$row['tue']." data-wed=".$row['wed']." data-thu=".$row['thu']." data-fri=".$row['fri']." data-sat=".$row['sat']." data-sun=".$row['sun']." data-item='".$row['item']."' data-action='".$row['action']."'></div>";
+		
+	}	
+	echo "	
 			<div id='alarm_add$sectionid'>
 				<a class='add' class='add_alarm' data-role='button'>wekker toevoegen</a>
 			</div>
 		</div>";
 		
-	// find alarms with $sectionid in mysql and cycle through them
-	$result = mysql_query("SELECT * FROM alarms WHERE sectionid = ".$sectionid);
 	
-	while($row = mysql_fetch_array($result)){
+		//<script>
+		//	$(document).on('pagecreate',function(event){
+		//		var values = {id: ".$row['id'].", hour: ".$row['hour'].", minute: ".$row['minute'].", mon: ".$row['mon'].", tue: ".$row['tue'].", wed: ".$row['wed'].", thu: ".$row['thu'].", fri: ".$row['fri'].", sat: ".$row['sat'].", sun: ".$row['sun'].", item: '".$row['item']."', action: '".$row['action']."' };
+		//		display_alarm($sectionid,values);
+		//	});
+		//</script>";
 	
-		$id = $row['id'];
-		$items = "['".str_replace(",","','",$row['item'])."']";
-		$actions = "['".str_replace(",","','",$row['action'])."']";
-		
-		echo " 
-		<script>
-			$(document).on('pagecreate',function(event){
-				var values = {id: ".$row['id'].", hour: ".$row['hour'].", minute: ".$row['minute'].", mon: ".$row['mon'].", tue: ".$row['tue'].", wed: ".$row['wed'].", thu: ".$row['thu'].", fri: ".$row['fri'].", sat: ".$row['sat'].", sun: ".$row['sun'].", item: '".$row['item']."', action: '".$row['action']."' };
-				display_alarm($sectionid,values);
-			});
-		</script>";
-	}
 
 		
 	// echo a hidden template for the alarm

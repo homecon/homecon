@@ -36,7 +36,8 @@ $(document).on('click','.alarm_container a.add',function(){
 	oldid = -1;
 	var values = {'id': oldid, 'hour': 12, 'minute': 0, 'mon': 1, 'tue': 1, 'wed': 1, 'thu': 1, 'fri': 1, 'sat': 0, 'sun': 0, 'item': '', 'action': '' };
 	
-	display_alarm(sectionid,values);
+	newAlarm = display_alarm(sectionid,values);
+	$(this).parent().before(newAlarm);
 	
 	// post sectionid to add to database
 	$.post('requests/alarm_add.php',{sectionid: sectionid},function(id){
@@ -72,6 +73,23 @@ $(document).on('click','.alarm a.delete',function(){
 	// post id to remove from database
 	$.post('requests/alarm_delete.php',{'id': id});
 
+});
+//////////////////////////////////////////////////////////////////////////////
+// initialize alarms
+//////////////////////////////////////////////////////////////////////////////
+$(document).on('pagecreate',function(){
+
+	//cycle through all alarm_placeholder
+	$( ".alarm_placeholder" ).each(function(){
+	
+		sectionid = $(this).parents('.alarm_container').attr('data-id');
+		
+		var values = {id: $(this).attr('data-id'), hour: $(this).attr('data-hour'), minute: $(this).attr('data-minute'), mon: $(this).attr('data-mon'), tue: $(this).attr('data-tue'), wed: $(this).attr('data-wed'), thu: $(this).attr('data-thu'), fri: $(this).attr('data-fri'), sat: $(this).attr('data-sat'), sun: $(this).attr('data-sun'), item: $(this).attr('data-item'), action: $(this).attr('data-action') };
+		alert(values);
+		newAlarm = display_alarm(sectionid,values);
+		$(this).replaceWith(newAlarm);
+		
+	});
 });
 
 //////////////////////////////////////////////////////////////////////////////
@@ -148,6 +166,7 @@ display_alarm = function(sectionid,values){
 	}
 	
 	newAlarm.show();
-	$('#alarm_add'+sectionid).before(newAlarm);
+	return newAlarm;
+	//$('#alarm_add'+sectionid).before(newAlarm);
 	
 };
