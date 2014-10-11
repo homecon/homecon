@@ -3,7 +3,7 @@
 	include('../data/mysql.php');
 
 	// add alarm to the mysql database
-	$query = "INSERT INTO alarm_actions";
+	$query = "INSERT INTO alarm_actions (delay1) VALUES (0)";
 	$result = mysql_query($query) or die('Error: ' . mysql_error());
 		
 		

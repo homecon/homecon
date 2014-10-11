@@ -218,15 +218,15 @@ $(document).on('click','.alarm_action_container a.add',function(){
 //////////////////////////////////////////////////////////////////////////////
 // delete alarm action
 //////////////////////////////////////////////////////////////////////////////
-    $('.alarm_action a.delete').click(function(){
-		var action = $( this ).parents('.alarm_action');
-		var id = action.attr('data-id');
-		
-		// remove the display of the alarm
-		action.remove();
-		
-		// post id to remove from database
-		$.post('requests/alarm_action_delete.php',{'id': id});
+$('.alarm_action a.delete').click(function(){
+	var action = $( this ).parents('.alarm_action');
+	var id = action.attr('data-id');
+	
+	// remove the display of the alarm
+	action.remove();
+	
+	// post id to remove from database
+	$.post('requests/alarm_action_delete.php',{'id': id});
 
 });
 //////////////////////////////////////////////////////////////////////////////
@@ -236,7 +236,7 @@ $(document).on('pagebeforecreate',function(){
 
 	//cycle through all alarm_placeholder
 	$( ".alarm_action_placeholder" ).each(function(){
-		
+
 		// create variables
 		var values = {
 			id: $(this).attr('data-id'),
@@ -250,17 +250,17 @@ $(document).on('pagebeforecreate',function(){
 			value2: $(this).attr('data-value2'),
 			delay3: $(this).attr('data-delay3'),
 			item3:  $(this).attr('data-item3'),
-			value3: $(this).attr('data-value3')
+			value3: $(this).attr('data-value3'),
 			delay4: $(this).attr('data-delay4'),
 			item4:  $(this).attr('data-item4'),
-			value4: $(this).attr('data-value4')
+			value4: $(this).attr('data-value4'),
 			delay5: $(this).attr('data-delay5'),
 			item5:  $(this).attr('data-item5'),
 			value5: $(this).attr('data-value5')
 		};
 		
-		//creat the alarm and display
-		newAction = display_alarm(values);
+		//create the alarm and display
+		newAction = display_alarm_action(values);
 		$(this).replaceWith(newAction);
 		
 	});
@@ -277,6 +277,9 @@ display_alarm_action = function(values){
 	newAction.attr('id','alarm_action'+id); 
 	newAction.attr('data-id',id);
 	
+	newAction.find("input[data-column=name]").val(values['name']);
+	newAction.find("input[data-column=sectionid]").val(values['sectionid']);
+	
 	newAction.find("input[data-column=delay1]").val(values['delay1']);
 	newAction.find("input[data-column=item1]").val(values['item1']);
 	newAction.find("input[data-column=value1]").val(values['value1']);
@@ -292,6 +295,7 @@ display_alarm_action = function(values){
 	newAction.find("input[data-column=delay5]").val(values['delay5']);
 	newAction.find("input[data-column=item5]").val(values['item5']);
 	newAction.find("input[data-column=value5]").val(values['value5']);
+	
 	newAction.show();
 	return newAction;
 	
