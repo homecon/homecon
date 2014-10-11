@@ -6,12 +6,6 @@ function add_alarm($sectionid,$text,$itemlist,$actionlist){
 	$page = explode('/',$page);
 	$page = end($page);
 	
-	//$itemlist = explode(',',$itemlist);
-	//$actionlist = explode(',',$actionlist);
-
-	//$itemlist = "['".str_replace(",","','",$itemlist)."']";
-	//$actionlist = "['".str_replace(",","','",$actionlist)."']";
-	
 	// check if an alarm must be added
 	if(array_key_exists('add_alarm',$_GET)){
 		if($_GET['add_alarm']==$sectionid){
@@ -32,10 +26,6 @@ function add_alarm($sectionid,$text,$itemlist,$actionlist){
 	$result = mysql_query("SELECT * FROM alarms WHERE sectionid = ".$sectionid);
 	while($row = mysql_fetch_array($result)){
 	
-		//$id = $row['id'];
-		//$items = "['".str_replace(",","','",$row['item'])."']";
-		//$actions = "['".str_replace(",","','",$row['action'])."']";
-		
 		echo " 
 			<div class='alarm_placeholder' data-id=".$row['id']." data-hour=".$row['hour']." data-minute=".$row['minute']." data-mon=".$row['mon']." data-tue=".$row['tue']." data-wed=".$row['wed']." data-thu=".$row['thu']." data-fri=".$row['fri']." data-sat=".$row['sat']." data-sun=".$row['sun']." data-item='".$row['item']."' data-action='".$row['action']."'></div>";
 		
@@ -45,15 +35,6 @@ function add_alarm($sectionid,$text,$itemlist,$actionlist){
 				<a class='add' class='add_alarm' data-role='button'>wekker toevoegen</a>
 			</div>
 		</div>";
-		
-	
-		//<script>
-		//	$(document).on('pagecreate',function(event){
-		//		var values = {id: ".$row['id'].", hour: ".$row['hour'].", minute: ".$row['minute'].", mon: ".$row['mon'].", tue: ".$row['tue'].", wed: ".$row['wed'].", thu: ".$row['thu'].", fri: ".$row['fri'].", sat: ".$row['sat'].", sun: ".$row['sun'].", item: '".$row['item']."', action: '".$row['action']."' };
-		//		display_alarm($sectionid,values);
-		//	});
-		//</script>";
-	
 
 		
 	// echo a hidden template for the alarm
