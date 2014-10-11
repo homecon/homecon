@@ -34,7 +34,7 @@ end_article();
 					<input type='text'  data-column='name'       placeholder='name'>
 					<input type='text'  data-column='sectionid'  placeholder='section id filter'>
 					<div>
-						<input type='number'  data-column='delay1'   placeholder='delay 1'>
+						<input type='number'  data-column='delay1'   placeholder='delay 1'  value='0'>
 						<input type='text'    data-column='item1'    placeholder='item 1'>
 						<input type='text'    data-column='value1'   placeholder='value 1'>
 					</div>

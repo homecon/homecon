@@ -218,7 +218,7 @@ $(document).on('click','.alarm_action_container a.add',function(){
 //////////////////////////////////////////////////////////////////////////////
 // delete alarm action
 //////////////////////////////////////////////////////////////////////////////
-$('.alarm_action a.delete').click(function(){
+$(document).on('click','.alarm_action a.delete',function(){
 	var action = $( this ).parents('.alarm_action');
 	var id = action.attr('data-id');
 	
