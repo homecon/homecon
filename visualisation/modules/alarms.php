@@ -21,11 +21,6 @@ begin_article($page_class);
 				<a class='add' href='#' data-role='button'>Add action</a>
 			</div>";
 				
-		end_group();
-	end_collapsible();		
-end_article();
-
-
 // echo a hidden template for the alarm
 
 	echo "
@@ -60,5 +55,7 @@ end_article();
 					</div>
 				</div>";
 			
-	
+		end_group();
+	end_collapsible();		
+end_article();
 ?>
