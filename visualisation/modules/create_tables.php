@@ -24,6 +24,7 @@ mysql_query("CREATE TABLE IF NOT EXISTS `alarms` (`id` int(11) NOT NULL AUTO_INC
                                                   `active` tinyint(4) NOT NULL DEFAULT '1',
 												  `item` varchar(255) DEFAULT NULL,
                                                   `action` varchar(255) DEFAULT NULL,
+												  `action_id` int(11) DEFAULT NULL,
 												  `hour` tinyint(4) NOT NULL DEFAULT '12',
 												  `minute` tinyint(4) NOT NULL DEFAULT '0',
 												  `sunrise` tinyint(4) NOT NULL DEFAULT '0',

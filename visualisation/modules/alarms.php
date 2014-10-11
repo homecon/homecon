@@ -1,9 +1,9 @@
 <?php
 // display a form for alarm_action manipulation
 begin_article($page_class);
-	add_header("Alarms","measure_power_meter");
+	add_header("Alarms","control_alarm");
 
-	begin_collapsible("Define actions",true);	
+	begin_collapsible("Define actions",false);	
 		begin_group(1);
 		
 	echo "
@@ -73,11 +73,4 @@ begin_article($page_class);
 		end_group();
 	end_collapsible();		
 end_article();
-
-
-// some jQuery to add and delete input fields
-echo "
-	<script type='text/javascript' src='js/alarm_actions.js'></script>";
-
-
 ?>
