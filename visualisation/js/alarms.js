@@ -178,49 +178,121 @@ display_alarm = function(sectionid,values){
 	
 	newAlarm.show();
 	return newAlarm;
-	//$('#alarm_add'+sectionid).before(newAlarm);
 	
 };
+
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// alarm actions
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 
 //////////////////////////////////////////////////////////////////////////////
 // add alarm action
 //////////////////////////////////////////////////////////////////////////////
-$(document).ready(function(){
+$(document).on('click','.alarm_action_container a.add',function(){
 
-    $('a.alarm_action.delete').click(function(){
-		// get the id of the action which needs to be deleted	
-		id = $(this).parent().attr('data-id');
+	var container = $( this ).parents('.alarm_action_container');
+	
+	// give temprary ids and add the alarm, final id's are assigned after adding to the database
+	var oldid = -1;
+	var values = {'id': oldid, 'name': '', 'sectionid': '', 'delay1': '', 'item1': '', 'value1': '', 'delay2': '', 'item2': '', 'value2': '', 'delay3': '', 'item3': '', 'value3': '', 'delay4': '', 'item4': '', 'value4': '', 'delay5': '', 'item5': '', 'value5': '' };
+	
+	var newAction = display_alarm_action(values);
+	$(this).parent().before(newAction);
+	
+	// post sectionid to add to database
+	$.post('requests/alarm_action_add.php',function(id){
 		
-		// immediately remove the action from the table 
-		$(this).parent().remove()
+		// change ids according to the database
+		$('#alarm_action'+oldid).attr('data-id',id);
+		$('#alarm_action'+oldid).attr('id','alarm_action'+id);
 		
-		// remove the action from the database in the background
-		$.post('requests/alarm_action_remove.php', { 'id': id });
-
 	});
-	
-	
-	$('a.alarm_action.add').click(function(){
-	
-		// get the id of the last action to determine the new action id
-		actionids = $(this).parent().children().filter('div').map( function(){ return $(this).attr('data-id'); }).get();
-        alert(actionids);
-	
-		oldid = Math.max.apply(Math, actionids);
-		id = oldid+1;
-		alert(id);
-		
-		// immediately add the action to the table 
-		$(this).before( "<div data-id='"+id+"'><a class='alarm_action delete' href='#'><img src=icons/ws/control_x.png></a><input type='text' name='name"+id+"'        id='name"+id+"'      value='' disabled placeholder='name'><input type='text' name='sectionid"+id+"'   id='sectionid"+id+"' value='' disabled placeholder='section id filter'><div><input type='number' name='delay1"+id+"'   id='delay1"+id+"'  value=''  placeholder='delay 1'><input type='text'   name='item1"+id+"'    id='item1"+id+"'   value=''   placeholder='item 1'><input type='text'   name='action1"+id+"'  id='action1"+id+"' value='' placeholder='action 1'></div><div><input type='number' name='delay2"+id+"'   id='delay2"+id+"'  value=''  placeholder='delay 2'><input type='text'   name='item2"+id+"'    id='item2"+id+"'   value=''   placeholder='item 2'><input type='text'   name='action2"+id+"'  id='action2"+id+"' value='' placeholder='action 2'></div><div><input type='number' name='delay3"+id+"'   id='delay3"+id+"'  value=''  placeholder='delay 3'><input type='text'   name='item3"+id+"'    id='item3"+id+"'   value=''   placeholder='item 3'><input type='text'   name='action3"+id+"'  id='action3"+id+"' value='' placeholder='action 3'></div><div><input type='number' name='delay4"+id+"'   id='delay4"+id+"'  value=''  placeholder='delay 4'><input type='text'   name='item4"+id+"'    id='item4"+id+"'   value=''   placeholder='item 4'><input type='text'   name='action4"+id+"'  id='action4"+id+"' value='' placeholder='action 4'></div><div><input type='number' name='delay5"+id+"'   id='delay5"+id+"'  value=''  placeholder='delay 5'><input type='text'   name='item5"+id+"'    id='item5"+id+"'   value=''   placeholder='item 5'><input type='text'   name='action5"+id+"'  id='action5"+id+"' value='' placeholder='action 5'></div></div>");
-		
-		// add new action to the database in the background
-		$.post('requests/alarm_action_add.php', {'id': id });
 
+});
+//////////////////////////////////////////////////////////////////////////////
+// delete alarm action
+//////////////////////////////////////////////////////////////////////////////
+    $('.alarm_action a.delete').click(function(){
+		var action = $( this ).parents('.alarm_action');
+		var id = action.attr('data-id');
+		
+		// remove the display of the alarm
+		action.remove();
+		
+		// post id to remove from database
+		$.post('requests/alarm_action_delete.php',{'id': id});
+
+});
+//////////////////////////////////////////////////////////////////////////////
+// initialize alarm_actions
+//////////////////////////////////////////////////////////////////////////////
+$(document).on('pagebeforecreate',function(){
+
+	//cycle through all alarm_placeholder
+	$( ".alarm_action_placeholder" ).each(function(){
+		
+		// create variables
+		var values = {
+			id: $(this).attr('data-id'),
+			name: $(this).attr('data-name'),
+			sectionid: $(this).attr('data-sectionid'),
+			delay1: $(this).attr('data-delay1'),
+			item1:  $(this).attr('data-item1'),
+			value1: $(this).attr('data-value1'),
+			delay2: $(this).attr('data-delay2'),
+			item2:  $(this).attr('data-item2'),
+			value2: $(this).attr('data-value2'),
+			delay3: $(this).attr('data-delay3'),
+			item3:  $(this).attr('data-item3'),
+			value3: $(this).attr('data-value3')
+			delay4: $(this).attr('data-delay4'),
+			item4:  $(this).attr('data-item4'),
+			value4: $(this).attr('data-value4')
+			delay5: $(this).attr('data-delay5'),
+			item5:  $(this).attr('data-item5'),
+			value5: $(this).attr('data-value5')
+		};
+		
+		//creat the alarm and display
+		newAction = display_alarm(values);
+		$(this).replaceWith(newAction);
+		
 	});
 });
-
 //////////////////////////////////////////////////////////////////////////////
 // display alarm code
 //////////////////////////////////////////////////////////////////////////////
-display_alarm_action = function(sectionid,values){
-});
+display_alarm_action = function(values){
+	
+	var id = values['id'];
+	
+	// duplicate template and change what needs to be changed
+	var newAction = $('#alarm_action_template').clone();
+	newAction.attr('id','alarm_action'+id); 
+	newAction.attr('data-id',id);
+	
+	newAction.find("input[data-column=delay1]").val(values['delay1']);
+	newAction.find("input[data-column=item1]").val(values['item1']);
+	newAction.find("input[data-column=value1]").val(values['value1']);
+	newAction.find("input[data-column=delay2]").val(values['delay2']);
+	newAction.find("input[data-column=item2]").val(values['item2']);
+	newAction.find("input[data-column=value2]").val(values['value2']);
+	newAction.find("input[data-column=delay3]").val(values['delay3']);
+	newAction.find("input[data-column=item3]").val(values['item3']);
+	newAction.find("input[data-column=value3]").val(values['value3']);
+	newAction.find("input[data-column=delay4]").val(values['delay4']);
+	newAction.find("input[data-column=item4]").val(values['item4']);
+	newAction.find("input[data-column=value4]").val(values['value4']);
+	newAction.find("input[data-column=delay5]").val(values['delay5']);
+	newAction.find("input[data-column=item5]").val(values['item5']);
+	newAction.find("input[data-column=value5]").val(values['value5']);
+	newAction.show();
+	return newAction;
+	
+};
