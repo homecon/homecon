@@ -77,7 +77,9 @@
 		<!-- smarthome.py -->
 		<script type='text/javascript' src='js/io_smarthome.py.js'></script>
 		<script type='text/javascript' src='js/widget.js'></script>
-		<script type='text/javascript' src='js/object.js'></script>
+		
+		<!-- knxcontrol -->
+		<script type='text/javascript' src='js/alarms.js'></script>
 		
 		<link rel='stylesheet' type='text/css' href='css/layout.css'/>
 		<link rel='stylesheet' type='text/css' href='css/widget.css'/>
@@ -113,7 +115,7 @@
 
 // basic layout		
 		echo "
-		<div data-role='page' data-theme='a'>
+		<div id='page' data-role='page' data-theme='a'>
 			<header data-role='header' class='header'>";
 			
 		include("modules/header.php");

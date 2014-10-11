@@ -222,7 +222,7 @@ function add_chart($chart_title,$signals_str){
 				// http://api.jquery.com/jQuery.get/
 
 				jQuery.ajax({
-					url:    'modules/get_data.php?signal=$signals_str',
+					url:    'requests/get_data.php?signal=$signals_str',
 					success: function(result) {
 						try {
 							// split the data return into signals and lines lines and parse them
@@ -428,7 +428,7 @@ function add_week_average_chart($chart_title,$signals_str){
 				// http://api.jquery.com/jQuery.get/
 
 				jQuery.ajax({
-					url:    'modules/get_week_average_data.php?signal=$signals_str',
+					url:    'requests/get_week_average_data.php?signal=$signals_str',
 					success: function(result) {
 						try {
 							// split the data return into signals and lines lines and parse them
@@ -627,7 +627,7 @@ function add_month_average_chart($chart_title,$signals_str){
 				// http://api.jquery.com/jQuery.get/
 
 				jQuery.ajax({
-					url:    'modules/get_month_average_data.php?signal=$signals_str',
+					url:    'requests/get_month_average_data.php?signal=$signals_str',
 					success: function(result) {
 						try {
 							// split the data return into signals and lines lines and parse them
