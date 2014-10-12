@@ -15,6 +15,11 @@ $(document).ready(function(){
 			value = $(this).is(':checked');
 		}
 		
+		if($(this).attr('data-column')=='action'){
+			alert($(this).val());
+		}
+		
+		
 		// post id column and value to add to database
 		$.post( 'requests/alarm_set.php', {'id': id , 'column': column , 'value': value}); 
 		
@@ -34,7 +39,7 @@ $(document).on('click','.alarm_container a.add',function(){
 	
 	// give temprary ids and add the alarm, final id's are assigned after adding to the database
 	var oldid = -1;
-	var values = {'id': oldid, 'hour': 12, 'minute': 0, 'mon': 1, 'tue': 1, 'wed': 1, 'thu': 1, 'fri': 1, 'sat': 0, 'sun': 0, 'item': '', 'action': '' };
+	var values = {'id': oldid, 'hour': 12, 'minute': 0, 'mon': 1, 'tue': 1, 'wed': 1, 'thu': 1, 'fri': 1, 'sat': 0, 'sun': 0, 'action': '' };
 	
 	var newAlarm = display_alarm(sectionid,values);
 	$(this).parent().before(newAlarm);
@@ -95,7 +100,6 @@ $(document).on('pagebeforecreate',function(){
 			fri: $(this).attr('data-fri'),
 			sat: $(this).attr('data-sat'),
 			sun: $(this).attr('data-sun'),
-			item: $(this).attr('data-item'),
 			action: $(this).attr('data-action')
 		};
 		
@@ -146,34 +150,20 @@ display_alarm = function(sectionid,values){
 		newAlarm.find('#id_'+days[i]+'_lab').attr('id',days[i]+id+'_lab');
 	}
 	
-	
-	// parse items
-	var items    = values['item'].split(',');
-	var itemlist = newAlarm.attr('data-itemlist').split(',');
-
-	for(i=0;i<itemlist.length;i++){
-		var itemselected = ' selected=selected';
-		var item = itemlist[i];
-		
-		if($.inArray(item, items)<0){
-			itemselected = '';
-		}
-		newAlarm.find("select[data-column='item']").append("<option"+itemselected+" value='"+item+"'>"+item+"</option>");
-	}
-	
-	
 	// parse actions
 	var actions    = values['action'].split(',');
 	var actionlist = newAlarm.attr('data-actionlist').split(',');
-		
+	var actionname = newAlarm.attr('data-actionname').split(',');
+	
 	for(i=0;i<actionlist.length;i++){
 		var actionselected = ' selected=selected';
-		var action = actionlist[i];
-	
-		if($.inArray(action, actions)<0){
+		var actionid = actionlist[i];
+		var actionname = actionlist[i];
+		
+		if($.inArray(actionid, actions)<0){
 			actionselected = '';
 		}	
-		newAlarm.find("select[data-column='action']").append("<option"+actionselected+" value='"+action+"'>"+action+"</option>");
+		newAlarm.find("select[data-column='action']").append("<option"+actionselected+" value='"+actionid+"'>"+actionname+"</option>");
 	}
 	
 	newAlarm.show();
@@ -200,7 +190,7 @@ $(document).on('click','.alarm_action_container a.add',function(){
 	
 	// give temprary ids and add the alarm, final id's are assigned after adding to the database
 	var oldid = -1;
-	var values = {'id': oldid, 'name': '', 'sectionid': '', 'delay1': '', 'item1': '', 'value1': '', 'delay2': '', 'item2': '', 'value2': '', 'delay3': '', 'item3': '', 'value3': '', 'delay4': '', 'item4': '', 'value4': '', 'delay5': '', 'item5': '', 'value5': '' };
+	var values = {'id': oldid, 'name': '', 'sectionid': '0', 'delay1': '', 'item1': '', 'value1': '', 'delay2': '', 'item2': '', 'value2': '', 'delay3': '', 'item3': '', 'value3': '', 'delay4': '', 'item4': '', 'value4': '', 'delay5': '', 'item5': '', 'value5': '' };
 	
 	var newAction = display_alarm_action(values);
 	$(this).parent().before(newAction);
