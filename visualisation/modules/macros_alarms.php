@@ -8,11 +8,14 @@ function add_alarm($sectionid,$text,$itemlist,$actionlist){
 	
 	// get actionlist
 	$actionlist = '';
+	$actionname  = '';
 	$result = mysql_query("SELECT * FROM alarm_actions WHERE sectionid=".$sectionid." OR sectionid=0" );
 	while($row = mysql_fetch_array($result)){
 		$actionlist = $actionlist.",".$row['id'];
-		$actionname = $actionlist.",".$row['name'];
+		$actionname = $actionname.",".$row['name'];
 	}
+	$actionlist =ltrim ($actionlist, ',');
+	$actionname = ltrim ($actionname, ',');
 	
 	echo "
 		<div class='alarm_container' id='alarm_section$sectionid' data-id=$sectionid>";
