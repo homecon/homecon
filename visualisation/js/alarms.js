@@ -154,16 +154,14 @@ display_alarm = function(sectionid,values){
 	var actions    = values['action'].split(',');
 	var actionlist = newAlarm.attr('data-actionlist').split(',');
 	var actionname = newAlarm.attr('data-actionname').split(',');
-	
 	for(i=0;i<actionlist.length;i++){
 		var actionselected = ' selected=selected';
 		var actionid = actionlist[i];
-		var actionname = actionname[i];
 		
 		if($.inArray(actionid, actions)<0){
 			actionselected = '';
 		}	
-		newAlarm.find("select[data-column='action']").append("<option"+actionselected+" value='"+actionid+"'>"+actionname+"</option>");
+		newAlarm.find("select[data-column='action']").append("<option"+actionselected+" value='"+actionid+"'>"+actionname[i]+"</option>");
 	}
 	
 	newAlarm.show();
@@ -211,7 +209,7 @@ $(document).on('click','.alarm_action_container a.add',function(){
 	var values = {'id': oldid, 'name': '', 'sectionid': '0', 'delay1': '', 'item1': '', 'value1': '', 'delay2': '', 'item2': '', 'value2': '', 'delay3': '', 'item3': '', 'value3': '', 'delay4': '', 'item4': '', 'value4': '', 'delay5': '', 'item5': '', 'value5': '' };
 	
 	var newAction = display_alarm_action(values);
-	$(this).parent().before(newAction);
+	$(this).before(newAction);
 	
 	// post sectionid to add to database
 	$.post('requests/alarm_action_add.php',function(id){

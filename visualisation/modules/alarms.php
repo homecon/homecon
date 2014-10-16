@@ -28,27 +28,27 @@ begin_article($page_class);
 					<a class='delete' href='#'><img src=icons/ws/control_x.png></a>
 					<input type='text'  data-column='name'       placeholder='name'>
 					<input type='text'  data-column='sectionid'  placeholder='section id filter'>
-					<div>
+					<div class='alarm_action_action'>
 						<input type='number'  data-column='delay1'   placeholder='delay 1'  value='0'>
 						<input type='text'    data-column='item1'    placeholder='item 1'>
 						<input type='text'    data-column='value1'   placeholder='value 1'>
 					</div>
-					<div>
+					<div class='alarm_action_action'>
 						<input type='number'  data-column='delay2'   placeholder='delay 2'>
 						<input type='text'    data-column='item2'    placeholder='item 2'>
 						<input type='text'    data-column='value2'   placeholder='value 2'>
 					</div>
-					<div>
+					<div class='alarm_action_action'>
 						<input type='number'  data-column='delay3'   placeholder='delay 3'>
 						<input type='text'    data-column='item3'    placeholder='item 3'>
 						<input type='text'    data-column='value3'   placeholder='value 3'>
 					</div>
-					<div>
+					<div class='alarm_action_action'>
 						<input type='number'  data-column='delay4'   placeholder='delay 4'>
 						<input type='text'    data-column='item4'    placeholder='item 4'>
 						<input type='text'    data-column='value4'   placeholder='value 4'>
 					</div>
-					<div>
+					<div class='alarm_action_action'>
 						<input type='number'  data-column='delay5'   placeholder='delay 5'>
 						<input type='text'    data-column='item5'    placeholder='item 5'>
 						<input type='text'    data-column='value5'   placeholder='value 5'>
