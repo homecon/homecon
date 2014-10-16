@@ -24,7 +24,7 @@ function add_alarm($sectionid,$text,$itemlist,$actionlist){
 	while($row = mysql_fetch_array($result)){
 	
 		echo " 
-			<div class='alarm_placeholder' data-id='".$row['id']."' data-hour='".$row['hour']."' data-minute='".$row['minute']."' data-mon='".$row['mon']."' data-tue='".$row['tue']."' data-wed='".$row['wed']."' data-thu='".$row['thu']."' data-fri='".$row['fri']."' data-sat='".$row['sat']."' data-sun='".$row['sun']."' data-item='".$row['item']."' data-action='".$row['action']."'></div>";
+			<div class='alarm_placeholder' data-id='".$row['id']."' data-hour='".$row['hour']."' data-minute='".$row['minute']."' data-mon='".$row['mon']."' data-tue='".$row['tue']."' data-wed='".$row['wed']."' data-thu='".$row['thu']."' data-fri='".$row['fri']."' data-sat='".$row['sat']."' data-sun='".$row['sun']."' data-item='".$row['item']."' data-action='".$row['action_id']."'></div>";
 		
 	}	
 	echo "	

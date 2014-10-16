@@ -16,7 +16,7 @@ $(document).ready(function(){
 		}
 		
 		if($(this).attr('data-column')=='action'){
-			alert($(this).val());
+			column = 'action_id'
 		}
 		
 		
