@@ -73,7 +73,8 @@
 		
 		<!-- highcharts -->
 		<script type='text/javascript' src='js/highstock.js' ></script>
-
+		<script src='/js/themes/gray.js'></script>
+		
 		<!-- smarthome.py -->
 		<script type='text/javascript' src='js/io_smarthome.py.js'></script>
 		<script type='text/javascript' src='js/widget.js'></script>
