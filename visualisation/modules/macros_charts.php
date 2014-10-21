@@ -2,7 +2,8 @@
 function add_chart($chart_title,$signals_str){
 
 	$signals = explode(',',$signals_str);
-	$container = str_replace(' ','_',$chart_title);
+	$container = str_replace(' ','_',$chart_title.'_'.$signals_str);
+	
 	echo "
 		<div id='$container' class='chart'></div>";
 	
@@ -16,26 +17,11 @@ function add_chart($chart_title,$signals_str){
 						type: 'line',
 						marginLeft: 45,
 						marginRight: 130,
-						marginBottom: 35,
-						backgroundColor: {
-							linearGradient: { x1: 0, y1: 0, x2: 0, y2: 1 },
-							stops: [
-								[0, 'rgb(76, 76, 76)'],
-								[1, 'rgb(16, 16, 16)']
-							]
-						},
-						borderWidth: 0,
-						borderRadius: 10,
-						plotBackgroundColor: null,
-						plotShadow: false,
-						plotBorderWidth: 0
+						marginBottom: 35
 					},
 					title: {
 						text: '$chart_title',
 						x: -20,
-						style: {
-								color: '#AAAAAA'
-						},
 					},
 					xAxis: {
 						type: 'datetime',
@@ -44,9 +30,6 @@ function add_chart($chart_title,$signals_str){
 							align: 'center',
 							x: -3,
 							y: 20,
-							style: {
-								color: '#808080'
-							},
 						},
 						dateTimeLabelFormats: {
 							hour: '%H:%M'
@@ -55,16 +38,10 @@ function add_chart($chart_title,$signals_str){
 					},
 					yAxis: {
 						title: {
-							x: -20,
-							style: {
-								color: '#808080'
-							}
+							x: -20
 						},
 						labels: {
-							x: -20,
-							style: {
-								color: '#808080'
-							}
+							x: -20
 						}
 					},
 					tooltip: {
@@ -74,153 +51,15 @@ function add_chart($chart_title,$signals_str){
 					},
 					legend: {
 						enabled: true,
-						layout: 'vertical',
-						align: 'right',
-						verticalAlign: 'top',
 						x: -5,
-						y: 60,
-						borderWidth: 0,
-						itemStyle: {
-							color: '#808080'
-						}
+						y: 60
 					},
 					rangeSelector : {
 						enabled: false
-					},
-					navigator: {
-						handles: {
-							backgroundColor: '#666',
-							borderColor: '#808080'
-						},
-						outlineColor: '#808080',
-						maskFill: 'rgba(16, 16, 16, 0.5)',
-						series: {
-							color: '#7798BF',
-							lineColor: '#A6C7ED'
-						}
-					},
-					scrollbar: {
-						barBackgroundColor: {
-								linearGradient: { x1: 0, y1: 0, x2: 0, y2: 1 },
-								stops: [
-									[0.4, '#888'],
-									[0.6, '#555']
-								]
-							},
-						barBorderColor: '#808080',
-						buttonArrowColor: '#CCC',
-						buttonBackgroundColor: {
-								linearGradient: { x1: 0, y1: 0, x2: 0, y2: 1 },
-								stops: [
-									[0.4, '#888'],
-									[0.6, '#555']
-								]
-							},
-						buttonBorderColor: '#808080',
-						rifleColor: '#FFF',
-						trackBackgroundColor: {
-							linearGradient: { x1: 0, y1: 0, x2: 0, y2: 1 },
-							stops: [
-								[0, '#000'],
-								[1, '#333']
-							]
-						},
-						trackBorderColor: '#666'
-					},
-					series: [{
-						marker: {
-							enabled: false
-						},
-						color: '#88AA00'
-					}";
-		if(count($signals) > 1){
-			echo "		
-					,{
-						marker: {
-							enabled: false
-						},
-						color: '#6F917C'
-					}";
-		}
-		if(count($signals) > 2){
-			echo "	
-					,{
-						marker: {
-							enabled: false
-						},
-						color: '#0088AA'
-					}";
-		}
-		if(count($signals) > 3){
-			echo "
-					,{
-						marker: {
-							enabled: false
-						},
-						color: '#3737C8'
-					}";
-		}
-		if(count($signals) > 4){
-			echo "
-					,{
-						marker: {
-							enabled: false
-						},
-						color: '#990099'
-					}";
-		}	
-		if(count($signals) > 5){
-			echo "
-					,{
-						marker: {
-							enabled: false
-						},
-						color: '#990000'
-					}";
-		}	
-		if(count($signals) > 6){
-			echo "
-					,{
-						marker: {
-							enabled: false
-						},
-						color: '#CC6600'
-					}";
-		}
-		if(count($signals) > 7){
-			echo "
-					,{
-						marker: {
-							enabled: false
-						},
-						color: '#CCCC00'
-					}";
-		}	
-		if(count($signals) > 8){
-			echo "
-					,{
-						marker: {
-							enabled: false
-						},
-						color: '#FFCC33'
-					}";
-		}	
-		if(count($signals) > 9){
-			echo "
-					,{
-						marker: {
-							enabled: false
-						},
-						color: '#99CC66'
-					}";
-		}	
-		echo "
-					]
+					}
 				}
-				// Load data asynchronously using jQuery. On success, add the data
-				// to the options and initiate the chart.
-				// http://api.jquery.com/jQuery.get/
-
+				
+				// Load data asynchronously using jQuery. On success, add the data to the options and initiate the chart.
 				jQuery.ajax({
 					url:    'requests/get_data.php?signal=$signals_str',
 					success: function(result) {
@@ -265,7 +104,6 @@ function add_chart($chart_title,$signals_str){
 							});
 							
 						} catch (e) {  }
-						
 						
 						
 						chart = new Highcharts.StockChart(options);
