@@ -94,7 +94,30 @@
 	Execute the eibd_installation.sh file.
 	´./eibd_installation.sh´
 	
+	Preliminary test
+	´/usr/local/bin/eibd -D -S -T -i --eibaddr=0.0.1 --daemon=/var/log/eibd.log --no-tunnel-client-queuing ipt:192.168.1.3´
+	´groupswrite ip:localhost 1/1/71 1´
+	
+	### Configuration
+	
+		Open the configuration file
+		´sudo nano /etc/default/eibd`
+		
+		Uncoment the following lines and set some values, the last line should contain your knx ip interface ip adress
+		´EIB_ARGS="..."´ 
+		´EIB_ADDR="0.0.255"´
+		´EIB_IF="ipt:192.168.1.3"´
 
+		Restart EIBD
+		´/etc/init.d/eibd restart´
+		
+	### Test	
+	test eibd by writing to the knx bus using groupswrite to an existing knx adress
+
+	´groupswrite ip:localhost 1/1/71 1´
+	´groupswrite ip:localhost 1/1/71 0´
+
+	
 #################################################################
 # change eibd settings
 #################################################################
