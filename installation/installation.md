@@ -79,17 +79,17 @@
 	´sudo service vsftpd restart´
 	
 	You can now ftp to the pi with any ftp client, I use FileZilla, using the above ip, username and password
-	I chose to put all files in the var directory this might change in future releases.
-	So create an installation directory in the var directory and change the ownership of this directory
-	´sudo mkdir /var/knxcontrol_installation´
-	´sudo chown -R pi /var/knxcontrol_installation´
+	I chose to put all files in the tmp directory this might change in future releases.
+	So create an installation directory in the tmp directory and change the ownership of this directory
+	´sudo mkdir /tmp/knxcontrol_installation´
+	´sudo chown -R pi /tmp/knxcontrol_installation´
 
 	now ftp the content of the installation directory in the repository to the installation directory on your pi
 	
 	
 ## EIBD
 	Go to the installation directory
-	´cd /var/knxcontrol_installation´
+	´cd /tmp/knxcontrol_installation´
 	
 	Execute the eibd_installation.sh file.
 	´./eibd_installation.sh´
@@ -100,22 +100,49 @@
 	
 	### Configuration
 	
-		Open the configuration file
+		Create a log file 
+		´sudo nano /var/run/eibd.pid´
+		Save the file and Exit using ´Ctrl+O´ ´Return´ and ´Ctrl+X´ and set permissions
+		´sudo chown $USER /var/run/eibd.pid´
+
+		Create a configuration file
 		´sudo nano /etc/default/eibd`
 		
-		Uncoment the following lines and set some values, the last line should contain your knx ip interface ip adress
-		´EIB_ARGS="..."´ 
-		´EIB_ADDR="0.0.255"´
-		´EIB_IF="ipt:192.168.1.3"´
-
+		Write the following within
+		Use your knx ip gateway ip adress
+		´´´
+		EIB_ARGS="--daemon --Server --Tunnelling --Discovery --GroupCache --listen-tcp"
+		EIB_ADDR="0.0.255"
+		EIB_IF="ipt:192.168.1.3"
+		´´´
+		Save the file and Exit using ´Ctrl+O´ ´Return´ and ´Ctrl+X´
+		
+		Move the file "eibd" from the instalation folder to /etc/init.d
+		´sudo mv /tmp/knxcontrol_installation/eibd /etc/init.d/eibd´
+		
+		Change the owner and group to root and set permissions
+		´´´
+		sudo chown root /etc/init.d/eibd
+		sudo chgrp root /etc/init.d/eibd
+		sudo chmod 755 /etc/init.d/eibd
+		´´´
+		
+		Activate auto starting
+		´sudo update-rc.d eibd defaults´
+		
 		Restart EIBD
 		´/etc/init.d/eibd restart´
 		
 	### Test	
-	test eibd by writing to the knx bus using groupswrite to an existing knx adress
-
-	´groupswrite ip:localhost 1/1/71 1´
-	´groupswrite ip:localhost 1/1/71 0´
+		Test eibd by writing to the knx bus using groupswrite to an existing knx adress
+		´´´
+		groupswrite ip:localhost 1/1/71 1
+		groupswrite ip:localhost 1/1/71 0
+		´´´
+		
+		Also test if eibd is loaded on reboot by rebooting (´sudo reboot´), starting a new PuTTy session and retrying the above commands
+		
+		
 
 	
 #################################################################

@@ -4,13 +4,10 @@
 # make sure we have essential build tools
 sudo apt-get install build-essential
 
-# create and eibd directory
-sudo mkdir /var/eibd
-sudo chown -R $USER /var/eibd
-cd /var/eibd
+cd /tmp/knxcontrol_installation
 
 # install pthsem
-tar zxvf /var/knxcontrol_installation/pthsem_2.0.8.tar.gz
+tar zxvf /tmp/knxcontrol_installation/pthsem_2.0.8.tar.gz
 cd pthsem-2.0.8/
 ./configure
 make
@@ -19,10 +16,10 @@ sudo make install
 
 
 # install eibd
-cd /var/eibd
+cd /var/knxcontrol_installation
 
 tar -zxvf /var/knxcontrol_installation/bcusdk_0.0.5.tar.gz
-cd bcusdk-0.0.5/
+cd bcusdk-0.0.5
 export LD_LIBRARY_PATH=/usr/local/lib
 ./configure --with-pth=yes --without-pth-test --enable-onlyeibd --enable-eibnetip --enable-eibnetiptunnel --enable-eibnetipserver
 make
