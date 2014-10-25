@@ -1,23 +1,63 @@
 # Raspbery Pi preparation for KNXControl
 
 ## Start fresh
-Write image file  "SmarthomePI.img" to a 8GB SD card using win32diskimager
+Write a fresh raspbian image to a 8GB SD card using win32diskimager
+A high end SD card is preferable as we will write to it a lot
 Plug in the raspberry pi and connect to your network
 
-## Networking
-### First login
+### Configuration
 Find the ip adress of the raspberry.pi using Advanced IP Scanner
 Use PuTTy to connect to your raspberry over ssh with any computer in your network
 Use the above found ip adress, port 22
 login as: pi
+
 password: raspberry
+Run configuration
+sudo raspi-config
+
+Choose
+Enlarge the root partition
+
+Under the internationalisation options choose Change Timezone and set it to your time zone
+I'm not changing the password yet to make a general image of this pi with the default password.
+
+When asked choose Reboot now
+
+
+## Networking
+
+After the reboot find the ip adress again and connect using PuTTy
 
 ### Static ip
-Setup a static ip adress
+Setup a static ip adress open the network interfaces file
 ´sudo nano /etc/network/interfaces´
 
+Change file contents to:
+´´´
+auto lo
+iface lo inet loopback
+
+auto eth0
+iface eth0 inet static
+address 192.168.1.2
+gateway 192.168.1.1
+netmask 255.255.255.0
+´´´
+Save the file and Exit using ´Ctrl+O´ and ´Ctrl+X´
+
+restart networking
+´sudo /etc/init.d/networking restart´
+you can safely ignore error messages
+
+Now close your current putty session and start a new one using the static ip adress 192.168.1.2 in this example.
+A reboot might also be required for the static ip to come to effect:
+´sudo reboot´
+
+From now on you can allways acces your pi through that ip adress.
+It must be noted that it is best to choose an ip adress outside of your routers DHCP range, so set the DHCP range accordingly.
 
 
+## EIBD
 
 
 #################################################################
