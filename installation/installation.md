@@ -67,6 +67,11 @@
 	´#local_enable=YES´
 	´#write_enable=YES´
 
+	To set default file permissions
+	Change the line ´#local_unmask=022´to ´local_unmask=022´
+	And add
+	´file_open_mode=0777´
+	
 	Also, add a line to the bottom of the file:
 	´force_dot_files=YES´
 	
@@ -74,14 +79,20 @@
 	´sudo service vsftpd restart´
 	
 	You can now ftp to the pi with any ftp client, I use FileZilla, using the above ip, username and password
+	I chose to put all files in the var directory this might change in future releases.
+	So create an installation directory in the var directory and change the ownership of this directory
+	´sudo mkdir /var/knxcontrol_installation´
+	´sudo chown -R pi /var/knxcontrol_installation´
+
+	now ftp the content of the installation directory in the repository to the installation directory on your pi
+	
 	
 ## EIBD
-	I chose to put all files in the var directory this might change in future releases
-	So create an eibd directory in the var directory and change the ownership of this directory
-	´sudo mkdir /var/eibd´
-	´sudo chown -R pi /var/eibd´
+	Go to the installation directory
+	´cd /var/knxcontrol_installation´
 	
-	now ftp the eibd_installation.sh file to this directory
+	Execute the eibd_installation.sh file.
+	´./eibd_installation.sh´
 	
 
 #################################################################
