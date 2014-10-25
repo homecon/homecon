@@ -1,7 +1,5 @@
 # Raspbery Pi preparation for KNXControl
 
-
-
 ## Start fresh
 Write a fresh raspbian image to a 8GB SD card using win32diskimager
 A high end SD card is preferable as we will write to it a lot
@@ -261,6 +259,32 @@ sudo service apache2 restart
 
 You can now login to php myadmin at 192.168.1.2/phpmyadmin using usernamer `root` and password `admin`.
 
+### Setup tables
+Login to myqsl from the command line using
+```
+mysql -u root -p
+```
+enter the password (admin) when asked.
+
+Create a database:
+```
+CREATE DATABASE knxcontrol;
+```
+
+Create a new user:
+```
+CREATE USER 'knxcontrol'@'localhost' IDENTIFIED BY 'admin';
+```
+
+Set privileges of the new user:
+```
+GRANT ALL PRIVILEGES ON knxcontrol.* TO 'knxcontrol'@'localhost';
+```
+
+Open a browser window and go to
+"http://192.168.1.2/knxcontrol/data/create_tables.php"
+This will create all required mysql tables 
+
 
 ### Moving the database to another location
 This step is not executed in the base image and commands are given here for reference also not tested.
@@ -283,10 +307,6 @@ Restart MySQL with the command:
 ```
 sudo /etc/init.d/mysql restart
 ```
-
-### Setup tables
-
-
 
 
 
@@ -323,6 +343,8 @@ tail /usr/local/knxcontrol/smarthome/var/log/smarthome.log
 
 
 
+## Changing passwords
+At this step the base image is created after this you will have to change thing for your own system. The first step is changing all passwords to more secure values.
 
 
 
@@ -330,96 +352,8 @@ tail /usr/local/knxcontrol/smarthome/var/log/smarthome.log
 
 
 
-#################################################################
-# configure ftp server
-#################################################################
-sudo vim /etc/vsftpd.conf
-# Edit or uncomment the following lines to secure VSFTPD
-anonymous_enable=NO
-local_enable=YES
-write_enable=YES
-ascii_upload_enable=YES
-ascii_download_enable=YES
-
-sudo /etc/init.d/vsftpd restart
-
-# log on using an ftp client 
-# user: admin
-# pswd: admin
-# upload items to /usr/smarthome/items/
-# upload the page files to /var/www/homecontrol/
-# restart smarthome.py
-/etc/init.d/smarthome.py restart
 
 
-#################################################################
-# mysql
-#################################################################
-sudo apt-get install mysql-server libapache2-mod-auth-mysql php5-mysql
-# set password as admin
-
-sudo mysql_install_db
-
-sudo /usr/bin/mysql_secure_installation
-#Answer Y to all questions
-
-
-# there were some issues with apache and php, reinstalling apache with:
-sudo apt-get install apache2
-# and php with:
-sudo apt-get install php5 libapache2-mod-php5 php5-mcrypt
-# and setting the privileges of the folder knxcontrol and subfolders
-chmod -R a+x knxcontrol 
-chmod -G o+r knxcontrol
-# solved every thing
-
-#################################################################
-# phpmyadmin
-#################################################################
-sudo apt-get install phpmyadmin
-
-# select apache2 for server
-# Choose YES when asked about whether to Configure the database for phpmyadmin with dbconfig-common
-# enter mysql password
-# set phpmyadmin password to admin
-
-# add phpmyadmin to apache
-sudo nano /etc/apache2/apache2.conf
-# at the bottom add
-Include /etc/phpmyadmin/apache.conf
-
-
-# restart apache 
-sudo /etc/init.d/apache2 restart
-
-# login to phpmyadmin using roor - admin
-
-# security
-sudo nano /etc/phpmyadmin/apache.conf 
-
-#make the directorry section look like this:
-<Directory /usr/share/phpmyadmin>
-        Options FollowSymLinks
-        DirectoryIndex index.php
-        AllowOverride All
-        [...]
-		
-		
-sudo nano /usr/share/phpmyadmin/.htaccess
-
-# this is an empty file, add:
-AuthType Basic
-AuthName "Restricted Files"
-AuthUserFile /usr/smarthome/.htpasswd
-Require valid-user
-
-# add user to password file
-sudo htpasswd -c /usr/smarthome/.htpasswd root
-# will ask for your password, enter
-admin
-
-# restart apache
-sudo /etc/init.d/apache2 restart
 
 
 #################################################################

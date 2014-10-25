@@ -85,5 +85,5 @@ mysql_query( "CREATE TABLE IF NOT EXISTS `temperature_setpoints` (`id` int(11) N
 																  PRIMARY KEY (`id`)) ENGINE=InnoDB  DEFAULT CHARSET=latin1 AUTO_INCREMENT=1");
 
 
-
+echo "succes";
 ?>
