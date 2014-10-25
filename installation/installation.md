@@ -23,7 +23,7 @@
 
 		When asked choose Reboot now
 
-
+		
 ## Networking
 	After the reboot find the ip adress again and connect using PuTTy
 
@@ -55,6 +55,21 @@
 		From now on you can allways acces your pi through that ip adress.
 		It must be noted that it is best to choose an ip adress outside of your routers DHCP range, so set the DHCP range accordingly.
 
+## User	
+	Add a user named "admin" with password "admin" (for now),
+	this user will own all eibd and smarthome stuff
+	´sudo adduser admin´
+	type the password (admin) twice
+	and keep hitting enter and finally hit "y" when asked if the info is correct
+	
+	Add admin to the sudoers file to be able to use sudo
+	´sudo adduser admin sudo´
+	
+	Logout 
+	´logout´
+	
+	Start a new PuTTy session using the new credentials
+	
 ## FTP
 	We will set up an ftp server to move files to your pi. This is done first to be able to use some installation scripts:
 	´sudo apt-get install vsftpd´
@@ -78,16 +93,17 @@
 	Save the file and Exit using ´Ctrl+O´ ´Return´ and ´Ctrl+X´ and restart the ftp server:
 	´sudo service vsftpd restart´
 	
-	You can now ftp to the pi with any ftp client, I use FileZilla, using the above ip, username and password
+	You can now ftp to the pi with any ftp client, I use FileZilla, using the above ip, admin username and password
 	I chose to put all files in the tmp directory this might change in future releases.
 	So create an installation directory in the tmp directory and change the ownership of this directory
 	´sudo mkdir /tmp/knxcontrol_installation´
-	´sudo chown -R pi /tmp/knxcontrol_installation´
+	´sudo chown -R admin /tmp/knxcontrol_installation´
 
 	now ftp the content of the installation directory in the repository to the installation directory on your pi
 	
 	
 ## EIBD
+
 	Go to the installation directory
 	´cd /tmp/knxcontrol_installation´
 	
@@ -99,11 +115,6 @@
 	´groupswrite ip:localhost 1/1/71 1´
 	
 	### Configuration
-	
-		Create a log file 
-		´sudo nano /var/run/eibd.pid´
-		Save the file and Exit using ´Ctrl+O´ ´Return´ and ´Ctrl+X´ and set permissions
-		´sudo chown $USER /var/run/eibd.pid´
 
 		Create a configuration file
 		´sudo nano /etc/default/eibd`

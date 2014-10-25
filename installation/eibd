@@ -11,7 +11,7 @@
 DESC="KNX daemon 'eibd'"
 NAME=eibd
 EIB_ARGS="--daemon --Server --Tunnelling --Discovery --GroupCache --listen-tcp"
-EIB_UID=$USER
+EIB_UID="admin"
 
 PATH=/sbin:/usr/sbin:/bin:/usr/bin:/usr/local/bin
 DAEMON=/usr/local/bin/$NAME
