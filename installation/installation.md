@@ -1,9 +1,22 @@
 # Raspbery Pi preparation for KNXControl
 
+
+
+
+
+
 ## Start fresh
 Write a fresh raspbian image to a 8GB SD card using win32diskimager
 A high end SD card is preferable as we will write to it a lot
 Plug in the raspberry pi and connect to your network
+
+
+
+
+
+
+
+
 
 ## General configuration
 ### First login
@@ -92,13 +105,41 @@ sudo easy_install3 pip
 sudo pip install ephem
 ```
 	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
 ## KNXControl
 Clone the repository to a directory where all files will be kept
 ```
 cd /usr/local
 sudo git clone git://github.com/brechtba/knxcontrol.git
-sudo chown -R admin:admin /usr/local/knxcontrol
 ```
+
+Set permissions
+```
+sudo chown -R admin:admin /usr/local/knxcontrol
+sudo chmod -R 744 /usr/local/knxcontrol
+```
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
 	
 ## EIBD
 Go to the installation directory
@@ -162,26 +203,10 @@ groupswrite ip:localhost 1/1/71 0
 
 Also test if eibd is loaded on reboot by rebooting (`sudo reboot`), starting a new PuTTy session and retrying the above commands
 
-		
-## SMARTHOME.PY
-The next step is configuring smarthome.py
 
-Move the file "smarthome" from the installation folder to /etc/init.d
-```
-sudo mv /usr/local/knxcontrol/installation/smarthome /etc/init.d/smarthome
-```
 
-Change the owner and group to root and set permissions
-```
-sudo chown root /etc/init.d/smarthome
-sudo chgrp root /etc/init.d/smarthome
-sudo chmod 755 /etc/init.d/smarthome
-```
 
-Activate auto starting
-```
-sudo update-rc.d smarthome defaults
-```
+
 
 
 ## FTP
@@ -216,6 +241,44 @@ Save the file and Exit using `Ctrl+O` `Return` and `Ctrl+X` and restart the ftp 
 sudo service vsftpd restart
 ```
 
+
+
+
+
+
+
+
+
+## SMARTHOME.PY
+The next step is configuring smarthome.py
+
+Move the file "smarthome" from the installation folder to /etc/init.d
+```
+sudo mv /usr/local/knxcontrol/installation/smarthome /etc/init.d/smarthome
+```
+
+Change the owner and group to root and set permissions
+```
+sudo chown root /etc/init.d/smarthome
+sudo chgrp root /etc/init.d/smarthome
+sudo chmod 755 /etc/init.d/smarthome
+```
+
+Activate auto starting
+```
+sudo update-rc.d smarthome defaults
+```
+
+### Test
+Start smarthome.py with
+```
+/etc/init.d/smarthome start
+```
+
+And check the log file for errors
+```
+tail /usr/local/knxcontrol/smarthome/var/log/smarthome.log
+```
 
 
 
