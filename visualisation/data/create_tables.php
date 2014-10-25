@@ -11,7 +11,7 @@ mysql_query("CREATE TABLE IF NOT EXISTS `users` (`id` int(11) NOT NULL AUTO_INCR
                                                  `password` varchar(255) NOT NULL,
                                                   PRIMARY KEY (`id`)) ENGINE=InnoDB  DEFAULT CHARSET=latin1 AUTO_INCREMENT=1");
 // add default user
-mysql_query("INSERT INTO `users` (id,username,password) VALUES (1,'admin','".md5('admin')."')");
+mysql_query("INSERT INTO `users` (id,username,password) VALUES (1,'admin','".md5(md5('admin'))."')");
 												  
 												  
 // data
