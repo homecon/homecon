@@ -10,7 +10,10 @@ mysql_query("CREATE TABLE IF NOT EXISTS `users` (`id` int(11) NOT NULL AUTO_INCR
                                                  `username` varchar(255) NOT NULL,
                                                  `password` varchar(255) NOT NULL,
                                                   PRIMARY KEY (`id`)) ENGINE=InnoDB  DEFAULT CHARSET=latin1 AUTO_INCREMENT=1");
-
+// add default user
+mysql_query("INSERT INTO `users` (id,username,password) VALUES (1,'admin','".md5('admin')."')");
+												  
+												  
 // data
 mysql_query("CREATE TABLE IF NOT EXISTS `data` (`password` varchar(255) NOT NULL,
                                                 `ip` varchar(255) NOT NULL,
@@ -70,9 +73,9 @@ mysql_query("CREATE TABLE IF NOT EXISTS `measurements_legend` (`id` tinyint(4) N
 															   UNIQUE KEY `ID` (`id`)) ENGINE=InnoDB  DEFAULT CHARSET=latin1 AUTO_INCREMENT=1 ");
 
 $query = "CREATE TABLE IF NOT EXISTS `measurements` (`id` bigint(20) NOT NULL AUTO_INCREMENT,
-												     `time` bigint(20) NOT NULL";
+												     `time` bigint(20) NOT NULL, ";
 for($i=1;$i<=$num_signals;$i++){
-	$query = $query.",`signal$i` float DEFAULT NULL,";
+	$query = $query."`signal$i` float DEFAULT NULL,";
 }
 $query =  $query. "PRIMARY KEY (`id`)) ENGINE=InnoDB  DEFAULT CHARSET=latin1 AUTO_INCREMENT=1";
 mysql_query( $query );
@@ -80,9 +83,9 @@ mysql_query( $query );
 $query = "CREATE TABLE IF NOT EXISTS `measurements_monthaverage` (`id` bigint(20) NOT NULL AUTO_INCREMENT,
 												     `month` int(11) NOT NULL,
 													 `year` int(11) NOT NULL,
-													 `timestamp` int(11) NOT NULL";
+													 `timestamp` int(11) NOT NULL, ";
 for($i=1;$i<=$num_signals;$i++){
-	$query = $query.",`signal$i` float DEFAULT NULL,";
+	$query = $query."`signal$i` float DEFAULT NULL, ";
 }
 $query =  $query. "PRIMARY KEY (`id`)) ENGINE=InnoDB  DEFAULT CHARSET=latin1 AUTO_INCREMENT=1";
 mysql_query( $query );													 
@@ -90,9 +93,9 @@ mysql_query( $query );
 $query = "CREATE TABLE IF NOT EXISTS `measurements_weekaverage` (`id` bigint(20) NOT NULL AUTO_INCREMENT,
 												                 `week` int(11) NOT NULL,
 													             `year` int(11) NOT NULL,
-													             `timestamp` int(11) NOT NULL";
+													             `timestamp` int(11) NOT NULL, ";
 for($i=1;$i<=$num_signals;$i++){
-	$query = $query.",`signal$i` float DEFAULT NULL,";
+	$query = $query."`signal$i` float DEFAULT NULL, ";
 }
 $query =  $query. "PRIMARY KEY (`id`)) ENGINE=InnoDB  DEFAULT CHARSET=latin1 AUTO_INCREMENT=1";
 mysql_query( $query );													 
