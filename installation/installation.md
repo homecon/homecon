@@ -243,10 +243,68 @@ sudo service vsftpd restart
 
 
 
+## MySQL
+Install the mysql server package
+```
+sudo apt-get install mysql-server
+```
+During the install procedure a root account for mysql will be created. Set it to admin as the default setting.
+
+Enable php to comunicate with mysql by installing php5-mysql:
+```
+sudo apt-get install  php5-mysql
+```
+
+### phpMyAdmin
+Install phpMyadmin
+```
+sudo apt-get install phpmyadmin
+```
+During the installation you will be asked several questions:
+- Select Apache2 for the server
+- Choose YES when asked about whether to Configure the database for phpmyadmin with dbconfig-common
+- Enter your MySQL password when prompted (admin)
+- Enter the password that you want to use to log into phpmyadmin (admin)
+
+After the installation has completed, add phpmyadmin to the apache configuration.
+```
+sudo nano /etc/apache2/apache2.conf
+```
+Add the phpmyadmin config to the end of the file.
+```
+# phpmyadmin
+Include /etc/phpmyadmin/apache.conf
+```
+
+And restart apache
+```
+sudo service apache2 restart
+```
+
+You can now login to php myadmin at 192.168.1.2/phpmyadmin using usernamer `root` and password `admin`.
 
 
+### Moving the database to another location
+This step is not executed in the base image and commands are given here for reference also not tested.
+```
+sudo /etc/init.d/mysql stop
+sudo cp -R -p /var/lib/mysql /media/hdd/mysql
+```
+Edit the config file `sudo nano /etc/mysql/my.cnf`
+Look for the entry for `datadir`, and change the path (which should be /var/lib/mysql) to the new data directory.
 
+Edit the another file `sudo nano /etc/apparmor.d/usr.sbin.mysqld`
+Look for lines beginning with `/var/lib/mysql`. Change `/var/lib/mysql` in the lines with the new path.
 
+Restart the AppArmor profiles with the command:
+```
+sudo /etc/init.d/apparmor reload
+```
+
+Restart MySQL with the command:
+```
+sudo /etc/init.d/mysql restart
+```
 
 
 ## SMARTHOME.PY
