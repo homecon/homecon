@@ -1,173 +1,175 @@
 # Raspbery Pi preparation for KNXControl
 
 ## Start fresh
-	Write a fresh raspbian image to a 8GB SD card using win32diskimager
-	A high end SD card is preferable as we will write to it a lot
-	Plug in the raspberry pi and connect to your network
+Write a fresh raspbian image to a 8GB SD card using win32diskimager
+A high end SD card is preferable as we will write to it a lot
+Plug in the raspberry pi and connect to your network
 
-	### Configuration
-		Find the ip adress of the raspberry.pi using Advanced IP Scanner
-		Use PuTTy to connect to your raspberry over ssh with any computer in your network
-		Use the above found ip adress, port 22
-		login as: pi
+### Configuration
+Find the ip adress of the raspberry.pi using Advanced IP Scanner
+Use PuTTy to connect to your raspberry over ssh with any computer in your network
+Use the above found ip adress, port 22
+login as: pi
 
-		password: raspberry
-		Run configuration
-		sudo raspi-config
+password: raspberry
+Run configuration
+sudo raspi-config
 
-		Choose
-		Enlarge the root partition
+Choose
+Enlarge the root partition
 
-		Under the internationalisation options choose Change Timezone and set it to your time zone
-		I'm not changing the password yet to make a general image of this pi with the default password.
+Under the internationalisation options choose Change Timezone and set it to your time zone
+I'm not changing the password yet to make a general image of this pi with the default password.
 
-		When asked choose Reboot now
+When asked choose Reboot now
 
 		
 ## Networking
-	After the reboot find the ip adress again and connect using PuTTy
+After the reboot find the ip adress again and connect using PuTTy
 
-	### Static ip
-		Setup a static ip adress open the network interfaces file
-		´sudo nano /etc/network/interfaces´
+### Static ip
+Setup a static ip adress open the network interfaces file
+´sudo nano /etc/network/interfaces´
 
-		Change file contents to:
-		´´´
-		auto lo
-		iface lo inet loopback
+Change file contents to:
+´´´
+auto lo
+iface lo inet loopback
 
-		auto eth0
-		iface eth0 inet static
-		address 192.168.1.2
-		gateway 192.168.1.1
-		netmask 255.255.255.0
-		´´´
-		Save the file and Exit using ´Ctrl+O´ ´Return´ and ´Ctrl+X´
+auto eth0
+iface eth0 inet static
+address 192.168.1.2
+gateway 192.168.1.1
+netmask 255.255.255.0
+´´´
+Save the file and Exit using ´Ctrl+O´ ´Return´ and ´Ctrl+X´
 
-		restart networking
-		´sudo /etc/init.d/networking restart´
-		you can safely ignore error messages
+restart networking
+´sudo /etc/init.d/networking restart´
+you can safely ignore error messages
 
-		Now close your current putty session and start a new one using the static ip adress 192.168.1.2 in this example.
-		A reboot might also be required for the static ip to come to effect:
-		´sudo reboot´
+Now close your current putty session and start a new one using the static ip adress 192.168.1.2 in this example.
+A reboot might also be required for the static ip to come to effect:
+´sudo reboot´
 
-		From now on you can allways acces your pi through that ip adress.
-		It must be noted that it is best to choose an ip adress outside of your routers DHCP range, so set the DHCP range accordingly.
+From now on you can allways acces your pi through that ip adress.
+It must be noted that it is best to choose an ip adress outside of your routers DHCP range, so set the DHCP range accordingly.
 
 ## User	
-	Add a user named "admin" with password "admin" (for now),
-	this user will own all eibd and smarthome stuff
-	´sudo adduser admin´
-	type the password (admin) twice
-	and keep hitting enter and finally hit "y" when asked if the info is correct
+Add a user named "admin" with password "admin" (for now),
+this user will own all eibd and smarthome stuff
+´sudo adduser admin´
+type the password (admin) twice
+and keep hitting enter and finally hit "y" when asked if the info is correct
+
+Add admin to the sudoers file to be able to use sudo
+´sudo adduser admin sudo´
+
+Logout 
+´logout´
 	
-	Add admin to the sudoers file to be able to use sudo
-	´sudo adduser admin sudo´
+Start a new PuTTy session using the new credentials
+We can leave the pi user for now but it will have to be deleted at some point
 	
-	Logout 
-	´logout´
-	
-	Start a new PuTTy session using the new credentials
-	We can leave the pi user for now but it will have to be deleted at some point
+## Tools
+Some essential linux tools we will be using need to be installed now
+´´´	
+sudo apt-get update
+sudo apt-get -y install apache2 vsftpd php5 php5-json openntpd python3 python3-dev python3-setuptools git unzip wget libawl-php php5-curl
+sudo easy_install3 pip
+sudo pip install ephem
+´´´
 	
 ## KNXControl
-	Create a directory for all files and clone the repository there
-
+Clone the repository to a directory where all files will be kept
+´cd /usr/local´
+´git clone git://github.com/brechtba/knxcontrol.git´
+´chown -R admin:admin /usr/local/knxcontrol´
 	
 ## FTP
-	We will set up an ftp server to move files to your pi. This is done first to be able to use some installation scripts:
-	´´´
-	sudo apt-get update
-	sudo apt-get install vsftpd
-	´´´
-	
-	To configure the server open the configure file
-	´sudo nano /etc/vsftpd.conf´
+We will set up an ftp server to move files to your pi. The actual server is allready installed
+To configure the server open the configure file
+´sudo nano /etc/vsftpd.conf´
 
-	Search through the file and change the following lines:
-	change ´anonymous_enable=YES´ to anonymous_enable=NO
-	Uncomment the following lines:
-	´#local_enable=YES´
-	´#write_enable=YES´
+Search through the file and change the following lines:
+change ´anonymous_enable=YES´ to anonymous_enable=NO
+Uncomment the following lines:
+´#local_enable=YES´
+´#write_enable=YES´
 
-	To set default file permissions
-	Change the line ´#local_unmask=022´to ´local_unmask=022´
-	And add
-	´file_open_mode=0777´
-	
-	Also, add a line to the bottom of the file:
-	´force_dot_files=YES´
-	
-	Save the file and Exit using ´Ctrl+O´ ´Return´ and ´Ctrl+X´ and restart the ftp server:
-	´sudo service vsftpd restart´
-	
-	You can now ftp to the pi with any ftp client, I use FileZilla, using the above ip, admin username and password
-	I chose to put all files in the tmp directory this might change in future releases.
-	So create an installation directory in the tmp directory and change the ownership of this directory
-	´sudo mkdir /tmp/knxcontrol_installation´
-	´sudo chown -R admin /tmp/knxcontrol_installation´
+To set default file permissions
+Change the line ´#local_unmask=022´to ´local_unmask=022´
+And add
+´file_open_mode=0777´
 
-	now ftp the content of the installation directory in the repository to the installation directory on your pi
-	
+Also, add a line to the bottom of the file:
+´force_dot_files=YES´
+
+Save the file and Exit using ´Ctrl+O´ ´Return´ and ´Ctrl+X´ and restart the ftp server:
+´sudo service vsftpd restart´
+
+You can now ftp to the pi with any ftp client, I use FileZilla, using the above ip, admin username and password
+I chose to put all files in the tmp directory this might change in future releases.
+So create an installation directory in the tmp directory and change the ownership of this directory
+´sudo mkdir /tmp/knxcontrol_installation´
+´sudo chown -R admin /tmp/knxcontrol_installation´
+
+now ftp the content of the installation directory in the repository to the installation directory on your pi
+
 ## EIBD
-	Go to the installation directory
-	´cd /tmp/knxcontrol_installation´
-	
-	Execute the eibd_installation.sh file.
-	´./eibd_installation.sh´
-	
-	Preliminary test
-	´/usr/local/bin/eibd -D -S -T -i --eibaddr=0.0.1 --daemon=/var/log/eibd.log --no-tunnel-client-queuing ipt:192.168.1.3´
-	´groupswrite ip:localhost 1/1/71 1´
-	
-	### Configuration
+Go to the installation directory
+´cd /tmp/knxcontrol_installation´
 
-		Create a configuration file
-		´sudo nano /etc/default/eibd`
-		
-		Write the following within
-		Use your knx ip gateway ip adress
-		´´´
-		EIB_ARGS="--daemon --Server --Tunnelling --Discovery --GroupCache --listen-tcp"
-		EIB_ADDR="0.0.255"
-		EIB_IF="ipt:192.168.1.3"
-		´´´
-		Save the file and Exit using ´Ctrl+O´ ´Return´ and ´Ctrl+X´
-		
-		Move the file "eibd" from the instalation folder to /etc/init.d
-		´sudo mv /tmp/knxcontrol_installation/eibd /etc/init.d/eibd´
-		
-		Change the owner and group to root and set permissions
-		´´´
-		sudo chown root /etc/init.d/eibd
-		sudo chgrp root /etc/init.d/eibd
-		sudo chmod 755 /etc/init.d/eibd
-		´´´
-		
-		Activate auto starting
-		´sudo update-rc.d eibd defaults´
-		
-		Restart EIBD
-		´/etc/init.d/eibd restart´
-		
-	### Test	
-		Test eibd by writing to the knx bus using groupswrite to an existing knx adress
-		´´´
-		groupswrite ip:localhost 1/1/71 1
-		groupswrite ip:localhost 1/1/71 0
-		´´´
-		
-		Also test if eibd is loaded on reboot by rebooting (´sudo reboot´), starting a new PuTTy session and retrying the above commands
-		
+Execute the eibd_installation.sh file.
+´./eibd_installation.sh´
+
+Preliminary test
+´/usr/local/bin/eibd -D -S -T -i --eibaddr=0.0.1 --daemon=/var/log/eibd.log --no-tunnel-client-queuing ipt:192.168.1.3´
+´groupswrite ip:localhost 1/1/71 1´
+	
+### Configuration
+
+Create a configuration file
+´sudo nano /etc/default/eibd`
+
+Write the following within
+Use your knx ip gateway ip adress
+´´´
+EIB_ARGS="--daemon --Server --Tunnelling --Discovery --GroupCache --listen-tcp"
+EIB_ADDR="0.0.255"
+EIB_IF="ipt:192.168.1.3"
+´´´
+Save the file and Exit using ´Ctrl+O´ ´Return´ and ´Ctrl+X´
+
+Move the file "eibd" from the instalation folder to /etc/init.d
+´sudo mv /tmp/knxcontrol_installation/eibd /etc/init.d/eibd´
+
+Change the owner and group to root and set permissions
+´´´
+sudo chown root /etc/init.d/eibd
+sudo chgrp root /etc/init.d/eibd
+sudo chmod 755 /etc/init.d/eibd
+´´´
+
+Activate auto starting
+´sudo update-rc.d eibd defaults´
+
+Restart EIBD
+´/etc/init.d/eibd restart´
+
+### Test	
+Test eibd by writing to the knx bus using groupswrite to an existing knx adress
+´´´
+groupswrite ip:localhost 1/1/71 1
+groupswrite ip:localhost 1/1/71 0
+´´´
+
+Also test if eibd is loaded on reboot by rebooting (´sudo reboot´), starting a new PuTTy session and retrying the above commands
+
 		
 ## SMARTHOME.PY
-	The next step is installing smarthome.py but first we need some prequisites
-	´´´	
-	sudo apt-get -y install openssh-server apache2 php5 php5-json openntpd python3 python3-dev python3-setuptools git unzip wget libawl-php php5-curl
-	sudo easy_install3 pip
-	sudo pip install ephem
-	´´´
+The next step is configuring smarthome.py
+
 		
 
 #################################################################
