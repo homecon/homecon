@@ -24,6 +24,7 @@ mysql_query("CREATE TABLE IF NOT EXISTS `alarms` (`id` int(11) NOT NULL AUTO_INC
                                                   `active` tinyint(4) NOT NULL DEFAULT '1',
 												  `item` varchar(255) DEFAULT NULL,
                                                   `action` varchar(255) DEFAULT NULL,
+												  `action_id` int(11) DEFAULT NULL,
 												  `hour` tinyint(4) NOT NULL DEFAULT '12',
 												  `minute` tinyint(4) NOT NULL DEFAULT '0',
 												  `sunrise` tinyint(4) NOT NULL DEFAULT '0',
@@ -37,6 +38,27 @@ mysql_query("CREATE TABLE IF NOT EXISTS `alarms` (`id` int(11) NOT NULL AUTO_INC
 												  `sun` tinyint(4) NOT NULL DEFAULT '0',
 												   PRIMARY KEY (`id`) ) ENGINE=InnoDB  DEFAULT CHARSET=latin1 AUTO_INCREMENT=1");
 
+												   
+mysql_query("CREATE TABLE IF NOT EXISTS `alarm_actions` (`id` int(11) NOT NULL AUTO_INCREMENT,
+														 `name` varchar(255) DEFAULT NULL,
+                                                         `sectionid` varchar(255) DEFAULT NULL,
+														 `delay1` int(11) DEFAULT NULL,
+												         `item1` varchar(255) DEFAULT NULL,
+                                                         `action1` varchar(255) DEFAULT NULL,
+														 `delay2` int(11) DEFAULT NULL,
+												         `item2` varchar(255) DEFAULT NULL,
+                                                         `action2` varchar(255) DEFAULT NULL,	
+														 `delay3` int(11) DEFAULT NULL,
+												         `item3` varchar(255) DEFAULT NULL,
+                                                         `action3` varchar(255) DEFAULT NULL,	
+														 `delay4` int(11) DEFAULT NULL,
+												         `item4` varchar(255) DEFAULT NULL,
+                                                         `action4` varchar(255) DEFAULT NULL,	
+														 `delay5` int(11) DEFAULT NULL,
+												         `item5` varchar(255) DEFAULT NULL,
+                                                         `action5` varchar(255) DEFAULT NULL,	
+												          PRIMARY KEY (`id`) ) ENGINE=InnoDB  DEFAULT CHARSET=latin1 AUTO_INCREMENT=1");
+														  
 // measurements
 $num_signals = 50;
 mysql_query("CREATE TABLE IF NOT EXISTS `measurements_legend` (`id` tinyint(4) NOT NULL AUTO_INCREMENT,
@@ -83,7 +105,6 @@ mysql_query( "CREATE TABLE IF NOT EXISTS `temperature_setpoints` (`id` int(11) N
 																  `minute` tinyint(4) NOT NULL,
 																  `setpoint` float NOT NULL,
 																  PRIMARY KEY (`id`)) ENGINE=InnoDB  DEFAULT CHARSET=latin1 AUTO_INCREMENT=1");
-
-
+																  
 echo "succes";
 ?>
