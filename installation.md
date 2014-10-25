@@ -1,15 +1,24 @@
-# Raspbery Pi preparation for smarthome.pi
-#
-#
-#
+# Raspbery Pi preparation for KNXControl
 
-# write image file  "SmarthomePI.img" to a 8GB SD card using win32 diskimager
+## Start fresh
+Write image file  "SmarthomePI.img" to a 8GB SD card using win32diskimager
+Plug in the raspberry pi and connect to your network
 
-# find the ip adress of the raspberry.pi using trial and error
-# probably 192.168.1.13 or higher
-# log on to the PI 
-# user: admin
-# pswd: admin
+## Networking
+### First login
+Find the ip adress of the raspberry.pi using Advanced IP Scanner
+Use PuTTy to connect to your raspberry over ssh with any computer in your network
+Use the above found ip adress, port 22
+login as: pi
+password: raspberry
+
+### Static ip
+Setup a static ip adress
+´sudo nano /etc/network/interfaces´
+
+
+
+
 
 #################################################################
 # change eibd settings
