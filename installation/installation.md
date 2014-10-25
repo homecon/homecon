@@ -5,7 +5,8 @@ Write a fresh raspbian image to a 8GB SD card using win32diskimager
 A high end SD card is preferable as we will write to it a lot
 Plug in the raspberry pi and connect to your network
 
-### Configuration
+## General configuration
+### First login
 Find the ip adress of the raspberry.pi using Advanced IP Scanner
 Use PuTTy to connect to your raspberry over ssh with any computer in your network
 Use the above found ip adress, port 22
@@ -25,10 +26,10 @@ I'm not changing the password yet to make a general image of this pi with the de
 When asked choose Reboot now
 
 		
-## Networking
+### Networking
 After the reboot find the ip adress again and connect using PuTTy
 
-### Static ip
+#### Static ip
 Setup a static ip adress open the network interfaces file
 ```
 sudo nano /etc/network/interfaces
@@ -62,7 +63,7 @@ sudo reboot
 From now on you can allways acces your pi through that ip adress.
 It must be noted that it is best to choose an ip adress outside of your routers DHCP range, so set the DHCP range accordingly.
 
-## User	
+### User	
 Add a user named "admin" with password "admin" (for now), this user will own all eibd and smarthome stuff
 ```
 sudo adduser admin
@@ -82,7 +83,7 @@ logout
 Start a new PuTTy session using the new credentials
 We can leave the pi user for now but it will have to be deleted at some point
 	
-## Tools
+### Tools
 Some essential linux tools we will be using need to be installed now
 ```	
 sudo apt-get update
@@ -95,8 +96,8 @@ sudo pip install ephem
 Clone the repository to a directory where all files will be kept
 ```
 cd /usr/local
-git clone git://github.com/brechtba/knxcontrol.git
-chown -R admin:admin /usr/local/knxcontrol
+sudo git clone git://github.com/brechtba/knxcontrol.git
+sudo chown -R admin:admin /usr/local/knxcontrol
 ```
 	
 ## EIBD
@@ -117,7 +118,6 @@ groupswrite ip:localhost 1/1/71 1
 ```
 	
 ### Configuration
-
 Create a configuration file
 ```
 sudo nano /etc/default/eibd
@@ -131,9 +131,9 @@ EIB_IF="ipt:192.168.1.3"
 ```
 Save the file and Exit using `Ctrl+O` `Return` and `Ctrl+X`
 
-Move the file "eibd" from the instalation folder to /etc/init.d
+Move the file "eibd" from the installation folder to /etc/init.d
 ```
-sudo mv /tmp/knxcontrol_installation/eibd /etc/init.d/eibd
+sudo mv /usr/local/knxcontrol/installation/eibd /etc/init.d/eibd
 ```
 
 Change the owner and group to root and set permissions
@@ -166,6 +166,22 @@ Also test if eibd is loaded on reboot by rebooting (`sudo reboot`), starting a n
 ## SMARTHOME.PY
 The next step is configuring smarthome.py
 
+Move the file "smarthome" from the installation folder to /etc/init.d
+```
+sudo mv /usr/local/knxcontrol/installation/smarthome /etc/init.d/smarthome
+```
+
+Change the owner and group to root and set permissions
+```
+sudo chown root /etc/init.d/smarthome
+sudo chgrp root /etc/init.d/smarthome
+sudo chmod 755 /etc/init.d/smarthome
+```
+
+Activate auto starting
+```
+sudo update-rc.d smarthome defaults
+```
 
 
 ## FTP

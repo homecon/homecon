@@ -1,0 +1,74 @@
+#!/bin/sh
+### BEGIN INIT INFO
+# Provides:          smarthome
+# Required-Start:    $syslog $network
+# Required-Stop:     $syslog $network
+# Should-Start:      eibd owserver
+# Should-Stop:       eibd owserver
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: Start SmartHome.py
+### END INIT INFO
+
+DESC="SmartHome.py"
+NAME=smarthome.py
+SH_ARGS="-q"
+SH_UID='admin'
+
+PATH=/sbin:/usr/sbin:/bin:/usr/bin:/usr/local/bin
+DIR=/usr/local/knxcontrol/smarthome/bin
+DAEMON=$DIR/$NAME
+SCRIPTNAME=/etc/init.d/$NAME
+PIDFILE=/var/run/$NAME.pid
+
+[ -x "$DAEMON" ] || exit 0
+[ -r /etc/default/$NAME ] && . /etc/default/$NAME
+
+DAEMON_ARGS="$SH_ARGS"
+
+do_start()
+{
+        touch $PIDFILE
+    chown $SH_UID:$SH_UID $PIDFILE
+    start-stop-daemon --start --user $SH_UID --group $SH_UID --chuid $SH_UID --pidfile $PIDFILE --startas $DAEMON --test > /dev/null || return 1
+    start-stop-daemon --start --user $SH_UID --group $SH_UID --chuid $SH_UID --pidfile $PIDFILE --startas $DAEMON -- $DAEMON_ARGS || return 2
+        ps ax | grep $DAEMON | grep -v grep | awk '{print $1}' > $PIDFILE
+}
+
+do_stop()
+{
+    start-stop-daemon --stop --retry=TERM/30/KILL/5 --pidfile $PIDFILE
+    RETVAL="$?"
+    [ "$RETVAL" = 2 ] && return 2
+    start-stop-daemon --stop --quiet --oknodo --retry=0/30/KILL/5 --exec $DAEMON
+    [ "$?" = 2 ] && return 2
+    rm -f $PIDFILE 2> /dev/null
+    return "$RETVAL"
+}
+
+do_reload() {
+    start-stop-daemon --stop --signal 1 --quiet --pidfile $PIDFILE --name $NAME
+    return 0
+}
+
+case "$1" in
+    start)
+        do_start
+        ;;
+    stop)
+        do_stop
+        ;;
+    restart)
+        echo "Restarting $DESC" "$NAME"
+        do_stop
+        sleep 1
+        do_start
+        ;;
+    *)
+        echo "Usage: $SCRIPTNAME {start|stop|restart}" >&2
+        exit 3
+        ;;
+
+esac
+
+exit 0
