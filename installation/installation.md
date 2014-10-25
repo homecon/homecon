@@ -2,19 +2,10 @@
 
 
 
-
-
-
 ## Start fresh
 Write a fresh raspbian image to a 8GB SD card using win32diskimager
 A high end SD card is preferable as we will write to it a lot
 Plug in the raspberry pi and connect to your network
-
-
-
-
-
-
 
 
 
@@ -37,8 +28,7 @@ Under the internationalisation options choose Change Timezone and set it to your
 I'm not changing the password yet to make a general image of this pi with the default password.
 
 When asked choose Reboot now
-
-		
+	
 ### Networking
 After the reboot find the ip adress again and connect using PuTTy
 
@@ -107,15 +97,6 @@ sudo pip install ephem
 	
 	
 	
-	
-	
-	
-	
-	
-	
-	
-	
-	
 ## KNXControl
 Clone the repository to a directory where all files will be kept
 ```
@@ -127,19 +108,13 @@ Set permissions
 ```
 sudo chown -R admin:admin /usr/local/knxcontrol
 sudo chmod -R 744 /usr/local/knxcontrol
+sudo chmod -R 755 /usr/local/knxcontrol/visualisation
+sudo chmod 755 /usr
+sudo chmod 755 /usr/local
+sudo chmod 755 /usr/local/knxcontrol
 ```
 	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
+
 	
 ## EIBD
 Go to the installation directory
@@ -205,10 +180,6 @@ Also test if eibd is loaded on reboot by rebooting (`sudo reboot`), starting a n
 
 
 
-
-
-
-
 ## FTP
 We will set up an ftp server to move files to your pi. The actual server is already installed
 To configure the server open the configure file
@@ -239,6 +210,13 @@ force_dot_files=YES
 Save the file and Exit using `Ctrl+O` `Return` and `Ctrl+X` and restart the ftp server:
 ```
 sudo service vsftpd restart
+```
+
+## www directory
+Create a symlink in the www directory to the `knxcontrol/visualisation` folder:
+```
+cd /var/www
+sudo ln -s /usr/local/knxcontrol/visualisation  knxcontrol
 ```
 
 
@@ -305,6 +283,11 @@ Restart MySQL with the command:
 ```
 sudo /etc/init.d/mysql restart
 ```
+
+### Setup tables
+
+
+
 
 
 ## SMARTHOME.PY
