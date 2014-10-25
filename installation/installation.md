@@ -69,10 +69,19 @@
 	´logout´
 	
 	Start a new PuTTy session using the new credentials
+	We can leave the pi user for now but it will have to be deleted at some point
+	
+## KNXControl
+	Create a directory for all files and clone the repository there
+
 	
 ## FTP
 	We will set up an ftp server to move files to your pi. This is done first to be able to use some installation scripts:
-	´sudo apt-get install vsftpd´
+	´´´
+	sudo apt-get update
+	sudo apt-get install vsftpd
+	´´´
+	
 	To configure the server open the configure file
 	´sudo nano /etc/vsftpd.conf´
 
@@ -101,9 +110,7 @@
 
 	now ftp the content of the installation directory in the repository to the installation directory on your pi
 	
-	
 ## EIBD
-
 	Go to the installation directory
 	´cd /tmp/knxcontrol_installation´
 	
@@ -154,59 +161,14 @@
 		Also test if eibd is loaded on reboot by rebooting (´sudo reboot´), starting a new PuTTy session and retrying the above commands
 		
 		
-
-	
-#################################################################
-# change eibd settings
-#################################################################
-sudo vim /etc/default/eibd
-# uncomment lines and set the following values: 
-EIB_ARGS="..."
-EIB_ADDR="0.0.255"
-EIB_IF="ipt:192.168.1.3"  # ip router adress
-
-# restart eibd
-/etc/init.d/eibd restart
-
-# test eibd groupswrite
-
-groupswrite ip:localhost 1/1/5 1
-groupswrite ip:localhost 1/1/5 0
-
-#################################################################
-# change the network settings to a static ip adress 192.168.1.2
-#################################################################
-
-sudo nano /etc/network/interfaces
-
-# overwrite with:
-auto lo
-iface lo inet loopback
-
-auto eth0
-iface eth0 inet static
-address 192.168.1.2
-gateway 192.168.1.1
-netmask 255.255.255.0
-
-# restart networking
-sudo /etc/init.d/networking restart
-
-# ignore error messages
-
-#################################################################
-# add a user
-#################################################################
-sudo adduser admin
-sudo passwd admin
-
-sudo userdel pi
-#################################################################
-# install packages:
-#################################################################
-sudo apt-get update
-sudo apt-get install vsftpd
-#sudo apt-get install mc
+## SMARTHOME.PY
+	The next step is installing smarthome.py but first we need some prequisites
+	´´´	
+	sudo apt-get -y install openssh-server apache2 php5 php5-json openntpd python3 python3-dev python3-setuptools git unzip wget libawl-php php5-curl
+	sudo easy_install3 pip
+	sudo pip install ephem
+	´´´
+		
 
 #################################################################
 # configure ftp server
