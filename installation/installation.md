@@ -18,7 +18,6 @@ Run configuration
 ```
 sudo raspi-config
 ```
-
 Choose
 Enlarge the root partition
 
@@ -84,6 +83,13 @@ logout
 Start a new PuTTy session using the new credentials
 We can leave the pi user for now but it will have to be deleted at some point
 	
+### Time
+To automatically set the timezone we use a Network Time Protocol, just install ntp and the time should be fine
+```
+sudo apt-get install ntp
+```
+
+
 ### Tools
 Some essential linux tools we will be using need to be installed now, when sudo is called you will be asked for a password, enter admin
 ```	
