@@ -4,7 +4,6 @@ include('../data/mysql.php');
 	
 //mysql_query("DROP TABLE measurements_signal".$id."_week");
 
-
 // users
 mysql_query("CREATE TABLE IF NOT EXISTS `users` (`id` int(11) NOT NULL AUTO_INCREMENT,
                                                  `username` varchar(255) NOT NULL,
@@ -15,12 +14,16 @@ mysql_query("INSERT INTO `users` (id,username,password) VALUES (1,'admin','".md5
 												  
 												  
 // data
-mysql_query("CREATE TABLE IF NOT EXISTS `data` (`password` varchar(255) NOT NULL,
-                                                `ip` varchar(255) NOT NULL,
+mysql_query("CREATE TABLE IF NOT EXISTS `data` (`id` int(11) NOT NULL AUTO_INCREMENT,
+												`ip` varchar(255) NOT NULL,
                                                 `port` varchar(255) NOT NULL,
                                                 `web_ip` varchar(255) NOT NULL,
                                                 `web_port` varchar(255) NOT NULL) ENGINE=InnoDB DEFAULT CHARSET=latin1)");
-												
+
+// add default data
+mysql_query("INSERT INTO `data` (id,ip,port,web_ip,web_port) VALUES (1,'192.168.1.2','2424','mydomain.ddns.net','9024')");												
+
+								
 // alarms
 mysql_query("CREATE TABLE IF NOT EXISTS `alarms` (`id` int(11) NOT NULL AUTO_INCREMENT,
                                                   `sectionid` int(11) NOT NULL DEFAULT '1',

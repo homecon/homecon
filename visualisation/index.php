@@ -42,13 +42,16 @@
 	}
 	
 	if($cookie_check){
+		// get ip and port from mysql
+		$result = mysql_query("SELECT * FROM data WHERE id = 1").
+		$data = mysql_fetch_array($result);
 		if($web){
-			$smarthome_adress = "baeten-gielen.ddns.net";
-			$smarthome_port = "9024";
+			$smarthome_adress = $data['web_ip'];
+			$smarthome_port = $data['web_port'];
 		}
 		else{
-			$smarthome_adress = "192.168.1.2";
-			$smarthome_port = "2424";
+			$smarthome_adress = $data['ip'];
+			$smarthome_port = $data['port'];
 		}	
 
 		echo "
