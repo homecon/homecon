@@ -342,10 +342,22 @@ And check the log file for errors
 tail /usr/local/knxcontrol/smarthome/var/log/smarthome.log
 ```
 
+## Create an image
+At this step the base image is created. This is done on a different machine running some linux version. I used a bootable usb drive with Ubuntu 14.04.1.
+
+First shutdown yout pi using `sudo halt`. Wait until it has stopped and remove the sd card. Fire up your linux machine, insert the sd card but do not mount it.
+If the card is mounted automatically unmount it.
+
+We will resize the partition to around it's minimum size to be shure we can mount it on different sd cards. When inserted in a pi you can have it fill the entire space again using `sudo raspi-config`.
+Start gparted, all your partitions should show up now. Find the sd-card (probably /dev/hda1) select it and click "Resize/Move". Click the right black arrow and move it until the wanted size is obtained.
+Click "resize/move". and finally click "apply" and confirm to make the changes.
+
+
+
 
 
 ## Changing passwords
-At this step the base image is created after this you will have to change thing for your own system. The first step is changing all passwords to more secure values.
+After doing all this, or simply mounting the image, you will have to change thing for your own system. The first step is changing all passwords to more secure values.
 
 
 
