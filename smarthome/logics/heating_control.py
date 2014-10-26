@@ -6,7 +6,7 @@ timestamp = int( (now - datetime.datetime(1970,1,1)).total_seconds() )
 localtime = datetime.datetime.now()
 
 # connect to the mysql database
-con = pymysql.connect('localhost', 'knxcontrol', 'ysUnGTQEadTsDnTD', 'knxcontrol')
+con = pymysql.connect('localhost', 'knxcontrol', sh.building.mysql.conf['password'], 'knxcontrol')
 cur = con.cursor()
 
 
