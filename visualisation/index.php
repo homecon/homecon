@@ -43,7 +43,7 @@
 	
 	if($cookie_check){
 		// get ip and port from mysql
-		$result = mysql_query("SELECT * FROM data WHERE id = 1").
+		$result = mysql_query("SELECT * FROM data WHERE id = 1");
 		$data = mysql_fetch_array($result);
 		if($web){
 			$smarthome_adress = $data['web_ip'];
