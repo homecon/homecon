@@ -356,45 +356,59 @@ At this step the base image is created after this you will have to change thing 
 
 
 
+## External hard drive
+### Mounting
+Next we will mount an external hard drive to use as network storage and mysql backup. This is recommended as the SD card in the raspberrry pi will probably be corruptes sooner or later.
+A usb drive with external power supply is required as the Raspberry pi will probably not be able to supply the required power leading to death and destruction.
+It is also recomended that you format the hard drive to an EXT4 filesystem beforehand.
+Plug in the usb hard drive to one of the Raspberry pi usb ports and check if the hard drive is found:
+´´´
+sudo fdisk -l
+´´´
 
-#################################################################
-# squeezelite
-#################################################################
-#sound card driver
-sudo apt-get install alsa
+The output will be something like this:
+´´´
+Disk /dev/sdb: 60.0 GB, 60060155904 bytes
+255 heads, 63 sectors/track, 7301 cylinders
+Units = cylinders of 16065 * 512 = 8225280 bytes
+Disk identifier: 0x000b2b03
 
-# libraries
-sudo apt-get install libfaad2 libmad0 libmpg123-0 libasound2
+   Device Boot      Start         End      Blocks   Id  System
+/dev/sda1               1        7301    58645251    b  W95 EXT4
+´´´
 
-wget https://squeezelite.googlecode.com/files/squeezelite-armv6hf
-chmod +x squeezelite-armv6hf
-sudo mv squeezelite-armv6hf /usr/bin/
-sudo adduser admin audio
+Create a directory where to mount the drive
+´´´
+sudo mkdir /mnt/hdd 
+´´´
 
-# show audio devices
-/usr/bin/squeezelite-armv6hf -l
+To automate the mounting on reboot we neet to edit the filesystem table:
+´´´
+sudo nano /etc/fstab
+´´´
+Add the following line
+```
+/dev/sda1       /mnt/hdd           vfat    defaults        0       0 
+```
 
-# test squeezelite
-/usr/bin/squeezelite-armv6hf -s 192.168.1.2 -n pi1 -z
+And finally mount all remaining devices:
+```
+mount -a 
+```
 
-# download autostart script
-wget http://www.gerrelt.nl/RaspberryPi/squeezelitehf.sh
-# edit script, only the squeezelite name needs to be changed to pi1 or something
-nano squeezelitehf.sh
-SL_NAME = "pi1" # needs to be uncommented
 
-chmod u+x squeezelitehf.sh
-sudo mv squeezelitehf.sh /etc/init.d/squeezelite
-sudo update-rc.d squeezelite defaults
+### network storage
+```
+sudo apt-get install samba samba-common-bin
+```
 
-sudo /etc/init.d/squeezelite start
-
-#################################################################
-# python and mysql
-#################################################################
-sudo apt-get install python-mysqldb
-
-# add
+Create a backup of the conf file and edit the original file
+```
+sudo cp /etc/samba/smb.conf /etc/samba/smb.conf.old
+sudo nano /etc/samba/smb.conf
+```
+Add
+```
 [Backup]
 	comment = Backup Folder
 	path = /media/hdd
@@ -403,32 +417,31 @@ sudo apt-get install python-mysqldb
 	create mask = 0775
 	directory mask = 0775
 	read only = no
-	
+```
+
+And restart Samba
+```
 sudo /etc/init.d/samba restart
-
-#################################################################
-# network storage
-#################################################################
-
-sudo apt-get install samba samba-common-bin
-
-sudo cp /etc/samba/smb.conf /etc/samba/smb.conf.old
-sudo nano /etc/samba/smb.conf
+```
 
 
+## ipopt and pyipopt
 
-#################################################################
-# ipopt and pyipopt
-#################################################################
-# http://www.coin-or.org/Ipopt/documentation/
-
+Documentation is found at http://www.coin-or.org/Ipopt/documentation/
+Install prequisites
+```
 sudo apt-get install gcc g++ gfortran subversion patch wget
+```
 
+Get ipopt from the repository
+```
 cd /etc
 sudo svn co https://projects.coin-or.org/svn/Ipopt/stable/3.11 CoinIpopt 
 cd CoinIpopt
+```
 
-# getting 3rd party libraries
+Getting 3rd party libraries
+```
 cd ThirdParty/Blas 
 sudo ./get.Blas 
 cd ../Lapack 
@@ -439,45 +452,53 @@ cd ../Mumps
 sudo ./get.Mumps
 cd ../Metis
 sudo ./get.Metis
-
 cd ..
 cd ..
+```
 
-
-# compiling IPOPT
+Compiling IPOPT
+```
 sudo mkdir build
 cd build
-
 sudo /etc/CoinIpopt/configure -C ADD_CFLAGS="-DNO_fpu_control"
 sudo make
 sudo make test
 sudo make install
+```
 
-#test the example
+Test the example
+```
 cd /etc/CoinIpopt/build/Ipopt/examples/hs071_cpp
 sudo ./hs071_cpp
+```
 
-
-
-# getting python.h
+Getting python.h
+```
 sudo apt-get install python3.2-dev
+```
 
-
-# pyipopt
+Install pyipopt
+```
 cd /etc
 sudo git clone https://github.com/facat/py3ipopt.git
 cd py3ipopt
+```
 
-# edit setup.py
+edit setup.py
+```
 sudo nano setup.py 
-#change directory line to "/etc/CoinIpopt/build/"
-#change "blas" to "coinblas" and "lapack" to "coinlapack" in libraries 
+```
+Change directory line to `/etc/CoinIpopt/build/`
+Change `blas` to `coinblas` and `lapack` to `coinlapack` in libraries 
 
+```
 #sudo ldconfig
 sudo python3 setup.py build
 sudo python3 setup.py install
-
 cd examples
-# change print command in hs071.py, add ()
+```
+change print command in hs071.py, add (), This might not be required anymore
+```
 sudo nano hs071.py
 python3 hs071.py
+```
