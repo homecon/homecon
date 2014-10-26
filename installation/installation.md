@@ -85,12 +85,13 @@ Start a new PuTTy session using the new credentials
 We can leave the pi user for now but it will have to be deleted at some point
 	
 ### Tools
-Some essential linux tools we will be using need to be installed now
+Some essential linux tools we will be using need to be installed now, when sudo is called you will be asked for a password, enter admin
 ```	
 sudo apt-get update
 sudo apt-get -y install apache2 vsftpd php5 php5-json openntpd python3 python3-dev python3-setuptools git unzip wget libawl-php php5-curl
 sudo easy_install3 pip
 sudo pip install ephem
+sudo pip install PyMySQL
 ```
 	
 	
