@@ -345,22 +345,28 @@ tail /usr/local/knxcontrol/smarthome/var/log/smarthome.log
 ## Create an image
 At this step the base image is created. This is done on a different machine running some linux version. I used a bootable usb drive with Ubuntu 14.04.1.
 
-First shutdown yout pi using `sudo halt`. Wait until it has stopped and remove the sd card. Fire up your linux machine, insert the sd card but do not mount it.
-If the card is mounted automatically, unmount it from a shell
+First shutdown yout pi using `sudo halt`. Wait until it has stopped and remove the sd card. Fire up your linux machine, insert the sd card but do not mount it but check the name with:
 ```
 sudo fdisk -l
-sudo umount /dev/sda
 ```
 
 We will resize the partition to around it's minimum size to be sure we can mount it on different sd cards. When inserted in a pi you can have it fill the entire space again using `sudo raspi-config`.
 
-Start gparted, all your partitions should show up now. Find the sd-card (probably /dev/hda1) select it and click "Resize/Move". Click the right black arrow and move it until the wanted size is obtained.
+Start gparted, all your partitions should show up now. Find the ext4 partition on the sd-card (probably /dev/mmcblk0p2) select it and click Partition->Unmount. Then Click "Partition->Resize/Move". Click the right black arrow and move it until the wanted size is obtained.
 Click "resize/move". and finally click "apply" and confirm to make the changes.
 
 Now we will use dd to create the actual image
 ```
-dd if=/dev/sda of=knxcontrol.img bs=4M
+sudo dd if=/dev/mmcblk0 of=knxcontrol.img bs=4M
 ```
+
+You can write the image back to an sd card using:
+```
+sudo dd if=knxcontrol.img of=/dev/mmcblk0
+```
+You will get an error message at the end of the process but this doesn't matter as the end is just blank.
+
+
 
 ## Changing passwords
 After doing all this, or simply mounting the image, you will have to change thing for your own system. The first step is changing all passwords to more secure values.
