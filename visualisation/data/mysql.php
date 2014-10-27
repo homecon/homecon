@@ -1,8 +1,10 @@
 <?php
 
-if (!mysql_connect("localhost","knxcontrol","admin")) {
+include_once($_SERVER['DOCUMENT_ROOT'].'/pages/config.php');
+
+if (!mysql_connect(HOST,USER,PASSWORD)) {
   die('Could not connect: ' . mysql_error());
 }
-mysql_select_db("knxcontrol");
+mysql_select_db(DATABASE);
 
 ?>
