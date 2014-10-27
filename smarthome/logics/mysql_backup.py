@@ -21,7 +21,7 @@ if BACKUP_PATH:
 
 	# Starting actual database backup process.
 	logger.warning(BACKUP_PATH)
-	dumpcmd = "mysqldump -u " + DB_USER + " -p" + DB_USER_PASSWORD + " " + DB_NAME + " > " + BACKUP_PATH + "/" + DB_NAME + "_" + DATETIME  + ".sql"
+	dumpcmd = "mysqldump -u " + DB_USER + " -p" + DB_USER_PASSWORD + " " + DB_NAME + "alarm_actions alarms data measurements_legend temperature_setpoints users" + " > " + BACKUP_PATH + "/" + DB_NAME + "_" + DATETIME  + ".sql"
 	os.system(dumpcmd)
 
 	logger.warning("Database backup created")
