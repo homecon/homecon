@@ -22,7 +22,7 @@ endtimestamp = int( (endddate - epoch).total_seconds() )
 con = pymysql.connect('localhost', 'knxcontrol', sh.building.mysql.conf['password'], 'knxcontrol')
 cur = con.cursor()
 
-cur.execute("INSERT INTO measurements_weekaverage(year,month,timestamp) VALUES ('%s','%s','%s')" % (startdate.year,startdate.month,starttimestamp))
+cur.execute("INSERT INTO measurements_monthaverage(year,month,timestamp) VALUES ('%s','%s','%s')" % (startdate.year,startdate.month,starttimestamp))
 
 
 cur.execute("SELECT * FROM measurements_legend")
