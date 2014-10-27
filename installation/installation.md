@@ -318,7 +318,11 @@ sudo /etc/init.d/mysql restart
 
 
 ## SMARTHOME.PY
-The next step is configuring smarthome.py
+The next step is configuring smarthome.py. First we set the permissions of some files:
+```
+sudo chmod 744 /usr/local/knxcontrol/smarthome/bin/smarthome.py
+sudo chmod 755 /usr/local/knxcontrol/smarthome/var/log/smarthome.log
+```
 
 Move the file "smarthome" from the installation folder to /etc/init.d
 ```
@@ -418,12 +422,12 @@ sudo nano /etc/fstab
 ´´´
 Add the following line
 ```
-/dev/sda1       /mnt/hdd           vfat    defaults        0       0 
+/dev/sda1       /mnt/hdd           ext4    defaults        0       0 
 ```
 
 And finally mount all remaining devices:
 ```
-mount -a 
+sudo mount -a 
 ```
 
 
