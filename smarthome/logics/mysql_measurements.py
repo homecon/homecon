@@ -36,7 +36,6 @@ try :
 	cur.execute( query )
 except:
 	logger.warning("could not add measurements to database")
-	logger.warning(query)
 	
 con.commit()	
 con.close()

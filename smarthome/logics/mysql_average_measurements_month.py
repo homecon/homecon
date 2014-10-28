@@ -37,7 +37,7 @@ for measurement in cur:
 	else:
 		avg = row[0][0]
 		
-	query = query + "(%s,%s,%f), "  % (measurement[0],starttimestamp,avg)	
+	query = query + "(%s,%s,%f),"  % (measurement[0],starttimestamp,avg)	
 	
 query = query[:-1]	
 cur.execute(query)
