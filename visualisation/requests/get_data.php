@@ -19,7 +19,7 @@ for($i = 0; $i < count($signals); $i++){
 
 	echo "signal";
 	
-	$result = mysql_query("SELECT * FROM measurements_legend WHERE ID = ".$signals[$i]);
+	$result = mysql_query("SELECT * FROM measurements_legend WHERE id = ".$signals[$i]);
 	while($row = mysql_fetch_array($result)) {
 
 		echo $row['name'].";";
@@ -27,10 +27,10 @@ for($i = 0; $i < count($signals); $i++){
 	}
 	
 	
-	$result = mysql_query("SELECT time, signal".$signals[$i]." FROM $table WHERE time > $after_date");
+	$result = mysql_query("SELECT time, value FROM $table WHERE signal_id = ".$signals[$i]." AND time > $after_date");
 	while($row = mysql_fetch_array($result)) {
-		if(!is_null($row['signal'.$signals[$i]])){
-			echo date('Y-m-d H:i:s',$row['time']). "," . $row['signal'.$signals[$i]]. ";";
+		if(!is_null($row['value'])){
+			echo date('Y-m-d H:i:s',$row['time']). "," . $row['value']. ";";
 		}
 		else{
 			echo date('Y-m-d H:i:s',$row['time']). ",null;";
