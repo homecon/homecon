@@ -117,8 +117,8 @@ $res = mysql_query("INSERT INTO `measurements_legend` (item,name,quantity,unit,d
 																					('building.irradiation.direct_theoretical','Direct','Heat flux','W/m2','Theoretical direct solar irradiation'),
 																					('building.irradiation.diffuse_theoretical','Diffuse','Heat flux','W/m2','Theoretical diffuse solar irradiation'),
 																					('building.irradiation.cloud_factor','Clouds','','-','Cloud factor'),
-																					('building.irradiation.wind_velocity','Wind speed','Velocity','m/s','Wind speed'),
-																					('building.irradiation.rain','Rain','','-','Rain or not')");												
+																					('building.wind_velocity','Wind speed','Velocity','m/s','Wind speed'),
+																					('building.rain','Rain','','-','Rain or not')");												
 if($res){
 	echo "default measurements added<br>";
 }

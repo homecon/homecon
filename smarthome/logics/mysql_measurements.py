@@ -23,9 +23,11 @@ query = "INSERT INTO measurements (signal_id,time,value) VALUES "
 
 # run through legend
 for measurement in legend:
-	item = sh.return_item(measurement[1])
-	query = query + "(%s,%s%f), " % (measurement[0],timestamp,item())
-
+	try:
+		item = sh.return_item(measurement[1])
+		query = query + "(%s,%s,%f)," % (measurement[0],timestamp,item())
+	except:
+		logger.warning( "legend entry "+measurement[0]+": "+ measurement[1]+", is not an item")
 	
 query = query[:-1]
 
@@ -34,6 +36,7 @@ try :
 	cur.execute( query )
 except:
 	logger.warning("could not add measurements to database")
+	logger.warning(query)
 	
 con.commit()	
 con.close()
