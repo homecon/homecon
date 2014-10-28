@@ -111,14 +111,14 @@ else{
 	echo "measurements legend table creation failed <br>";
 }
 // add default measurement entries
-$res = mysql_query("INSERT INTO `measurements_legend` (item,name,quantity,unit,description) VALUES ('building.ambient_temperature','Temperature','Temperature','degC','Outside temperature'),
-                                                                                    ('building.irradiation.azimut','Azimut','Angle','deg','Solar azimut'),
-																					('building.irradiation.altitude','Altitude','Angle','deg','Solar altitude'),
-																					('building.irradiation.direct_theoretical','Direct','Heat flux','W/m2','Theoretical direct solar irradiation'),
-																					('building.irradiation.diffuse_theoretical','Diffuse','Heat flux','W/m2','Theoretical diffuse solar irradiation'),
-																					('building.irradiation.cloud_factor','Clouds','','-','Cloud factor'),
-																					('building.wind_velocity','Wind speed','Velocity','m/s','Wind speed'),
-																					('building.rain','Rain','','-','Rain or not')");												
+$res = mysql_query("INSERT INTO `measurements_legend` (id,item,name,quantity,unit,description) VALUES 	(1,'building.ambient_temperature','Temperature','Temperature','degC','Outside temperature'),
+																										(2,'building.irradiation.azimut','Azimut','Angle','deg','Solar azimut'),
+																										(3,'building.irradiation.altitude','Altitude','Angle','deg','Solar altitude'),
+																										(4,'building.irradiation.direct_theoretical','Direct','Heat flux','W/m2','Theoretical direct solar irradiation'),
+																										(5,'building.irradiation.diffuse_theoretical','Diffuse','Heat flux','W/m2','Theoretical diffuse solar irradiation'),
+																										(6,'building.irradiation.cloud_factor','Clouds','','-','Cloud factor'),
+																										(7,'building.wind_velocity','Wind speed','Velocity','m/s','Wind speed'),
+																										(8,'building.rain','Rain','','-','Rain or not')");												
 if($res){
 	echo "default measurements added<br>";
 }
