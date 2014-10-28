@@ -6,7 +6,7 @@ now.replace( second=0, microsecond=0)
 
 
 # connect to the mysql database
-con = pymysql.connect('localhost', 'knxcontrol', 'ysUnGTQEadTsDnTD', 'knxcontrol')
+con = pymysql.connect('localhost', 'knxcontrol', sh.building.mysql.conf['password'], 'knxcontrol')
 cur = con.cursor()
 
 

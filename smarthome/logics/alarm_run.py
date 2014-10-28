@@ -9,7 +9,7 @@ import pymysql
 now = sh.now();
 
 # connect to the mysql database
-con = pymysql.connect('localhost', 'knxcontrol', 'ysUnGTQEadTsDnTD', 'knxcontrol')
+con = pymysql.connect('localhost', 'knxcontrol', sh.building.mysql.conf['password'], 'knxcontrol')
 cur = con.cursor(pymysql.cursors.DictCursor)
 
 # get alarm data from mysql 
