@@ -111,7 +111,7 @@ else{
 	echo "measurements legend table creation failed <br>";
 }
 // add default measurement entries
-$res = mysql_query("INSERT INTO `data` (item,name,quantity,unit,description) VALUES ('building.ambient_temperature','Temperature','Temperature','degC','Outside temperature'),
+$res = mysql_query("INSERT INTO `measurements_legend` (item,name,quantity,unit,description) VALUES ('building.ambient_temperature','Temperature','Temperature','degC','Outside temperature'),
                                                                                     ('building.irradiation.azimut','Azimut','Angle','deg','Solar azimut'),
 																					('building.irradiation.altitude','Altitude','Angle','deg','Solar altitude'),
 																					('building.irradiation.direct_theoretical','Direct','Heat flux','W/m2','Theoretical direct solar irradiation'),
