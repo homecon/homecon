@@ -18,16 +18,16 @@ legend = con.cursor()
 legend.execute("SELECT id,item FROM measurements_legend WHERE item <> ''")
 
 # create mysql querry
-query1 = "INSERT INTO measurements (time"
-query2 = "VALUES (%s" % (timestamp)
+query = "INSERT INTO measurements (signal_id,time,value) VALUES "
+
 
 # run through legend
 for measurement in legend:
 	item = sh.return_item(measurement[1])
-	query1 = query1 + ",signal%s" % (measurement[0])
-	query2 = query2 + ",%f" % (item())
+	query = query + "(%s,%s%f), " % (measurement[0],timestamp,item())
+
 	
-query = query1 + ") " + query2 + ")"
+query = query[:-1]
 
 # try to execute query
 try :
