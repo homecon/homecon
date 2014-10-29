@@ -58,7 +58,7 @@
 							<div>
 								<a class='add' id='measurements_submit' data-role='button'>Submit</a>
 							</div>
-							<div data-role='popup' id='measurements_submit_popup' class='ui-content' data-position-to='window'>
+							<div data-role='popup' id='measurements_submit_popup' class='ui-content' data-position-to='window' data-overlay-theme='a' data-dismissible='false'>
 								<p>Please wait<p>
 							</div>
 							<div class='signal' id='signal_template' data-id='id' style='display:none'>
