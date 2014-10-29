@@ -4,23 +4,18 @@
 $(document).ready(function(){
 	$('.measurements_define').on('click','#measurements_submit',function(){
 		
-		// cycle through all signals
-		$( "#measurements_define" ).children().each(function(){
-			// get the signal id
-			id = $(this).attr('data-id');
-			
-			$(this).children().each(function(){
-				// get the column tot add value to
+		// cycle through all fields
+		$('#measurements_define :input').each(function(){
+			//if the field has column id do nothing else
+			if($(this).attr('data-column')!='id'){
+				id = $(this).parents().filter('.signal').attr('data-id');
 				column = $(this).attr('data-column');
 				value = $(this).val();
 				
-				// post id column and value to add to database
 				$.post( 'requests/table_set.php', {'table':'measurements_legend' , 'id': id , 'column': column , 'value': value}); 
-				
-				//for debugging: 
-				//$.post( 'requests/alarm_set.php', {'id': id , 'column': column , 'value': value}, function(response){alert(response);}); 
-			});
-		});				
+			}
+		
+		});	
 	});
 });
 
