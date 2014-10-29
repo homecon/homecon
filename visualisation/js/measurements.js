@@ -9,13 +9,13 @@ $(document).ready(function(){
 			// get the signal id
 			id = $(this).attr('data-id');
 			
-			$(this).children.each({function(){
+			$(this).children().each(function(){
 				// get the column tot add value to
 				column = $(this).attr('data-column');
 				value = $(this).val();
 				
 				// post id column and value to add to database
-				$.post( 'requests/measurements_set.php', {'id': id , 'column': column , 'value': value}); 
+				$.post( 'requests/table_set.php', {'table':'measurements_legend' , 'id': id , 'column': column , 'value': value}); 
 				
 				//for debugging: 
 				//$.post( 'requests/alarm_set.php', {'id': id , 'column': column , 'value': value}, function(response){alert(response);}); 

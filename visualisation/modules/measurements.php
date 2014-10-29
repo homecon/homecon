@@ -51,7 +51,7 @@
 	while($row = mysql_fetch_array($result)){
 		echo "
 					 
-					<div class='signal_placeholder' data-id=".$row['id']." data-item=".$row['item']." data-name=".$row['name']." data-quantity=".$row['quantity']." data-unit=".$row['unit']." data-description=".$row['description']."'></div>";
+					<div class='signal_placeholder' data-id='".$row['id']."' data-item='".$row['item']."' data-name='".$row['name']."' data-quantity='".$row['quantity']."' data-unit='".$row['unit']."' data-description='".$row['description']."'></div>";
 	}
 	echo "
 					<p>Warning: the user is responsible for identifying signals after changes are made</p>
@@ -69,7 +69,7 @@
 						<input type='text' data-column='name' id='id_name' placeholder='name'>
 						<input type='text' data-column='quantity' id='id_quantity' placeholder='quantity'>
 						<input type='text' data-column='unit' id='id_unit' placeholder='unit'>
-						<input type='text' data-column='description' id='id_description' value='$description' placeholder='description'>
+						<input type='text' data-column='description' id='id_description' placeholder='description'>
 					</div>";
 				
 			end_group();
