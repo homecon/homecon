@@ -10,6 +10,26 @@ con = pymysql.connect('localhost', 'knxcontrol', sh.building.mysql.conf['passwor
 cur = con.cursor()
 
 query = "REPLACE INTO measurements_legend (id,item,name,quantity,unit,description) VALUES "
+id = 0
+
+id = id+1
+query = query+"('"+str(id)+"','building.ambient_temperature','Temperature','Temperature','degC','Outside temperature'),"
+id = id+1
+query = query+"('"+str(id)+"','building.irradiation.azimut','Azimut','Angle','deg','Solar azimut'),"
+id = id+1
+query = query+"('"+str(id)+"','building.irradiation.altitude','Altitude','Angle','deg','Solar altitude'),"
+id = id+1
+query = query+"('"+str(id)+"','building.irradiation.direct_theoretical','Direct','Heat flux','W/m2','Theoretical direct solar irradiation'),"
+id = id+1
+query = query+"('"+str(id)+"','building.irradiation.diffuse_theoretical','Diffuse','Heat flux','W/m2','Theoretical diffuse solar irradiation'),"
+id = id+1
+query = query+"('"+str(id)+"','building.irradiation.cloud_factor','Clouds','','-','Cloud factor'),"
+id = id+1
+query = query+"('"+str(id)+"','building.wind_velocity','Wind speed','Velocity','m/s','Wind speed'),"
+id = id+1
+query = query+"('"+str(id)+"','building.rain','Rain','','-','Rain or not'),"											
+
+
 id = 8
 if hasattr(sh.building, 'flukso'):
 	for sensor in sh.building.flukso:

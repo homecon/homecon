@@ -3,19 +3,26 @@
 //////////////////////////////////////////////////////////////////////////////
 $(document).ready(function(){
 	$('.measurements_define').on('click','#measurements_submit',function(){
+		// display please wait
+		$('#measurements_submit_popup').popup('open');
 		
 		// cycle through all fields
 		$('#measurements_define :input').each(function(){
 			//if the field has column id do nothing else
-			if($(this).attr('data-column')!='id'){
+			if($(this).attr('data-column')!='id' && $(this).parents().filter('.signal').attr('id')!='signal_template'){
 				id = $(this).parents().filter('.signal').attr('data-id');
 				column = $(this).attr('data-column');
-				value = $(this).val();
+				value = $(this).attr('value')
 				
 				$.post( 'requests/table_set.php', {'table':'measurements_legend' , 'id': id , 'column': column , 'value': value}); 
 			}
 		
-		});	
+		});
+		
+		// hide
+		setTimeout(function(){
+			$('#measurements_submit_popup').popup('close');
+		}, 5000);
 	});
 });
 
@@ -58,22 +65,22 @@ display_signal = function(values){
 	
 	
 	
-	newSignal.find('#id_id').val(id);
+	newSignal.find('#id_id').attr('value',id);
 	newSignal.find('#id_id').attr('id','signal'+id+'_id');
 	
-	newSignal.find('#id_item').val(values['item']);
+	newSignal.find('#id_item').attr('value',values['item']);
 	newSignal.find('#id_item').attr('id','signal'+id+'_item');
 
-	newSignal.find('#id_name').val(values['name']);
+	newSignal.find('#id_name').attr('value',values['name']);
 	newSignal.find('#id_name').attr('id','signal'+id+'_name');
 
-	newSignal.find('#id_quantity').val(values['quantity']);
+	newSignal.find('#id_quantity').attr('value',values['quantity']);
 	newSignal.find('#id_quantity').attr('id','signal'+id+'_quantity');	
 	
-	newSignal.find('#id_unit').val(values['unit']);
+	newSignal.find('#id_unit').attr('value',values['unit']);
 	newSignal.find('#id_unit').attr('id','signal'+id+'_unit');
 	
-	newSignal.find('#id_description').val(values['description']);
+	newSignal.find('#id_description').attr('value',values['description']);
 	newSignal.find('#id_description').attr('id','signal'+id+'_description');
 	
 	newSignal.show();
