@@ -78,8 +78,8 @@ display_signal = function(values){
 	newSignal.find('#id_unit').val(values['unit']);
 	newSignal.find('#id_unit').attr('id','signal'+id+'_unit');
 	
-	newSignal.find('#id_dectription').val(values['dectription']);
-	newSignal.find('#id_dectription').attr('id','signal'+id+'_dectription');
+	newSignal.find('#id_description').val(values['description']);
+	newSignal.find('#id_description').attr('id','signal'+id+'_description');
 	
 	newSignal.show();
 	return newSignal;
