@@ -1,48 +1,10 @@
 <?php
 
-	if(array_key_exists('clear',$_POST)){
-		mysql_query("TRUNCATE measurements");
-		mysql_query("TRUNCATE measurements_weekaverage");
-		mysql_query("TRUNCATE measurements_monthaverage");
-	}
-	elseif(array_key_exists('define',$_POST)){
-	
-		$result = mysql_query("SELECT * FROM measurements_legend");
-		while($row = mysql_fetch_array($result)){
-			$id = $row['id'];
-			$item = $_POST['item'.$id];
-			$name = $_POST['name'.$id];
-			$quantity = $_POST['quantity'.$id];
-			$unit = $_POST['unit'.$id];
-			$description = $_POST['description'.$id];
-			
-			mysql_query("UPDATE measurements_legend SET item='$item', name='$name', quantity='$quantity', unit='$unit', description='$description' WHERE id=$id");
-		}
-	}
-
-
-	// display a form for data selection and table manipulation
-	
-	begin_article($page_class);
-		add_header("Measurements","measure_power_meter");
-		begin_collapsible("Export data",false);
-			begin_group(1);
-	echo "
-						<form action='modules/measurements_export.php' method='post' target='_blank' name='export' id='export'>
-							<label for='startdate'>Start datum:</label>
-							<input type='date' name='startdate' id='startdate'>
-							
-							<label for='enddate'>Eind datum:</label>
-							<input type='date' name='enddate' id='enddate'>
-							
-							<button type='submit' name='export'>Export</button>
-						</form>";
+			begin_article($page_class);
+				add_header("Measurements","measure_power_meter");
 				
-			end_group();
-		end_collapsible();
-		
-		begin_collapsible("Define signals",true);	
-			begin_group(1);
+				begin_collapsible("Define signals",false);	
+					begin_group(1);
 	echo "
 						<div class='measurements_define' id='measurements_define'>";
 
@@ -71,19 +33,31 @@
 							</div>
 						</div>";
 				
-			end_group();
-		end_collapsible();		
-			
-		begin_collapsible("Clear data",true);	
-			begin_group(1);	
+					end_group();
+				end_collapsible();		
+					
+				begin_collapsible("Clear data",true);	
+					begin_group(1);	
 	echo "	
-						<form action='index.php?page=modules/measurements' method='post' name='clear'>
-							<button type='submit' name='clear'>Clear all data</button>
-						</form>";	
+						<div class='measurements_clear'>
+							<div>
+								<a class='add' id='measurements_clear' data-role='button'>Clear all data</a>
+							</div>
+							<div data-role='popup' id='measurements_clear_popup' data-overlay-theme='a'>
+								<div data-role='header' class='ui-corner-top'>
+									<h1>Clear measurements?</h1>
+								</div>
+								<div data-role='content' class='ui-corner-bottom ui-content'>
+									<h3 class='ui-title'>Are you sure you want to clear all measurement data?</h3>
+									<a data-role='button' id='measurements_clear_cancel' data-inline='true' data-theme='c'>Cancel</a>    
+									<a data-role='button' id='measurements_clear_confirm' data-inline='true' data-theme='b'>Clear</a>  
+								</div>
+							</div>
+						</div>";	
 				
-			end_group();
-		end_collapsible();
-	end_article();
+					end_group();
+				end_collapsible();
+			end_article();
 
 
 

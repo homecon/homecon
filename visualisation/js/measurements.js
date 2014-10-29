@@ -29,6 +29,33 @@ $(document).ready(function(){
 //////////////////////////////////////////////////////////////////////////////
 // initialize measurements
 //////////////////////////////////////////////////////////////////////////////
+$(document).ready(function(){
+	$('.measurements_clear').on('click','#measurements_clear',function(){
+		// display confirmation popup
+		$('#measurements_clear_popup').popup('open');
+	});
+});
+$(document).ready(function(){
+	$('#page').on('click','#measurements_clear_confirm',function(){
+		
+		$.post( 'requests/table_clear.php', {'table':'measurements'}); 
+		$.post( 'requests/table_clear.php', {'table':'measurements_weekaverage'});
+		$.post( 'requests/table_clear.php', {'table':'measurements_monthaverage'});
+
+		$('#measurements_clear_popup').popup('close');
+		
+	});
+});
+$(document).ready(function(){
+	$('#page').on('click','#measurements_clear_cancel',function(){
+		
+		$('#measurements_clear_popup').popup('close');
+	});
+});
+
+//////////////////////////////////////////////////////////////////////////////
+// clear measurement data
+//////////////////////////////////////////////////////////////////////////////
 $(document).on('pagebeforecreate',function(){
 
 	//cycle through all signal_placeholder
@@ -50,7 +77,6 @@ $(document).on('pagebeforecreate',function(){
 		
 	});
 });
-
 //////////////////////////////////////////////////////////////////////////////
 // display signal code
 //////////////////////////////////////////////////////////////////////////////
