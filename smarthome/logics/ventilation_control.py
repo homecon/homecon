@@ -20,7 +20,7 @@ localtime = datetime.datetime.now()
 ventilation_speed = 1
 
 # connect to the mysql database
-con = pymysql.connect('localhost', 'knxcontrol', 'ysUnGTQEadTsDnTD', 'knxcontrol')
+con = pymysql.connect('localhost', 'knxcontrol', sh.building.mysql.conf['password'], 'knxcontrol')
 cur = con.cursor()
 
 # average temperature too low
@@ -31,7 +31,7 @@ try:
 
 	# get 2 day average from mysql
 	timestamp_new = timestamp-2*24*60*60
-	cur.execute("SELECT AVG(signal%s) FROM measurements WHERE time>%s" %(signal_id,timestamp_new))
+	cur.execute("SELECT AVG(value) FROM measurements WHERE signal_id=%s  time>%s" %(signal_id,timestamp_new))
 	for temp in cur:
 		ambient_temperature_avg = temp[0]
 except:
