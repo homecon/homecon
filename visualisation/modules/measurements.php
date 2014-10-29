@@ -28,15 +28,15 @@
 		begin_collapsible("Export data",false);
 			begin_group(1);
 	echo "
-				<form action='modules/measurements_export.php' method='post' target='_blank' name='export' id='export'>
-					<label for='startdate'>Start datum:</label>
-					<input type='date' name='startdate' id='startdate'>
-					
-					<label for='enddate'>Eind datum:</label>
-					<input type='date' name='enddate' id='enddate'>
-					
-					<button type='submit' name='export'>Export</button>
-				</form>";
+						<form action='modules/measurements_export.php' method='post' target='_blank' name='export' id='export'>
+							<label for='startdate'>Start datum:</label>
+							<input type='date' name='startdate' id='startdate'>
+							
+							<label for='enddate'>Eind datum:</label>
+							<input type='date' name='enddate' id='enddate'>
+							
+							<button type='submit' name='export'>Export</button>
+						</form>";
 				
 			end_group();
 		end_collapsible();
@@ -44,53 +44,42 @@
 		begin_collapsible("Define signals",true);	
 			begin_group(1);
 	echo "
-				<form action='index.php?page=modules/measurements' method='post' name='define' class='define'>";
+						<div class='measurements_define' id='measurements_define'>";
+
 	$result = mysql_query("SELECT * FROM measurements_legend");
 	$count = 0;
 	while($row = mysql_fetch_array($result)){
-		$count++;
-		
-		$id = $row['id'];
-		$item = $row['item'];
-		$name = $row['name'];
-		$quantity = $row['quantity'];
-		$unit = $row['unit'];
-		$description = $row['description'];
-		
-		$id_id = "id".$id;
-		$item_id = "item".$id;
-		$name_id = "name".$id;
-		$quantity_id = "quantity".$id;
-		$unit_id = "unit".$id;
-		$description_id = "description".$id;
-		
-		$readonly = "";
-		if($count<=35){
-			$readonly = "readonly";
-		}
 		echo "
-					<div>
-						<input type='text' name='$id_id' id='$id_id' value='$id' disabled placeholder='id'>
-						<input type='text' name='$item_id' id='$item_id' value='$item' $readonly placeholder='item'>
-						<input type='text' name='$name_id' id='$name_id' value='$name' placeholder='name'>
-						<input type='text' name='$quantity_id' id='$quantity_id' value='$quantity' placeholder='quantity'>
-						<input type='text' name='$unit_id' id='$unit_id' value='$unit' placeholder='unit'>
-						<input type='text' name='$description_id' id='$description_id' value='$description' placeholder='description'>
-					</div>";
+					 
+							<div class='signal_placeholder' data-id='".$row['id']."' data-item='".$row['item']."' data-name='".$row['name']."' data-quantity='".$row['quantity']."' data-unit='".$row['unit']."' data-description='".$row['description']."'></div>";
 	}
 	echo "
-					<p>Warning: the user is responsible for identifying signals after changes are made</p>
-					<button type='submit' name='define'>Submit</button>
-				</form>";
+							<p>Warning: the user is responsible for identifying signals after changes are made</p>
+							<div>
+								<a class='add' id='measurements_submit' data-role='button'>Submit</a>
+							</div>
+							<div data-role='popup' id='measurements_submit_popup' class='ui-content' data-position-to='window' data-overlay-theme='a' data-dismissible='false'>
+								<p>Please wait<p>
+							</div>
+							<div class='signal' id='signal_template' data-id='id' style='display:none'>
+								<input type='text' data-column='id' id='id_id' disabled placeholder='id'>
+								<input type='text' data-column='item' id='id_item' placeholder='item'>
+								<input type='text' data-column='name' id='id_name' placeholder='name'>
+								<input type='text' data-column='quantity' id='id_quantity' placeholder='quantity'>
+								<input type='text' data-column='unit' id='id_unit' placeholder='unit'>
+								<input type='text' data-column='description' id='id_description' placeholder='description'>
+							</div>
+						</div>";
+				
 			end_group();
 		end_collapsible();		
 			
 		begin_collapsible("Clear data",true);	
 			begin_group(1);	
 	echo "	
-				<form action='index.php?page=modules/measurements' method='post' name='clear'>
-					<button type='submit' name='clear'>Clear all data</button>
-				</form>";	
+						<form action='index.php?page=modules/measurements' method='post' name='clear'>
+							<button type='submit' name='clear'>Clear all data</button>
+						</form>";	
 				
 			end_group();
 		end_collapsible();

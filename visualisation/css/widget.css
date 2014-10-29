@@ -341,35 +341,36 @@ div.chart{
 
 }
 
-/*     measurements    */
-/*---------------------*/
-form.define div.ui-input-text{
+/*----------------------------------------------------------------------------------*/
+/*     setpoint                                                                     */
+/*----------------------------------------------------------------------------------*/
+div.measurements_define div.ui-input-text{
 	display: inline-block;
 	height: 30px;
 	margin-top: 0px;
 	margin-bottom: 0px;
 }
-form.define input[name^="id"]{
+div.measurements_define input[data-column="id"]{
 	width: 20px;
 	padding-top: 4px;
 }
-form.define input[name^="item"]{
+div.measurements_define input[data-column="item"]{
 	width: 220px;
 	padding-top: 4px;
 }
-form.define input[name^="name"]{
+div.measurements_define input[data-column="name"]{
 	width: 80px;
 	padding-top: 4px;
 }
-form.define input[name^="quantity"]{
+div.measurements_define input[data-column="quantity"]{
 	width: 60px;
 	padding-top: 4px;
 }
-form.define input[name^="unit"]{
+div.measurements_define input[data-column="unit"]{
 	width: 30px;
 	padding-top: 4px;
 }
-form.define input[name^="description"]{
+div.measurements_define input[data-column="description"]{
 	width: 140px;
 	padding-top: 4px;
 }
