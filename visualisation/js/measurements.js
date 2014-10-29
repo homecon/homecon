@@ -2,25 +2,25 @@
 // set measurement
 //////////////////////////////////////////////////////////////////////////////
 $(document).ready(function(){
-	$('.measurements_define').on('click','.signal input,.alarm select',function(){
+	$('.measurements_define').on('click','#measurements_submit',function(){
 		
-		// get the alarm id
-		id = $(this).parents('.alarm').attr('data-id');
-		
-		// get the column tot add value to
-		column = $(this).attr('data-column');
-		value = $(this).val();
-		
-		if($(this).attr('type')=='checkbox'){
-			value = $(this).is(':checked');
-		}
-		
-		// post id column and value to add to database
-		$.post( 'requests/measurements_set.php', {'id': id , 'column': column , 'value': value}); 
-		
-		//for debugging: 
-		//$.post( 'requests/alarm_set.php', {'id': id , 'column': column , 'value': value}, function(response){alert(response);}); 
-							
+		// cycle through all signals
+		$( "#measurements_define" ).children().each(function(){
+			// get the signal id
+			id = $(this).attr('data-id');
+			
+			$(this).children.each({function(){
+				// get the column tot add value to
+				column = $(this).attr('data-column');
+				value = $(this).val();
+				
+				// post id column and value to add to database
+				$.post( 'requests/measurements_set.php', {'id': id , 'column': column , 'value': value}); 
+				
+				//for debugging: 
+				//$.post( 'requests/alarm_set.php', {'id': id , 'column': column , 'value': value}, function(response){alert(response);}); 
+			});
+		});				
 	});
 });
 
@@ -33,7 +33,6 @@ $(document).on('pagebeforecreate',function(){
 	$( ".signal_placeholder" ).each(function(){
 		
 		// create variables
-		var sectionid = $(this).parents('.alarm_container').attr('data-id');
 		var values = {
 			id: $(this).attr('data-id'),
 			item: $(this).attr('data-hour'),

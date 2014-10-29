@@ -56,7 +56,7 @@
 	echo "
 					<p>Warning: the user is responsible for identifying signals after changes are made</p>
 					<div>
-						<a class='add' data-role='button'>Submit</a>
+						<a class='add' id='measurements_submit' data-role='button'>Submit</a>
 					</div>
 				</div>";
 				
