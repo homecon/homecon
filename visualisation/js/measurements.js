@@ -35,11 +35,11 @@ $(document).on('pagebeforecreate',function(){
 		// create variables
 		var values = {
 			id: $(this).attr('data-id'),
-			item: $(this).attr('data-hour'),
-			name: $(this).attr('data-minute'),
-			quantity: $(this).attr('data-mon'),
-			unit: $(this).attr('data-tue'),
-			description: $(this).attr('data-wed'),
+			item: $(this).attr('data-item'),
+			name: $(this).attr('data-name'),
+			quantity: $(this).attr('data-quantity'),
+			unit: $(this).attr('data-unit'),
+			description: $(this).attr('data-description'),
 		};
 		
 		//creat the alarm and display
