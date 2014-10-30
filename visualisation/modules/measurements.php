@@ -34,8 +34,20 @@
 						</div>";
 				
 					end_group();
-				end_collapsible();		
-					
+				end_collapsible();	
+				
+				begin_collapsible("Export data",true);	
+					begin_group(1);
+	echo "
+						<div class='measurements_export'>
+							<div>
+								<a class='add' id='measurements_export' data-role='button'>Export data</a>
+							</div>
+						</div>";	
+						
+					end_group();
+				end_collapsible();
+				
 				begin_collapsible("Clear data",true);	
 					begin_group(1);	
 	echo "	
