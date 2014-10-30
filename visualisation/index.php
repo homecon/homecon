@@ -1,6 +1,9 @@
 <?php
+	session_start();
+	
 	// functions
 	include('data/mysql.php');
+	include('data/authentication.php');
 	include('modules/macros_structure.php');
 	include('modules/macros_basic.php');
 	include('modules/macros_charts.php');
@@ -29,19 +32,8 @@
 	else{
 		$web = 0;
 	}
-
-	// check if the user machine has the required cookie
-	$cookie_check = 0;
-	if(array_key_exists('knxcontrol_user',$_COOKIE) && array_key_exists('knxcontrol_pass',$_COOKIE)){
-		$result = mysql_query("SELECT * FROM users WHERE username = '".$_COOKIE['knxcontrol_user']."'");
-		if($user = mysql_fetch_array($result)){
-			if(md5($_COOKIE['knxcontrol_pass'])==$user['password']){
-				$cookie_check = 1;
-			}
-		}
-	}
 	
-	if($cookie_check){
+	if($_SESSION['userid']>0){
 		// get ip and port from mysql
 		$result = mysql_query("SELECT * FROM data WHERE id = 1");
 		$data = mysql_fetch_array($result);
