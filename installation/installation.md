@@ -38,12 +38,18 @@ sudo nano /etc/network/interfaces
 Change file contents to:
 ```
 auto lo
+
 iface lo inet loopback
 
+
 auto eth0
+
 iface eth0 inet static
+
 address 192.168.1.2
+
 gateway 192.168.1.1
+
 netmask 255.255.255.0
 ```
 Save the file and Exit using `Ctrl+O` `Return` and `Ctrl+X`
@@ -94,9 +100,13 @@ sudo apt-get install ntp
 Some essential linux tools we will be using need to be installed now, when sudo is called you will be asked for a password, enter admin
 ```	
 sudo apt-get update
+
 sudo apt-get -y install apache2 vsftpd php5 php5-json openntpd python3 python3-dev python3-setuptools git unzip wget libawl-php php5-curl
+
 sudo easy_install3 pip
+
 sudo pip install ephem
+
 sudo pip install PyMySQL
 ```
 	
@@ -106,16 +116,22 @@ sudo pip install PyMySQL
 Clone the repository to a directory where all files will be kept
 ```
 cd /usr/local
+
 sudo git clone git://github.com/brechtba/knxcontrol.git
 ```
 
 Set permissions
 ```
 sudo chown -R admin:admin /usr/local/knxcontrol
+
 sudo chmod -R 744 /usr/local/knxcontrol
+
 sudo chmod -R 755 /usr/local/knxcontrol/visualisation
+
 sudo chmod 755 /usr
+
 sudo chmod 755 /usr/local
+
 sudo chmod 755 /usr/local/knxcontrol
 ```
 	
@@ -135,6 +151,7 @@ Execute the eibd_installation.sh file.
 Preliminary test
 ```
 /usr/local/bin/eibd -D -S -T -i --eibaddr=0.0.1 --daemon=/var/log/eibd.log --no-tunnel-client-queuing ipt:192.168.1.3
+
 groupswrite ip:localhost 1/1/71 1
 ```
 	
@@ -147,7 +164,9 @@ sudo nano /etc/default/eibd
 Write the following within, use your knx ip gateway ip adress
 ```
 EIB_ARGS="--daemon --Server --Tunnelling --Discovery --GroupCache --listen-tcp"
+
 EIB_ADDR="0.0.255"
+
 EIB_IF="ipt:192.168.1.3"
 ```
 Save the file and Exit using `Ctrl+O` `Return` and `Ctrl+X`
@@ -160,7 +179,9 @@ sudo mv /usr/local/knxcontrol/installation/eibd /etc/init.d/eibd
 Change the owner and group to root and set permissions
 ```
 sudo chown root /etc/init.d/eibd
+
 sudo chgrp root /etc/init.d/eibd
+
 sudo chmod 755 /etc/init.d/eibd
 ```
 
@@ -178,6 +199,7 @@ Restart EIBD
 Test eibd by writing to the knx bus using groupswrite to an existing knx adress
 ```
 groupswrite ip:localhost 1/1/71 1
+
 groupswrite ip:localhost 1/1/71 0
 ```
 
@@ -256,6 +278,7 @@ sudo nano /etc/apache2/apache2.conf
 Add the phpmyadmin config to the end of the file.
 ```
 # phpmyadmin
+
 Include /etc/phpmyadmin/apache.conf
 ```
 
@@ -288,22 +311,19 @@ Set privileges of the new user:
 GRANT ALL PRIVILEGES ON knxcontrol.* TO 'knxcontrol'@'localhost';
 ```
 
-Open a browser window and go to
-"http://192.168.1.2/knxcontrol/data/create_tables.php"
-This will create all required mysql tables 
+Open a browser window and go to "http://192.168.1.2/knxcontrol/data/create_tables.php". This will create all required mysql tables 
 
 
 ### Moving the database to another location
 This step is not executed in the base image and commands are given here for reference also not tested.
 ```
 sudo /etc/init.d/mysql stop
+
 sudo cp -R -p /var/lib/mysql /media/hdd/mysql
 ```
-Edit the config file `sudo nano /etc/mysql/my.cnf`
-Look for the entry for `datadir`, and change the path (which should be /var/lib/mysql) to the new data directory.
+Edit the config file `sudo nano /etc/mysql/my.cnf` Look for the entry for `datadir`, and change the path (which should be /var/lib/mysql) to the new data directory.
 
-Edit the another file `sudo nano /etc/apparmor.d/usr.sbin.mysqld`
-Look for lines beginning with `/var/lib/mysql`. Change `/var/lib/mysql` in the lines with the new path.
+Edit the another file `sudo nano /etc/apparmor.d/usr.sbin.mysqld` Look for lines beginning with `/var/lib/mysql`. Change `/var/lib/mysql` in the lines with the new path.
 
 Restart the AppArmor profiles with the command:
 ```
@@ -321,6 +341,7 @@ sudo /etc/init.d/mysql restart
 The next step is configuring smarthome.py. First we set the permissions of some files:
 ```
 sudo chmod 744 /usr/local/knxcontrol/smarthome/bin/smarthome.py
+
 sudo chmod 755 /usr/local/knxcontrol/smarthome/var/log/smarthome.log
 ```
 
@@ -331,8 +352,8 @@ sudo mv /usr/local/knxcontrol/installation/smarthome /etc/init.d/smarthome
 
 Change the owner and group to root and set permissions
 ```
-sudo chown root /etc/init.d/smarthome
-sudo chgrp root /etc/init.d/smarthome
+sudo chown root:root /etc/init.d/smarthome
+
 sudo chmod 755 /etc/init.d/smarthome
 ```
 

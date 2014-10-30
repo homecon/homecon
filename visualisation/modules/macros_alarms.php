@@ -29,7 +29,7 @@ function add_alarm($sectionid,$text,$itemlist,$actionlist){
 	}	
 	echo "	
 			<div>
-				<a class='add' class='add_alarm' data-role='button'>wekker toevoegen</a>
+				<a class='add' data-role='button'>wekker toevoegen</a>
 			</div>
 		</div>";
 
