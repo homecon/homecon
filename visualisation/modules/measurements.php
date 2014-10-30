@@ -40,6 +40,10 @@
 					begin_group(1);
 	echo "
 						<div class='measurements_export'>
+							<label id='measurements_export_startdate_lab' for='measurements_export_startdate'>From:</label>
+							<input type='date' id='measurements_export_startdate'>
+							<label id='measurements_export_enddate_lab' for='measurements_export_enddate'>Untill:</label>
+							<input type='date' id='measurements_export_enddate'>
 							<div>
 								<a class='add' id='measurements_export' data-role='button'>Export data</a>
 							</div>

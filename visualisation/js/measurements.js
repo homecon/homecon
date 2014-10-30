@@ -30,7 +30,16 @@ $(document).ready(function(){
 //////////////////////////////////////////////////////////////////////////////
 $(document).ready(function(){
 	$('.measurements_export').on('click','#measurements_export',function(){
-		$.post( 'requests/measurements_export.php', {'table':'measurements'}); 
+	
+		// get start and end date
+		var startdate = $(this).siblings('#measurements_export_startdate').val();
+		var enddate = $(this).siblings('#measurements_export_enddate').val();
+		
+		// post the request
+		$.post( 'requests/measurements_export.php', {'table':'measurements' , 'startdate':startdate , 'enddate':enddate}); 
+		
+		// not sure if this will work
+		// window.open('requests/measurements_export.php?table=measurements&startdate='+startdate+'&'enddate='+enddate); can be used instead with $_GET array in the requested page
 	});
 });
 //////////////////////////////////////////////////////////////////////////////

@@ -1,7 +1,7 @@
 <?php
 	include('../data/mysql.php'); 
 	
-	$table = 'measurements';
+	$table = $_POST['table'];
 
 	// name
 	$result = mysql_query("SELECT name FROM measurements_legend");
