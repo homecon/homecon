@@ -71,14 +71,16 @@ body{
 	left: 0;
 	width: 40%;
 }
-#menu.home.ui-panel {
-	left: 40%;
-	width: 60%;
-}
+
 @media all and (min-width: 800px) {
+	#menu.home.ui-panel {
+		left: 40%;
+		width: 60%;
+	}
 	#menu.ui-panel {
 		visibility: visible;
-		webkit-transform: none;
+		-ms-transform: none;
+		-webkit-transform: none;
 		transform: none;
 	}
 }
