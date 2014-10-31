@@ -83,7 +83,7 @@
 	</head>
 	<body>
 		<script type='text/javascript'>
-			io.init('$smarthome_adress', '$smarthome_port');
+			io.init('<?php echo $smarthome_adress; ?>', '<?php echo $smarthome_port; ?>');
 		
 			// Do some actions before page is shown
 			$(document).on('pagebeforeshow', function () {
