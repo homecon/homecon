@@ -75,6 +75,7 @@
 		<script type='text/javascript' src='js/widget.js'></script>
 		
 		<!-- knxcontrol -->
+		<script type='text/javascript' src='js/menu.js'></script>
 		<script type='text/javascript' src='js/alarms.js'></script>
 		<script type='text/javascript' src='js/measurements.js'></script>
 		<link rel='stylesheet' type='text/css' href='css/layout.css'/>
