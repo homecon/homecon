@@ -116,10 +116,10 @@
 			<div data-role='header' id='header'>
 				<?php include("modules/header.php"); ?>
 			</div>
-			<div data-role='panel' id='menu'>
+			<div data-role='panel' id='menu' class='<?php echo $page_class;?>' data-display='overlay' data-position='left' data-position-fixed='true' >
 				<?php include("pages/menu.php"); ?>
 			</div>
-			<div data-role='content' id='content'>
+			<div data-role='content' id='content' class='<?php echo $page_class;?>'>
 				<?php include("$page.php"); ?>
 			</div>
 		</div>

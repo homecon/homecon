@@ -11,7 +11,7 @@ body{
 /*           Header                    */
 /***************************************/
 
-.header, .footer{
+#header, #footer{
 	display: block;
 	position: fixed;
 	width: 100%;
@@ -19,9 +19,9 @@ body{
 	
 	z-index: 1;
 }
-.header nav{
+#header nav{
 }
-.header nav img{
+#header nav img{
 	width: 50px;
 	height: 50px;
 }
@@ -29,7 +29,7 @@ body{
 /***************************************/
 /*           Content                   */
 /***************************************/
-.content{
+#content{
 	position: relative;
 	top: 60px;
 	padding: 0px;
@@ -37,6 +37,66 @@ body{
 	z-index: 0;
 	min-height: 600px;
 }
+#content.main{
+	left: 40%;
+}
+#content.home{
+	left: 0;
+	width: 60%;
+}
+/* Small screen variation */
+@media all and (max-width: 800px) {
+	#content{
+		left: 0;
+	}
+}
+
+/***************************************/
+/*           Main menu                 */
+/***************************************/
+#menu .ui-panel{
+	top: 60px;
+}
+#menu .ui-panel-inner {
+    padding:0px;
+}
+#menu .ui-controlgroup {
+    margin:0;
+}
+
+#menu .main  .ui-panel {
+	left: 0;
+	width: 40%;
+}
+#menu .home  .ui-panel {
+	right: 0;
+	width: 60%;
+}
+#menu .main  .ui-panel-closed {
+	left: 0;
+	width: 40% !important; 
+}
+#menu .home  .ui-panel-closed {
+	right: 0;
+	width: 60% !important;
+}
+
+
+#menu nav .ui-li-thumb{
+	width: 60px;
+	height: 60px;
+}
+
+/* Small screen variation */
+@media all and (max-width: 800px) {
+	#menu .main  .ui-panel-closed {
+		width: 0;
+	}
+	#menu .home  .ui-panel-closed {
+		width: 100% !important;
+	}
+}
+
 
 .ui-body-a .ui-link:hover {
 	color: #FFFFFF !important;
@@ -47,41 +107,6 @@ body{
 	-webkit-box-shadow: none !important;
 	box-shadow: none !important;
 }
-/***************************************/
-/*           Main menu                 */
-/***************************************/
-.content nav{
-	position: fixed;
-	top: 60px;
-	display: block;
-	margin: 0px;
-}
-.content nav.main {
-	/*float: left;*/
-	left: 0;
-	width: 40%;
-}
-.content nav.home {
-	/*float: right;*/
-	right: 0;
-	width: 60%;
-}
-/* Small screen variation */
-@media all and (max-width: 800px) {
-	.content nav.main {
-		float: left;
-		width: 0%;
-		visibility:hidden
-	}
-	.content nav.home {
-	float: right;
-	width: 100%;
-	}
-}
-.content nav .ui-li-thumb{
-	width: 60px;
-	height: 60px;
-}
 .ui-link-inherit{
 	min-height: 10px !important;
 	padding-top: 20px !important;
@@ -91,34 +116,18 @@ body{
 .ui-body-a{
 	border: 0px !important;
 }
+
 /***************************************/
 /*           Article                   */
 /***************************************/
 article{
 	position: relative;
 	display: block;
-}
-article.main{
-	float: right;
-	width: 60%;
-}
-article.home{
-	float: left;
-	width: 40%;
+	width: 100%;
 }
 
-/* Small screen variation */
-@media all and (max-width: 800px) {
-	article.main{
-		float: right;
-		width: 100%;
-	}
-	article.home{
-		float: left;
-		width: 0%;
-		visibility: hidden
-	}
-}
+
+
 article>header>img{
 	position: relative;
 	width: 60px;
