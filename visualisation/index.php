@@ -113,10 +113,10 @@
 	
 	
 		<div id='page' data-role='page' data-theme='a'>
-			<div data-role='header' id='header'>
+			<div data-role='header' id='header' data-position='fixed'>
 				<?php include("modules/header.php"); ?>
 			</div>
-			<div data-role='panel' id='menu' class='<?php echo $page_class;?>' data-theme='a' data-display='overlay' data-position='left' data-position-fixed='false' data-dismissable='false'>
+			<div data-role='panel' id='menu' class='<?php echo $page_class;?>' data-theme='a' data-display='overlay' data-position='left' data-position-fixed='true' data-dismissable='false'>
 				<?php include("pages/menu.php"); ?>
 			</div>
 			<div data-role='content' id='content' class='<?php echo $page_class;?>'>
