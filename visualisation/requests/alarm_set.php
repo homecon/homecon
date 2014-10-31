@@ -1,5 +1,5 @@
 <?php
-
+	session_start();
 	include('../data/mysql.php');
 
 	if($_SESSION['userid']>0){
