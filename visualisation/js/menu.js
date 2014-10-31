@@ -1,11 +1,9 @@
 
 // menu swipe
-$(document).bind("pageinit", function() {
-    $(document).bind( "swiperight", function(){
-	
+$(document).on("pageinit", function() {
+    $(document).on( "swiperight", function(){
 		if($(window).width()<800){
-			$( "#menu" ).panel( "open" );	
+			$.mobile.activePage.find('#menu').panel("open");			
 		}
-		
     });
 });
