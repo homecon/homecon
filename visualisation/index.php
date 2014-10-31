@@ -53,8 +53,9 @@
 			$smarthome_adress = $data['ip'];
 			$smarthome_port = $data['port'];
 		}	
+?>
 
-		echo "
+<!DOCTYPE html>
 <html>
 	<head>
 		<title>KNX control</title>
@@ -86,12 +87,8 @@
 		<script type='text/javascript' src='js/measurements.js'></script>
 		<link rel='stylesheet' type='text/css' href='css/layout.css'/>
 		<link rel='stylesheet' type='text/css' href='css/widget.css'/>
-	</head>";
-	
-		echo "	
-	<body>";
-	
-		echo "
+	</head>
+	<body>
 		<script type='text/javascript'>
 			io.init('$smarthome_adress', '$smarthome_port');
 		
@@ -110,35 +107,28 @@
 				//notify.display();
 				// widget.list();
 			});
-			
 
 			//$.mobile.page.prototype.options.domCache = true;
-		</script>";
+		</script>
 	
-
-// basic layout		
-		echo "
+	
 		<div id='page' data-role='page' data-theme='a'>
-			<header data-role='header' class='header'>";
-			
-		include("modules/header.php");
+			<div data-role='header' id='header'>
+				<?php include("modules/header.php"); ?>
+			</div>
+			<div data-role='panel' id='menu'>
+				<?php include("pages/menu.php"); ?>
+			</div>
+			<div data-role='content' id='content'>
+				<?php include("$page.php"); ?>
+			</div>
+		</div>
 
-		echo "
-			</header>
-			<div data-role='content' class='content'>";
-			
-		include("pages/menu.php");
 		
-		include("$page.php");
-			
-		echo "
-			</div>";
-
-		echo"
-		</div>";
-		echo "		
 	</body>
-</html>";
+</html>
+
+<?php 
 	}
 	elseif($page=='modules/set_cookie'){
 		include("modules/set_cookie.php");
@@ -147,6 +137,5 @@
 		echo "No permission!";
 		echo "<meta http-equiv='refresh' content='0; URL=index.php?web=$web&page=modules/set_cookie'>";
 	}
-	
 ?>
 	
