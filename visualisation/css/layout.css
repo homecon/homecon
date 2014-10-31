@@ -82,7 +82,7 @@ body{
 	width: 60px;
 	height: 60px;
 }
-.ui-link-inherit{
+.content nav .ui-link-inherit{
 	min-height: 10px !important;
 	padding-top: 20px !important;
 	padding-bottom: 20px !important;

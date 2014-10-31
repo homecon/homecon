@@ -6,19 +6,16 @@ function add_alarm($sectionid,$text,$itemlist,$actionlist){
 	$page = explode('/',$page);
 	$page = end($page);
 	
-	// check if an alarm must be added
-	if(array_key_exists('add_alarm',$_GET)){
-		if($_GET['add_alarm']==$sectionid){
-			mysql_query("INSERT INTO alarms (sectionid,sunrise,sunset,hour,minute,mon,tue,wed,thu,fri,sat,sun) VALUES  ($sectionid,0,0,13,0,1,1,1,1,1,1,1)");
-		}
+	// get actionlist
+	$actionlist = '';
+	$actionname  = '';
+	$result = mysql_query("SELECT * FROM alarm_actions WHERE sectionid=".$sectionid." OR sectionid=0" );
+	while($row = mysql_fetch_array($result)){
+		$actionlist = $actionlist.",".$row['id'];
+		$actionname = $actionname.",".$row['name'];
 	}
-	// check if an alarm must be deleted
-	if(array_key_exists('delete_alarm',$_GET)){
-		if($_GET['delete_section']==$sectionid){
-			$id=$_GET['delete_alarm'];
-			mysql_query("DELETE FROM alarms WHERE id=$id");
-		}
-	}
+	$actionlist =ltrim ($actionlist, ',');
+	$actionname = ltrim ($actionname, ',');
 	
 	echo "
 		<div class='alarm_container' id='alarm_section$sectionid' data-id=$sectionid>";
@@ -27,7 +24,7 @@ function add_alarm($sectionid,$text,$itemlist,$actionlist){
 	while($row = mysql_fetch_array($result)){
 	
 		echo " 
-			<div class='alarm_placeholder' data-id=".$row['id']." data-hour=".$row['hour']." data-minute=".$row['minute']." data-mon=".$row['mon']." data-tue=".$row['tue']." data-wed=".$row['wed']." data-thu=".$row['thu']." data-fri=".$row['fri']." data-sat=".$row['sat']." data-sun=".$row['sun']." data-item='".$row['item']."' data-action='".$row['action']."'></div>";
+			<div class='alarm_placeholder' data-id='".$row['id']."' data-hour='".$row['hour']."' data-minute='".$row['minute']."' data-mon='".$row['mon']."' data-tue='".$row['tue']."' data-wed='".$row['wed']."' data-thu='".$row['thu']."' data-fri='".$row['fri']."' data-sat='".$row['sat']."' data-sun='".$row['sun']."' data-item='".$row['item']."' data-action='".$row['action_id']."'></div>";
 		
 	}	
 	echo "	
@@ -39,7 +36,7 @@ function add_alarm($sectionid,$text,$itemlist,$actionlist){
 		
 	// echo a hidden template for the alarm
 	echo "
-			<div class='alarm' id='alarm_template$sectionid' data-id='id' style='display:none' data-itemlist='$itemlist' data-actionlist='$actionlist'>
+			<div class='alarm' id='alarm_template$sectionid' data-id='id' style='display:none' data-actionlist='$actionlist' data-actionname='$actionname'>
 				<input type='time' data-column='time' value='12:00'>
 				<h1></h1>
 				<a class='delete'><img src='icons/ws/control_x.png'></a>
@@ -53,11 +50,6 @@ function add_alarm($sectionid,$text,$itemlist,$actionlist){
 						<input type='checkbox' data-column='sat' id='id_sat' class='custom' data-widget='basic.checkbox' data-mini='true'> <label id='id_sat_lab' for='id_sat'>zat</label>
 						<input type='checkbox' data-column='sun' id='id_sun' class='custom' data-widget='basic.checkbox' data-mini='true'> <label id='id_sun_lab' for='id_sun'>zon</label>
 					</div>
-				</div>
-				<div class='alarm_items'>
-					<select multiple='multiple' data-column='item' data-native-menu='false'>
-						<option>Select items</option>
-					</select>
 				</div>
 				<div class='alarm_action'>
 					<select data-column='action' data-native-menu='false'>
