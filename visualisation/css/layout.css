@@ -25,10 +25,7 @@ body{
 /***************************************/
 #content{
 	position: relative;
-	top: 60px;
-	padding: 0px;
-	display: block;
-	z-index: 0;
+	padding: 0;
 }
 #content.main{
 	left: 40%;
