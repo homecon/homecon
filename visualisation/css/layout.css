@@ -6,17 +6,15 @@ body{
 	display: block;
 	margin: 0px;
 }
-
 /***************************************/
 /*           Header                    */
 /***************************************/
 
-#header, #footer{
+#header{
 	display: block;
 	position: fixed;
 	width: 100%;
 	height: 60px;
-	
 	z-index: 1;
 }
 #header nav{
@@ -35,68 +33,15 @@ body{
 	padding: 0px;
 	display: block;
 	z-index: 0;
-	min-height: 600px;
 }
 #content.main{
 	left: 40%;
+	width: 60%;
 }
 #content.home{
 	left: 0;
-	width: 60%;
-}
-/* Small screen variation */
-@media all and (max-width: 800px) {
-	#content{
-		left: 0;
-	}
-}
-
-/***************************************/
-/*           Main menu                 */
-/***************************************/
-#menu .ui-panel{
-	top: 60px;
-}
-#menu .ui-panel-inner {
-    padding:0px;
-}
-#menu .ui-controlgroup {
-    margin:0;
-}
-
-#menu .main  .ui-panel {
-	left: 0;
 	width: 40%;
 }
-#menu .home  .ui-panel {
-	right: 0;
-	width: 60%;
-}
-#menu .main  .ui-panel-closed {
-	left: 0;
-	width: 40% !important; 
-}
-#menu .home  .ui-panel-closed {
-	right: 0;
-	width: 60% !important;
-}
-
-
-#menu nav .ui-li-thumb{
-	width: 60px;
-	height: 60px;
-}
-
-/* Small screen variation */
-@media all and (max-width: 800px) {
-	#menu .main  .ui-panel-closed {
-		width: 0;
-	}
-	#menu .home  .ui-panel-closed {
-		width: 100% !important;
-	}
-}
-
 
 .ui-body-a .ui-link:hover {
 	color: #FFFFFF !important;
@@ -107,6 +52,51 @@ body{
 	-webkit-box-shadow: none !important;
 	box-shadow: none !important;
 }
+
+/* Small screen variation */
+@media all and (max-width: 800px) {
+	#content{
+		left: 0 !important;
+		width: 100% !important;
+	}
+}
+
+/***************************************/
+/*           Main menu                 */
+/***************************************/
+#menu.ui-panel{
+	top: 60px;
+}
+#menu .ui-panel-inner {
+    padding:0px;
+}
+#menu .ui-controlgroup {
+    margin:0;
+}
+
+#menu.main.ui-panel {
+	left: 0;
+	width: 40%;
+}
+#menu.home.ui-panel {
+	right: 0;
+	width: 60%;
+}
+@media all and (min-width: 800px) {
+	#menu.ui-panel {
+		visibility: visible;
+		webkit-transform: none;
+		transform: none;
+	}
+}
+#menu nav {
+	margin: 0;
+}
+#menu nav .ui-li-thumb{
+	width: 60px;
+	height: 60px;
+}
+
 .ui-link-inherit{
 	min-height: 10px !important;
 	padding-top: 20px !important;
@@ -116,6 +106,15 @@ body{
 .ui-body-a{
 	border: 0px !important;
 }
+
+
+/* Small screen variation */
+@media all and (max-width: 800px) {
+	#menu.ui-panel-open {
+		width: 100% !important;
+	}
+}
+
 
 /***************************************/
 /*           Article                   */
