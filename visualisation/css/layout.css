@@ -72,7 +72,7 @@ body{
 	width: 40%;
 }
 #menu.home.ui-panel {
-	right: 0;
+	left: 40%;
 	width: 60%;
 }
 @media all and (min-width: 800px) {
