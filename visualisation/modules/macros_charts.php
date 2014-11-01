@@ -99,14 +99,13 @@ function add_chart($chart_title,$signals_str){
 							
 						} catch (e) {  }
 						
-						
 						chart = new Highcharts.StockChart(options);
-					
 						Highcharts.setOptions({
 							global: {
 								useUTC: false
 							}
 						});
+						
 					},
 					async: true
 				});
