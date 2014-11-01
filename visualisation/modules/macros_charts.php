@@ -21,10 +21,6 @@ function add_chart($chart_title,$signals_str){
 					},
 					xAxis: {
 						type: 'datetime',
-						gridLineWidth: 1,
-						labels: {
-							align: 'center',
-						},
 						dateTimeLabelFormats: {
 							hour: '%H:%M'
 						},
@@ -33,8 +29,6 @@ function add_chart($chart_title,$signals_str){
 					yAxis: {
 						title: {
 						},
-						labels: {
-						}
 					},
 					tooltip: {
 						xDateFormat: '%Y-%m-%d %H:%M',
@@ -133,127 +127,36 @@ function add_week_average_chart($chart_title,$signals_str){
 					chart: {
 						renderTo: '$container',
 						type: 'column',
-						marginLeft: 55,
-						marginRight: 130,
-						marginBottom: 35,
-						backgroundColor: {
-							linearGradient: { x1: 0, y1: 0, x2: 0, y2: 1 },
-							stops: [
-								[0, 'rgb(76, 76, 76)'],
-								[1, 'rgb(16, 16, 16)']
-							]
-						},
-						borderWidth: 0,
-						borderRadius: 10,
-						plotBackgroundColor: null,
-						plotShadow: false,
-						plotBorderWidth: 0
 					},
 					title: {
 						text: '$chart_title',
-						x: -20,
-						style: {
-								color: '#AAAAAA'
-						},
-					},
-					xAxis: {
-						gridLineWidth: 1,
-						labels: {
-							align: 'center',
-							x: -3,
-							y: 20,
-							style: {
-								color: '#808080'
-							},
-						}
 					},
 					yAxis: {
 						title: {
-							x: 10,
-							style: {
-								color: '#808080'
-							}
 						},
-						labels: {
-							x: -20,
-							style: {
-								color: '#808080'
-							}
-						}
 					},
 					tooltip: {
 						xDateFormat: '%Y-%m-%d %H:%M',
 						valueDecimals: 1,
 						shared: true
 					},
-					legend: {
-						enabled: true,
-						layout: 'vertical',
-						align: 'right',
-						verticalAlign: 'top',
-						x: -5,
-						y: 60,
-						borderWidth: 0,
-						itemStyle: {
-							color: '#808080'
-						}
-					},
 					rangeSelector : {
 						enabled: false
 					},
-					navigator: {
-						handles: {
-							backgroundColor: '#666',
-							borderColor: '#808080'
-						},
-						outlineColor: '#808080',
-						maskFill: 'rgba(16, 16, 16, 0.5)',
-						series: {
-							color: '#7798BF',
-							lineColor: '#A6C7ED'
-						}
-					},
-					//plotOptions: {
-					//	column: {
-					//		stacking: 'normal'
-					//	}
-					//},
-					series: [{
-						marker: {
-							enabled: false
-						},
-						color: '#88AA00'
-					}";
-		if(count($signals) > 1){
-			echo "		
-					,{
-						marker: {
-							enabled: false
-						},
-						color: '#6F917C'
-					}";
-		}
-		if(count($signals) > 2){
-			echo "	
-					,{
-						marker: {
-							enabled: false
-						},
-						color: '#0088AA'
-					}";
-		}
-		if(count($signals) > 3){
-			echo "
-					,{
-						marker: {
-							enabled: false
-						},
-						color: '#3737C8'
-					}";
-		}			
-		echo "
+					series: [
+						{data: []},
+						{data: []},
+						{data: []},
+						{data: []},
+						{data: []},
+						{data: []},
+						{data: []},
+						{data: []},
+						{data: []},
+						{data: []}
 					]
 				}
+				
 				// Load data asynchronously using jQuery. On success, add the data
 				// to the options and initiate the chart.
 				// http://api.jquery.com/jQuery.get/
