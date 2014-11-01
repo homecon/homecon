@@ -27,12 +27,20 @@ for alarm in cur:
 		
 		for action in actioncur:
 		
-			logger.warning( 'alarm item: '+ action['item1'] )
-			logger.warning( 'alarm action: '+ action['value1'] )
-
 			# find the items and set their values 
-			items = action['item1'].split(",")
-			for item_str in items:
-				item = sh.return_item(item_str)
-				item(action['value1'])
-
+			ind_list = ['1','2','3','4','5']
+			for ind in ind_list:
+				# each line can be a comma separated list of items
+				if action['item'+ind]:
+					item_str_list = action['item'+ind].split(",")
+					
+					for item_str in item_str_list:
+						# find the time delay
+						if int(action['delay'+ind]) < 1:
+							item = sh.return_item(item_str)
+							item(action['value'+ind])
+						else:
+							triggertime = now + datetime.timedelta(seconds=int(action['delay'+ind]))
+							sh.trigger(name='alarm_action',source=item_str,value=action['value'+ind],prio=2,dt=triggertime)
+				
+						logger.warning( action['item'+ind]+' scheduled to become '+str(action['value'+ind])+' in '+str(action['delay'+ind])+' seconds')
