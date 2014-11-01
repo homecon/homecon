@@ -15,21 +15,15 @@ function add_chart($chart_title,$signals_str){
 					chart: {
 						renderTo: '$container',
 						type: 'line',
-						marginLeft: 45,
-						marginRight: 130,
-						marginBottom: 35
 					},
 					title: {
 						text: '$chart_title',
-						x: -20,
 					},
 					xAxis: {
 						type: 'datetime',
 						gridLineWidth: 1,
 						labels: {
 							align: 'center',
-							x: -3,
-							y: 20,
 						},
 						dateTimeLabelFormats: {
 							hour: '%H:%M'
@@ -38,10 +32,8 @@ function add_chart($chart_title,$signals_str){
 					},
 					yAxis: {
 						title: {
-							x: -20
 						},
 						labels: {
-							x: -20
 						}
 					},
 					tooltip: {
@@ -49,15 +41,15 @@ function add_chart($chart_title,$signals_str){
 						valueDecimals: 1,
 						shared: true
 					},
-					legend: {
-						enabled: true,
-						x: -5,
-						y: 60
-					},
 					rangeSelector : {
 						enabled: false
 					},
 					series: [
+						{data: []},
+						{data: []},
+						{data: []},
+						{data: []},
+						{data: []},
 						{data: []},
 						{data: []},
 						{data: []},
@@ -71,43 +63,38 @@ function add_chart($chart_title,$signals_str){
 					url:    'requests/get_data.php?signal=$signals_str',
 					success: function(result) {
 						try {
-							// split the data return into signals and lines lines and parse them
+							// split result into signals
 							result = result.split(/signal/);
 							result = result.slice(1);
 							
 							jQuery.each(result, function(i, signal) {
 								data = [];
-
 								signal = signal.slice(0,signal.length-1)
+								
+								// split result into lines
 								jQuery.each(signal.split(/;/), function(j, line) {
 									if(j==0){
 										legend = line;
 									}
 									else if(j==1){
-										unit = line.replace('°', 'deg ');;
+										unit = line.replace('°', 'deg ');
 									}
 									else{
+										// split line into x and y data
 										line = line.split(/,/);
 										if(line[0]){
 											if(!isNaN(parseFloat(line[1]))){
-												data.push([
-													//Date.parse(line[0] +' UTC'),
-													parseInt(line[0]),
-													parseFloat(line[1])
-												]);
+												data.push([parseInt(line[0]),parseFloat(line[1])]);
 											}
 											else{
-												data.push([
-													parseInt(line[0]),
-													null
-												]);
+												data.push([parseInt(line[0]),null]);
 											}
 										}
 									}
 								});
 								options.series[i].data = data;
-								options.series[i].name =  legend;
-								options.yAxis.title.text =  unit;
+								options.series[i].name = legend;
+								options.yAxis.title.text = unit;
 							});
 							
 						} catch (e) {  }
