@@ -32,10 +32,12 @@
 			$result = mysql_query("SELECT time, value FROM $table WHERE signal_id = ".$signals[$i]." AND time > $after_date");
 			while($row = mysql_fetch_array($result)) {
 				if(!is_null($row['value'])){
-					echo date('Y-m-d H:i:s',$row['time']). "," . $row['value']. ";";
+					//echo date('Y-m-d H:i:s',$row['time']). "," . $row['value']. ";";
+					echo $row['time']."000,".$row['value'].";";
 				}
 				else{
-					echo date('Y-m-d H:i:s',$row['time']). ",null;";
+					//echo date('Y-m-d H:i:s',$row['time']). ",null;";
+					echo $row['time']."000,null;";
 				}
 			}
 		}

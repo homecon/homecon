@@ -56,7 +56,14 @@ function add_chart($chart_title,$signals_str){
 					},
 					rangeSelector : {
 						enabled: false
-					}
+					},
+					series: [
+						{data: []},
+						{data: []},
+						{data: []},
+						{data: []},
+						{data: []}
+					]
 				}
 				
 				// Load data asynchronously using jQuery. On success, add the data to the options and initiate the chart.
@@ -84,20 +91,20 @@ function add_chart($chart_title,$signals_str){
 										if(line[0]){
 											if(!isNaN(parseFloat(line[1]))){
 												data.push([
-													Date.parse(line[0] +' UTC'),
+													//Date.parse(line[0] +' UTC'),
+													parseInt(line[0]),
 													parseFloat(line[1])
 												]);
 											}
 											else{
 												data.push([
-													Date.parse(line[0] +' UTC'),
+													parseInt(line[0]),
 													null
 												]);
 											}
 										}
 									}
 								});
-								
 								options.series[i].data = data;
 								options.series[i].name =  legend;
 								options.yAxis.title.text =  unit;
