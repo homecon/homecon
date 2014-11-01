@@ -6,7 +6,7 @@ timestamp = int( (now - datetime.datetime(1970,1,1)).total_seconds() )
 localtime = datetime.datetime.now()
 
 # connect to the mysql database
-con = pymysql.connect('localhost', 'knxcontrol', 'ysUnGTQEadTsDnTD', 'knxcontrol')
+con = pymysql.connect('localhost', 'knxcontrol', sh.building.mysql.conf['password'], 'knxcontrol')
 cur = con.cursor()
 
 
@@ -49,11 +49,11 @@ for zone in sh.building.zones:
 		item = zone.id()+'.heat_flow_internal'
 		cur.execute("SELECT id FROM measurements_legend WHERE item='%s'" % ( item ))
 		for temp in cur:
-			id = temp[0]
+			signal_id = temp[0]
 		
 		# get average from mysql
 		timestamp_new = timestamp-10*60
-		cur.execute("SELECT AVG(signal%s) FROM measurements WHERE time>%s" %(id,timestamp_new))
+		cur.execute("SELECT AVG(value) FROM measurements WHERE signal_id=%s AND time>%s" %(signal_id,timestamp_new))
 		for temp in cur:
 			heat_flow_internal = temp[0]	
 	except:

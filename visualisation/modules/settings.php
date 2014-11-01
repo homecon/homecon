@@ -3,8 +3,7 @@
 if(array_key_exists('exec',$_GET)){
 
 	if($_GET['exec'] == 'restart_smarthome'){
-		shell_exec('cat /dev/null > /usr/smarthome/var/log/smarthome.log');
-		shell_exec('/etc/init.d/smarthome.py restart');
+		shell_exec('/etc/init.d/smarthome restart');
 	}
 	if($_GET['exec'] == 'restart_eibd'){
 		shell_exec('/etc/init.d/eibd restart');
@@ -34,9 +33,9 @@ echo "
 			<section data-role='collapsible' data-theme='c' data-content-theme='a'>
 				<h1>SmartHome.py log</h1>
 				<div>
-					<a href='data/smarthome.log' target='_blank' data-role='button'>download log file</a>
+					<a href='/usr/local/knxcontrol/smarthome/var/log/smarthome.log' target='_blank' data-role='button'>download log file</a>
 					<font size='2'>";
-					echo nl2br( file_get_contents('data/smarthome.log') );
+					echo nl2br( file_get_contents('/usr/local/knxcontrol/smarthome/var/log/smarthome.log') );
 					
 echo "		
 					</font>

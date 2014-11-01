@@ -9,7 +9,7 @@ import pymysql
 now = datetime.datetime.utcnow()
 
 # connect to the mysql database
-con = pymysql.connect('localhost', 'knxcontrol', 'ysUnGTQEadTsDnTD', 'knxcontrol')
+con = pymysql.connect('localhost', 'knxcontrol', sh.building.mysql.conf['password'], 'knxcontrol')
 cur = con.cursor()
 
 rain = sh.building.rain()
@@ -31,7 +31,7 @@ try:
 	cloud_factor_id = 6
 	# get 15 min average from mysql
 	timestamp_new = timestamp-15*60
-	cur.execute("SELECT AVG(signal%s) FROM measurements WHERE time>%s" %(cloud_factor_id,timestamp_new))
+	cur.execute("SELECT AVG(value) FROM measurements WHERE signal_id=%s  time>%s" %(cloud_factor_id,timestamp_new))
 	for temp in cur:
 		cloud_factor_avg = temp[0]
 	

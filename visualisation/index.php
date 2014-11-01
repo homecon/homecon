@@ -1,6 +1,9 @@
 <?php
+	session_start();
+	
 	// functions
 	include('data/mysql.php');
+	include('data/authentication.php');
 	include('modules/macros_structure.php');
 	include('modules/macros_basic.php');
 	include('modules/macros_charts.php');
@@ -29,29 +32,22 @@
 	else{
 		$web = 0;
 	}
-
-	// check if the user machine has the required cookie
-	$cookie_check = 0;
-	if(array_key_exists('knxcontrol_user',$_COOKIE) && array_key_exists('knxcontrol_pass',$_COOKIE)){
-		$result = mysql_query("SELECT * FROM users WHERE username = '".$_COOKIE['knxcontrol_user']."'");
-		if($user = mysql_fetch_array($result)){
-			if(md5($_COOKIE['knxcontrol_pass'])==$user['password']){
-				$cookie_check = 1;
-			}
-		}
-	}
 	
-	if($cookie_check){
+	if($_SESSION['userid']>0){
+		// get ip and port from mysql
+		$result = mysql_query("SELECT * FROM data WHERE id = 1");
+		$data = mysql_fetch_array($result);
 		if($web){
-			$smarthome_adress = "baeten-gielen.ddns.net";
-			$smarthome_port = "9024";
+			$smarthome_adress = $data['web_ip'];
+			$smarthome_port = $data['web_port'];
 		}
 		else{
-			$smarthome_adress = "192.168.1.2";
-			$smarthome_port = "2424";
+			$smarthome_adress = $data['ip'];
+			$smarthome_port = $data['port'];
 		}	
+?>
 
-		echo "
+<!DOCTYPE html>
 <html>
 	<head>
 		<title>KNX control</title>
@@ -80,18 +76,15 @@
 		<script type='text/javascript' src='js/widget.js'></script>
 		
 		<!-- knxcontrol -->
+		<script type='text/javascript' src='js/menu.js'></script>
 		<script type='text/javascript' src='js/alarms.js'></script>
-		
+		<script type='text/javascript' src='js/measurements.js'></script>
 		<link rel='stylesheet' type='text/css' href='css/layout.css'/>
 		<link rel='stylesheet' type='text/css' href='css/widget.css'/>
-	</head>";
-	
-		echo "	
-	<body>";
-	
-		echo "
+	</head>
+	<body>
 		<script type='text/javascript'>
-			io.init('$smarthome_adress', '$smarthome_port');
+			io.init('<?php echo $smarthome_adress; ?>', '<?php echo $smarthome_port; ?>');
 		
 			// Do some actions before page is shown
 			$(document).on('pagebeforeshow', function () {
@@ -108,35 +101,28 @@
 				//notify.display();
 				// widget.list();
 			});
-			
 
 			//$.mobile.page.prototype.options.domCache = true;
-		</script>";
+		</script>
 	
-
-// basic layout		
-		echo "
+	
 		<div id='page' data-role='page' data-theme='a'>
-			<header data-role='header' class='header'>";
-			
-		include("modules/header.php");
+			<div data-role='header' id='header' data-position='fixed'>
+				<?php include("modules/header.php"); ?>
+			</div>
+			<div data-role='panel' id='menu' class='<?php echo $page_class;?>' data-theme='a' data-display='overlay' data-position='left' data-position-fixed='true' data-dismissable='false'>
+				<?php include("pages/menu.php"); ?>
+			</div>
+			<div data-role='content' id='content' class='<?php echo $page_class;?>'>
+				<?php include("$page.php"); ?>
+			</div>
+		</div>
 
-		echo "
-			</header>
-			<div data-role='content' class='content'>";
-			
-		include("pages/menu.php");
 		
-		include("$page.php");
-			
-		echo "
-			</div>";
-
-		echo"
-		</div>";
-		echo "		
 	</body>
-</html>";
+</html>
+
+<?php 
 	}
 	elseif($page=='modules/set_cookie'){
 		include("modules/set_cookie.php");
@@ -145,6 +131,5 @@
 		echo "No permission!";
 		echo "<meta http-equiv='refresh' content='0; URL=index.php?web=$web&page=modules/set_cookie'>";
 	}
-	
 ?>
 	

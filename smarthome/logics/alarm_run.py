@@ -9,7 +9,7 @@ import pymysql
 now = sh.now();
 
 # connect to the mysql database
-con = pymysql.connect('localhost', 'knxcontrol', 'ysUnGTQEadTsDnTD', 'knxcontrol')
+con = pymysql.connect('localhost', 'knxcontrol', sh.building.mysql.conf['password'], 'knxcontrol')
 cur = con.cursor(pymysql.cursors.DictCursor)
 
 # get alarm data from mysql 
@@ -20,88 +20,27 @@ for alarm in cur:
 	if (now.weekday() == 0 and alarm['mon']) or (now.weekday() == 1 and alarm['tue']) or (now.weekday() == 2 and alarm['wed']) or (now.weekday() == 3 and alarm['thu']) or (now.weekday() == 4 and alarm['fri']) or (now.weekday() == 5 and alarm['sat']) or (now.weekday() == 6 and alarm['sun']): 
 
 		logger.warning( 'alarm id: '+ str(alarm['id']) )
-		logger.warning( 'alarm item: '+ alarm['item'] )
-		logger.warning( 'alarm action: '+ alarm['action'] )
 
-		# find the items and set their values 
-		items = alarm['item'].split(",")
-		for item_str in items:
-			item = sh.return_item(item_str)
-			item(alarm['action'])
-
-
-
-
-
-
-
-
-
-
-
-
-# # create alarms list
-# alarms_list = sh.find_items('alarm_id')
-# #for alarm_id in sh.match_items('*.alarm_id'):
-# #	alarms_list.append(alarm_id.return_parent())
-
-	
-# # find alarms that need to be run
-# for alarm in alarms_list:
-
-	# parent = alarm.return_parent()
-	
-	# # get alarm data from mysql 
-	# cur.execute("SELECT * FROM alarms WHERE id=%s" % (alarm.conf['alarm_id']))
-	# row = cur.fetchall()
-	# row = row[0]
-	
-	# now = sh.now();
-	# if (now.weekday() == 0 and row['mon']) or (now.weekday() == 1 and row['tue']) or (now.weekday() == 2 and row['wed']) or (now.weekday() == 3 and row['thu']) or (now.weekday() == 4 and row['fri']) or (now.weekday() == 5 and row['sat']) or (now.weekday() == 6 and row['sun']): 
-
-		# val_hour = row['hour']
-		# val_minute = row['minute']
+		# get the action of this alarm
+		actioncur = con.cursor(pymysql.cursors.DictCursor)
+		actioncur.execute("SELECT * FROM alarm_actions WHERE id=%s" % (alarm['action_id']))
 		
-		# if row['sunset']:
-			# val_hour = sh.sun.set().hour + val_hour
-			# val_minute = sh.sun.set().minute + val_minute
-			# now = datetime.utcnow()
-			
-		# elif row['sunrise']:
-			# val_hour = sh.sun.rise().hour + val_hour
-			# val_minute = sh.sun.rise().minute + val_minute
-			# now = datetime.utcnow()
-			
-		# if now.hour == val_hour:
-			# if now.minute == val_minute:
-			
-				# logger.warning( 'alarm id: '+ alarm.conf['alarm_id'] )
+		for action in actioncur:
+		
+			# find the items and set their values 
+			ind_list = ['1','2','3','4','5']
+			for ind in ind_list:
+				# each line can be a comma separated list of items
+				if action['item'+ind]:
+					item_str_list = action['item'+ind].split(",")
+					
+					for item_str in item_str_list:
+						# find the time delay
+						if int(action['delay'+ind]) < 1:
+							item = sh.return_item(item_str)
+							item(action['value'+ind])
+						else:
+							triggertime = now + datetime.timedelta(seconds=int(action['delay'+ind]))
+							sh.trigger(name='alarm_action',source=item_str,value=action['value'+ind],prio=2,dt=triggertime)
 				
-				# if hasattr(alarm, 'alarm_action'):
-					# logger.warning( alarm.alarm_action() )
-					# parent( alarm.alarm_action() )
-				
-				# else:					
-					# logger.warning( alarm.conf['alarm_action'] )
-					# if 'fade' in alarm.conf['alarm_action']:
-
-						# fadelist = alarm.conf['alarm_action'].split(',');
-
-						# val = int(fadelist[1])
-						# step = val/255*5
-						# timedelta = float(fadelist[2])*step/val
-						
-						# logger.warning(val)
-						# logger.warning(step)
-						# logger.warning(timedelta)
-						
-						
-						# #sh.trigger('fader')
-						# parent.fade(val, step, timedelta)
-					# else:
-						# # set the value of the alarm parent item to alarm_action
-						# parent(float(alarm.conf['alarm_action']))
-				
-				
-
-						
+						logger.warning( action['item'+ind]+' scheduled to become '+str(action['value'+ind])+' in '+str(action['delay'+ind])+' seconds')

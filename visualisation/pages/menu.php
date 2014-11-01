@@ -11,7 +11,7 @@ begin_menu();
 		add_menu_item("Energy","central_energy","measure_power_meter.png");
 	end_menu_collapsible();
 	
-	begin_menu_collapsible("First Floor","firstfloor");
+	begin_menu_collapsible("First Floor","firstfloor",true);
 		add_menu_item("Living","firstfloor_living","scene_livingroom.png");
 		add_menu_item("Hallway","firstfloor_hallway","scene_hall.png");
 	end_menu_collapsible();

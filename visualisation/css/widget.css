@@ -31,6 +31,7 @@ span.switch{
 		font-size: 80% !important;
 	}
 }
+
 /*----------------------------------------------------------------------------------*/
 /* dimmer                                                                           */
 /*----------------------------------------------------------------------------------*/
@@ -61,6 +62,7 @@ span.dimmer{
 		font-size: 80% !important;
 	}
 }
+
 /*----------------------------------------------------------------------------------*/
 /* shade-control                                                                    */
 /*----------------------------------------------------------------------------------*/
@@ -109,6 +111,7 @@ span.shading{
 		font-size: 80% !important;
 	}
 }
+
 /*----------------------------------------------------------------------------------*/
 /* button                                                                           */
 /*----------------------------------------------------------------------------------*/
@@ -117,10 +120,12 @@ a.ui-mini span{
 	width: 100px;
 }
 */
+
 /*----------------------------------------------------------------------------------*/
 /* alarm                                                                            */
 /*----------------------------------------------------------------------------------*/
-div.alarm a.delete img{
+
+a.delete img{
 	float: right;
 	margin-top: 20px;
 	height: 30px;
@@ -167,26 +172,79 @@ div.alarm{
 		padding-right: 1px !important;
 	} 
 }
-/*----------------------------------------------------------------------------------*/
-/* alarm action                                                                     */
-/*----------------------------------------------------------------------------------*/
-div.alarm_action a.delete img{
 	float: right;
 	margin-top: 20px;
 	height: 30px;
 }
+div.alarm{
+	position: relative;
+	margin-bottom: 20px;
+	margin-top: 10px;
+}
+.alarm div.ui-input-text {
+	width: 170px;
+	float: left;
+}
+.alarm input[type="time"]{
+	font-size: 280%;
+	padding: 0 !important;
+}
+.alarm h1{
+	float: left;
+	margin-top: 15px;
+	margin-left: 5px;
+}
+.alarm div.days{
+	clear: both;
+}
+@media all and (max-width: 600px) {
+	.alarm div.ui-input-text{
+		width: 150px;
+	}
+	.alarm input[type="time"]{
+		font-size: 200%;
+	}
+	.alarm h1{
+		margin-top: 5px;
+	}
+	.alarm  div.ui-controlgroup-controls{
+		width: 100% !important;
+	}
+	.alarm  div.ui-controlgroup div.ui-checkbox{
+		width:14% !important;
+	}
+	.alarm  div.ui-controlgroup span.ui-btn-inner{
+		padding-left: 1px !important;
+		padding-right: 1px !important;
+	} 
+}
+
+/*----------------------------------------------------------------------------------*/
+/* alarm action                                                                     */
+/*----------------------------------------------------------------------------------*/
+
+
+
 div.alarm_action{
 	position: relative;
 	margin-bottom: 20px;
 	margin-top: 10px;
 }
-.alarm_action input[data-column="name"] {
-	display: inline-block !important;
-	width: 200px !important;
+.alarm_action>div.ui-input-text{
+	display: inline-block;
+	width: 35%;
 }
-.alarm_action input[data-column="sectionid"] {
-	display: inline-block !important;
-	width: 100px !important;
+.alarm_action div.alarm_action_action div.ui-input-text{
+	display: inline-block;
+}
+.alarm_action div.alarm_action_action input[data-column*=delay]{
+	width: 3.5em;
+}
+.alarm_action div.alarm_action_action input[data-column*='item']{
+	width: 20em;
+}
+.alarm_action div.alarm_action_action input[data-column*='value']{
+	width: 5em;
 }
 
 /*----------------------------------------------------------------------------------*/
@@ -341,35 +399,36 @@ div.chart{
 
 }
 
-/*     measurements    */
-/*---------------------*/
-form.define div.ui-input-text{
+/*----------------------------------------------------------------------------------*/
+/*     setpoint                                                                     */
+/*----------------------------------------------------------------------------------*/
+div.measurements_define div.ui-input-text{
 	display: inline-block;
 	height: 30px;
 	margin-top: 0px;
 	margin-bottom: 0px;
 }
-form.define input[name^="id"]{
+div.measurements_define input[data-column="id"]{
 	width: 20px;
 	padding-top: 4px;
 }
-form.define input[name^="item"]{
+div.measurements_define input[data-column="item"]{
 	width: 220px;
 	padding-top: 4px;
 }
-form.define input[name^="name"]{
+div.measurements_define input[data-column="name"]{
 	width: 80px;
 	padding-top: 4px;
 }
-form.define input[name^="quantity"]{
+div.measurements_define input[data-column="quantity"]{
 	width: 60px;
 	padding-top: 4px;
 }
-form.define input[name^="unit"]{
+div.measurements_define input[data-column="unit"]{
 	width: 30px;
 	padding-top: 4px;
 }
-form.define input[name^="description"]{
+div.measurements_define input[data-column="description"]{
 	width: 140px;
 	padding-top: 4px;
 }
