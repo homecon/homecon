@@ -39,16 +39,16 @@ function add_chart($chart_title,$signals_str){
 						enabled: false
 					},
 					series: [
-						{data: []},
-						{data: []},
-						{data: []},
-						{data: []},
-						{data: []},
-						{data: []},
-						{data: []},
-						{data: []},
-						{data: []},
-						{data: []}
+						{showInLegend: false, data: []},
+						{showInLegend: false, data: []},
+						{showInLegend: false, data: []},
+						{showInLegend: false, data: []},
+						{showInLegend: false, data: []},
+						{showInLegend: false, data: []},
+						{showInLegend: false, data: []},
+						{showInLegend: false, data: []},
+						{showInLegend: false, data: []},
+						{showInLegend: false, data: []}
 					]
 				}
 				
@@ -144,16 +144,16 @@ function add_week_average_chart($chart_title,$signals_str){
 						enabled: false
 					},
 					series: [
-						{data: []},
-						{data: []},
-						{data: []},
-						{data: []},
-						{data: []},
-						{data: []},
-						{data: []},
-						{data: []},
-						{data: []},
-						{data: []}
+						{showInLegend: false, data: []},
+						{showInLegend: false, data: []},
+						{showInLegend: false, data: []},
+						{showInLegend: false, data: []},
+						{showInLegend: false, data: []},
+						{showInLegend: false, data: []},
+						{showInLegend: false, data: []},
+						{showInLegend: false, data: []},
+						{showInLegend: false, data: []},
+						{showInLegend: false, data: []}
 					]
 				}
 				
