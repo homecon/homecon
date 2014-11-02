@@ -111,21 +111,17 @@ else{
 	echo "measurements legend table creation failed <br>";
 }
 // add default measurement entries
-$res = mysql_query("INSERT INTO `measurements_legend` (item,name,quantity,unit,description) VALUES 	('building.ambient_temperature','Temperature','Temperature','degC','Outside temperature'),
-																									('building.irradiation.azimut','Azimut','Angle','deg','Solar azimut'),
-																									('building.irradiation.altitude','Altitude','Angle','deg','Solar altitude'),
-																									('building.irradiation.direct_theoretical','Direct','Heat flux','W/m2','Theoretical direct solar irradiation'),
-																									('building.irradiation.diffuse_theoretical','Diffuse','Heat flux','W/m2','Theoretical diffuse solar irradiation'),
-																									('building.irradiation.cloud_factor','Clouds','','-','Cloud factor'),
-																									('building.wind_velocity','Wind speed','Velocity','m/s','Wind speed'),
-																									('building.rain','Rain','','-','Rain or not')");												
+$res = mysql_query("REPLACE INTO `measurements_legend` (id,item,name,quantity,unit,description) VALUES 	(1,'building.ambient_temperature','Temperature','Temperature','degC','Outside temperature'),
+																										(2,'building.irradiation.azimut','Azimut','Angle','deg','Solar azimut'),
+																										(3,'building.irradiation.altitude','Altitude','Angle','deg','Solar altitude'),
+																										(4,'building.irradiation.direct_theoretical','Direct','Heat flux','W/m2','Theoretical direct solar irradiation'),
+																										(5,'building.irradiation.diffuse_theoretical','Diffuse','Heat flux','W/m2','Theoretical diffuse solar irradiation'),
+																										(6,'building.irradiation.cloud_factor','Clouds','','-','Cloud factor'),
+																										(7,'building.wind_velocity','Wind speed','Velocity','m/s','Wind speed'),
+																										(8,'building.rain','Rain','','-','Rain or not')");												
 if($res){
 	echo "default measurements added<br>";
 }
-for($i=9;$i<50;$i++){
-	mysql_query("INSERT INTO `measurements_legend` (item) VALUES ('')");
-}
-
 
 
 $res = mysql_query("CREATE TABLE IF NOT EXISTS `measurements` (	`id` bigint(20) NOT NULL AUTO_INCREMENT,
@@ -140,6 +136,29 @@ else{
 	echo "measurements table creation failed <br>";
 }
 
+$res = mysql_query("CREATE TABLE IF NOT EXISTS `measurements_quarterhouraverage` (	`id` bigint(20) NOT NULL AUTO_INCREMENT,
+																					`signal_id` tinyint(4) NOT NULL,
+																					`time` int(11) NOT NULL,
+																					`value` float DEFAULT NULL,
+																					UNIQUE KEY `ID` (`id`)) ENGINE=InnoDB  DEFAULT CHARSET=latin1 AUTO_INCREMENT=1 ");												 						 
+if($res){
+	echo "quarterhour average measurements table created<br>";
+}		
+else{
+	echo "quarterhour average measurements table creation failed <br>";
+}
+
+$res = mysql_query("CREATE TABLE IF NOT EXISTS `measurements_weekaverage` (	`id` bigint(20) NOT NULL AUTO_INCREMENT,
+																			`signal_id` tinyint(4) NOT NULL,
+																			`time` int(11) NOT NULL,
+																			`value` float DEFAULT NULL,
+																			UNIQUE KEY `ID` (`id`)) ENGINE=InnoDB  DEFAULT CHARSET=latin1 AUTO_INCREMENT=1 ");												 						 
+if($res){
+	echo "week average measurements table created<br>";
+}		
+else{
+	echo "week average measurements table creation failed <br>";
+}
 
 $res = mysql_query("CREATE TABLE IF NOT EXISTS `measurements_monthaverage` (`id` bigint(20) NOT NULL AUTO_INCREMENT,
 																			`signal_id` tinyint(4) NOT NULL,
@@ -153,17 +172,7 @@ else{
 	echo "month average measurements table creation failed <br>";
 }
 	
-$res = mysql_query("CREATE TABLE IF NOT EXISTS `measurements_weekaverage` (	`id` bigint(20) NOT NULL AUTO_INCREMENT,
-																			`signal_id` tinyint(4) NOT NULL,
-																			`time` int(11) NOT NULL,
-																			`value` float DEFAULT NULL,
-																			UNIQUE KEY `ID` (`id`)) ENGINE=InnoDB  DEFAULT CHARSET=latin1 AUTO_INCREMENT=1 ");												 						 
-if($res){
-	echo "week average measurements table created<br>";
-}		
-else{
-	echo "week average measurements table creation failed <br>";
-}
+
 		
 // Temperature setpoints
 $res = mysql_query( "CREATE TABLE IF NOT EXISTS `temperature_setpoints` (	`id` int(11) NOT NULL AUTO_INCREMENT,
