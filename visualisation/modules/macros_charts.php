@@ -54,7 +54,7 @@ function add_chart($chart_title,$signals_str){
 				
 				// Load data asynchronously using jQuery. On success, add the data to the options and initiate the chart.
 				jQuery.ajax({
-					url:    'requests/get_data.php?signal=$signals_str',
+					url:    'requests/measurements_get.php?scale=quarter&signal=$signals_str',
 					success: function(result) {
 						try {
 							// split result into signals

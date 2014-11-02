@@ -1,8 +1,6 @@
 ###########################################################################
 # quarterhour average measurements run every 15 minutes
 ###########################################################################
-logger.warning('start')
-
 import pymysql
 import datetime
 
@@ -44,4 +42,3 @@ cur.execute(query)
 	
 con.commit()
 con.close()
-logger.warning('end')
