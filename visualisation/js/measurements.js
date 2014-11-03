@@ -1,74 +1,65 @@
 //////////////////////////////////////////////////////////////////////////////
 // set measurement
 //////////////////////////////////////////////////////////////////////////////
-$(document).ready(function(){
-	$('.measurements_define').on('click','#measurements_submit',function(){
-		// display please wait
-		$('#measurements_submit_popup').popup('open');
-		
-		// cycle through all fields
-		$('#measurements_define :input').each(function(){
-			//if the field has column id do nothing else
-			if($(this).attr('data-column')!='id' && $(this).parents().filter('.signal').attr('id')!='signal_template'){
-				id = $(this).parents().filter('.signal').attr('data-id');
-				column = $(this).attr('data-column');
-				value = $(this).attr('value')
-				
-				$.post( 'requests/table_set.php', {'table':'measurements_legend' , 'id': id , 'column': column , 'value': value}); 
-			}
-		
-		});
-		
-		// hide
-		setTimeout(function(){
-			$('#measurements_submit_popup').popup('close');
-		}, 5000);
+$('.measurements_define').on('click','#measurements_submit',function(){
+	// display please wait
+	$('#measurements_submit_popup').popup('open');
+	
+	// cycle through all fields
+	$('#measurements_define :input').each(function(){
+		//if the field has column id do nothing else
+		if($(this).attr('data-column')!='id' && $(this).parents().filter('.signal').attr('id')!='signal_template'){
+			id = $(this).parents().filter('.signal').attr('data-id');
+			column = $(this).attr('data-column');
+			value = $(this).attr('value')
+			
+			$.post( 'requests/table_set.php', {'table':'measurements_legend' , 'id': id , 'column': column , 'value': value}); 
+		}
+	
 	});
+	
+	// hide
+	setTimeout(function(){
+		$('#measurements_submit_popup').popup('close');
+	}, 5000);
 });
 
 //////////////////////////////////////////////////////////////////////////////
 // export measurement data
 //////////////////////////////////////////////////////////////////////////////
-$(document).ready(function(){
-	$('.measurements_export').on('click','#measurements_export',function(){
+$('.measurements_export').on('click','#measurements_export',function(){
 	
-		// get start and end date
-		var startdate = $(this).siblings('#measurements_export_startdate').val();
-		var enddate = $(this).siblings('#measurements_export_enddate').val();
-		
-		// post the request
-		$.post( 'requests/measurements_export.php', {'table':'measurements' , 'startdate':startdate , 'enddate':enddate}); 
-		
-		// not sure if this will work
-		// window.open('requests/measurements_export.php?table=measurements&startdate='+startdate+'&'enddate='+enddate); can be used instead with $_GET array in the requested page
-	});
+	// get start and end date
+	var startdate = $(this).siblings('#measurements_export_startdate').val();
+	var enddate = $(this).siblings('#measurements_export_enddate').val();
+	
+	// post the request
+	$.post( 'requests/measurements_export.php', {'table':'measurements' , 'startdate':startdate , 'enddate':enddate}); 
+	
+	// not sure if this will work
+	// window.open('requests/measurements_export.php?table=measurements&startdate='+startdate+'&'enddate='+enddate); can be used instead with $_GET array in the requested page
 });
+
 
 //////////////////////////////////////////////////////////////////////////////
 // clear measurement data
 //////////////////////////////////////////////////////////////////////////////
-$(document).ready(function(){
-	$('.measurements_clear').on('click','#measurements_clear',function(){
-		// display confirmation popup
-		$('#measurements_clear_popup').popup('open');
-	});
+$('.measurements_clear').on('click','#measurements_clear',function(){
+	// display confirmation popup
+	$('#measurements_clear_popup').popup('open');
 });
-$(document).ready(function(){
-	$('#page').on('click','#measurements_clear_confirm',function(){
-		
-		$.post( 'requests/table_clear.php', {'table':'measurements'}); 
-		$.post( 'requests/table_clear.php', {'table':'measurements_weekaverage'});
-		$.post( 'requests/table_clear.php', {'table':'measurements_monthaverage'});
+$('#page').on('click','#measurements_clear_confirm',function(){
+	
+	$.post( 'requests/table_clear.php', {'table':'measurements'}); 
+	$.post( 'requests/table_clear.php', {'table':'measurements_weekaverage'});
+	$.post( 'requests/table_clear.php', {'table':'measurements_monthaverage'});
 
-		$('#measurements_clear_popup').popup('close');
-		
-	});
+	$('#measurements_clear_popup').popup('close');
+	
 });
-$(document).ready(function(){
-	$('#page').on('click','#measurements_clear_cancel',function(){
-		
-		$('#measurements_clear_popup').popup('close');
-	});
+$('#page').on('click','#measurements_clear_cancel',function(){
+	
+	$('#measurements_clear_popup').popup('close');
 });
 
 //////////////////////////////////////////////////////////////////////////////
