@@ -169,3 +169,11 @@ article section div.twocols{
 article hr{
 	width: 90%;
 }
+
+
+/***************************************/
+/*           Popup                   */
+/***************************************/
+#requestpopup{
+	bottom: 20px;
+}

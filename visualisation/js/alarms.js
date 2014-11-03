@@ -3,6 +3,8 @@
 //////////////////////////////////////////////////////////////////////////////
 $(document).ready(function(){
 	$('.alarm_container').on('change','.alarm input,.alarm select',function(){
+	
+		$( "#requestpopup" ).popup('open');
 		
 		// get the alarm id
 		id = $(this).parents('.alarm').attr('data-id');
@@ -25,7 +27,8 @@ $(document).ready(function(){
 		
 		//for debugging: 
 		//$.post( 'requests/alarm_set.php', {'id': id , 'column': column , 'value': value}, function(response){alert(response);}); 
-							
+		$( "#requestpopup" ).popup('close');
+		
 	});
 });
 
@@ -183,6 +186,8 @@ display_alarm = function(sectionid,values){
 //////////////////////////////////////////////////////////////////////////////
 $(document).ready(function(){
 	$('.alarm_action_container').on('change','.alarm_action input',function(){
+	
+		$( "#requestpopup" ).popup('open');
 		
 		// get the alarm id
 		id = $(this).parents('.alarm_action').attr('data-id');
@@ -193,7 +198,8 @@ $(document).ready(function(){
 
 		// post id column and value to add to database
 		$.post( 'requests/alarm_action_set.php', {'id': id , 'column': column , 'value': value}); 
-						
+		
+		$( "#requestpopup" ).popup('close');	
 	});
 });
 
@@ -240,7 +246,7 @@ $(document).on('click','.alarm_action a.delete',function(){
 //////////////////////////////////////////////////////////////////////////////
 $(document).on('pagebeforecreate',function(){
 
-	//cycle through all alarm_placeholder
+	//cycle through all alarm_action_placeholder elements
 	$( ".alarm_action_placeholder" ).each(function(){
 
 		// create variables
