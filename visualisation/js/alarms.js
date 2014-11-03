@@ -1,38 +1,36 @@
 //////////////////////////////////////////////////////////////////////////////
 // set alarm
 //////////////////////////////////////////////////////////////////////////////
-$(document).ready(function(){
-	$('.alarm_container').on('change','.alarm input,.alarm select',function(){
-		
-		// get the alarm id
-		id = $(this).parents('.alarm').attr('data-id');
-		
-		// get the column tot add value to
-		column = $(this).attr('data-column');
-		value = $(this).val();
-		
-		if($(this).attr('type')=='checkbox'){
-			value = $(this).is(':checked');
-		}
-		
-		if($(this).attr('data-column')=='action'){
-			column = 'action_id'
-		}
-		
-		
-		// post id column and value to add to database
-		$.post( 'requests/alarm_set.php', {'id': id , 'column': column , 'value': value}); 
-		
-		//for debugging: 
-		//$.post( 'requests/alarm_set.php', {'id': id , 'column': column , 'value': value}, function(response){alert(response);}); 
-							
-	});
+$('.alarm_container').on('change','.alarm input,.alarm select',function(){
+
+	// get the alarm id
+	id = $(this).parents('.alarm').attr('data-id');
+	
+	// get the column tot add value to
+	column = $(this).attr('data-column');
+	value = $(this).val();
+	
+	if($(this).attr('type')=='checkbox'){
+		value = $(this).is(':checked');
+	}
+	
+	if($(this).attr('data-column')=='action'){
+		column = 'action_id'
+	}
+	
+	
+	// post id column and value to add to database
+	$.post( 'requests/alarm_set.php', {'id': id , 'column': column , 'value': value}); 
+	
+	//for debugging: 
+	//$.post( 'requests/alarm_set.php', {'id': id , 'column': column , 'value': value}, function(response){alert(response);}); 
+	
 });
 
 //////////////////////////////////////////////////////////////////////////////
 // add alarm
 //////////////////////////////////////////////////////////////////////////////
-$(document).on('click','.alarm_container a.add',function(){
+$('.alarm_container').on('click','a.add',function(){
 
 	var container = $( this ).parents('.alarm_container');
 	var sectionid = container.attr('data-id');
@@ -67,7 +65,7 @@ $(document).on('click','.alarm_container a.add',function(){
 //////////////////////////////////////////////////////////////////////////////
 // delete alarm
 //////////////////////////////////////////////////////////////////////////////
-$(document).on('click','.alarm a.delete',function(){
+$('.alarm_container').on('click','.alarm a.delete',function(){
 
 	var alarm = $( this ).parents('.alarm');
 	var id = alarm.attr('data-id');
@@ -181,26 +179,24 @@ display_alarm = function(sectionid,values){
 //////////////////////////////////////////////////////////////////////////////
 // set alarm action
 //////////////////////////////////////////////////////////////////////////////
-$(document).ready(function(){
-	$('.alarm_action_container').on('change','.alarm_action input',function(){
-		
-		// get the alarm id
-		id = $(this).parents('.alarm_action').attr('data-id');
-		
-		// get the column tot add value to
-		column = $(this).attr('data-column');
-		value = $(this).val();
+$('.alarm_action_container').on('change','.alarm_action input',function(){
 
-		// post id column and value to add to database
-		$.post( 'requests/alarm_action_set.php', {'id': id , 'column': column , 'value': value}); 
-						
-	});
+	// get the alarm id
+	id = $(this).parents('.alarm_action').attr('data-id');
+	
+	// get the column tot add value to
+	column = $(this).attr('data-column');
+	value = $(this).val();
+
+	// post id column and value to add to database
+	$.post( 'requests/alarm_action_set.php', {'id': id , 'column': column , 'value': value}); 
+		
 });
 
 //////////////////////////////////////////////////////////////////////////////
 // add alarm action
 //////////////////////////////////////////////////////////////////////////////
-$(document).on('click','.alarm_action_container a.add',function(){
+$('.alarm_action_container').on('click','a.add',function(){
 
 	var container = $( this ).parents('.alarm_action_container');
 	
@@ -224,7 +220,7 @@ $(document).on('click','.alarm_action_container a.add',function(){
 //////////////////////////////////////////////////////////////////////////////
 // delete alarm action
 //////////////////////////////////////////////////////////////////////////////
-$(document).on('click','.alarm_action a.delete',function(){
+$('.alarm_action_container').on('click','.alarm_action a.delete',function(){
 	var action = $( this ).parents('.alarm_action');
 	var id = action.attr('data-id');
 	
@@ -240,7 +236,7 @@ $(document).on('click','.alarm_action a.delete',function(){
 //////////////////////////////////////////////////////////////////////////////
 $(document).on('pagebeforecreate',function(){
 
-	//cycle through all alarm_placeholder
+	//cycle through all alarm_action_placeholder elements
 	$( ".alarm_action_placeholder" ).each(function(){
 
 		// create variables
