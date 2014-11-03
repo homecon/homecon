@@ -106,7 +106,7 @@
 	
 	
 		<div id='page' data-role='page' data-theme='a'>
-			<div data-role='header' id='header' data-position='fixed'>
+			<div data-role='header' id='header' data-position='fixed' data-tap-toggle='false'>
 				<?php include("modules/header.php"); ?>
 			</div>
 			<div data-role='panel' id='menu' class='<?php echo $page_class;?>' data-theme='a' data-display='overlay' data-position='left' data-position-fixed='true' data-dismissable='false'>
