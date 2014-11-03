@@ -38,9 +38,11 @@ for alarm in cur:
 						# find the time delay
 						if int(action['delay'+ind]) < 1:
 							item = sh.return_item(item_str)
-							item(action['value'+ind])
+							# check if the item exists
+							if item:
+								item(action['value'+ind])
 						else:
 							triggertime = now + datetime.timedelta(seconds=int(action['delay'+ind]))
-							sh.trigger(name='alarm_action',source=item_str,value=action['value'+ind],prio=2,dt=triggertime)
+							sh.trigger(name='alarm_action',by='alarm'+str(alarm['id']),source=item_str,value=action['value'+ind],prio=2,dt=triggertime)
 				
 						logger.warning( action['item'+ind]+' scheduled to become '+str(action['value'+ind])+' in '+str(action['delay'+ind])+' seconds')
