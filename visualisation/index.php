@@ -63,9 +63,9 @@
 		<link rel='icon' href='favicon.ico' type='image/x-icon' />
 
 		<!-- jquery mobile -->
-		<script src='http://code.jquery.com/jquery-1.8.3.min.js'></script>
-		<script src='http://code.jquery.com/mobile/1.3.2/jquery.mobile-1.3.2.min.js'></script>
-		<link rel='stylesheet' href='http://code.jquery.com/mobile/1.3.2/jquery.mobile-1.3.2.min.css'>
+		<script src='jquery/jquery-1.8.3.js'></script>
+		<script src='jquery/jquery.mobile-1.3.2.js'></script>
+		<link rel='stylesheet' href='jquery/jquery.mobile-1.3.2.css'>
 		
 		<!-- highcharts -->
 		<script type='text/javascript' src='js/highstock.js' ></script>
