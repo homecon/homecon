@@ -115,9 +115,6 @@
 			<div data-role='content' id='content' class='<?php echo $page_class;?>'>
 				<?php include("$page.php"); ?>
 			</div>
-			<div data-role='popup' id='requestpopup' data-position-to='window'>
-				<p>Request sent.<p>
-			</div>
 		</div>
 
 		
