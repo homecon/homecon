@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////////
 // set alarm
 //////////////////////////////////////////////////////////////////////////////
-$('.alarm_container').on('change','.alarm input,.alarm select',function(){
+$(document).on('change','.alarm input,.alarm select',function(){
 
 	// get the alarm id
 	id = $(this).parents('.alarm').attr('data-id');
@@ -30,7 +30,7 @@ $('.alarm_container').on('change','.alarm input,.alarm select',function(){
 //////////////////////////////////////////////////////////////////////////////
 // add alarm
 //////////////////////////////////////////////////////////////////////////////
-$('.alarm_container').on('click','a.add',function(){
+$(document).on('click','a.add',function(){
 
 	var container = $( this ).parents('.alarm_container');
 	var sectionid = container.attr('data-id');
@@ -65,7 +65,7 @@ $('.alarm_container').on('click','a.add',function(){
 //////////////////////////////////////////////////////////////////////////////
 // delete alarm
 //////////////////////////////////////////////////////////////////////////////
-$('.alarm_container').on('click','.alarm a.delete',function(){
+$(document).on('click','.alarm a.delete',function(){
 
 	var alarm = $( this ).parents('.alarm');
 	var id = alarm.attr('data-id');
@@ -179,7 +179,7 @@ display_alarm = function(sectionid,values){
 //////////////////////////////////////////////////////////////////////////////
 // set alarm action
 //////////////////////////////////////////////////////////////////////////////
-$('.alarm_action_container').on('change','.alarm_action input',function(){
+$(document).on('change','.alarm_action input',function(){
 
 	// get the alarm id
 	id = $(this).parents('.alarm_action').attr('data-id');
@@ -196,7 +196,7 @@ $('.alarm_action_container').on('change','.alarm_action input',function(){
 //////////////////////////////////////////////////////////////////////////////
 // add alarm action
 //////////////////////////////////////////////////////////////////////////////
-$('.alarm_action_container').on('click','a.add',function(){
+$(document).on('click','a.add',function(){
 
 	var container = $( this ).parents('.alarm_action_container');
 	
@@ -220,7 +220,7 @@ $('.alarm_action_container').on('click','a.add',function(){
 //////////////////////////////////////////////////////////////////////////////
 // delete alarm action
 //////////////////////////////////////////////////////////////////////////////
-$('.alarm_action_container').on('click','.alarm_action a.delete',function(){
+$(document).on('click','.alarm_action a.delete',function(){
 	var action = $( this ).parents('.alarm_action');
 	var id = action.attr('data-id');
 	
