@@ -15,7 +15,7 @@ begin_article($page_class);
 	while($row = mysql_fetch_array($result)){
 	
 		echo " 
-				<div class='alarm_action_placeholder' data-id='".$row['id']."' data-name='".$row['name']."' data-sectionid='".$row['sectionid']."' data-delay1='".$row['delay1']."' data-item1='".$row['item1']."' data-value1='".$row['value1']."' data-delay2='".$row['delay2']."' data-item2='".$row['item2']."' data-value2='".$row['value2']."' data-delay3='".$row['delay3']."' data-item3='".$row['item3']."' data-value3='".$row['value3']."' data-delay4='".$row['delay4']."' data-item4='".$row['item4']."' data-value4='".$row['value4']."' data-delay5='".$row['delay5']."' data-item2='".$row['item5']."' data-value5='".$row['value5']."'></div>";
+				<div class='alarm_action_placeholder' data-id='".$row['id']."' data-name='".$row['name']."' data-sectionid='".$row['sectionid']."' data-delay1='".$row['delay1']."' data-item1='".$row['item1']."' data-value1='".$row['value1']."' data-delay2='".$row['delay2']."' data-item2='".$row['item2']."' data-value2='".$row['value2']."' data-delay3='".$row['delay3']."' data-item3='".$row['item3']."' data-value3='".$row['value3']."' data-delay4='".$row['delay4']."' data-item4='".$row['item4']."' data-value4='".$row['value4']."' data-delay5='".$row['delay5']."' data-item5='".$row['item5']."' data-value5='".$row['value5']."'></div>";
 	}
 	echo "
 				<a class='add' href='#' data-role='button'>Add action</a>
