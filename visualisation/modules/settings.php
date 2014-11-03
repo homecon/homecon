@@ -33,9 +33,9 @@ echo "
 			<section data-role='collapsible' data-theme='c' data-content-theme='a'>
 				<h1>SmartHome.py log</h1>
 				<div>
-					<a href='/usr/local/knxcontrol/smarthome/var/log/smarthome.log' target='_blank' data-role='button'>download log file</a>
+					<a href='data/smarthome.log' target='_blank' data-role='button'>download log file</a>
 					<font size='2'>";
-					echo nl2br( file_get_contents('/usr/local/knxcontrol/smarthome/var/log/smarthome.log') );
+					echo nl2br( file_get_contents('data/smarthome.log') );
 					
 echo "		
 					</font>
