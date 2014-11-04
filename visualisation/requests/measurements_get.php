@@ -28,14 +28,14 @@
 		$signal_str = $_GET['signal'];
 		
 		// start creating the json string
-		echo "{"
+		echo '{';
 		
 		// name and unit
 		$result = mysql_query("SELECT * FROM measurements_legend WHERE id = ".$signal_str);
-		$row = mysql_fetch_array($result)
+		$row = mysql_fetch_array($result);
 		
-		echo "'name':".$row['name'].", 'unit':".$row['unit'].", 'quantity':".$row['quantity'].", 'description':".$row['description'].", ";
-		echo "series:{'name':".$row['name'].", 'data':[";
+		echo '"name":"'.$row['name'].'", "unit":"'.$row['unit'].'", "quantity":"'.$row['quantity'].'", "description":"'.$row['description'].'", ';
+		echo '"series":{"name":"'.$row['name'].'", "data":[';
 		
 		
 		$result = mysql_query("SELECT time, value FROM $table WHERE signal_id = ".$signal_str." AND time > $after_date");
@@ -43,7 +43,7 @@
 		while($row = mysql_fetch_array($result)) {
 			// do not echo a comma before the first entry
 			if($count==0){
-				$count++
+				$count++;
 			}
 			else{
 				echo ",";
@@ -51,13 +51,14 @@
 			
 			// echo the actual data
 			if(!is_null($row['value'])){
-				echo "{'time':" $row['time']."000, 'value':".$row['value']."}";
+				echo '{"time":'.$row['time'].'000, "value":'.$row['value'].'}';
 			}
 			else{
-				echo "{'time':" $row['time']."000, 'value':".'null'."}";
+				echo '{"time":'.$row['time'].'000, "value":"null"}';
 			}
 		}
-		
+
 		echo "]}}";
 	}
+	
 ?>

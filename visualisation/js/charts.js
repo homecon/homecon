@@ -39,8 +39,7 @@ $(document).on('pagebeforecreate',function(){
 			rangeSelector : {
 				enabled: false
 			},
-			series: [
-			]
+			series: []
 		}
 		
 		// tell highcharts to convert utc time to local time
@@ -54,9 +53,12 @@ $(document).on('pagebeforecreate',function(){
 		
 		// Load data asynchronously using jQuery. On success, add the data to the options and initiate the chart.
 		jQuery.each(signals_str.split(/,/), function(i, signal_id) {
-		
-			$.getJSON('requests/measurements_get.php?signal='+signal_id+'&scale=quarter',function(data){
 
+			$.post('requests/measurements_get.php?signal='+signal_id+'&scale=quarter',function(data){
+			
+				var data = JSON.parse(data);
+				alert(data.series);
+				alert(options.series);
 				options.series.push(data.series);
 				options.yAxis.title.text = data.unit;
 				
