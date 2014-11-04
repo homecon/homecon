@@ -39,7 +39,18 @@ $(document).on('pagebeforecreate',function(){
 			rangeSelector : {
 				enabled: false
 			},
-			series: []
+			series: [
+				{showInLegend: false, data: []},
+				{showInLegend: false, data: []},
+				{showInLegend: false, data: []},
+				{showInLegend: false, data: []},
+				{showInLegend: false, data: []},
+				{showInLegend: false, data: []},
+				{showInLegend: false, data: []},
+				{showInLegend: false, data: []},
+				{showInLegend: false, data: []},
+				{showInLegend: false, data: []}
+			]
 		}
 		
 		// tell highcharts to convert utc time to local time
@@ -49,6 +60,8 @@ $(document).on('pagebeforecreate',function(){
 			}
 		});
 		
+		chart = new Highcharts.StockChart(options);
+		
 		console.time("total");
 		
 		// Load data asynchronously using jQuery. On success, add the data to the options and initiate the chart.
@@ -57,18 +70,15 @@ $(document).on('pagebeforecreate',function(){
 			$.post('requests/measurements_get.php?signal='+signal_id+'&scale=quarter',function(data){
 			
 				var data = JSON.parse(data);
-				alert(data.series);
-				alert(options.series);
-				options.series.push(data.series);
+				
+				options.series[i].data = data.series.data;
+				options.series[i].name = data.series.name;
+				
 				options.yAxis.title.text = data.unit;
 				
-				if(i==0){
-					chart = new Highcharts.StockChart(options);
-				}
-				else{
-					chart.destroy();
-					chart = new Highcharts.StockChart(options);
-				}
+				chart.destroy();
+				chart = new Highcharts.StockChart(options);
+				
 			});
 		
 		});

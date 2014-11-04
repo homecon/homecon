@@ -51,10 +51,10 @@
 			
 			// echo the actual data
 			if(!is_null($row['value'])){
-				echo '{"time":'.$row['time'].'000, "value":'.$row['value'].'}';
+				echo '['.$row['time'].'000, '.$row['value'].']';
 			}
 			else{
-				echo '{"time":'.$row['time'].'000, "value":"null"}';
+				echo '['.$row['time'].'000, "null"}';
 			}
 		}
 
