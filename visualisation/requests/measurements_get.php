@@ -7,15 +7,15 @@
 
 		// parse the table and time scale
 		date_default_timezone_set("UTC");
-		if($_GET['scale']=='quarter'){
+		if($_POST['scale']=='quarter'){
 			$after_date = time()-2*24*3600;
 			$table = "measurements_quarterhouraverage";
 		}
-		elseif($_GET['scale']=='week'){
+		elseif($_POST['scale']=='week'){
 			$after_date = time()-365*24*3600;
 			$table = "measurements_weekaverage";
 		}
-		elseif($_GET['scale']=='month'){
+		elseif($_POST['scale']=='month'){
 			$after_date = time()-365*24*3600;
 			$table = "measurements_monthaverage";
 		}
@@ -25,7 +25,7 @@
 		}
 		
 		// parse the signals
-		$signal_str = $_GET['signal'];
+		$signal_str = $_POST['signal'];
 		$signals = explode(',',$signal_str);
 
 
