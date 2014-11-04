@@ -7,15 +7,15 @@
 
 		// parse the table and time scale
 		date_default_timezone_set("UTC");
-		if($_POST['scale']=='quarter'){
+		if($_GET['scale']=='quarter'){
 			$after_date = time()-2*24*3600;
 			$table = "measurements_quarterhouraverage";
 		}
-		elseif($_POST['scale']=='week'){
+		elseif($_GET['scale']=='week'){
 			$after_date = time()-365*24*3600;
 			$table = "measurements_weekaverage";
 		}
-		elseif($_POST['scale']=='month'){
+		elseif($_GET['scale']=='month'){
 			$after_date = time()-365*24*3600;
 			$table = "measurements_monthaverage";
 		}
@@ -24,37 +24,34 @@
 			$table = "measurements";
 		}
 		
-		// parse the signals
-		$signal_str = $_POST['signal'];
-		$signals = explode(',',$signal_str);
-
-
-		// start writing signals
-		for($i = 0; $i < count($signals); $i++){
-
-			// keyword signal to delimit different signals
-			echo "signal";
-			
-			// name and unit
-			$result = mysql_query("SELECT * FROM measurements_legend WHERE id = ".$signals[$i]);
-			while($row = mysql_fetch_array($result)) {
-
-				echo $row['name'].";";
-				echo $row['unit'].";";
+		// parse the signal
+		$signal_str = $_GET['signal'];
+		
+		// start creating the json string
+		echo "{"
+		
+		// name and unit
+		$result = mysql_query("SELECT * FROM measurements_legend WHERE id = ".$signal_str);
+		$row = mysql_fetch_array($result)
+		
+		echo "'unit':".$row['unit'].", series:{'name':".$row['name'].", 'data':[";
+		
+		
+		$result = mysql_query("SELECT time, value FROM $table WHERE signal_id = ".$signal_str." AND time > $after_date");
+		$count = 0;
+		while($row = mysql_fetch_array($result)) {
+			if($count>0){
+				echo ",";
+				$count++
 			}
-			
-			//echo times and values
-			$result = mysql_query("SELECT time, value FROM $table WHERE signal_id = ".$signals[$i]." AND time > $after_date");
-			while($row = mysql_fetch_array($result)) {
-				if(!is_null($row['value'])){
-					//echo date('Y-m-d H:i:s',$row['time']). "," . $row['value']. ";";
-					echo $row['time']."000,".$row['value'].";";
-				}
-				else{
-					//echo date('Y-m-d H:i:s',$row['time']). ",null;";
-					echo $row['time']."000,null;";
-				}
+			if(!is_null($row['value'])){
+				echo "{'time':" $row['time']."000, 'value':".$row['value']."}";
+			}
+			else{
+				echo "{'time':" $row['time']."000, 'value':".'null'."}";
 			}
 		}
+		
+		echo "]}}";
 	}
 ?>

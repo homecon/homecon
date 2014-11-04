@@ -40,74 +40,36 @@ $(document).on('pagebeforecreate',function(){
 				enabled: false
 			},
 			series: [
-				{showInLegend: false, data: []},
-				{showInLegend: false, data: []},
-				{showInLegend: false, data: []},
-				{showInLegend: false, data: []},
-				{showInLegend: false, data: []},
-				{showInLegend: false, data: []},
-				{showInLegend: false, data: []},
-				{showInLegend: false, data: []},
-				{showInLegend: false, data: []},
-				{showInLegend: false, data: []}
 			]
 		}
 		
-		console.time("php request");
+		// tell highcharts to convert utc time to local time
+		Highcharts.setOptions({
+			global: {
+				useUTC: false
+			}
+		});
+		
+		console.time("total");
+		
 		// Load data asynchronously using jQuery. On success, add the data to the options and initiate the chart.
-		$.post( 'requests/measurements_get.php', {'scale': 'quarter' , 'signal': signals_str},function(result){
-			console.timeEnd("php request");
-			
-			console.time("post processing");
-			try {
-				// split result into signals
-				result = result.split(/signal/);
-				result = result.slice(1);
+		jQuery.each(signals_str.split(/,/), function(i, signal_id) {
+		
+			$.getJSON('requests/measurements_get.php?signal='+signal_id+'&scale=quarter',function(data){
+
+				options.series.push(data.series);
+				options.yAxis.title.text = data.unit;
 				
-				jQuery.each(result, function(i, signal) {
-					data = [];
-					signal = signal.slice(0,signal.length-1)
-					
-					// split result into lines
-					jQuery.each(signal.split(/;/), function(j, line) {
-						if(j==0){
-							legend = line;
-						}
-						else if(j==1){
-							unit = line.replace('°', 'deg ');
-						}
-						else{
-							// split line into x and y data
-							line = line.split(/,/);
-							if(line[0]){
-								if(!isNaN(parseFloat(line[1]))){
-									data.push([parseInt(line[0]),parseFloat(line[1])]);
-								}
-								else{
-									data.push([parseInt(line[0]),null]);
-								}
-							}
-						}
-					});
-					options.series[i].data = data;
-					options.series[i].name = legend;
-					options.yAxis.title.text = unit;
-				});
-				
-			} catch (e) {  }
-			console.timeEnd("post processing");
-			
-			
-			console.time("chart creation");
-			// create the chart
-			chart = new Highcharts.StockChart(options);
-			Highcharts.setOptions({
-				global: {
-					useUTC: false
+				if(i==0){
+					chart = new Highcharts.StockChart(options);
+				}
+				else{
+					chart.destroy();
+					chart = new Highcharts.StockChart(options);
 				}
 			});
-			console.timeEnd("chart creation");
-			
+		
 		});
+		console.timeEnd("total");
 	});
 });
