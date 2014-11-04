@@ -41,10 +41,15 @@
 		$result = mysql_query("SELECT time, value FROM $table WHERE signal_id = ".$signal_str." AND time > $after_date");
 		$count = 0;
 		while($row = mysql_fetch_array($result)) {
-			if($count>0){
-				echo ",";
+			// do not echo a comma before the first entry
+			if($count==0){
 				$count++
 			}
+			else{
+				echo ",";
+			}
+			
+			// echo the actual data
 			if(!is_null($row['value'])){
 				echo "{'time':" $row['time']."000, 'value':".$row['value']."}";
 			}
