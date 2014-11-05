@@ -124,7 +124,7 @@ Set permissions
 ```
 sudo chown -R admin:admin /usr/local/knxcontrol
 
-sudo chmod -R 744 /usr/local/knxcontrol
+sudo chmod -R 755 /usr/local/knxcontrol
 
 sudo chmod -R 755 /usr/local/knxcontrol/visualisation
 
@@ -135,7 +135,6 @@ sudo chmod 755 /usr/local
 sudo chmod 755 /usr/local/knxcontrol
 ```
 	
-
 	
 ## EIBD
 Go to the installation directory
@@ -371,6 +370,11 @@ Start smarthome.py with
 And check the log file for errors
 ```
 tail /usr/local/knxcontrol/smarthome/var/log/smarthome.log
+```
+
+Add a symlink to the smarthome log file
+```
+sudo ln -s /usr/local/knxcontrol/smarthome/var/log/smarthome.log /usr/local/knxcontrol/visualisation/data/smarthome.log
 ```
 
 ## Create an image
