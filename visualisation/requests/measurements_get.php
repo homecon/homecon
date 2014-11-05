@@ -8,7 +8,7 @@
 		// parse the table and time scale
 		date_default_timezone_set("UTC");
 		if($_GET['scale']=='quarter'){
-			$after_date = time()-2*24*3600;
+			$after_date = time()-7*24*3600;
 			$table = "measurements_quarterhouraverage";
 		}
 		elseif($_GET['scale']=='week'){

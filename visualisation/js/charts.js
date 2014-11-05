@@ -3,9 +3,9 @@
 //////////////////////////////////////////////////////////////////////////////
 $(document).on('pagebeforecreate',function(){
 
-
+	var chart = [];
 	//cycle through all chart_placeholder
-	$( ".chart_placeholder" ).each(function(){
+	$( ".chart_placeholder" ).each(function(j){
 	
 		var id = $(this).attr('id');
 		var title_str = $(this).attr('data-title');
@@ -42,7 +42,7 @@ $(document).on('pagebeforecreate',function(){
 			}
 		});
 		
-		chart = new Highcharts.StockChart(options);
+		chart[j] = new Highcharts.StockChart(options);
 
 		console.time("total");
 		
@@ -53,8 +53,8 @@ $(document).on('pagebeforecreate',function(){
 			
 				var series = JSON.parse(series);
 				
-				chart.addSeries({name: series.name ,data: series.data});
-				chart.yAxis[0].setTitle({text:series.unit});
+				chart[j].addSeries({name: series.name ,data: series.data});
+				chart[j].yAxis[0].setTitle({text:series.unit});
 
 				
 			});
@@ -64,8 +64,9 @@ $(document).on('pagebeforecreate',function(){
 	});
 	
 	
+	var barchart = [];
 	//cycle through all bar_chart_placeholder
-	$( ".bar_chart_placeholder" ).each(function(){
+	$( ".bar_chart_placeholder" ).each(function(j){
 	
 		var id = $(this).attr('id');
 		var title_str = $(this).attr('data-title');
@@ -100,10 +101,9 @@ $(document).on('pagebeforecreate',function(){
 			}
 		});
 		
-		chart = new Highcharts.StockChart(options);
+		barchart[j] = new Highcharts.StockChart(options);
 
-		console.time("total");
-		
+
 		// Load data asynchronously using jQuery. On success, add the data to the options and initiate the chart.
 		jQuery.each(signals_str.split(/,/), function(i, signal_id) {
 
@@ -111,13 +111,12 @@ $(document).on('pagebeforecreate',function(){
 			
 				var series = JSON.parse(series);
 				
-				chart.addSeries({name: series.name ,data: series.data});
-				chart.yAxis[0].setTitle({text:series.unit});
+				barchart[j].addSeries({name: series.name ,data: series.data});
+				barchart[j].yAxis[0].setTitle({text:series.unit});
 
 				
 			});
 		
 		});
-		console.timeEnd("total");
 	});
 });
