@@ -22,9 +22,6 @@ $(document).on('pagebeforecreate',function(){
 			},
 			xAxis: {
 				type: 'datetime',
-				dateTimeLabelFormats: {
-					hour: '%H:%M'
-				},
 				range: 2 * 24 * 3600 * 1000
 			},
 			tooltip: {
