@@ -17,7 +17,7 @@ function add_week_average_chart($chart_title,$signals_str){
 	$signals = explode(',',$signals_str);
 	$container = str_replace(' ','_',$chart_title);
 	echo "
-		<div id='$container' class='chart'></div>";
+		<div id='$container' class='bar_chart_placeholder' data-title='$chart_title' data-signals='$signals_str'></div>";
 	
 	echo "
 		<script type='text/javascript'>

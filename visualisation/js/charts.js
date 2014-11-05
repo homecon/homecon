@@ -4,7 +4,7 @@
 $(document).on('pagebeforecreate',function(){
 
 
-	//cycle through all alarm_placeholder
+	//cycle through all chart_placeholder
 	$( ".chart_placeholder" ).each(function(){
 	
 		var id = $(this).attr('id');
@@ -53,6 +53,64 @@ $(document).on('pagebeforecreate',function(){
 		jQuery.each(signals_str.split(/,/), function(i, signal_id) {
 
 			$.post('requests/measurements_get.php?signal='+signal_id+'&scale=quarter',function(series){
+			
+				var series = JSON.parse(series);
+				
+				chart.addSeries({name: series.name ,data: series.data});
+				chart.yAxis[0].setTitle({text:series.unit});
+
+				
+			});
+		
+		});
+		console.timeEnd("total");
+	});
+	
+	
+	//cycle through all bar_chart_placeholder
+	$( ".bar_chart_placeholder" ).each(function(){
+	
+		var id = $(this).attr('id');
+		var title_str = $(this).attr('data-title');
+		var signals_str = $(this).attr('data-signals');
+		
+		// set some options
+		var options = {
+			chart: {
+				renderTo: id,
+				type: 'column'
+			},
+			title: {
+				text: title_str
+			},
+			xAxis: {
+				type: 'datetime',
+			},
+			tooltip: {
+				xDateFormat: '%Y-%m-%d',
+				shared: true
+			},
+			rangeSelector : {
+				enabled: false
+			},
+			series: []
+		}
+		
+		// tell highcharts to convert utc time to local time
+		Highcharts.setOptions({
+			global: {
+				useUTC: false
+			}
+		});
+		
+		chart = new Highcharts.StockChart(options);
+
+		console.time("total");
+		
+		// Load data asynchronously using jQuery. On success, add the data to the options and initiate the chart.
+		jQuery.each(signals_str.split(/,/), function(i, signal_id) {
+
+			$.post('requests/measurements_get.php?signal='+signal_id+'&scale=week',function(series){
 			
 				var series = JSON.parse(series);
 				

@@ -34,8 +34,7 @@
 		$result = mysql_query("SELECT * FROM measurements_legend WHERE id = ".$signal_str);
 		$row = mysql_fetch_array($result);
 		
-		echo '"name":"'.$row['name'].'", "unit":"'.$row['unit'].'", "quantity":"'.$row['quantity'].'", "description":"'.$row['description'].'", ';
-		echo '"series":{"name":"'.$row['name'].'", "data":[';
+		echo '"name":"'.$row['name'].'", "unit":"'.$row['unit'].'", "quantity":"'.$row['quantity'].'", "description":"'.$row['description'].'", "data":[';
 		
 		
 		$result = mysql_query("SELECT time, value FROM $table WHERE signal_id = ".$signal_str." AND time > $after_date");
@@ -58,7 +57,7 @@
 			}
 		}
 
-		echo "]}}";
+		echo "]}";
 	}
 	
 ?>
