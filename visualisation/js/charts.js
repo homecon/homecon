@@ -27,10 +27,6 @@ $(document).on('pagebeforecreate',function(){
 				},
 				range: 2 * 24 * 3600 * 1000
 			},
-			yAxis: {
-				title: {
-				}
-			},
 			tooltip: {
 				xDateFormat: '%Y-%m-%d %H:%M',
 				valueDecimals: 1,
@@ -39,18 +35,7 @@ $(document).on('pagebeforecreate',function(){
 			rangeSelector : {
 				enabled: false
 			},
-			series: [
-				{showInLegend: false, data: []},
-				{showInLegend: false, data: []},
-				{showInLegend: false, data: []},
-				{showInLegend: false, data: []},
-				{showInLegend: false, data: []},
-				{showInLegend: false, data: []},
-				{showInLegend: false, data: []},
-				{showInLegend: false, data: []},
-				{showInLegend: false, data: []},
-				{showInLegend: false, data: []}
-			]
+			series: []
 		}
 		
 		// tell highcharts to convert utc time to local time
@@ -61,23 +46,19 @@ $(document).on('pagebeforecreate',function(){
 		});
 		
 		chart = new Highcharts.StockChart(options);
-		
+
 		console.time("total");
 		
 		// Load data asynchronously using jQuery. On success, add the data to the options and initiate the chart.
 		jQuery.each(signals_str.split(/,/), function(i, signal_id) {
 
-			$.post('requests/measurements_get.php?signal='+signal_id+'&scale=quarter',function(data){
+			$.post('requests/measurements_get.php?signal='+signal_id+'&scale=quarter',function(series){
 			
-				var data = JSON.parse(data);
+				var series = JSON.parse(series);
 				
-				options.series[i].data = data.series.data;
-				options.series[i].name = data.series.name;
-				
-				options.yAxis.title.text = data.unit;
-				
-				chart.destroy();
-				chart = new Highcharts.StockChart(options);
+				chart.addSeries({name: series.name ,data: series.data});
+				chart.yAxis[0].setTitle({text:series.unit});
+
 				
 			});
 		
