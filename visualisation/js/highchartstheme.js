@@ -4,8 +4,7 @@
  */
 
 Highcharts.theme = {
-	colors: ["#DDDF0D", "#7798BF", "#55BF3B", "#DF5353", "#aaeeee", "#ff0066", "#eeaaee",
-		"#55BF3B", "#DF5353", "#7798BF", "#aaeeee"],
+	colors: ["#FFC81D","#4AAA54","#FF9709","#606692","#EB751F","#FFF830","#A24057","#E1C62F","#BF862B","#999999","#AD5A36"],
 	chart: {
 		backgroundColor: {
 			linearGradient: { x1: 0, y1: 0, x2: 0, y2: 1 },
@@ -40,7 +39,8 @@ Highcharts.theme = {
 			style: {
 				color: '#999',
 				fontWeight: 'bold'
-			}
+			},
+			align: 'center'
 		},
 		title: {
 			style: {
