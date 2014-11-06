@@ -58,7 +58,7 @@ $(document).on('pagebeforecreate',function(){
 		// Load data asynchronously using jQuery. On success, add the data to the options and initiate the chart.
 		jQuery.each(signals_str.split(/,/), function(i, signal_id) {
 
-			$.post('requests/measurements_get.php?signal='+signal_id+'&scale=quarter',function(series){
+			$.post('requests/measurements_get.php?signal='+signal_id+'&scale='+scale[j],function(series){
 			
 				var series = JSON.parse(series);
 				
