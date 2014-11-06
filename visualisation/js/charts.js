@@ -49,7 +49,7 @@ $(document).on('pagebeforecreate',function(){
 		}
 		else{
 			options.chart.type = 'line';
-			options.xAxsis.range = 2 * 24 * 3600 * 1000;
+			options.xAxis.range = 2 * 24 * 3600 * 1000;
 			options.tooltip.xDateFormat='%Y-%m-%d %H:%M';
 			chart[j] = new Highcharts.StockChart(options);
 		}
