@@ -54,6 +54,7 @@
 
 		<meta charset='utf-8'/>
 		<meta name='viewport' content='width=device-width, user-scalable=yes, initial-scale=1, maximum-scale=1.3, minimum-scale=1' />
+		<meta name='mobile-web-app-capable' content='yes' />
 		<meta name='apple-mobile-web-app-capable' content='yes' />
 		<meta name='apple-mobile-web-app-status-bar-style' content='black-translucent' />
 		<meta http-equiv='expires' content='0' />
