@@ -4,12 +4,14 @@
 $(document).on('pagebeforecreate',function(){
 
 	var chart = [];
+	var scale = [];
 	//cycle through all chart_placeholder
 	$( ".chart_placeholder" ).each(function(j){
 	
 		var id = $(this).attr('id');
 		var title_str = $(this).attr('data-title');
 		var signals_str = $(this).attr('data-signals');
+		scale[j] = $(this).attr('data-scale');
 		
 		// set some options
 		var options = {
