@@ -149,10 +149,10 @@ $(document).on('pagebeforecreate',function(){
 			
 				$(this).find('.time').html(time);
 				$(this).find('img').attr('scr', '/icons.weather/'+forecast[i].icon);
-				$(this).find('.temperature').html(forecast[i].temperature+' &deg;C');
-				$(this).find('.precipitation').html(forecast[i].precipitation+' mm/h');
-				$(this).find('.wind').html(forecast[i].windspeed+' m/s   '+forecast[i].winddirection+' &deg;');
-				$(this).find('.pressure').html(forecast[i].pressure+' hPa');
+				$(this).find('.temperature').html(forecast[i].temperature.toFixed(1)+' &deg;C');
+				$(this).find('.precipitation').html(forecast[i].precipitation.toFixed(0)+' mm/h');
+				$(this).find('.wind').html(forecast[i].windspeed.toFixed(1)+' m/s   '+forecast[i].winddirection.toFixed(0)+' &deg;');
+				$(this).find('.pressure').html(forecast[i].pressure.toFixed(1)+' hPa');
 				
 			
 			});
