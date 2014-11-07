@@ -1,7 +1,4 @@
-//////////////////////////////////////////////////////////////////////////////
-// initialize forecast
-//////////////////////////////////////////////////////////////////////////////
-
+// icon translation
 var icons = {	'01d': 'sun_1.png',
 				'02d': 'sun_3.png',
 				'03d': 'cloud_4.png',
@@ -22,7 +19,9 @@ var icons = {	'01d': 'sun_1.png',
 				'50n': 'moon_6.png'
 			};
 
-				  
+//////////////////////////////////////////////////////////////////////////////
+// load and display forecast
+//////////////////////////////////////////////////////////////////////////////				  
 $(document).on('pagebeforecreate',function(){
 
 	var lat=51;
@@ -33,8 +32,7 @@ $(document).on('pagebeforecreate',function(){
 		
 		var forecast = [];
 				
-		
-		if($('#weather_forecast').length == 1){
+		$('#weather_forecast').each(function(){
 		
 			// get detailed forecast and display if required
 			for(var i=0;i<result.list.length; i++){
@@ -66,10 +64,9 @@ $(document).on('pagebeforecreate',function(){
 				temperature.push([forecast[i].timestamp,forecast[i].temperature]);
 				cloudfactor.push([forecast[i].timestamp,forecast[i].cloudfactor*100]);
 			}
-			alert(cloudfactor);
 			
 			
-			// create the chart
+			// create the chart /////////////////////////////////
 			var options = {
 				chart: {
 					renderTo: 'weather_chart_container',
@@ -120,13 +117,14 @@ $(document).on('pagebeforecreate',function(){
 				},
 				series: [{
 						name: 'temperature',
+						yAxis: 0,
 						data: temperature
 				},{
 						name: 'cloudfactor',
 						yAxis: 1,
 						data: cloudfactor
 				}]
-			}
+			};
 			
 			// tell highcharts to convert utc time to local time
 			Highcharts.setOptions({
@@ -137,8 +135,31 @@ $(document).on('pagebeforecreate',function(){
 			
 			var weatherchart = new Highcharts.Chart(options);
 			
+			// add table /////////////////////////////////
+			$('.forecast_details').each(function(i){
+
+				var time = new Date(forecast[i].timestamp);
+				// parse time
+				var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+				var month = months[time.getMonth()];
+				var date = time.getDate();
+				var hour = time.getHours();
+				var time = date + ' ' + month + ', '  + hour + 'h';
+			
+			
+				$(this).find('.time').html(time);
+				$(this).find('img').attr('scr', '/icons.weather/'+forecast[i].icon);
+				$(this).find('.temperature').html(forecast[i].temperature+' &deg;C');
+				$(this).find('.precipitation').html(forecast[i].precipitation+' mm/h');
+				$(this).find('.wind').html(forecast[i].windspeed+' m/s   '+forecast[i].winddirection+' &deg;');
+				$(this).find('.pressure').html(forecast[i].pressure+' hPa');
+				
+			
+			});
+			
+			
 		// get averaged forecast and display if required
-		}
+		});
 
 		
 		
