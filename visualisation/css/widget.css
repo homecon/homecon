@@ -315,8 +315,26 @@ div.setpoint_chart{
 	}
 }
 
-/*  weather forecast   */
-/*---------------------*/
+/*----------------------------------------------------------------------------------*/
+/*     Weather forecast                                                             */
+/*----------------------------------------------------------------------------------*/
+#weather_forecast{
+	width: 95%;
+	margin-left: auto;
+	margin-right: auto;
+}
+#weather_forecast .forecast_details{
+	margin-top: 1em;
+	display: inline-block;
+	width: 19%;
+}
+#weather_forecast .forecast_details img{
+	width: 90%;
+	margin-left: auto;
+	margin-right: auto;
+}
+
+
 section.weerbericht{
 	width: 90%;
 	margin-left: auto;

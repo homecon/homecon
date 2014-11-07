@@ -48,9 +48,10 @@ $(document).on('pagebeforecreate',function(){
 					winddirection: data.wind.deg,
 					cloudfactor: 1-data.clouds.all/100,
 					precipitation: 0,
-					icon: icons[ data.weather.icon ]
+					icon: icons[ data.weather[0].icon ]
+
 				};
-		
+				
 				if(data.hasOwnProperty('rain')){
 					temp.precipitation= data.rain['3h']/3;
 				}
@@ -148,7 +149,7 @@ $(document).on('pagebeforecreate',function(){
 			
 			
 				$(this).find('.time').html(time);
-				$(this).find('img').attr('scr', '/icons.weather/'+forecast[i].icon);
+				$(this).find('img').attr('src', 'icons/weather/'+forecast[i].icon);
 				$(this).find('.temperature').html(forecast[i].temperature.toFixed(1)+' &deg;C');
 				$(this).find('.precipitation').html(forecast[i].precipitation.toFixed(0)+' mm/h');
 				$(this).find('.wind').html(forecast[i].windspeed.toFixed(1)+' m/s   '+forecast[i].winddirection.toFixed(0)+' &deg;');
