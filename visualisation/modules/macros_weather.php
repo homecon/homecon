@@ -116,5 +116,3 @@ function display_weather_forecast_detailed(){
 }
 
 ?>
-
-?>
