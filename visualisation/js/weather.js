@@ -137,7 +137,7 @@ $(document).on('pagebeforecreate',function(){
 			var weatherchart = new Highcharts.Chart(options);
 			
 			// fill the table with forecasts
-			fill_table(forecast);
+			fill_table(forecast,true);
 		
 		});
 	 
@@ -184,17 +184,14 @@ $(document).on('pagebeforecreate',function(){
 			
 			
 			// fill the table with forecasts
-			fill_table(forecast);
+			fill_table(forecast,false);
 			
 		});
 	});
 });
 
 
-
-
-
-function fill_table(forecast){
+function fill_table(forecast,printhour){
 	// fill the table contents
 	$('.forecast_details').each(function(i){
 
@@ -204,15 +201,49 @@ function fill_table(forecast){
 		var month = months[time.getMonth()];
 		var date = time.getDate();
 		var hour = time.getHours();
-		var time = date + ' ' + month + ', '  + hour + 'h';
-	
+		var time = date + ' ' + month;
+		if(printhour){
+			time += ', '  + hour + 'h';
+		}
+		
 	
 		$(this).find('.time').html(time);
 		$(this).find('img').attr('src', 'icons/weather/'+forecast[i].icon);
-		$(this).find('.temperature').html(forecast[i].temperature.toFixed(1)+' &deg;C');
-		$(this).find('.precipitation').html(forecast[i].precipitation.toFixed(0)+' mm/h');
-		$(this).find('.wind').html(forecast[i].windspeed.toFixed(1)+' m/s   '+forecast[i].winddirection.toFixed(0)+' &deg;');
+		$(this).find('.temperature').html(forecast[i].temperature.toFixed(1)+'&deg;C');
+		$(this).find('.precipitation').html(forecast[i].precipitation.toFixed(0)+'mm/h');
+		$(this).find('.wind').html(forecast[i].windspeed.toFixed(1)+'m/s &nbsp;&nbsp; '+winddirection(forecast[i].winddirection));
 		$(this).find('.pressure').html(forecast[i].pressure.toFixed(1)+' hPa');
 		
 	});
+}
+function winddirection(deg){
+	var str = '';
+	if(deg<22.5){
+		str = 'N';
+	}
+	if(deg<67.5){
+		str = 'NO';
+	}
+	else if(deg<112.5){
+		str = 'O';
+	}
+	else if(deg<157.5){
+		str = 'ZO';
+	}
+	else if(deg<202.5){
+		str = 'Z';
+	}
+	else if(deg<247.5){
+		str = 'ZW';
+	}		
+	else if(deg<292.5){
+		str = 'W';
+	}
+	else if(deg<337.5){
+		str = 'NW';
+	}
+	else{
+		str = 'N'
+	}
+	return str;
 }
