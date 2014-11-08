@@ -81,6 +81,7 @@
 		<script type='text/javascript' src='js/alarms.js'></script>
 		<script type='text/javascript' src='js/measurements.js'></script>
 		<script type='text/javascript' src='js/charts.js'></script>
+		<script type='text/javascript' src='js/weather.js'></script>
 		<link rel='stylesheet' type='text/css' href='css/layout.css'/>
 		<link rel='stylesheet' type='text/css' href='css/widget.css'/>
 	</head>

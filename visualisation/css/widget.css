@@ -315,30 +315,51 @@ div.setpoint_chart{
 	}
 }
 
-/*  weather forecast   */
-/*---------------------*/
-section.weerbericht{
+/*----------------------------------------------------------------------------------*/
+/*     Weather forecast                                                             */
+/*----------------------------------------------------------------------------------*/
+#weather_forecast_detailed{
+	width: 95%;
+	margin-left: auto;
+	margin-right: auto;
+}
+#weather_forecast_detailed .forecast_details{
+	margin-top: 1em;
+	display: inline-block;
+	width: 19%;
+	text-align: center;
+}
+#weather_forecast_detailed .forecast_details img{
 	width: 90%;
 	margin-left: auto;
 	margin-right: auto;
 }
-section.weerbericht>div{
-	display: inline-block;
-	width: 24%;
-}
-.weerbericht img{
-	display: block;
-	max-width: 100px;
+
+#weather_forecast_averaged{
+	width: 95%;
 	margin-left: auto;
 	margin-right: auto;
 }
-.weerbericht p{
+#weather_forecast_averaged .forecast_details{
+	margin-top: 1em;
+	display: inline-block;
+	width: 24%;
 	text-align: center;
-	margin-top: 0;
-	margin-bottom: 0;
 }
-.weerbericht p.small{
-	font-size: 80%;
+#weather_forecast_averaged .forecast_details img{
+	width: 90%;
+	margin-left: auto;
+	margin-right: auto;
+}
+
+#current_weather{
+	width: 95%;
+	margin-left: auto;
+	margin-right: auto;
+	text-align: center;
+}
+#current_weather img{
+	max-height: 180px;
 }
 
 /*        clock        */
