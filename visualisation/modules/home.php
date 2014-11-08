@@ -1,6 +1,6 @@
 <?php
 echo "
-		<article class=$page_class>";
+				<article class=$page_class>";
 		
 include("clock.php");
 	
@@ -8,15 +8,11 @@ echo "
 			<hr>
 ";	
 	
-include("weather_measurement.php");
+display_local_weather();
+
+display_weather_forecast();
+
 
 echo "
-			<hr>
-";	
-	
-include("weather_forecast.php");
-
-echo "		<hr>
-		</article>	
-";
+				</article>";
 ?>
