@@ -1,9 +1,82 @@
+#!/usr/bin/python3
 ###########################################################################
-# run alarms, execute every monday at 00:01
+# run system identification, execute every monday at 00:01
 ###########################################################################
-# function to run all alarms in the mysql database
-# writes "action" to "item"
 
+import pyipopt
+from numpy import *
+
+# define input signals for use in the test
+t = arange(0,24*3600,1800)
+T = 21+1*sin(2*pi*t/24/3600)
+T_amb = 10+5*sin(2*pi*(t/3600-5)/24)
+T_set = 21*ones(t.shape[0])
+
+Q_flow_irr = maximum(0*ones(t.shape[0]),800*sin(2*pi*(t/3600-0)/24))
+V_flow_vent = 150*ones(t.shape[0]) + maximum(0*ones(t.shape[0]),150*sin(2*pi*(t/3600-0)/24))
+W_flow_hp = maximum(0*ones(t.shape[0]),2000*sin(2*pi*(t/3600-12)/24))
+Q_flow_gas = 0*ones(t.shape[0])
+Q_flow_gas[32] = 10000
+Q_flow_gas[33] = 10000
+Q_flow_gas[34] = 10000
+
+W_flow_int = 0*ones(t.shape[0])
+W_flow_int[32:42] = 200
+
+n_gas = 0.98
+
+print(W_flow_int)
+
+
+# Variable indexing
+S = 1               # number of states        j = 0..S-1
+N = t.shape[0]      # number of timesteps     i = 0..N-1
+M = 6               # number of parameters to be estimated   k=0..M-1
+
+
+# state(j,i) = x(i*S+j)
+# param(k)   = x(S*N+k)
+
+state_measurement = array([T]);
+state_index       = array([0]);
+
+x_test = concatenate((T,array([1, 2, 3])))
+
+def objective(x, user_data = None):
+    
+	j = 0
+	state_residual = array([  power(x[j+arange(N-1)*S] - state_measurement[:,0],2)  ])
+	
+	rmse = sum(state_residual[:,0])
+	
+	return rmse
+	
+def gradient(x, user_data = None):
+    
+	g = 
+	j = 0
+	state_residual = array([  x[j+arange(N-1)*S] - state_measurement[:,0]  ])
+	
+	rmse = sum(state_residual[:,0])
+	
+	return rmse	
+	
+	
+	
+	
+	
+	
+	
+print( objective(x_test) )
+
+
+
+
+
+
+
+
+'''
 import pymysql
 
 now = datetime.datetime.utcnow()
@@ -83,3 +156,4 @@ while timestamp_start < timestamp:
 logger.warning('Einde model parameter identificatie')
 		
 #sh.building.model.identify(False)
+'''
