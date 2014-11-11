@@ -6,15 +6,21 @@
 import pyipopt
 from numpy import *
 
+# system equation:
+# C*dT/dt = UA*(T_amb-T) + n_ven*rc*V_flow_ven/3600*(T_amb-T_set) + n_int*W_flow_int + n_irr*Q_flow_irr + n_hp*W_flow_ahp + n_gas*Q_flow_gas
+# unknown parameters:
+# C, UA, n_ven, n_int, n_irr, n_ahp
+
 # define input signals for use in the test
-t = arange(0,24*3600,1800)
-T = 21+1*sin(2*pi*t/24/3600)
+dt = 1800
+t = arange(0,24*3600,dt)
+T_zon = 21+1*sin(2*pi*t/24/3600)
 T_amb = 10+5*sin(2*pi*(t/3600-5)/24)
 T_set = 21*ones(t.shape[0])
 
 Q_flow_irr = maximum(0*ones(t.shape[0]),800*sin(2*pi*(t/3600-0)/24))
-V_flow_vent = 150*ones(t.shape[0]) + maximum(0*ones(t.shape[0]),150*sin(2*pi*(t/3600-0)/24))
-W_flow_hp = maximum(0*ones(t.shape[0]),2000*sin(2*pi*(t/3600-12)/24))
+V_flow_ven = 150*ones(t.shape[0]) + maximum(0*ones(t.shape[0]),150*sin(2*pi*(t/3600-0)/24))
+W_flow_ahp = maximum(0*ones(t.shape[0]),2000*sin(2*pi*(t/3600-12)/24))
 Q_flow_gas = 0*ones(t.shape[0])
 Q_flow_gas[32] = 10000
 Q_flow_gas[33] = 10000
@@ -23,9 +29,10 @@ Q_flow_gas[34] = 10000
 W_flow_int = 0*ones(t.shape[0])
 W_flow_int[32:42] = 200
 
-n_gas = 0.98
 
-print(W_flow_int)
+# define constants
+rc = 1004*1.22
+n_gas = 0.98
 
 
 # Variable indexing
@@ -33,46 +40,101 @@ S = 1               # number of states        j = 0..S-1
 N = t.shape[0]      # number of timesteps     i = 0..N-1
 M = 6               # number of parameters to be estimated   k=0..M-1
 
+nvars = N*S + M     # number of variables
 
 # state(j,i) = x(i*S+j)
 # param(k)   = x(S*N+k)
 
-state_measurement = array([T]);
+state_measurement = transpose(array([T_zon]));
 state_index       = array([0]);
 
-x_test = concatenate((T,array([1, 2, 3])))
 
+def combineintoarray(states,C,UA,n_ven,n_int,n_irr,n_ahp):
+	x = concatenate((states.reshape((N*S)),array([C,UA,n_ven,n_int,n_irr,n_ahp])))
+	return x
+	
+def splitintovalues(x):
+
+	states = zeros((N,S))
+	for j in arange(S):
+		states[:,j] = x[j + arange(N)*S]
+	
+	C  = x[N*S + 0]
+	UA = x[N*S + 1]
+	n_ven = x[N*S + 2]
+	n_int = x[N*S + 3]
+	n_irr = x[N*S + 4]
+	n_ahp = x[N*S + 5]
+	
+	return states,C,UA,n_ven,n_int,n_irr,n_ahp
+
+	
+x_test = combineintoarray(array([T_zon]),1000,400,1,1,1,1)
+print(x_test)
+print( )
+
+# define required function for ipopt
 def objective(x, user_data = None):
     
-	j = 0
-	state_residual = array([  power(x[j+arange(N-1)*S] - state_measurement[:,0],2)  ])
+	states,C,UA,n_ven,n_int,n_irr,n_ahp = splitintovalues(x)
 	
-	rmse = sum(state_residual[:,0])
+	Res = zeros((N,state_measurement.shape[0]))
+	for ind, j in enumerate(state_index):
+		Res[:,ind] = power(states[:,j] - state_measurement[:,ind],2)
 	
-	return rmse
+	return sum(Res)
 	
 def gradient(x, user_data = None):
-    
-	g = 
-	j = 0
-	state_residual = array([  x[j+arange(N-1)*S] - state_measurement[:,0]  ])
-	
-	rmse = sum(state_residual[:,0])
-	
-	return rmse	
-	
-	
-	
-	
-	
-	
-	
-print( objective(x_test) )
 
+	states,C,UA,n_ven,n_int,n_irr,n_ahp = splitintovalues(x)
+	T = states[:,0]
+	
+	Gra = zeros((1,nvars))
+	for j in state_index:
+		for i in arange(N):
+			Gra[0,i*S+j] = 2*T[i]-2*T_zon[i]
 
+	
+	return Gra
+	
+def constraint(x, user_data = None):
 
+	states,C,UA,n_ven,n_int,n_irr,n_ahp = splitintovalues(x)
+	T = states[:,0]
+	
+	Con = zeros((N-1,1))
 
+	for i in arange(N-1):
+		Con[i] = -C*(T[i+1]-T[i])/dt  + UA*(T_amb[i]-T[i]) + n_ven*rc*V_flow_ven[i]/3600*(T_amb[i]-T_set[i]) + n_int*W_flow_int[i] + n_irr*Q_flow_irr[i] + n_ahp*W_flow_ahp[i] + n_gas*Q_flow_gas[i]
 
+	return Con
+	
+def jacobian(x, user_data = None):
+
+	states,C,UA,n_ven,n_int,n_irr,n_ahp = splitintovalues(x)
+	T = states[:,0]
+		
+	Jac = zeros((N-1,nvars))	
+	for i in arange(N-1):
+		Jac[i,i] = C/dt - UA
+		Jac[i,i+1] = -C/dt
+		Jac[i,N*S+0] = -(T[i+1]-T[i])/dt
+		Jac[i,N*S+1] = (T_amb[i]-T[i])
+		Jac[i,N*S+2] = rc*V_flow_ven[i]/3600*(T_amb[i]-T_set[i])
+		Jac[i,N*S+3] = W_flow_int[i]
+		Jac[i,N*S+4] = Q_flow_irr[i]
+		Jac[i,N*S+5] = W_flow_ahp[i]
+		
+	return Jac
+	
+	
+# test functions	
+print( 'objective: ' + str(objective(x_test)) )
+print( 'gradient: ' + str(gradient(x_test)) )
+print( 'constraint: ' + str(constraint(x_test)) )
+print( 'jacobian: ' + str(jacobian(x_test)) )
+
+# prpare ipopt
 
 
 
