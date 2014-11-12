@@ -3,36 +3,79 @@
 # run system identification, execute every monday at 00:01
 ###########################################################################
 
-import pyipopt
-from numpy import *
-
-# system equation:
+# system equations:
 # C*dT/dt = UA*(T_amb-T) + n_ven*rc*V_flow_ven/3600*(T_amb-T_set) + n_int*W_flow_int + n_irr*Q_flow_irr + n_hp*W_flow_ahp + n_gas*Q_flow_gas
 # unknown parameters:
 # C, UA, n_ven, n_int, n_irr, n_ahp
 
-# define input signals for use in the test
+import pyipopt
+from numpy import *
+import pymysql
+import datetime
+
+
+# define time
 dt = 1800
-t = arange(0,24*3600,dt)
-T_zon = 21+1*sin(2*pi*t/24/3600)
-T_amb = 10+5*sin(2*pi*(t/3600-5)/24)
+t = arange(0,7*24*3600,dt)
+
+# define signals
+signal_id = {'T_amb': 1, 'T_zon': 15, 'V_flow_ven': 17, 'W_flow_tot': 9, 'W_flow_ahp': 10, 'Q_flow_gas': 11, 'Q_flow_irr': 19 }
+signal_val = {}
+
+now = datetime.datetime.utcnow()
+
+# connect to the mysql database
+con = pymysql.connect('localhost', 'knxcontrol','admin' , 'knxcontrol')   #sh.building.mysql.conf['password']
+cur = con.cursor(pymysql.cursors.DictCursor)
+
+timestamp = int( (now - datetime.datetime(1970,1,1)).total_seconds() )
+timestamp_start = timestamp - 3600 - t[-1]
+
+for signal in signal_id:
+	# get data from the database
+	cur.execute("SELECT time,value FROM  measurements_quarterhouraverage WHERE signal_id=%s AND time>%s" %(signal_id[signal],timestamp_start))
+	raw_time = []
+	raw_value = []
+	for data in cur:
+		raw_time.append(data['time'])
+		raw_value.append(data['value'])
+	
+	raw_time  = array(raw_time)
+	raw_value = array(raw_value)
+	
+	avg_value = []
+	# resample to the wanted timevector
+	for i,tt in enumerate(t[:-1]):
+		# average all values where timestamp_start+t[i] < raw_time < timestamp_start+t[i+1]
+		avg_value.append(mean(  raw_value[where( (timestamp_start+t[i] < raw_time) & (raw_time <= timestamp_start+t[i+1]) )]  ))
+		
+	# add the values to a dictionary
+	signal_val[signal] = array(avg_value)
+	
+con.close()
+	
+# condition signals for use in the optimisation
+t = t[:-1]
+signal_val['W_flow_int'] = signal_val['W_flow_tot'] - signal_val['W_flow_ahp']
+
+###################################################################################################################################
+
+# define input signals
+T_zon = signal_val['T_zon']
+T_amb = signal_val['T_amb'] 
 T_set = 21*ones(t.shape[0])
 
-Q_flow_irr = maximum(0*ones(t.shape[0]),800*sin(2*pi*(t/3600-0)/24))
-V_flow_ven = 150*ones(t.shape[0]) + maximum(0*ones(t.shape[0]),150*sin(2*pi*(t/3600-0)/24))
-W_flow_ahp = maximum(0*ones(t.shape[0]),2000*sin(2*pi*(t/3600-12)/24))
-Q_flow_gas = 0*ones(t.shape[0])
-Q_flow_gas[32] = 10000
-Q_flow_gas[33] = 10000
-Q_flow_gas[34] = 10000
+Q_flow_irr = signal_val['Q_flow_irr'] 
+V_flow_ven = signal_val['V_flow_ven'] 
+W_flow_ahp = signal_val['W_flow_ahp'] 
+Q_flow_gas = signal_val['Q_flow_gas'] 
+W_flow_int = signal_val['W_flow_int'] 
 
-W_flow_int = 0*ones(t.shape[0])
-W_flow_int[32:42] = 200
 
 
 # define constants
 rc = 1004*1.22
-n_gas = 0.98
+n_gas = 0.90
 
 
 # Variable indexing
@@ -70,7 +113,10 @@ def splitintovalues(x):
 	return states,C,UA,n_ven,n_int,n_irr,n_ahp
 
 	
-
+# define weights for the objective function
+weights = ones((N,state_measurement.shape[0]))
+weights[0,:] = 10    # add larger weights to the initial timestep as it is assumed to be known
+	
 
 # define required function for ipopt
 def objective(x, user_data = None):
@@ -81,7 +127,7 @@ def objective(x, user_data = None):
 	for ind, j in enumerate(state_index):
 		Res[:,ind] = power(states[:,j] - state_measurement[:,ind],2)
 	
-	return sum(Res)
+	return sum(Res*weights)
 	
 def gradient(x, user_data = None):
 
@@ -91,7 +137,7 @@ def gradient(x, user_data = None):
 	Gra = zeros((nvars))
 	for j in state_index:
 		for i in arange(N):
-			Gra[i*S+j] = 2*T[i]-2*T_zon[i]
+			Gra[i*S+j] = (2*T[i]-2*T_zon[i])*weights[i,j]
 
 	
 	return Gra
@@ -159,28 +205,13 @@ def jacobian(x, flag, user_data = None):
 nnzh = 0	
 	
 # variable bounds
-x_L = combineintoarray(array([ones((N))*15]),1e5,10,0,0,0,0)
-x_U = combineintoarray(array([ones((N))*30]),100e5,1000,1,1,2,5)	
+x_L = combineintoarray(array([ones((N))*15]),1e6  ,10  ,0,0,0,0)
+x_U = combineintoarray(array([ones((N))*30]),200e6,1000,1,1,2,5)	
 x0 = (x_L+x_U)/2
 
 # constraint bounds
 c_L = zeros((ncons))
 c_U = zeros((ncons))
-
-
-	
-# test functions	
-print( 'objective: ' + str(objective(x0)) )
-
-print( 'gradient: ' + str(gradient(x0).shape) )
-print( gradient(x0) )
-
-print( 'constraint: ' + str(constraint(x0).shape) )
-print( constraint(x0) )
-
-print( 'jacobian: ' + str(jacobian(x0,0).shape))
-print( jacobian(x0,0) )
-
 
 
 # prepare ipopt
@@ -190,85 +221,14 @@ nlp = pyipopt.create(nvars, x_L, x_U, ncons, c_L, c_U, nnzj, nnzh, objective, gr
 x, zl, zu, constraint_multipliers, obj, status = nlp.solve(x0)
 print()
 print( 'solution: ' + str(x) )
+print()
+print()
+print()
 
-'''
-import pymysql
-
-now = datetime.datetime.utcnow()
-localtime = datetime.datetime.now()
-
-# connect to the mysql database
-con = pymysql.connect('localhost', 'knxcontrol', sh.building.mysql.conf['password'], 'knxcontrol')
-cur = con.cursor(pymysql.cursors.DictCursor)
-
-timestep = 30*60;
-timestamp = int( (now - datetime.datetime(1970,1,1)).total_seconds() )
-timestamp_orig = timestamp-7*24*60*60
-timestamp_start = timestamp_orig
-
-time = []
-
-T_amb = []
-wind = []
-T_op1 = []
-T_op2 = []
-T_op3 = []
-
-Q_flow_sol1 = []
-Q_flow_sol2 = []
-Q_flow_sol3 = []
-
-Q_flow_vent1 = []
-Q_flow_vent2 = []
-Q_flow_vent3 = []
-
-Q_flow_int1 = []
-Q_flow_int2 = []
-Q_flow_int3 = []
-
-W_flow_heating = []
-Q_flow_heating = []
-
-logger.warning('Start model parameter identificatie')
-# get timestep averaged data from mysql
-while timestamp_start < timestamp:
-	timestamp_end = timestamp_start + timestep;
-	
-	time.append(timestamp_start-timestamp_orig)
-	
-	cur.execute("SELECT AVG(signal1),AVG(signal7),AVG(signal10),AVG(signal11),   AVG(signal14),AVG(signal17),AVG(signal18),AVG(signal19),   AVG(signal22),AVG(signal25),AVG(signal26),AVG(signal27),   AVG(signal30),AVG(signal33),AVG(signal34),AVG(signal35) FROM measurements WHERE time>%s AND time <=%s" %(timestamp_start,timestamp_end))
-
-	timestamp_start = timestamp_end
-	
-	for temp in cur:
-	
-		# assign data and create running averages with 30min data
-		T_amb.append(temp['AVG(signal1)'])
-		wind.append(temp['AVG(signal7)'])
+states,C,UA,n_ven,n_int,n_irr,n_ahp = splitintovalues(x)
+T = states[:,0]
+res = T-T_zon
+print(res)
 		
-		W_flow_heating.append(temp['AVG(signal10)'])
-		Q_flow_heating.append(temp['AVG(signal11)'])
-		
-		T_op1.append(temp['AVG(signal14)'])
-		Q_flow_vent1.append(temp['AVG(signal17)'])
-		Q_flow_int1.append(temp['AVG(signal18)'])
-		Q_flow_sol1.append(temp['AVG(signal19)'])
-		
-		T_op2.append(temp['AVG(signal22)'])
-		Q_flow_vent2.append(temp['AVG(signal25)'])
-		Q_flow_int2.append(temp['AVG(signal26)'])
-		Q_flow_sol2.append(temp['AVG(signal27)'])
-		
-		T_op3.append(temp['AVG(signal30)'])
-		Q_flow_vent3.append(temp['AVG(signal33)'])
-		Q_flow_int3.append(temp['AVG(signal34)'])
-		Q_flow_sol3.append(temp['AVG(signal35)'])
-
-		
-		
-		
-		
-logger.warning('Einde model parameter identificatie')
-		
+#logger.warning('Einde model parameter identificatie')
 #sh.building.model.identify(False)
-'''
