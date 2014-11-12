@@ -3,12 +3,10 @@
 #
 #
 
-
 import pymysql
 
-con = pymysql.connect('localhost', 'knxcontrol', sh.building.mysql.conf['password'], 'knxcontrol')
-cur = con.cursor()
 
+# build query
 query = "REPLACE INTO measurements_legend (id,item,name,quantity,unit,description) VALUES "
 id = 0
 
@@ -31,27 +29,46 @@ query = query+"('"+str(id)+"','building.rain','Rain','','-','Rain or not'),"
 
 
 id = 8
-if hasattr(sh.building, 'flukso'):
-	for sensor in sh.building.flukso:
-		id = id + 1
-		name = sensor.id().split(".")[-1]
-		if sensor.conf['unit']=='watt':
-			quantity  = 'Power'
-			unit = 'W'
-		elif sensor.conf['unit']=='l/min':
-			quantity  = 'Flow rate'
-			unit = 'l/min'	
-		else:
-			quantity  = 'Power'
-			unit = 'W'
-			
-		query = query+"('"+str(id)+"','"+sensor.id()+"','"+name+"','"+quantity+"','"+unit+"','flukso "+name+"'),"
+id = id+1
+if not sh.building.energy.water.conf['item'] == '':
+	query = query+"('"+str(id)+"','building.energy.water','Water','Flow rate','l/min','Water consumption'),"
 
-id = 14	
+id = id+1
+if not sh.building.energy.gas.conf['item'] == '':
+	query = query+"('"+str(id)+"','building.energy.gas','Gas','Power','W','Gas consumption'),"
+
+id = id+1
+if not sh.building.energy.water.conf['item'] == '':
+	query = query+"('"+str(id)+"','building.energy.electricity','Electricity','Power,'W','Electricity consumption'),"
+	
+	
+id = 12
+if hasattr(sh.building, 'heating'):
+	for heating in sh.building.heating:
+		id = id + 1
+		name = heating.id().split(".")[-1]
+		if heating.conf['system']=='cgb':
+			description  = 'Condensing gas boiler power'
+		elif heating.conf['unit']=='ahp':
+			description  = 'Air coupled heat pump power'
+		elif heating.conf['unit']=='ghp':
+			description  = 'Ground coupled heat pump power'	
+		elif heating.conf['unit']=='sth':
+			description  = 'Solar thermal system power'	
+		elif heating.conf['unit']=='chp':
+			description  = 'Combine heat power system power'		
+		else:
+			description  = 'Unknown power'
+			
+		query = query+"('"+str(id)+"','"+heating.id()+"','"+name+"','Power','W','"+description+"'),"
+
+	
+id = 17
 if hasattr(sh.building, 'zones'):
 	for zone in sh.building.zones:
-		id = id + 1
 		zone_name = zone.id().split(".")[-1]
+			
+		id = id + 1
 		query = query+"('"+str(id)+"','"+zone.T_operational.id()+"','Temperature','Temperature','degC','"+zone_name+" temperature'),"
 		id = id + 1
 		query = query+"('"+str(id)+"','"+zone.heat_flow_transmission.id()+"','Transmission','Heat flow','W','"+zone_name+" transmission heat flow'),"
@@ -66,8 +83,13 @@ if hasattr(sh.building, 'zones'):
 		id = id + 1
 		query = query+"('"+str(id)+"','"+zone.heat_flow_cooling_wanted.id()+"','Cooling','Heat flow','W','"+zone_name+" wanted cooling heat flow'),"
 		
-		
+
+# remove last comma from the querry	
 query = query[:-1]
+
+# connect to the database
+con = pymysql.connect('localhost', 'knxcontrol', sh.building.mysql.conf['password'], 'knxcontrol')
+cur = con.cursor()
 
 # try to execute query
 try:
