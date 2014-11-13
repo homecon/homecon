@@ -55,15 +55,18 @@ if localtime.hour >= 22 or localtime.hour < 7:
 
 # set to high when showering		
 if trigger['by'] == 'Item':
-	#item = sh.return_item(trigger['source'])
-	#if 'ventilation_high' in item.conf:
-	sh.building.ventilation.ventilation_high(trigger['value'])
-	logger.warning('ventilation high active');
+	if trigger['value']:
+		ventilation_speed = 3;
+		logger.warning('ventilation high active');
 
-if sh.building.ventilation.ventilation_high():
-	ventilation_speed = 3;
 	
+# find the ventilation speed item and set it
+for item in sh.match_items('*.ventilation.speed'):
+
+	# rescale based on min and max properties and write it to the item
+	value = float(item.conf['min']) + ventilation_speed/3*(float(item.conf['max'])-float(item.conf['min']))
+	item( value )
 	
-# write the speed to the speedcontrol item
-sh.building.ventilation.speedcontrol(ventilation_speed)
-	
+# set the flowrate item
+flowrate = float(item.conf['flowrate_min']) + ventilation_speed/3*(float(item.conf['flowrate_max'])-float(item.conf['flowrate_min']))
+sh.building.ventilation.flowrate(flowrate)
