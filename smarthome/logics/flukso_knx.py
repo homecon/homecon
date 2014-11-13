@@ -2,10 +2,10 @@ from urllib.request import urlopen
 
 
 # run through the flukso items
-for item in sh.building.flukso.return_children():
+for item in sh.flukso.return_children():
 
 	# get data from the flukso api
-	response = urlopen('http://192.168.1.8:8080/sensor/'+item.conf['sensor']+'?version=1.0&unit='+item.conf['unit']+'&interval=minute')
+	response = urlopen('http://'+sh.flukso.conf['ip']+':8080/sensor/'+item.conf['sensor']+'?version=1.0&unit='+item.conf['unit']+'&interval=minute')
 	
 	line = response.read().decode("utf-8")
 
