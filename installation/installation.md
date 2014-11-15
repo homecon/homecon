@@ -38,18 +38,12 @@ $ sudo nano /etc/network/interfaces
 Change file contents to:
 ```
 auto lo
-
 iface lo inet loopback
 
-
 auto eth0
-
 iface eth0 inet static
-
 address 192.168.1.2
-
 gateway 192.168.1.1
-
 netmask 255.255.255.0
 ```
 Save the file and Exit using `Ctrl+O` `Return` and `Ctrl+X`
@@ -100,13 +94,9 @@ $ sudo apt-get install ntp
 Some essential linux tools we will be using need to be installed now, when sudo is called you will be asked for a password, enter admin
 ```	
 $ sudo apt-get update
-
 $ sudo apt-get -y install apache2 vsftpd php5 php5-json openntpd python3 python3-dev python3-setuptools git unzip wget libawl-php php5-curl
-
 $ sudo easy_install3 pip
-
 $ sudo pip install ephem
-
 $ sudo pip install PyMySQL
 ```
 	
@@ -116,22 +106,16 @@ $ sudo pip install PyMySQL
 Clone the repository to a directory where all files will be kept
 ```
 $ cd /usr/local
-
 $ sudo git clone git://github.com/brechtba/knxcontrol.git
 ```
 
 Set permissions
 ```
 $ sudo chown -R admin:admin /usr/local/knxcontrol
-
 $ sudo chmod -R 755 /usr/local/knxcontrol
-
 $ sudo chmod -R 755 /usr/local/knxcontrol/visualisation
-
 $ sudo chmod 755 /usr
-
 $ sudo chmod 755 /usr/local
-
 $ sudo chmod 755 /usr/local/knxcontrol
 ```
 	
@@ -150,7 +134,6 @@ $ ./eibd_installation.sh
 Preliminary test
 ```
 $ /usr/local/bin/eibd -D -S -T -i --eibaddr=0.0.1 --daemon=/var/log/eibd.log --no-tunnel-client-queuing ipt:192.168.1.3
-
 $ groupswrite ip:localhost 1/1/71 1
 ```
 	
@@ -178,9 +161,7 @@ $ sudo mv /usr/local/knxcontrol/installation/eibd /etc/init.d/eibd
 Change the owner and group to root and set permissions
 ```
 $ sudo chown root /etc/init.d/eibd
-
 $ sudo chgrp root /etc/init.d/eibd
-
 $ sudo chmod 755 /etc/init.d/eibd
 ```
 
@@ -198,7 +179,6 @@ $ /etc/init.d/eibd restart
 Test eibd by writing to the knx bus using groupswrite to an existing knx adress
 ```
 $ groupswrite ip:localhost 1/1/71 1
-
 $ groupswrite ip:localhost 1/1/71 0
 ```
 
@@ -225,6 +205,7 @@ To set default file permissions
 Change the line `#local_unmask=022` to
 ```
 local_unmask=02
+
 file_open_mode=0777
 ```
 
@@ -317,7 +298,6 @@ Open a browser window and go to "http://192.168.1.2/knxcontrol/data/create_table
 This step is not executed in the base image and commands are given here for reference also not tested.
 ```
 $ sudo /etc/init.d/mysql stop
-
 $ sudo cp -R -p /var/lib/mysql /media/hdd/mysql
 ```
 Edit the config file `sudo nano /etc/mysql/my.cnf` Look for the entry for `datadir`, and change the path (which should be /var/lib/mysql) to the new data directory.
@@ -340,7 +320,6 @@ $ sudo /etc/init.d/mysql restart
 The next step is configuring smarthome.py. First we set the permissions of some files:
 ```
 $ sudo chmod 744 /usr/local/knxcontrol/smarthome/bin/smarthome.py
-
 $ sudo chmod 755 /usr/local/knxcontrol/smarthome/var/log/smarthome.log
 ```
 
@@ -352,7 +331,6 @@ $ sudo mv /usr/local/knxcontrol/installation/smarthome /etc/init.d/smarthome
 Change the owner and group to root and set permissions
 ```
 $ sudo chown root:root /etc/init.d/smarthome
-
 $ sudo chmod 755 /etc/init.d/smarthome
 ```
 
@@ -383,12 +361,12 @@ Next we will mount an external hard drive to use as network storage and mysql ba
 A usb drive with external power supply is required as the Raspberry pi will probably not be able to supply the required power leading to death and destruction.
 It is also recomended that you format the hard drive to an EXT4 filesystem beforehand.
 Plug in the usb hard drive to one of the Raspberry pi usb ports and check if the hard drive is found:
-´´´
+```
 $ sudo fdisk -l
-´´´
+```
 
 The output will be something like this:
-´´´
+```
 Disk /dev/sdb: 60.0 GB, 60060155904 bytes
 255 heads, 63 sectors/track, 7301 cylinders
 Units = cylinders of 16065 * 512 = 8225280 bytes
@@ -396,17 +374,17 @@ Disk identifier: 0x000b2b03
 
    Device Boot      Start         End      Blocks   Id  System
 /dev/sda1               1        7301    58645251    b  W95 EXT4
-´´´
+```
 
 Create a directory where to mount the drive
-´´´
+```
 $ sudo mkdir /mnt/hdd 
-´´´
+```
 
 To automate the mounting on reboot we neet to edit the filesystem table:
-´´´
+```
 $ sudo nano /etc/fstab
-´´´
+```
 Add the following line
 ```
 /dev/sda1       /mnt/hdd           ext4    defaults        0       0 
@@ -426,7 +404,6 @@ $ sudo apt-get install samba samba-common-bin
 Create a backup of the conf file and edit the original file
 ```
 $ sudo cp /etc/samba/smb.conf /etc/samba/smb.conf.old
-
 $ sudo nano /etc/samba/smb.conf
 ```
 Add
@@ -462,9 +439,7 @@ $ sudo apt-get install gcc g++ gfortran subversion patch wget
 Get ipopt from the repository
 ```
 $ cd /etc
-
 $ sudo svn co https://projects.coin-or.org/svn/Ipopt/stable/3.11 CoinIpopt 
-
 $ cd /etc/CoinIpopt
 ```
 
@@ -472,39 +447,27 @@ Getting 3rd party libraries, there are files present in the Ipopt source to do t
 We will use the MUMPS Linear solver as it is open, not everyone has access to an academic solver like MA57 and for our purpose it will be sufficient.
 ```
 $ sudo /etc/CoinIpopt/ThirdParty/Blas/get.Blas
- 
 $ sudo /etc/CoinIpopt/ThirdParty/Lapack/get.Lapack
- 
 $ sudo /etc/CoinIpopt/ThirdParty/ASL/get.ASL
-
 $ sudo /etc/CoinIpopt/ThirdParty/Mumps/get.Mumps
-
 $ sudo /etc/CoinIpopt/ThirdParty/Metis/get.Metis
-
 $ cd /etc/CoinIpopt
 ```
 
 Run the following commands to compile Ipopt, and go for a cup of coffee as it will take about two hours.
 ```
 $ sudo mkdir /etc/CoinIpopt/build
-
 $ cd /etc/CoinIpopt/build
-
 $ sudo /etc/CoinIpopt/configure --prefix=/usr/local/ -C ADD_CFLAGS="-DNO_fpu_control"
-
 $ sudo make
-
 $ sudo make test
-
 $ sudo make install
 ```
 
 Test the example
 ```
 $ cd /etc/CoinIpopt/build/Ipopt/examples/hs071_cpp
-
 $ sudo make
-
 $ sudo ./hs071_cpp
 ```
 If everything works you should see some program iterations and a reported that a solution was found `*** The problem solved!`.
@@ -519,9 +482,7 @@ $ sudo apt-get install python3.2-dev
 Install pyipopt I'v forked the repository and changed some things 
 ```
 $ cd /etc
-
 $ sudo git clone https://github.com/BrechtBa/pyipopt.git
-
 $ cd /etc/pyipopt
 
 ```
@@ -529,9 +490,7 @@ $ cd /etc/pyipopt
 Build and install
 ```
 $ sudo ldconfig
-
 $ sudo python3.2 setup.py build
-
 $ sudo python3.2 setup.py install
 ```
 
@@ -559,9 +518,7 @@ $ mysqladmin -u root -p'admin' password newpass
 No we need to set the MySQL knxcontrol user password. So login to mysql as root with your new password, switch to the users database and set the new password
 ```
 $ mysql -u root -p
-
 > use mysql;
-
 > SET PASSWORD FOR 'knxcontrol'@'localhost' = PASSWORD('newpass');
 ```
 Exit the MySQL shell using `Ctrl+D`
@@ -592,15 +549,10 @@ I used NO-IP for this service. It's free and provides nice names so thats fun. T
 Now we need to download the client, install it on the raspberry pi and configure it to point to your domain name:
 ```
 $ cd /usr/local/src
-
 $ sudo wget http://www.no-ip.com/client/linux/noip-duc-linux.tar.gz
-
 $ sudo tar xzf noip-duc-linux.tar.gz
-
 $ cd noip-2.1.9-1
-
 $ sudo make
-
 $ sudo make install
 ```
 During the install procedure you will be asked for several things.
@@ -617,9 +569,7 @@ $ sudo /usr/local/bin/noip2
 Now we need to make sure the client starts automatically on reboot. To do this we need to become the root user for a second
 ```
 $ sudo -i
-
 # echo '/usr/local/bin/noip2' >> /etc/rc.local
-
 # logout
 ```
 And were done.
