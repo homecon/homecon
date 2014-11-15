@@ -278,7 +278,7 @@ class WebSocketHandler(lib.connection.Stream):
             path = data['id']
             value = data['val']
             token = data['token']
-            if token == self._sh.building.mysql.conf['password']: # some security, we will only write to an item if the sent token is correct
+            if token == self._sh.building.data.conf['password']: # some security, we will only write to an item if the sent token is correct
                 if path in self.items:
                     if not self.items[path]['acl'] == 'ro':
                         self.items[path]['item'](value, 'Visu', self.addr)
