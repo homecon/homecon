@@ -10,7 +10,6 @@
 
 import pyipopt
 from numpy import *
-
 import pymysql
 import datetime
 
