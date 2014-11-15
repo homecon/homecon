@@ -7,6 +7,9 @@ if(array_key_exists('exec',$_GET)){
 	}
 	if($_GET['exec'] == 'restart_eibd'){
 		shell_exec('/etc/init.d/eibd restart');
+	}
+	if($_GET['exec'] == 'clear_log'){
+		shell_exec('cat /dev/null > /usr/local/knxcontrol/smarthome/var/log/smarthome.log');
 	}	
 	echo "<meta http-equiv='refresh' content='1; URL=index.php?page=modules/settings'>";
 }
@@ -65,7 +68,8 @@ echo "
 			<section data-role='collapsible' data-theme='c' data-content-theme='a' data-collapsed='true'>
 				<h1>SmartHome.py log</h1>
 				<div>
-					<a href='data/smarthome.log' target='_blank' data-role='button'>download log file</a>
+					<a href='data/smarthome.log' target='_blank' data-role='button'>Download log file</a>
+					<a href='index.php?page=modules/settings&exec=clear_log' data-role='button'>Clear log file</a>
 					<font size='2'>";
 					echo nl2br( file_get_contents('data/smarthome.log') );
 					
