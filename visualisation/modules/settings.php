@@ -21,6 +21,7 @@ $ip = $row['ip'];
 $port = $row['port'];
 $webip = $row['web_ip'];
 $webport = $row['web_port'];
+$token = $row['token'];
 
 // echo page
 
@@ -40,18 +41,22 @@ echo "
 						<input type='text' name='port' id='port' data-mini='true' value='$port'>
 					</div>
 					<div data-role='fieldcontain'>
-						<label for='ip'>Web-IP:</label>
+						<label for='webip'>Web-IP:</label>
 						<input type='text' name='webip' id='webip' data-mini='true' value='$webip'>
 					</div>
 					<div data-role='fieldcontain'>
-						<label for='ip'>Web-Port:</label>
+						<label for='webport'>Web-Port:</label>
 						<input type='text' name='webport' id='webport' data-mini='true' value='$webport'>
+					</div>
+					<div data-role='fieldcontain'>
+						<label for='token'>Token:</label>
+						<input type='text' name='token' id='token' data-mini='true' value='$token'>
 					</div>
 					<a data-role='button'>Save settings</a>
 					<script>
 						$(document).on('click','.general_settings a',function(){
 						
-							$.post('requests/settings_set.php',{'ip': $('#ip').val(), 'port': $('#port').val(), 'webip': $('#webip').val(), 'webport': $('#webport').val()});
+							$.post('requests/settings_set.php',{'ip': $('#ip').val(), 'port': $('#port').val(), 'webip': $('#webip').val(), 'webport': $('#webport').val(), 'token': $('#token').val()});
 						});
 					</script>
 				</div>
