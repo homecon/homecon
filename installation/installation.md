@@ -612,7 +612,7 @@ sudo /etc/init.d/smarthome restart
 ```
 
 ### knxcontrol
-
+To secure the WebSocket which is used to talk to smarthome a token is transmitted on every write request. This token must be set in '/smarthome/items/building.conf' and in the settings page of KNXcontrol.
 
 
 ## Connecting to the web
