@@ -37,13 +37,16 @@
 		// get ip and port from mysql
 		$result = mysql_query("SELECT * FROM data WHERE id = 1");
 		$data = mysql_fetch_array($result);
+		 
 		if($web){
 			$smarthome_adress = $data['web_ip'];
 			$smarthome_port = $data['web_port'];
+			$smarthome_token = $data['token'];
 		}
 		else{
 			$smarthome_adress = $data['ip'];
 			$smarthome_port = $data['port'];
+			$smarthome_token = $data['token'];
 		}	
 ?>
 
@@ -87,7 +90,7 @@
 	</head>
 	<body>
 		<script type='text/javascript'>
-			io.init('<?php echo $smarthome_adress; ?>', '<?php echo $smarthome_port; ?>');
+			io.init('<?php echo $smarthome_adress; ?>', '<?php echo $smarthome_port; ?>', '<?php echo $smarthome_token; ?>');
 		
 			// Do some actions before page is shown
 			$(document).on('pagebeforeshow', function () {

@@ -277,13 +277,17 @@ class WebSocketHandler(lib.connection.Stream):
         if command == 'item':
             path = data['id']
             value = data['val']
-            if path in self.items:
-                if not self.items[path]['acl'] == 'ro':
-                    self.items[path]['item'](value, 'Visu', self.addr)
+            token = data['token']
+            if token == self._sh.building.mysql.conf['password']: # some security, we will only write to an item if the sent token is correct
+                if path in self.items:
+                    if not self.items[path]['acl'] == 'ro':
+                        self.items[path]['item'](value, 'Visu', self.addr)
+                    else:
+                        logger.warning("Client {0} want to update read only item: {1}".format(self.addr, path))
                 else:
-                    logger.warning("Client {0} want to update read only item: {1}".format(self.addr, path))
+                    logger.warning("Client {0} want to update invalid item: {1}".format(self.addr, path))
             else:
-                logger.warning("Client {0} want to update invalid item: {1}".format(self.addr, path))
+                logger.warning("Invalid token")
         elif command == 'monitor':
             if data['items'] == [None]:
                 return

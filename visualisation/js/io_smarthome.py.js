@@ -20,6 +20,8 @@ var io = {
     // the port
     port:       '',
     
+	// token
+	token:      '',
 
 // -----------------------------------------------------------------------------
 // P U B L I C   F U N C T I O N S
@@ -40,7 +42,7 @@ var io = {
     * @param      the value 
     */
     write: function(item, val) {
-                io.send({'cmd': 'item', 'id': item, 'val': val});
+                io.send({'cmd': 'item', 'id': item, 'val': val, 'token': io.token});
                 widget.update(item, val);
     },
     
@@ -50,9 +52,10 @@ var io = {
     * @param      the ip or url to the system (optional)
     * @param      the port on which the connection should be made (optional) 
     */
-        init: function(address, port) {
+        init: function(address, port, token) {
             io.address = address;
             io.port = port;
+			io.token = token;
             io.open();
         },
     

@@ -29,6 +29,7 @@ $res = mysql_query("CREATE TABLE IF NOT EXISTS `data` (	`id` int(11) NOT NULL AU
 														`port` varchar(255) NOT NULL,
 														`web_ip` varchar(255) NOT NULL,
 														`web_port` varchar(255) NOT NULL,
+														`token` varchar(255) NOT NULL,
 														PRIMARY KEY (`id`) ) ENGINE=InnoDB DEFAULT CHARSET=latin1 AUTO_INCREMENT=1");
 if($res){
 	echo "data table created<br>";
@@ -38,7 +39,7 @@ else{
 }
 
 // add default data
-$res = mysql_query("INSERT INTO `data` (id,ip,port,web_ip,web_port) VALUES (1,'192.168.1.2','2424','mydomain.ddns.net','9024')");												
+$res = mysql_query("INSERT INTO `data` (id,ip,port,web_ip,web_port,token) VALUES (1,'192.168.1.2','2424','mydomain.ddns.net','9024','admin')");												
 if($res){
 	echo "default data added<br>";
 }
