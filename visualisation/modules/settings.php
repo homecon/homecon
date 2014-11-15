@@ -48,7 +48,7 @@ echo "
 					<script>
 						$(document).on('click','.general_settings a',function(){
 						
-							$.post('requests/settings_set.php',{'webip': $('#webip').val(), 'webport': $('#webport').val()});
+							$.post('requests/settings_set.php',{'ip': $('#ip').val(), 'port': $('#port').val(), 'webip': $('#webip').val(), 'webport': $('#webport').val()});
 						});
 					</script>
 				</div>

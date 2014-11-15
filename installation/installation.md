@@ -647,7 +647,7 @@ During the install procedure you will be asked for several things.
 * login/email: enter the email address with which you just signed up for noip
 * password: the noip password
 If you only have registered 1 host this will be detected automatically and you only need to choose an update interval, the suggested 30 minutes is fine.
-You will also be asked if a script needs to be run on a successful update but this is not neccacary so type `n`.
+You will also be asked if a script needs to be run on a successful update but this is not necessary so type `n`.
 
 The installation ends with the a message that a configuration file was created and it's location. Start the client with:
 ```
