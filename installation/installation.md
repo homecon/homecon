@@ -581,3 +581,89 @@ sudo python3.2 /etc/pyipopt/examples/hs071_PY3.py
 ```
 
 You should see the same solution as above.
+
+
+
+## Password changing
+Before we open up ports to the www it's time to change all relevant passwords so our system is secure.
+I suggest using a different, strong password for every application and storing them is some password manager (LastPass free works well for me).
+
+### Raspberry pi
+Start with the Raspberry pi password. To do this just type `passwd` in a ssh session. You will be asked for your old password and the new one twice and you're done.
+
+### MySQL
+Next is the MySQL root password, enter the following in a shell (change newpass with your new password)
+```
+mysqladmin -u root -p'admin' password newpass
+```
+No we need to set the MySQL knxcontrol user password. So login to mysql as root with your new password, switch to the users database and set the new password
+```
+mysql -u root -p
+
+use mysql;
+
+SET PASSWORD FOR 'knxcontrol'@'localhost' = PASSWORD('newpass');
+```
+Exit the MySQL shell using `Ctrl+D`
+
+Now set the new password for the knxcontrol user in 'pages/config.php' and in 'items/building.conf' upload them to the raspberry and restart smarthome.py using
+```
+sudo /etc/init.d/smarthome restart
+```
+
+### knxcontrol
+
+
+
+## Connecting to the web
+To connect KNXControl to the web you need to do some port forwarding from your router to the ports set up for KNXcontrol.
+First you need to forward a port to the http port of the raspbery pi, so go to your routers configuration page (usualy found at 192.168.1.1) and set up port forwarding from some port to 192.168.1.2 and port 80.
+
+By default the port used to forward the websocket is port 9024 so setup another port forwarding from port 9024 to 192.168.1.2 port 2424 and you're good to go.
+The port used for the websocket forwarding can be changed under settings in KNXcontrol.
+
+### Dynamic dns
+Most internet providers don't provide a static ip address to your router, but when you want to access your router from the outside you need to know it's ip address.
+The trick to use id DDNS. We basically install a small program on the raspberry pi which continuously checks its outside ip address and sends it to a DDNS server.
+This server links an easily readable name to the ip address so you can access the pi from the outside.
+
+I used NO-IP for this service. It's free and provides nice names so thats fun. To install it go to www.noip.com and register. Now add a host and choose a domain name to your liking.
+
+Now we need to download the client, install it on the raspberry pi and configure it to point to your domain name:
+```
+cd /usr/local/src
+
+sudo wget http://www.no-ip.com/client/linux/noip-duc-linux.tar.gz
+
+sudo tar xzf noip-duc-linux.tar.gz
+
+cd noip-2.1.9-1
+
+sudo make
+
+sudo make install
+```
+During the install procedure you will be asked for several things.
+* login/email: enter the email address with which you just signed up for noip
+* password: the noip password
+If you only have registered 1 host this will be detected automatically and you only need to choose an update interval, the suggested 30 minutes is fine.
+You will also be asked if a script needs to be run on a successful update but this is not neccacary so type `n`.
+
+The installation ends with the a message that a configuration file was created and it's location. Start the client with:
+```
+sudo /usr/local/bin/noip2
+```
+
+Now we need to make sure the client starts automatically on reboot. To do this we need to become the root user for a second
+```
+sudo -i
+
+echo '/usr/local/bin/noip2' >> /etc/rc.local
+
+logout
+```
+And were done.
+
+ 
+
+
