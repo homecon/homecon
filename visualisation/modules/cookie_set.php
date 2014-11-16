@@ -1,16 +1,16 @@
 <?php
 	if($_GET['login']==1){
 	
-		echo "<header><section><h1>Verkeerd wachtwoord</h1></section></header>";
-		
 		$result = mysql_query("SELECT * FROM users WHERE username = '".$_POST['username']."'");
 		if($user = mysql_fetch_array($result)){
 			if(md5(md5($_POST['password']))==$user['password']){
 			
 				setcookie("knxcontrol_user", $_POST['username'], time()+3600*24*365*10);
 				setcookie("knxcontrol_pass", md5($_POST['password']), time()+3600*24*365*10);
-
-				//echo "<meta http-equiv='refresh' content='0; URL=index.php?web=$web'>";
+				
+				$_SESSION['userid'] = $user['id'];
+				
+				echo "<meta http-equiv='refresh' content='0; URL=index.php?web=$web'>";
 			}
 			else{
 				echo "<header><section><h1>Verkeerd wachtwoord</h1></section></header>";
@@ -29,7 +29,7 @@
 		setcookie('knxcontrol_pass', "", time()-3600);
 		
 		$_SESSION['userid'] = 0;
-		// echo "<meta http-equiv='refresh' content='5; URL=index.php?web=$web'>";
+		echo "<meta http-equiv='refresh' content='0; URL=index.php?web=$web'>";
 	}
 	
 
