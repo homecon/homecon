@@ -132,7 +132,4 @@ function add_menu_item($title,$link,$icon){
 	echo "
 							<li><a href='index.php?web=$web&page=pages/$link'><img src='icons/ws/$icon'>$title</a></li>";
 }
-
-
-
 ?>
