@@ -32,11 +32,24 @@
 	else{
 		$web = 0;
 	}
-	if(array_key_exists('login',$_GET)){
-		include('modules/cookie_set.php');
+	if($_SESSION['userid']<=0){
+			include("modules/login.php");
 	}
-	
-	
+	else{
+		// get ip and port from mysql
+		$result = mysql_query("SELECT * FROM data WHERE id = 1");
+		$data = mysql_fetch_array($result);
+		 
+		if($web){
+			$smarthome_adress = $data['web_ip'];
+			$smarthome_port = $data['web_port'];
+			$smarthome_token = $data['token'];
+		}
+		else{
+			$smarthome_adress = $data['ip'];
+			$smarthome_port = $data['port'];
+			$smarthome_token = $data['token'];
+		}
 ?>
 
 <!DOCTYPE html>
@@ -79,24 +92,6 @@
 	</head>
 	<body>
 
-<?php
-		if($_SESSION['userid']>0){
-			// get ip and port from mysql
-			$result = mysql_query("SELECT * FROM data WHERE id = 1");
-			$data = mysql_fetch_array($result);
-			 
-			if($web){
-				$smarthome_adress = $data['web_ip'];
-				$smarthome_port = $data['web_port'];
-				$smarthome_token = $data['token'];
-			}
-			else{
-				$smarthome_adress = $data['ip'];
-				$smarthome_port = $data['port'];
-				$smarthome_token = $data['token'];
-			}	
-?>
-
 		<script type='text/javascript'>
 			io.init('<?php echo $smarthome_adress; ?>', '<?php echo $smarthome_port; ?>', '<?php echo $smarthome_token; ?>');
 		
@@ -131,17 +126,9 @@
 				<?php include("$page.php"); ?>
 			</div>
 		</div>
-<?php 
-	}
-	else{
-?>		
-		<div id='page' data-role='page' data-theme='a'>
-			<div data-role='content' class='content'>
-				<?php include("modules/login.php"); ?>
-			</div>
-		</div>
+	</body>
+</html>
+
 <?php 
 	}
 ?>
-	</body>
-</html>
