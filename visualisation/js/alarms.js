@@ -196,7 +196,7 @@ $(document).on('change','.alarm_action input',function(){
 //////////////////////////////////////////////////////////////////////////////
 // add alarm action
 //////////////////////////////////////////////////////////////////////////////
-$(document).on('click','a.add',function(){
+$(document).on('click','.alarm_action_container a.add',function(){
 
 	var container = $( this ).parents('.alarm_action_container');
 	
