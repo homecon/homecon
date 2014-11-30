@@ -30,7 +30,7 @@ $(document).on('change','.alarm input,.alarm select',function(){
 //////////////////////////////////////////////////////////////////////////////
 // add alarm
 //////////////////////////////////////////////////////////////////////////////
-$(document).on('click','a.add',function(){
+$(document).on('click','.alarm_container a.add',function(){
 
 	var container = $( this ).parents('.alarm_container');
 	var sectionid = container.attr('data-id');
