@@ -30,6 +30,9 @@ $res = mysql_query("CREATE TABLE IF NOT EXISTS `data` (	`id` int(11) NOT NULL AU
 														`web_ip` varchar(255) NOT NULL,
 														`web_port` varchar(255) NOT NULL,
 														`token` varchar(255) NOT NULL,
+														`latitude` float NOT NULL,
+														`longitude` float NOT NULL,
+														`elevation` float NOT NULL,
 														PRIMARY KEY (`id`) ) ENGINE=InnoDB DEFAULT CHARSET=latin1 AUTO_INCREMENT=1");
 if($res){
 	echo "data table created<br>";

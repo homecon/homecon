@@ -324,7 +324,7 @@ div.setpoint_chart{
 	margin-right: auto;
 }
 #weather_forecast_detailed .forecast_details{
-	margin-top: 1em;
+	margin-top: 0.5em;
 	display: inline-block;
 	width: 19%;
 	text-align: center;
@@ -341,7 +341,7 @@ div.setpoint_chart{
 	margin-right: auto;
 }
 #weather_forecast_averaged .forecast_details{
-	margin-top: 1em;
+	margin-top: 0.1em;
 	display: inline-block;
 	width: 24%;
 	text-align: center;
