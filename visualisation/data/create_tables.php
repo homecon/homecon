@@ -42,7 +42,7 @@ else{
 }
 
 // add default data
-$res = mysql_query("INSERT INTO `data` (id,ip,port,web_ip,web_port,token) VALUES (1,'192.168.1.2','2424','mydomain.ddns.net','9024','admin')");												
+$res = mysql_query("INSERT INTO `data` (id,ip,port,web_ip,web_port,token,latitude,longitude,elevation) VALUES (1,'192.168.1.2','2424','mydomain.ddns.net','9024','admin',51,5,70)");												
 if($res){
 	echo "default data added<br>";
 }
