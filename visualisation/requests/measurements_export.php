@@ -4,7 +4,7 @@
 
 	if($_SESSION['userid']>0){
 		
-		$table = $_POST['table'];
+		$table = $_GET['table'];
 
 		// name
 		$result = mysql_query("SELECT name FROM measurements_legend");
@@ -41,27 +41,26 @@
 
 		
 		
-		// prepare data query
-		$query = "SELECT * FROM $table WHERE time >='1414568100' AND time < '1414646560' ORDER BY time,signal_id";
+		// parse dates and prepare data query
+		if(strcmp("",$_GET['startdate'])==0 && strcmp("",$_GET['enddate'])==0){
+			$query = "SELECT * FROM $table ORDER BY time,signal_id";
+		}
+		elseif(strcmp("",$_GET['startdate'])==0){
+			$query = "SELECT * FROM $table WHERE time<=".strtotime($_GET['enddate'])." ORDER BY time,signal_id";
+			$startdate = '_'.'start';
+			$enddate   = '_'.$_GET['enddate'];
+		}
+		elseif(strcmp("",$_GET['enddate'])==0){
+			$query = "SELECT * FROM $table WHERE time>=".strtotime($_GET['startdate'])." ORDER BY time,signal_id";
+			$startdate = '_'.$_GET['startdate'];
+			$enddate   = '_'.'end';
+		}
+		else{
+			$query = "SELECT * FROM $table WHERE time>=".strtotime($_GET['startdate'])." AND time<=".strtotime($_GET['enddate'])." ORDER BY time,signal_id";
+			$startdate = '_'.$_GET['startdate'];
+			$enddate   = '_'.$_GET['enddate'];
+		 }
 		
-		// if(strcmp("",$_POST['startdate'])==0 && strcmp("",$_POST['enddate'])==0){
-			// $query = "SELECT * FROM $table ORDER BY time,signal_id";
-		// }
-		// elseif(strcmp("",$_POST['startdate'])==0){
-			// $query = "SELECT * FROM $table WHERE time<=".strtotime($_POST['enddate'])." ORDER BY time,signal_id";
-			// $startdate = '_'.'start';
-			// $enddate   = '_'.$_POST['enddate'];
-		// }
-		// elseif(strcmp("",$_POST['enddate'])==0){
-			// $query = "SELECT * FROM $table WHERE time>=".strtotime($_POST['startdate'])." ORDER BY time,signal_id";
-			// $startdate = '_'.$_POST['startdate'];
-			// $enddate   = '_'.'end';
-		// }
-		// else{
-			// $query = "SELECT * FROM $table WHERE time>=".strtotime($_POST['startdate'])." AND time<=".strtotime($_POST['enddate'])." ORDER BY time,signal_id";
-			// $startdate = '_'.$_POST['startdate'];
-			// $enddate   = '_'.$_POST['enddate'];
-		// }
 		
 		// rearange data
 		$result = mysql_query($query);
