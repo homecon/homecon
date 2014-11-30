@@ -19,14 +19,14 @@ var icons = {	'01d': 'sun_1.png',
 				'50n': 'moon_6.png'
 			};
 
-var lat=51;
-var lon=5;		
-	
 //////////////////////////////////////////////////////////////////////////////
 // display detailed forecast
 //////////////////////////////////////////////////////////////////////////////				  
 $(document).on('pagebeforecreate',function(){
 	$('#weather_forecast_detailed').each(function(){
+	
+		var lat = $(this).attr('lat');
+		var lon = $(this).attr('lon');
 		
 		// load forecast
 		$.post('http://api.openweathermap.org/data/2.5/forecast?lat='+lat+'&lon='+lon,function(result){
@@ -149,6 +149,9 @@ $(document).on('pagebeforecreate',function(){
 //////////////////////////////////////////////////////////////////////////////	
 $(document).on('pagebeforecreate',function(){
 	$('#weather_forecast_averaged').each(function(){
+	
+		var lat = $(this).attr('lat');
+		var lon = $(this).attr('lon');
 		
 		// load daily forecast
 		$.post('http://api.openweathermap.org/data/2.5/forecast/daily?lat='+lat+'&lon='+lon+'&cnt=4&mode=json',function(result){
@@ -211,7 +214,7 @@ function fill_table(forecast,printhour){
 		$(this).find('img').attr('src', 'icons/weather/'+forecast[i].icon);
 		$(this).find('.temperature').html(forecast[i].temperature.toFixed(1)+'&deg;C');
 		$(this).find('.precipitation').html(forecast[i].precipitation.toFixed(0)+'mm/h');
-		$(this).find('.wind').html(forecast[i].windspeed.toFixed(1)+'m/s &nbsp;&nbsp; '+winddirection(forecast[i].winddirection));
+		$(this).find('.wind').html(forecast[i].windspeed.toFixed(1)+'m/s  '+winddirection(forecast[i].winddirection));
 		$(this).find('.pressure').html(forecast[i].pressure.toFixed(1)+' hPa');
 		
 	});
