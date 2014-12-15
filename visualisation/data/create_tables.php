@@ -139,6 +139,8 @@ if($res){
 else{
 	echo "measurements table creation failed <br>";
 }
+mysql_query("CREATE INDEX time_signal_id ON measurements(time, signal_id)");
+
 
 $res = mysql_query("CREATE TABLE IF NOT EXISTS `measurements_quarterhouraverage` (	`id` bigint(20) NOT NULL AUTO_INCREMENT,
 																					`signal_id` tinyint(4) NOT NULL,
@@ -151,6 +153,7 @@ if($res){
 else{
 	echo "quarterhour average measurements table creation failed <br>";
 }
+mysql_query("CREATE INDEX time_signal_id ON measurements_quarterhouraverage(time, signal_id)");
 
 $res = mysql_query("CREATE TABLE IF NOT EXISTS `measurements_weekaverage` (	`id` bigint(20) NOT NULL AUTO_INCREMENT,
 																			`signal_id` tinyint(4) NOT NULL,
@@ -163,6 +166,7 @@ if($res){
 else{
 	echo "week average measurements table creation failed <br>";
 }
+mysql_query("CREATE INDEX time_signal_id ON measurements_weekaverage(time, signal_id)");
 
 $res = mysql_query("CREATE TABLE IF NOT EXISTS `measurements_monthaverage` (`id` bigint(20) NOT NULL AUTO_INCREMENT,
 																			`signal_id` tinyint(4) NOT NULL,
@@ -175,6 +179,7 @@ if($res){
 else{
 	echo "month average measurements table creation failed <br>";
 }
+mysql_query("CREATE INDEX time_signal_id ON measurements_monthaverage(time, signal_id)");
 	
 
 		
