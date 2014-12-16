@@ -1,50 +1,49 @@
 <?php
 	session_start();
 	include('../data/mysql.php');
-
+	
+	//ini_set('display_errors',1);
+	//ini_set('display_startup_errors',1);
+	//error_reporting(-1);
+	
+	set_time_limit(600);  // 10 minutes maximum execution time
+	
 	if($_SESSION['userid']>0){
-		
-		header('Content-Description: File Transfer');
-		header('Content-Type: application/octet-stream');
-		header('Content-disposition: attachment; filename=knxcontrol_measurements'.str_replace('-','',$startdate ).str_replace('-','',$enddate).'.csv');
-		//header('Content-Length: '.strlen($content));
-		header('Cache-Control: must-revalidate, post-check=0, pre-check=0');
-		header('Expires: 0');
-		header('Pragma: public');
+		$content = '';
 		
 		$table = $_GET['table'];
 
 		// name
 		$result = mysql_query("SELECT name FROM measurements_legend");
-		echo 'timestamp';
+		$content .= 'timestamp';
 		$num_signals = 0;
 		while($row = mysql_fetch_array($result)){
-			echo ','.$row['name'];
+			$content .= ','.$row['name'];
 			$num_signals++;
 		}
-		echo PHP_EOL;
+		$content .= PHP_EOL;
 		
 		// quantity
 		$result = mysql_query("SELECT quantity FROM measurements_legend");
-		echo 'time';
+		$content .= 'time';
 		while($row = mysql_fetch_array($result)){
-			echo ','.$row['quantity'];
+			$content .= ','.$row['quantity'];
 		}
-		echo PHP_EOL;
+		$content .= PHP_EOL;
 		
 		// unit
 		$result = mysql_query("SELECT unit FROM measurements_legend");
-		echo 's';
+		$content .= 's';
 		while($row = mysql_fetch_array($result)){
-			echo ','.$row['unit'];
+			$content .= ','.$row['unit'];
 		}
-		echo PHP_EOL;
+		$content .= PHP_EOL;
 		
 		// description
 		$result = mysql_query("SELECT description FROM measurements_legend");
-		echo 'unixtime';
+		$content .= 'unixtime';
 		while($row = mysql_fetch_array($result)){
-			echo ','.$row['description'];
+			$content .= ','.$row['description'];
 		}
 
 		
@@ -52,8 +51,8 @@
 		// parse dates and prepare data query
 		if(strcmp("",$_GET['startdate'])==0 && strcmp("",$_GET['enddate'])==0){
 			$query = "SELECT * FROM $table";
-			$starttime = 0;
-			$endtime = time()+60;
+			$startdate = '';
+			$enddate = '';
 		}
 		elseif(strcmp("",$_GET['startdate'])==0){
 			$query = "SELECT * FROM $table WHERE time<=".strtotime($_GET['enddate']);
@@ -76,30 +75,40 @@
 		$oldtime = 0;
 		$count = 0;
 		while($row = mysql_fetch_array($result)){
-		
+
 			if($row['time']>$oldtime){
 				// finish the old line
-				echo PHP_EOL;
+				$content .= PHP_EOL;
 				// start a new line
-				echo $row['time'];
+				$content .= $row['time'];
 				$oldtime = $row['time'];
 			}
 			$count++;
 			while($row['signal_id']!=$count){
-			
+
 				//reset count
 				if($count>=$num_signals){
 					$count = 0;
 				}
 				$count++;
-				if($count<$row['signal_id']){
-					echo ",";
+				if($count<=$row['signal_id'] && $count>1){
+					$content .= ",";
 				}
 
 			}
-			echo ",".$row['value'];
+			$content .= ",".$row['value'];
 		}
 		
+		
+		header('content-Description: File Transfer');
+		header('content-Type: application/octet-stream');
+		header('content-disposition: attachment; filename=knxcontrol_measurements'.str_replace('-','',$startdate ).str_replace('-','',$enddate).'.csv');
+		header('content-Length: '.strlen($content));
+		header('Cache-Control: must-revalidate, post-check=0, pre-check=0');
+		header('Expires: 0');
+		header('Pragma: public');
+		
+		echo $content;
 		//exit;
 
 	}
