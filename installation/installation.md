@@ -408,9 +408,9 @@ $ sudo nano /etc/samba/smb.conf
 ```
 Add
 ```
-[Backup]
-	comment = Backup Folder
-	path = /media/hdd
+[Home]
+	comment = Home network storage
+	path = /mnt/hdd
 	force user = admin
 	force group = admin
 	create mask = 0775
@@ -446,11 +446,16 @@ $ cd /etc/CoinIpopt
 Getting 3rd party libraries, there are files present in the Ipopt source to do this so we will use them. 
 We will use the MUMPS Linear solver as it is open, not everyone has access to an academic solver like MA57 and for our purpose it will be sufficient.
 ```
-$ sudo /etc/CoinIpopt/ThirdParty/Blas/get.Blas
-$ sudo /etc/CoinIpopt/ThirdParty/Lapack/get.Lapack
-$ sudo /etc/CoinIpopt/ThirdParty/ASL/get.ASL
-$ sudo /etc/CoinIpopt/ThirdParty/Mumps/get.Mumps
-$ sudo /etc/CoinIpopt/ThirdParty/Metis/get.Metis
+$ cd /etc/CoinIpopt/ThirdParty/Blas/
+$ sudo ./get.Blas
+$ cd ../Lapack
+$ sudo ./get.Lapack
+$ cd ../ASL
+$ sudo ./get.ASL
+$ cd ../Mumps
+$ sudo ./get.Mumps
+$ cd ../Metis
+$ sudo ./get.Metis
 $ cd /etc/CoinIpopt
 ```
 
