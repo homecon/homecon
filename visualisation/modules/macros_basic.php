@@ -65,7 +65,7 @@ function add_shade_control($item,$text){
 							<p>$text</p>
 							<a id='$up_id'  data-widget='basic.button' data-item='$item.pos' data-val='0' class='left'><img class='icon' src='icons/ws/fts_shutter_10.png'></a>
 							<input id='$slider_id' data-widget='basic.slider' data-item='$item.pos' type='range' value='0' min='0' max='255' step='5' data-highlight='true'/>
-							<a id='$down_id'  data-widget='basic.button' data-item='$item.pos' data-val='225' class='right'><img class='icon' src='icons/ws/fts_shutter_100.png'></a>
+							<a id='$down_id'  data-widget='basic.button' data-item='$item.pos' data-val='255' class='right'><img class='icon' src='icons/ws/fts_shutter_100.png'></a>
 						</span>";
 };
 function add_checkbox($item,$text){
