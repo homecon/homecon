@@ -52,18 +52,18 @@ function retroDate(){
 		
 	
 	var month_str=new Array(); 
-		month_str[1]="januari";       
-		month_str[2]="februari";
-		month_str[3]="maart";
-		month_str[4]="april";       
-		month_str[5]="mei";
-		month_str[6]="juni";
-		month_str[7]="juli";
-		month_str[8]="augustus";
-		month_str[9]="september";       
-		month_str[10]="oktober";
-		month_str[11]="november";
-		month_str[12]="december";
+		month_str[0]="januari";       
+		month_str[1]="februari";
+		month_str[2]="maart";
+		month_str[3]="april";       
+		month_str[4]="mei";
+		month_str[5]="juni";
+		month_str[6]="juli";
+		month_str[7]="augustus";
+		month_str[8]="september";       
+		month_str[9]="oktober";
+		month_str[10]="november";
+		month_str[11]="december";
 	
 	var str =  day_str[weekday] + " " + day.toString() + " " + month_str[month] + " " + year.toString();
 	

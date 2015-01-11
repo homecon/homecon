@@ -293,29 +293,6 @@ Set privileges of the new user:
 
 Open a browser window and go to "http://192.168.1.2/knxcontrol/data/create_tables.php". This will create all required mysql tables 
 
-
-### Moving the database to another location
-This step is not executed in the base image and commands are given here for reference also not tested.
-```
-$ sudo /etc/init.d/mysql stop
-$ sudo cp -R -p /var/lib/mysql /media/hdd/mysql
-```
-Edit the config file `sudo nano /etc/mysql/my.cnf` Look for the entry for `datadir`, and change the path (which should be /var/lib/mysql) to the new data directory.
-
-Edit the another file `sudo nano /etc/apparmor.d/usr.sbin.mysqld` Look for lines beginning with `/var/lib/mysql`. Change `/var/lib/mysql` in the lines with the new path.
-
-Restart the AppArmor profiles with the command:
-```
-$ sudo /etc/init.d/apparmor reload
-```
-
-Restart MySQL with the command:
-```
-$ sudo /etc/init.d/mysql restart
-```
-
-
-
 ## SMARTHOME.PY
 The next step is configuring smarthome.py. First we set the permissions of some files:
 ```
