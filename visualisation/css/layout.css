@@ -1,17 +1,13 @@
-/***************************************/
-/*           Layout                    */
-/***************************************/
 
-body{
-	display: block;
-	margin: 0px;
-}
-/***************************************/
-/*           Header                    */
-/***************************************/
 
+
+
+/*****************************************************************************/
+/*                     Header                                                */
+/*****************************************************************************/
 #header{
 	height: 60px;
+	z-index: 1002;
 }
 #header nav{
 }
@@ -20,7 +16,8 @@ body{
 	height: 50px;
 }
 #menu_button{
-	float: right;
+	position: absolute;
+	right: 10px;
 }
 @media all and (min-width: 800px) {
 	#menu_button{
@@ -28,100 +25,91 @@ body{
 	}
 }
 
-/***************************************/
-/*           Content                   */
-/***************************************/
-#content{
-	position: relative;
-	padding: 0;
-}
-#content.main{
-	left: 40%;
-	width: 60%;
-}
-#content.home{
-	left: 0;
-	width: 40%;
-}
-
-.ui-body-a .ui-link:hover {
-	color: #FFFFFF !important;
-	cursor: pointer;
-}
-.ui-focus, .ui-btn:focus {
-	-moz-box-shadow: none !important;
-	-webkit-box-shadow: none !important;
-	box-shadow: none !important;
-}
-
-/* Small screen variation */
-@media all and (max-width: 800px) {
-	#content{
-		left: 0 !important;
-		width: 100% !important;
-	}
-}
-
-/***************************************/
-/*           Main menu                 */
-/***************************************/
-#menu.ui-panel{
-	top: 60px;
-}
+/*****************************************************************************/
+/*                     Main menu                                             */
+/*****************************************************************************/
 #menu .ui-panel-inner {
-    padding:0px;
+    padding-top: 60px;
 }
-#menu .ui-controlgroup {
+#menu nav{
     margin:0;
 }
-
-#menu.main.ui-panel {
-	left: 0;
-	width: 40%;
+#menu nav li a{
+	height: 60px;
+	padding-top: 0;
+	padding-bottom: 0;
 }
-
-@media all and (min-width: 800px) {
-	#menu.home.ui-panel {
-		left: 40%;
-		width: 60%;
-	}
-	#menu.ui-panel {
+#menu nav li a img{
+	height: 100%;
+}
+#menu nav li h1{
+	margin-top: 20px;
+}
+@media all and (min-width: 800px){
+	#menu.ui-panel{
+		position: relative;
+		width: 38%;
 		visibility: visible;
+		-webkit-backface-visibility: visible;
 		-ms-transform: none;
 		-webkit-transform: none;
 		transform: none;
 	}
 }
-#menu nav {
-	margin: 0;
+
+/*****************************************************************************/
+/*                     Popup                                                 */
+/*****************************************************************************/
+#requestpopup{
+	bottom: 20px;
 }
-#menu nav .ui-li-thumb{
-	width: 60px;
+
+/*****************************************************************************/
+/*                     Content                                               */
+/*****************************************************************************/
+.ui-content header{
+	position: relative;
+}
+.ui-content header img{
+	position: relative;
 	height: 60px;
+	vertical-align: middle;
+}
+.ui-content header h1{
+	display: inline-block;
+	margin-top: 5px;
+	margin-bottom: 5px;
+}
+.ui-content header div.value{
+	position: absolute;
+	top: 10px;
+	right: 10px;
+	font-size: 1.2em;
+}
+.ui-content div.group{
+	margin-bottom: 10px;
 }
 
-.ui-link-inherit{
-	min-height: 10px !important;
-	padding-top: 20px !important;
-	padding-bottom: 20px !important;
-	padding-left: 5em !important;
-}
-.ui-body-a{
-	border: 0px !important;
-}
 
-
-/* Small screen variation */
-@media all and (max-width: 800px) {
-	#menu.ui-panel-open {
-		width: 100% !important;
+@media all and (min-width: 800px) {
+	.ui-content{
+		position: absolute;
+		left: 38%;
+		width: 58%;
 	}
 }
+
+
+
+
+
 
 
 /***************************************/
 /*           Article                   */
 /***************************************/
+/*
+
 article{
 	position: relative;
 	display: block;
@@ -157,23 +145,8 @@ article>section.ui-collapsible,article>section.ui-collapsible-set{
 	margin-left: auto;
 	margin-right: auto;
 }
-article section div.twocols{
-	-moz-column-count:2; 
-	-webkit-column-count:2; 
-	column-count:2;
-
-	-moz-column-gap: 0px; 
-	-webkit-column-gap: 0px; 
-	column-gap: 0px;
-}
 article hr{
 	width: 90%;
 }
 
-
-/***************************************/
-/*           Popup                   */
-/***************************************/
-#requestpopup{
-	bottom: 20px;
-}
+*/

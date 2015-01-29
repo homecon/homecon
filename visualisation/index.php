@@ -5,8 +5,6 @@
 	ini_set('display_startup_errors',1);
 	ini_set('display_errors',1);
 	error_reporting(-1);
-	
-	$_SESSION['user_id'] = 0;
 ?>
 
 <!DOCTYPE html>
@@ -54,7 +52,6 @@
 		include("pages/menu.php");
 		include("modules/header.php");
 		include("modules/templates.php");
-		
 	}
 ?>		
 

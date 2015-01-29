@@ -1,39 +1,5 @@
-<!DOCTYPE html>
-<html>
-	<head>
-		<title>KNX control</title>
-
-		<meta charset='utf-8'/>
-		<meta name='viewport' content='width=device-width, user-scalable=yes, initial-scale=1, maximum-scale=1.3, minimum-scale=1' />
-		<meta name='mobile-web-app-capable' content='yes' />
-		<meta name='apple-mobile-web-app-capable' content='yes' />
-		<meta name='apple-mobile-web-app-status-bar-style' content='black-translucent' />
-		<meta http-equiv='expires' content='0' />
-
-		<link rel='icon' href='favicon.png'/>
-		<link rel='apple-touch-icon' href='favicon.png' />
-		<link rel='icon' href='favicon.ico' type='image/x-icon' />
-
-		<!-- jquery mobile -->
-		<script src='lib/jquery-1.11.0.min.js'></script>
-		<script src='lib/jquery.mobile-1.4.5.min.js'></script>
-		<link rel='stylesheet' href='lib/jquery.mobile-1.4.5.min.css'/>
-		<link rel='stylesheet' href='lib/jquery.mobile.icons-1.4.5.min.css'/>
-		
-		<!-- highcharts -->
-		<script type='text/javascript' src='lib/highstock.js' ></script>
-		<script src='lib/highchartstheme.js'></script>
-		
-		<link rel='stylesheet' type='text/css' href='css/layout.css'/>
-		<link rel='stylesheet' type='text/css' href='css/widget.css'/>
-	</head>
-	<body>
-
-
-
-		<div id='templates' data-role='page' data-theme='a'>
-				
-				
+		<div id='templates' data-role='page' data-theme='b'>
+					
 			<div class='alarm' data-id='0' data-section=''>
 				<input type='time' data-column='time' value='12:00'>
 				<h1></h1>
@@ -49,14 +15,14 @@
 						<input type='checkbox' data-field='sun' id='sun_0' class='custom' data-mini='true'> <label id='id_sun_lab' for='sun_0'>zon</label>
 					</div>
 				</div>
-				<div class='alarm_action'>
+				<div class='alarm_action' data-id='0'>
 					<select data-field='action' data-native-menu='false'>
 						<option>Select action</option>
 					</select>
 				</div>
 			</div>
 			
-			<div class='alarm_action_def' data-id=0>
+			<div class='alarm_action_def' data-id='0'>
 				<a class='delete' href='#'><img src=icons/ws/control_x.png></a>
 				<input type='text'  data-field='name'       placeholder='name'>
 				<input type='text'  data-field='sectionid'  placeholder='section id filter'>
@@ -88,5 +54,3 @@
 			</div>
 			
 		<div>
-	</body>
-</html>

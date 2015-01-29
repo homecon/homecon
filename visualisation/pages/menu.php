@@ -1,5 +1,5 @@
 
-		<div id='navigation' data-role='panel' data-display='overlay' data-position='left' data-theme='b'>
+		<div id='menu' data-role='panel' data-display='overlay' data-position='left' data-theme='b'>
 			<nav data-role='collapsible-set' data-corners='false'>	
 			
 				<section data-role='collapsible' data-section='central' data-theme='a' data-content-theme='b'>
