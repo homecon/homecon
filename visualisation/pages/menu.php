@@ -1,29 +1,34 @@
-<?php
 
+		<div id='navigation' data-role='panel' data-display='overlay' data-position='left' data-theme='b'>
+			<nav data-role='collapsible-set' data-corners='false'>	
+			
+				<section data-role='collapsible' data-section='central' data-theme='a' data-content-theme='b'>
+					<h1>Central</h1>
+					<ul data-role='listview'>
+						<li><a href='#central_light'><img src='icons/ws/light_light.png'>Light</a></li>
+						<li><a href='#central_shading'><img src='icons/ws/fts_sunblind.png'>Shading</a></li>
+						<li><a href='#central_indoor'><img src='icons/ws/sani_heating.png'>Indoor climate</a></li>
+						<li><a href='#central_weather'><img src='icons/ws/weather_cloudy_light.png'>Weather</a></li>
+						<li><a href='#central_energy'><img src='icons/ws/measure_power_meter.png'>Energy</a></li>
+					</ul>
+				</section>
 
-begin_menu();
-
-	begin_menu_collapsible("Central","central");
-		add_menu_item("Light","central_light","light_light.png");
-		add_menu_item("Shading","central_shading","fts_sunblind.png");
-		add_menu_item("Indoor climate","central_indoor","sani_heating.png");
-		add_menu_item("Weather","central_weather","weather_cloudy_light.png");
-		add_menu_item("Energy","central_energy","measure_power_meter.png");
-	end_menu_collapsible();
-	
-	begin_menu_collapsible("First Floor","firstfloor",true);
-		add_menu_item("Living","firstfloor_living","scene_livingroom.png");
-		add_menu_item("Hallway","firstfloor_hallway","scene_hall.png");
-	end_menu_collapsible();
-	
-	begin_menu_collapsible("Second Floor","secondfloor");
-		add_menu_item("Corridor","secondfloor_corridor","scene_stairs.png");
-		add_menu_item("Bathroom","secondfloor_bathroom","scene_bath.png");
-		add_menu_item("Bedroom","secondfloor_bedroom1","scene_sleeping_alternat.png");
-	end_menu_collapsible();
-	
-end_menu();	
-	
-
-		
-?>
+				<section data-role='collapsible' data-section='firstfloor' data-theme='a' data-content-theme='b'>
+					<h1>First floor</h1>
+					<ul data-role='listview'>
+						<li><a href='#firstfloor_living'><img src='icons/ws/scene_livingroom.png'>Living</a></li>
+						<li><a href='#firstfloor_hallway'><img src='icons/ws/scene_hall.png'>Hallway</a></li>
+					</ul>
+				</section>
+				
+				<section data-role='collapsible' data-section='secondfloor' data-theme='a' data-content-theme='b'>
+					<h1>Second Floor</h1>
+					<ul data-role='listview'>
+						<li><a href='#secondfloor_stairs'><img src='icons/ws/scene_stairs.png'>Stairs</a></li>
+						<li><a href='#secondfloor_bathroom'><img src='icons/ws/scene_bath.png'>Bathroom</a></li>
+						<li><a href='#secondfloor_bedroom'><img src='icons/ws/scene_sleeping_alternat.png'>Bedroom</a></li>
+					</ul>
+				</section>
+				
+			</nav>	
+		</div>
