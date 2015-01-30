@@ -54,7 +54,7 @@ $(document).on('pagebeforecreate',function(){
 /*****************************************************************************/
 /*                     Enhance widgets                                       */
 /*****************************************************************************/
-$(document).on('pagebeforecreate',function(){
+$(document).on('ready',function(){
 	$('[data-widget="lightswitch"]').each(function(index,value){
 		var text = $(this).html();
 		$(this).html('<a href="#"><img src="icons/ws/light_light.png">'+text+'</a>');

@@ -35,7 +35,7 @@
 					</div>
 				</header>
 				
-				<section data-role='collapsible' data-theme='a' data-collapsed='true'>
+				<section data-role='collapsible' data-theme='a' data-collapsed='false'>
 					<h1>Light</h1>
 					<div data-role='controlgroup' data-type='horizontal' align='center'>
 						<a id='$id' href='#' data-widget='button' data-item='living.scenes' data-value='0' data-role='button' data-mini='true'>Dinner</a>
