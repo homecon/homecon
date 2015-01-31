@@ -11,49 +11,49 @@
 /*                     Light switch                                          */
 /*****************************************************************************/
 
-div[data-widget="lightswitch"]{
+div[data-role="lightswitch"]{
 	display: inline-block;
 	height: 50px;
 	width: 49%;
 	min-width: 200px;
 }
-div[data-widget="lightswitch"] a{
+div[data-role="lightswitch"] a{
 	text-decoration: none;
 	color: #FFF;
 }
-div[data-widget="lightswitch"] img{
+div[data-role="lightswitch"] img{
 	height: 50px;
 	vertical-align: middle;
 }
 
-div[data-widget="lightswitch"] a:hover {
+div[data-role="lightswitch"] a:hover {
 	color: #FFF;
 }
 
 /*****************************************************************************/
 /*                     Light dimmer                                          */
 /*****************************************************************************/
-div[data-widget="lightdimmer"]{
+div[data-role="lightdimmer"]{
 	display: inline-block;
 	height: 60px;
 	width: 90%;
 }
-div[data-widget="lightdimmer"] img{
+div[data-role="lightdimmer"] img{
 	height: 50px;
 	vertical-align: middle;
 	float: left;
 }
-div[data-widget="lightdimmer"] p{
+div[data-role="lightdimmer"] p{
 	position: absolute;
 	margin-left: 54px;
 	margin-top: 2px;
 	font-weight: 700;
 }
-div[data-widget="lightdimmer"] .ui-slider{
+div[data-role="lightdimmer"] .ui-slider{
 	margin-top: 25px;
 	margin-bottom: 0;
 }
-div[data-widget="lightdimmer"] .ui-slider input{
+div[data-role="lightdimmer"] .ui-slider input{
 	visibility: hidden;
 }
 
@@ -62,37 +62,37 @@ div[data-widget="lightdimmer"] .ui-slider input{
 /*****************************************************************************/
 /*                     Shading                                               */
 /*****************************************************************************/
-div[data-widget="shading"]{
+div[data-role="shading"]{
 	display: inline-block;
 	height: 70px;
 	width: 98%;
 }
-div[data-widget="shading"] img{
+div[data-role="shading"] img{
 	height: 50px;
 	margin-top: 10px;
 	vertical-align: middle;
 	float: left;
 }
-div[data-widget="shading"] img.right{
+div[data-role="shading"] .close img{
 	float: right
 }
-div[data-widget="shading"] p{
+div[data-role="shading"] p{
 	position: absolute;
 	margin-left: 54px;
 	margin-top: 2px;
 	font-weight: 700;
 }
-div[data-widget="shading"] .ui-slider{
+div[data-role="shading"] .ui-slider{
 	margin-left: 64px;
 	margin-right: 64px;
 	margin-top: 25px;
 	margin-bottom: 0;
 }
-div[data-widget="shading"] .ui-slider-track{
+div[data-role="shading"] .ui-slider-track{
 	margin-left: 0;
 	margin-right: 0;
 }
-div[data-widget="shading"] .ui-slider input{
+div[data-role="shading"] .ui-slider input{
 	visibility: hidden;
 	width: 0;
 }

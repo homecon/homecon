@@ -1,54 +1,25 @@
 //
 // 
-// model.js is part of KNXControl
+// smarhome.js is part of KNXControl
+// based on smartVISU - io_smarthome.py.js by Martin Gleiﬂ
 // @author: Brecht Baeten
 // @license: GNU GENERAL PUBLIC LICENSE
 // 
 //
 
 
-$(document).on('connect',function(event,user_id){
-	model.user.id = user_id;
-	
-	if(!smarthome.socket){
-		//get connection data
-		$.post('requests/select_from_table.php',{table: 'data', column: '*', where: 'id=1'},function(result){
-			data = JSON.parse(result);
-			data = data[0];
-			
-			// initialize connection
-			smarthome.init(data['ip'],data['port'],data['token']);
-			console.log('connected');
-		});
-	};
-});
-
-/*****************************************************************************/
-/*                     KNXControl                                            */
-/*****************************************************************************/
-// 
-var model = {
-	user: {
-		id: 0
-	}
-}
-
-
 /*****************************************************************************/
 /*                     Smarthome                                             */
 /*****************************************************************************/
-//  This part is created based on the smartVISU io_smarthome.py.js file by Martin Gleiﬂ
 var smarthome = {
 // Connection variables                                                      //
     adress:     '',
     port:       '',
 	token:      '',
+	version: 3,
+	socket: false,
 	
-// write an item to smarthome.py                                             //
-    write: function(item, val){
-                smarthome.send({'cmd': 'item', 'id': item, 'val': val, 'token': smarthome.token});
-                widget.update(item, val);
-    },
+// public functions	
 // initialization                                                            //   
 	init: function(address, port, token) {
 		smarthome.address = address;
@@ -56,32 +27,29 @@ var smarthome = {
 		smarthome.token = token;
 		smarthome.open();
 	},
-// continuosly run the driver                                                //
-    run: function(realtime){
-        // old items
-        widget.refresh();
-                
-        // new items
-        smarthome.monitor();   
+// write an item to smarthome.py                                             //
+    write: function(item, val){
+		smarthome.send({'cmd': 'item', 'id': item, 'val': val, 'token': smarthome.token});
+		//widget.update(item, val);
     },
-	version: 3,
-	socket: false,
 	
+// private functions	
 // Opens the connection and add some handlers                                //
     open: function(){
         smarthome.socket = new WebSocket('ws://' + smarthome.address + ':' + smarthome.port + '/');
 
         smarthome.socket.onopen = function(){
             smarthome.send({'cmd': 'proto', 'ver': smarthome.version});
-            smarthome.monitor();
+            console.log('connected to smarthome.py');
+			//smarthome.monitor();
          };
-
+		
         smarthome.socket.onmessage = function(event){
             var data = JSON.parse(event.data);
                        
             switch(data.cmd){
-                case 'item':       
-                    for(var i = 0; i < data.items.length; i++){
+                case 'item':
+					for(var i = 0; i < data.items.length; i++){
                         var item = data.items[i][0];
                         var val = data.items[i][1];
                         if ( data.items[i].length > 2 ){
@@ -100,9 +68,11 @@ var smarthome = {
                 case 'series':                   
                     data.sid = data.sid.substr(0, data.sid.length - 3) + '0';
                     widget.update(data.sid.replace(/\|/g, '\.'), data.series);
+					console.log(data)
                     break;
 
                 case 'dialog':
+					console.log(data);
                     break;
 
                 case 'proto':
@@ -121,8 +91,8 @@ var smarthome = {
         smarthome.socket.onclose = function(){
 			console.log('Driver: smarthome.py', 'Connection closed to smarthome.py server!');
         };
+		
     },
-    
 // Send data over the websocket                                              //
     send: function(data){ 
         if (smarthome.socket.readyState == 1){
@@ -131,7 +101,7 @@ var smarthome = {
     },
 
 // Monitors items                                                            //
-    monitor: function() {
+    monitor: function(){
 		if( widget.listening() ){
 			smarthome.send({'cmd': 'monitor', 'items': widget.listeners()});
         };
@@ -149,6 +119,8 @@ var smarthome = {
 	
 };
 
+
+/*
 var widget = {
 // a list with all item and values
     buffer: new Object(),
@@ -331,3 +303,4 @@ var widget = {
 		})
 	},
 };
+*/

@@ -34,7 +34,7 @@
 		<script src='lib/highchartstheme.js'></script>
 		
 		<!-- knxcontrol -->
-		<script type='text/javascript' src='js/model.js'></script>
+		<script type='text/javascript' src='js/smarthome.js'></script>
 		<script type='text/javascript' src='js/knxcontrol.js'></script>
 		<script type='text/javascript' src='js/view.js'></script>
 		<script type='text/javascript' src='js/controller.js'></script>

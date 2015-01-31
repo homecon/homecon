@@ -21,7 +21,7 @@
 
 	
 	
-		<div id='central_shading'>
+		<div id='central_shading' data-role='page' data-theme='b'>
 			<div data-role='content'>
 				<header>
 					<img src='icons/ws/fts_sunblind.png'>
@@ -31,7 +31,7 @@
 				<section data-role='collapsible' data-theme='a' data-collapsed='false'>
 					<h1>Light</h1>
 					<div class='group'>
-						<div data-widget='shading' data-item='central.shading.shading_firstfloor'>
+						<div data-role='shading' data-item='central.shading.shading_firstfloor'>
 							Shading first floor
 						</div>
 					</div>
@@ -45,7 +45,7 @@
 					<img src='icons/ws/scene_livingroom.png'>
 					<h1>Living</h1>
 					<div class='value'>
-						<span data-widget='value' data-item='living.measurements.temperature' data-digits='1'>&deg;C</span>
+						<span data-role='displayvalue' data-item='living.measurements.temperature' data-digits='1'></span>&deg;C
 					</div>
 				</header>
 				
@@ -58,24 +58,24 @@
 						<a id='$id' href='#' data-widget='button' data-item='living.scenes' data-value='3' data-role='button' data-mini='true'>Lights off</a>
 					</div>
 					<div class='group'>
-						<div data-widget='lightswitch' data-item='living.lights.spots_kitchen'>
+						<div data-role='lightswitch' data-item='living.lights.spots_kitchen'>
 							Kitchen spots
 						</div>
-						<div data-widget='lightswitch' data-item='living.lights.light_kitchen'>
+						<div data-role='lightswitch' data-item='living.lights.light_kitchen'>
 							Kitchen
 						</div>
-						<div data-widget='lightswitch' data-item='living.lights.spots_dinnertable'>
+						<div data-role='lightswitch' data-item='living.lights.spots_dinnertable'>
 							Dinner table spots
 						</div>
-						<div data-widget='lightswitch' data-item='living.lights.light_dinnertable'>
+						<div data-role='lightswitch' data-item='living.lights.light_dinnertable'>
 							Dinner table
 						</div>
 					</div>
 					<div class='group'>
-						<div data-widget='lightdimmer' data-item='living.lights.light_tv'>
+						<div data-role='lightdimmer' data-item='living.lights.light_tv'>
 							TV lights
 						</div>
-						<div data-widget='lightdimmer' data-item='living.lights.mood'>
+						<div data-role='lightdimmer' data-item='living.lights.mood'>
 							Mood lights
 						</div>
 					</div>
@@ -84,10 +84,10 @@
 				<section data-role='collapsible' data-theme='a' data-collapsed='true'>
 					<h1>Shading</h1>
 					<div class='group'>
-						<div data-widget='shading' data-item='living.windows.back.shading'>
+						<div data-role='shading' data-item='living.windows.back.shading'>
 							Back shading
 						</div>
-						<div data-widget='shading' data-item='living.windows.front.shading'>
+						<div data-role='shading' data-item='living.windows.front.shading'>
 							Front shading
 						</div>
 					</div>
