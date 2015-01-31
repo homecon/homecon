@@ -51,26 +51,7 @@ $(document).on('pagebeforecreate',function(){
 });
 
 
-/*****************************************************************************/
-/*                     Enhance widgets                                       */
-/*****************************************************************************/
-$(document).on('ready',function(){
-	$('[data-widget="lightswitch"]').each(function(index,value){
-		var text = $(this).html();
-		$(this).html('<a href="#"><img src="icons/ws/light_light.png">'+text+'</a>');
-	});
-	
-	$('[data-widget="lightdimmer"]').each(function(index,value){
-		var text = $(this).html();
-		$(this).html('<p>'+text+'</p><a href="#"><img src="icons/ws/light_light.png"></a><input type="range" value="0" min="0" max="255" step="5" data-highlight="true"/>');
-	});
 
-	$('[data-widget="shading"]').each(function(index,value){
-		var text = $(this).html();
-		$(this).html('<p>'+text+'</p><a href="#"><img src="icons/ws/fts_shutter_10.png" class="left"></a><a href="#"><img src="icons/ws/fts_shutter_100.png" class="right"></a><input type="range" value="0" min="0" max="255" step="5" data-highlight="true"/>');
-	});
-	
-});
 
 
 

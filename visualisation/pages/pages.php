@@ -22,7 +22,21 @@
 	
 	
 		<div id='central_shading'>
-		
+			<div data-role='content'>
+				<header>
+					<img src='icons/ws/fts_sunblind.png'>
+					<h1>Central shading control</h1>
+				</header>
+				
+				<section data-role='collapsible' data-theme='a' data-collapsed='false'>
+					<h1>Light</h1>
+					<div class='group'>
+						<div data-widget='shading' data-item='central.shading.shading_firstfloor'>
+							Shading first floor
+						</div>
+					</div>
+				</section>
+			</div>
 		</div>
 
 		<div id='firstfloor_living' data-role='page' data-theme='b'>
@@ -37,7 +51,7 @@
 				
 				<section data-role='collapsible' data-theme='a' data-collapsed='false'>
 					<h1>Light</h1>
-					<div data-role='controlgroup' data-type='horizontal' align='center'>
+					<div class='group' data-role='controlgroup' data-type='horizontal' align='center'>
 						<a id='$id' href='#' data-widget='button' data-item='living.scenes' data-value='0' data-role='button' data-mini='true'>Dinner</a>
 						<a id='$id' href='#' data-widget='button' data-item='living.scenes' data-value='1' data-role='button' data-mini='true'>Company</a>
 						<a id='$id' href='#' data-widget='button' data-item='living.scenes' data-value='2' data-role='button' data-mini='true'>TV</a>
@@ -61,6 +75,9 @@
 						<div data-widget='lightdimmer' data-item='living.lights.light_tv'>
 							TV lights
 						</div>
+						<div data-widget='lightdimmer' data-item='living.lights.mood'>
+							Mood lights
+						</div>
 					</div>
 				</section>
 				
@@ -69,6 +86,9 @@
 					<div class='group'>
 						<div data-widget='shading' data-item='living.windows.back.shading'>
 							Back shading
+						</div>
+						<div data-widget='shading' data-item='living.windows.front.shading'>
+							Front shading
 						</div>
 					</div>
 				</section>	

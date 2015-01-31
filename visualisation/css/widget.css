@@ -17,14 +17,15 @@ div[data-widget="lightswitch"]{
 	width: 49%;
 	min-width: 200px;
 }
-div[data-widget="lightswitch"] img{
-	height: 50px;
-	vertical-align: middle;
-}
 div[data-widget="lightswitch"] a{
 	text-decoration: none;
 	color: #FFF;
 }
+div[data-widget="lightswitch"] img{
+	height: 50px;
+	vertical-align: middle;
+}
+
 div[data-widget="lightswitch"] a:hover {
 	color: #FFF;
 }
@@ -34,14 +35,13 @@ div[data-widget="lightswitch"] a:hover {
 /*****************************************************************************/
 div[data-widget="lightdimmer"]{
 	display: inline-block;
-	position: relative;
-	height: 65px;
+	height: 60px;
 	width: 90%;
 }
 div[data-widget="lightdimmer"] img{
-	position: absolute;
 	height: 50px;
-	top: 10px;
+	vertical-align: middle;
+	float: left;
 }
 div[data-widget="lightdimmer"] p{
 	position: absolute;
@@ -50,9 +50,8 @@ div[data-widget="lightdimmer"] p{
 	font-weight: 700;
 }
 div[data-widget="lightdimmer"] .ui-slider{
-	position: absolute;
-	top: 18px;
-	width: 100%;
+	margin-top: 25px;
+	margin-bottom: 0;
 }
 div[data-widget="lightdimmer"] .ui-slider input{
 	visibility: hidden;
@@ -65,20 +64,17 @@ div[data-widget="lightdimmer"] .ui-slider input{
 /*****************************************************************************/
 div[data-widget="shading"]{
 	display: inline-block;
-	position: relative;
-	height: 65px;
+	height: 70px;
 	width: 98%;
 }
 div[data-widget="shading"] img{
-	position: absolute;
-	top: 12px;
 	height: 50px;
-}
-div[data-widget="shading"] img.left{
-	left: 0;
+	margin-top: 10px;
+	vertical-align: middle;
+	float: left;
 }
 div[data-widget="shading"] img.right{
-	right: 0;
+	float: right
 }
 div[data-widget="shading"] p{
 	position: absolute;
@@ -87,12 +83,18 @@ div[data-widget="shading"] p{
 	font-weight: 700;
 }
 div[data-widget="shading"] .ui-slider{
-	position: absolute;
-	top: 18px;
-	width: 90%;
+	margin-left: 64px;
+	margin-right: 64px;
+	margin-top: 25px;
+	margin-bottom: 0;
+}
+div[data-widget="shading"] .ui-slider-track{
+	margin-left: 0;
+	margin-right: 0;
 }
 div[data-widget="shading"] .ui-slider input{
 	visibility: hidden;
+	width: 0;
 }
 
 
