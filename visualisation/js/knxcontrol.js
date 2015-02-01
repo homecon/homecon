@@ -51,7 +51,6 @@ var knxcontrol = {
 		// set the item value
 		knxcontrol.item[item] = value;
 		
-		console.log(item+' set to '+value);
 		// write the new value of the item to smarthome.py
 		smarthome.write(item, knxcontrol.item[item]);
 
@@ -69,17 +68,20 @@ var knxcontrol = {
 $.widget('knxcontrol.displayvalue',{
 	options: {
       item: '',
-	  digits: 'icons/or/light_light.png'
+	  digits: 1
     },
 	_create: function(){
 		// enhance
-		
+
 		// bind events
 		this._on(this.element, {
 			'update': function(event){	
 				var item = this.options.item;
+				var rounding = Math.pow(10,this.options.digits);
 				
-				this.element.html(knxcontrol.item[item]);
+				var value = Math.round(knxcontrol.item[item]*rounding)/rounding;
+				
+				this.element.html(value);
 			}
 		});
 	}
@@ -290,17 +292,23 @@ $.widget("knxcontrol.clock",{
 		var src  = 'icons/clock/'+num+'.png';
 		
 		that = this;
-		that.element.find(selector).attr('src',src1);
-		
-		setTimeout(function(){
-			that.element.find(selector).attr('src',src2);
-		},60);
-		setTimeout(function(){
-			that.element.find(selector).attr('src',src3);
-		},120);
-		setTimeout(function(){
+		if(this.h1_current==-1){
+			// avoid animation on refresh
 			that.element.find(selector).attr('src',src);
-		},180);
+		}
+		else{
+			that.element.find(selector).attr('src',src1);
+			
+			setTimeout(function(){
+				that.element.find(selector).attr('src',src2);
+			},60);
+			setTimeout(function(){
+				that.element.find(selector).attr('src',src3);
+			},120);
+			setTimeout(function(){
+				that.element.find(selector).attr('src',src);
+			},180);
+		}
 	},
 	h1_current: -1,
 	h2_current: -1,

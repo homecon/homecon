@@ -45,7 +45,7 @@
 					<img src='icons/ws/scene_livingroom.png'>
 					<h1>Living</h1>
 					<div class='value'>
-						<span data-role='displayvalue' data-item='living.measurements.temperature' data-digits='1'></span>&deg;C
+						<span data-role='displayvalue' data-item='living.measurements.temperatuur_deur' data-digits='1'></span>&deg;C
 					</div>
 				</header>
 				
