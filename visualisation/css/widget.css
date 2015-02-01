@@ -1,6 +1,6 @@
 /*
 // 
-// view.js is part of KNXControl
+// widget.css is part of KNXControl
 // @author: Brecht Baeten
 // @license: GNU GENERAL PUBLIC LICENSE
 // 
@@ -123,12 +123,12 @@ div[data-role="shading"] .ui-slider input{
 /*****************************************************************************/
 
 div[data-role="clock"] {
-	width: 90%;
+	width: 95%;
 	margin-left: auto;
 	margin-right: auto;
 	text-align: center;
 }
-div[data-role="clock"]  .time>div{
+div[data-role="clock"] .time>div{
 	position: relative;
 	display: inline-block;
 }
@@ -156,9 +156,18 @@ div[data-role="clock"] .date{
 	margin-bottom: 0;
 }
 
-
-
-
+/*****************************************************************************/
+/*                     Current weather                                       */
+/*****************************************************************************/
+div[data-role="current_weather"]{
+	width: 95%;
+	margin-left: auto;
+	margin-right: auto;
+	text-align: center;
+}
+div[data-role="current_weather"] img{
+	height: 180px;
+}
 
 
 /*----------------------------------------------------------------------------------*/

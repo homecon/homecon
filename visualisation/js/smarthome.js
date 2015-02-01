@@ -1,7 +1,6 @@
 //
 // 
-// smarhome.js is part of KNXControl
-// based on smartVISU - io_smarthome.py.js by Martin Gleiﬂ
+// smarhome.js is part of KNXControl based on smartVISU - io_smarthome.py.js by Martin Gleiﬂ
 // @author: Brecht Baeten
 // @license: GNU GENERAL PUBLIC LICENSE
 // 
