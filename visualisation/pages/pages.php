@@ -58,24 +58,24 @@
 						<a id='$id' href='#' data-widget='button' data-item='living.scenes' data-value='3' data-role='button' data-mini='true'>Lights off</a>
 					</div>
 					<div class='group'>
-						<div data-role='lightswitch' data-item='living.lights.spots_kitchen'>
+						<div data-role='lightswitch' data-item='living.lights.spots_eiland'>
 							Kitchen spots
 						</div>
-						<div data-role='lightswitch' data-item='living.lights.light_kitchen'>
+						<div data-role='lightswitch' data-item='living.lights.licht_eiland'>
 							Kitchen
 						</div>
-						<div data-role='lightswitch' data-item='living.lights.spots_dinnertable'>
+						<div data-role='lightswitch' data-item='living.lights.licht_eettafel'>
 							Dinner table spots
 						</div>
-						<div data-role='lightswitch' data-item='living.lights.light_dinnertable'>
+						<div data-role='lightswitch' data-item='living.lights.licht_zithoek'>
 							Dinner table
 						</div>
 					</div>
 					<div class='group'>
-						<div data-role='lightdimmer' data-item='living.lights.light_tv'>
+						<div data-role='lightdimmer' data-item='living.lights.spots_zithoek.value'>
 							TV lights
 						</div>
-						<div data-role='lightdimmer' data-item='living.lights.mood'>
+						<div data-role='lightdimmer' data-item='living.lights.mood_light.value'>
 							Mood lights
 						</div>
 					</div>
@@ -84,10 +84,10 @@
 				<section data-role='collapsible' data-theme='a' data-collapsed='true'>
 					<h1>Shading</h1>
 					<div class='group'>
-						<div data-role='shading' data-item='living.windows.back.shading'>
+						<div data-role='shading' data-item='living.windows.keuken_links.shading.pos'>
 							Back shading
 						</div>
-						<div data-role='shading' data-item='living.windows.front.shading'>
+						<div data-role='shading' data-item='living.windows.front.shading.pos'>
 							Front shading
 						</div>
 					</div>

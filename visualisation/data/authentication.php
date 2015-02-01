@@ -34,7 +34,9 @@
 	if($_SESSION['user_id']>0){
 		echo "
 		<script>
-			$(document).trigger('connect',".$user['id'].");
+			$(document).on('pagebeforeshow',function(){
+				$(document).trigger('connect',".$user['id'].");
+			});
 		</script>";
 	}
 ?>	
