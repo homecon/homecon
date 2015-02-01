@@ -58,7 +58,6 @@ var knxcontrol = {
 		// trigger a widget update event
 		$('[data-item="'+item+'"]').trigger('update');
 	}
-	
 }
 
 /*****************************************************************************/
@@ -228,4 +227,83 @@ $.widget("knxcontrol.shading",{
 			}
         });
 	}
+});
+
+///////////////////////////////////////////////////////////////////////////////
+// clock                                                                     //
+$.widget("knxcontrol.clock",{
+	options: {
+    },
+	_create: function(){
+		// enhance
+		var text = this.element.html();
+		this.element.html('<div class="time"><div><img class="bg" src="icons/clock/clockbg1.png"><img class="hoursLeft" src="icons/clock/0.png"/><img class="hoursRight" src="icons/clock/1.png"/><hr></div><div><img class="bg" src="icons/clock/clockbg1.png"><img class="minutesLeft" src="icons/clock/2.png"/><img class="minutesRight" src="icons/clock/3.png"/><hr></div></div><div class="date">1 januari 2015</div>');
+		this.element.enhanceWithin();
+		
+		// bind events
+		this.setDate();
+		this.setTime();
+		
+		var that = this;
+		setInterval(function(){that.setDate()}, 30000);
+		setInterval(function(){that.setTime()}, 5000);
+	},
+	setDate: function(){
+		now = new Date();
+		var weekday = now.getDay();
+		var day = now.getDate();
+		var month = now.getMonth();
+		var year = now.getFullYear();
+		
+		var date_string = language.weekday[weekday]+' '+day+' '+language.month[month]+' '+year;
+	
+		this.element.find('.date').html(date_string);
+	},
+	setTime: function(){
+		
+		now = new Date();
+		h1 = Math.floor( now.getHours() / 10 );
+		h2 = now.getHours() % 10;
+		m1 = Math.floor( now.getMinutes() / 10 );
+		m2 = now.getMinutes() % 10;
+
+		if( h2 != this.h2_current){
+			this.flip('img.hoursRight',h2);
+			this.h2_current = h2;
+					
+			this.flip('img.hoursLeft',h1);
+			this.h1_current = h1;
+		}
+		   
+		if( m2 != this.m2_current){
+			this.flip('img.minutesRight',m2);
+			this.m2_current = m2;
+
+			this.flip('img.minutesLeft',m1);
+			this.m1_current = m1;
+		}
+	},
+	flip: function(selector,num){
+		var src1 = 'icons/clock/'+num+'-1.png';
+		var src2 = 'icons/clock/'+num+'-2.png';
+		var src3 = 'icons/clock/'+num+'-3.png';
+		var src  = 'icons/clock/'+num+'.png';
+		
+		that = this;
+		that.element.find(selector).attr('src',src1);
+		
+		setTimeout(function(){
+			that.element.find(selector).attr('src',src2);
+		},60);
+		setTimeout(function(){
+			that.element.find(selector).attr('src',src3);
+		},120);
+		setTimeout(function(){
+			that.element.find(selector).attr('src',src);
+		},180);
+	},
+	h1_current: -1,
+	h2_current: -1,
+	m1_current:-1,
+	m2_current:-1
 });

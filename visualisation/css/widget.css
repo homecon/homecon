@@ -118,8 +118,43 @@ div[data-role="shading"] .ui-slider input{
 
 
 
+/*****************************************************************************/
+/*                     Clock                                                 */
+/*****************************************************************************/
 
-
+div[data-role="clock"] {
+	width: 90%;
+	margin-left: auto;
+	margin-right: auto;
+	text-align: center;
+}
+div[data-role="clock"]  .time>div{
+	position: relative;
+	display: inline-block;
+}
+div[data-role="clock"] img{
+	height: 100px;
+}
+div[data-role="clock"] img.hoursLeft, div[data-role="clock"] img.minutesLeft{
+	position: absolute;
+	top: 0px;
+	left: 10px;
+}
+div[data-role="clock"] img.hoursRight, div[data-role="clock"] img.minutesRight{
+	position: absolute;
+	top: 0px;
+	right: 10px;
+}
+div[data-role="clock"]  hr{
+	position: absolute;
+	top: 40px;
+	left: 6px;
+	width: 86px;
+}
+div[data-role="clock"] .date{
+	margin-top: 0;
+	margin-bottom: 0;
+}
 
 
 
@@ -367,43 +402,6 @@ div.setpoint_chart{
 }
 #current_weather img{
 	max-height: 180px;
-}
-
-/*        clock        */
-/*---------------------*/
-/*
-section.clock{
-	width: 90%;
-	margin-top: 20px;
-	margin-left: auto;
-	margin-right: auto;
-	text-align: center;
-}
-.clock  .hours, .clock  .minutes{
-	position: relative;
-	display: inline-block;
-}
-.clock  .bg{
-	position: relative;
-}
-.clock  .nr{
-	position: absolute;
-	top: 0px;
-	left: 8px;
-}
-.clock  hr{
-	position: absolute;
-	top: 40px;
-	left: 6px;
-	width: 86px;
-}
-.clock img{
-	height: 100px;
-	z-index:-1;
-}
-.clock p{
-	margin-top: 0;
-	margin-bottom: 0;
 }
 
 /*        weather        */

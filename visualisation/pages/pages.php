@@ -7,13 +7,13 @@
 			<div data-role='content'>
 		
 				<section>
-					<div data-widget='clock'></div>
+					<div data-role='clock'></div>
 				</section>
 				<section>
-					<div data-widget='current_weather' data-item-temperature='' data-item-wind=''  data-item-irradiation=''></div>
+					<div data-role='current_weather' data-item-temperature='' data-item-wind=''  data-item-irradiation=''></div>
 				</section>
 				<section>
-					<div data-widget='weather_forecast'></div>
+					<div data-role='weather_forecast'></div>
 				</section>
 		
 			</div>
