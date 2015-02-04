@@ -102,9 +102,30 @@ div[data-role="shading"] .ui-slider input{
 /*****************************************************************************/
 /*                     Alarm                                                 */
 /*****************************************************************************/
-
-
-
+div[data-role="alarm"] div.alarm{
+	margin-bottom: 5px;
+	padding: 5px;
+}
+div[data-role="alarm"] input[type="time"]{
+	font-size: 2.5em;
+	padding: 0 !important;
+}
+div[data-role="alarm"] div.ui-input-text{
+	width: 10em;
+	float: left;
+}
+div[data-role="alarm"] div.ui-input-text input{
+	min-height: 0 !important;
+}
+div[data-role="alarm"] a.delete{
+	display: block; 
+	float: right;
+	/*margin-top: 10px;*/
+	height: 30px;
+}
+div[data-role="alarm"] a.delete img{
+	height: 100%;
+}
 
 
 
@@ -166,7 +187,7 @@ div[data-role="current_weather"]{
 	text-align: center;
 }
 div[data-role="current_weather"] img{
-	height: 180px;
+	width: 350px;
 }
 
 

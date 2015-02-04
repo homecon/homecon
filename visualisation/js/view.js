@@ -35,21 +35,6 @@ $(document).on('click','#menu_button', function(){
 });
 
 
-/*****************************************************************************/
-/*                     Templates                                             */
-/*****************************************************************************/
-var template = {
-	alarm: '',
-	alarm_action: '',
-	alarm_action_def: ''
-};
-
-$(document).on('pagebeforecreate',function(){
-	$.each(template,function(key,value){
-		template[key] = $('#templates .'+key).prop('outerHTML');
-	});
-});
-
 
 
 

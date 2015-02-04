@@ -9,13 +9,15 @@
 				<section>
 					<div data-role='clock'></div>
 				</section>
+				<hr>
 				<section>
-					<div data-role='current_weather' data-item-temperature='' data-item-wind=''  data-item-irradiation=''></div>
+					<div data-role='current_weather' data-item_temperature='living.measurements.temperatuur_raam' data-item_windspeed='' data-item_winddirection='' data-item_irradiation=''></div>
 				</section>
+				<hr>
 				<section>
 					<div data-role='weather_forecast'></div>
 				</section>
-		
+				<hr>
 			</div>
 		</div>
 
@@ -45,7 +47,7 @@
 					<img src='icons/ws/scene_livingroom.png'>
 					<h1>Living</h1>
 					<div class='value'>
-						<span data-role='displayvalue' data-item='living.measurements.temperatuur_deur' data-digits='1'></span>&deg;C
+						<span data-role='displayvalue' data-item='living.measurements.temperatuur_raam' data-digits='1'></span>&deg;C
 					</div>
 				</header>
 				
@@ -93,4 +95,22 @@
 					</div>
 				</section>	
 			</div>
-		</div>		
+		</div>	
+		
+		<div id='secondfloor_bedroom' data-role='page' data-theme='b'>
+			<div data-role='content'>
+				<header>
+					<img src='icons/ws/scene_sleeping_alternat.png'>
+					<h1>Bedroom</h1>
+					<div class='value'>
+						<span data-role='displayvalue' data-item='living.measurements.temperatuur_raam' data-digits='1'></span>&deg;C
+					</div>
+				</header>
+				<section data-role='collapsible' data-theme='a' data-collapsed='false'>
+					<h1>Alarms</h1>
+					<div class='group'>
+						<div data-role='alarm' data-section='1'></div>
+					</div>
+				</section>
+			</div>
+		</div>
