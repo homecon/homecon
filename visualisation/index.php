@@ -52,8 +52,10 @@
 	
 		include("pages/pages.php");
 		include("pages/menu.php");
-		include("modules/header.php");
-		include("modules/templates.php");
+		include("data/header.php");
+		include("data/modules.php");
+		include("data/templates.php");
+		
 	}
 	else{
 		include("modules/login.php");

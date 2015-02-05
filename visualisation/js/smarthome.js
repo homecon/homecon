@@ -71,7 +71,7 @@ var smarthome = {
                         if (value === true) value = 1;
 
 						// update widgets
-                        knxcontrol.update(item, value);
+                        knxcontrol.update_item(item, value);
                     };
                     break;
 

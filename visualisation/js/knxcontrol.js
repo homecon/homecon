@@ -34,10 +34,17 @@ $(document).on('connect',function(event,user_id){
 	// get a weather forecast and schedule it to run every hour
 	knxcontrol.get_weatherforecast()
 	setInterval(function(){knxcontrol.get_weatherforecast()}, 3600000);
+});		
+$(document).on('pageinit',function(event){
+	$.each(knxcontrol.alarm,function(index,alarm){
+		$('[data-role="alarm"]').trigger('update',alarm.id);
+	});
+
+	$.each(knxcontrol.alarm_action,function(index,alarm_action){
+		$('[data-role="alarm"]').trigger('update_action',alarm_action.id);
+	});
 });
 
-
-			
 
 /*****************************************************************************/
 /*                     KNXControl model                                      */
@@ -55,7 +62,10 @@ var knxcontrol = {
 		// living.lights.light: 0
 	},
 	alarm: {
-		// 2: [1: {id: 1, section_id: 2, hour: 13, minute: 12, mon: 1, tue: 1, wed: 1, thu: 1, fri: 1, sat: 1, sun: 1, action_id: 2},...]
+		// 1: {id: 1, section_id: 2, hour: 13, minute: 12, mon: 1, tue: 1, wed: 1, thu: 1, fri: 1, sat: 1, sun: 1, action_id: 2},...
+	},
+	alarm_action:{
+		// 1: {id: 1, name: 'Licht aan', section_id: 0, actions: [{id: 1, delay: 0, item: 'living.lights.licht', value: 0},{...},...]},...
 	},
 	
 // initialize
@@ -63,7 +73,7 @@ var knxcontrol = {
 		knxcontrol.get_items();
 		knxcontrol.get_alarms();
 		
-		// request the values from smarthome.py
+		// request the values of all items from smarthome.py
 		smarthome.monitor();
 		
 	},
@@ -75,7 +85,7 @@ var knxcontrol = {
 		});
 	},	
 // update an item with a certain value
-	update: function(item,value){
+	update_item: function(item,value){
 		// set the item value
 		knxcontrol.item[item] = value;
 		
@@ -85,16 +95,16 @@ var knxcontrol = {
 		// trigger a widget update event
 		$('[data-item="'+item+'"]').trigger('update');
 	},
-// update alarm data	
-	get_alarms: function(){
-		$.post('requests/select_from_table.php',{table: 'alarms', column: '*', where: 'id>0'},function(result){
+// get an or all alarms from mysql	
+	get_alarms: function(alarm_id){
+		var where = 'id>0';
+		if(alarm_id){
+			where = 'id='+alarm_id;
+		}
+		$.post('requests/select_from_table.php',{table: 'alarms', column: '*', where: where},function(result){
 			var alarms = JSON.parse(result);
 			$.each(alarms,function(index,alarm){
-				if(!(alarm.sectionid in knxcontrol.alarm)){
-					// define an object if it doesn't exist yet
-					knxcontrol.alarm[alarm.sectionid] = {};
-				}
-				knxcontrol.alarm[alarm.sectionid][alarm.id] = {
+				knxcontrol.alarm[alarm.id] = {
 					id: alarm.id,
 					section_id: alarm.sectionid,
 					hour: alarm.hour,
@@ -110,6 +120,43 @@ var knxcontrol = {
 				};
 				$('[data-role="alarm"][data-section="'+alarm.sectionid+'"]').trigger('update',alarm.id);
 			});
+			knxcontrol.get_alarm_actions();
+		});
+	},
+	update_alarm: function(alarm_id,data_field,value){
+		// set the alarm in the database
+		$.post('requests/update_table.php',{table: 'alarms', column: data_field, value: value, where: 'id='+alarm_id},function(result){
+			// on success update knxcontrol
+			knxcontrol.alarm[alarm_id][data_field] = value;
+		});
+	},
+	add_alarm: function(section_id){
+		$.post('requests/insert_into_table.php',{table: 'alarms', column: ['hour','minute','sectionid','mon','tue','wed','thu','fri','sat','sun','actionid'].join(), value: [12,0,section_id,1,1,1,1,1,0,0,0].join()},function(result){
+			alarm_id = JSON.parse(result);
+			// add the alarm to knxcontrol
+			knxcontrol.get_alarms(alarm_id);
+		});
+	},
+// get alarm actions data	
+	get_alarm_actions: function(){
+		$.post('requests/select_from_table.php',{table: 'alarm_actions', column: '*', where: 'id>0'},function(result){
+			var alarm_actions = JSON.parse(result);
+			$.each(alarm_actions,function(index,alarm_action){
+				knxcontrol.alarm_action[alarm_action.id] = {
+					id: alarm_action.id,
+					section_id: alarm_action.sectionid,
+					name: alarm_action.name,
+					actions: [
+						{id:1, delay: alarm_action.delay1, item: alarm_action.item1, value: alarm_action.value1},
+						{id:2, delay: alarm_action.delay2, item: alarm_action.item2, value: alarm_action.value2},
+						{id:3, delay: alarm_action.delay3, item: alarm_action.item3, value: alarm_action.value3},
+						{id:4, delay: alarm_action.delay4, item: alarm_action.item4, value: alarm_action.value4},
+						{id:5, delay: alarm_action.delay5, item: alarm_action.item5, value: alarm_action.value5},
+					]
+				};
+				$('[data-role="alarm"]').trigger('update_action',alarm_action.id);
+			});
+			
 		});
 	},
 	

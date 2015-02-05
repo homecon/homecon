@@ -24,35 +24,12 @@
 				</div>
 			</div>
 			
-			<div class='action_def' data-id='0'>
+			
+			<div class='action' data-id='0'>
+				<div class='name'></div>
+				<div class='section_id'></div>
+				<a class='edit' href='#action_def_popup'><img src=icons/ws/control_x.png></a>
 				<a class='delete' href='#'><img src=icons/ws/control_x.png></a>
-				<input type='text'  data-field='name'       placeholder='name'>
-				<input type='text'  data-field='sectionid'  placeholder='section id filter'>
-				<div class='action_def_action'>
-					<input type='number'  data-field='delay1'   placeholder='delay 1' value='0'>
-					<input type='text'    data-field='item1'    placeholder='item 1'>
-					<input type='text'    data-field='value1'   placeholder='value 1'>
-				</div>
-				<div class='action_def_action'>
-					<input type='number'  data-field='delay2'   placeholder='delay 2'>
-					<input type='text'    data-field='item2'    placeholder='item 2'>
-					<input type='text'    data-field='value2'   placeholder='value 2'>
-				</div>
-				<div class='action_def_action'>
-					<input type='number'  data-field='delay3'   placeholder='delay 3'>
-					<input type='text'    data-field='item3'    placeholder='item 3'>
-					<input type='text'    data-field='value3'   placeholder='value 3'>
-				</div>
-				<div class='action_def_action'>
-					<input type='number'  data-field='delay4'   placeholder='delay 4'>
-					<input type='text'    data-field='item4'    placeholder='item 4'>
-					<input type='text'    data-field='value4'   placeholder='value 4'>
-				</div>
-				<div class='action_def_action'>
-					<input type='number'  data-field='delay5'   placeholder='delay 5'>
-					<input type='text'    data-field='item5'    placeholder='item 5'>
-					<input type='text'    data-field='value5'   placeholder='value 5'>
-				</div>
 			</div>
 			
 		<div>
