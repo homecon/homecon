@@ -18,7 +18,7 @@
 					</div>
 				</div>
 				<div class='alarm_action'>
-					<select data-field='action' data-native-menu='false'>
+					<select data-field='action_id' data-native-menu='false'>
 						<option class='action_select' value='0' data-id='0'>Select action</option>
 					</select>
 				</div>
