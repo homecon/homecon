@@ -392,6 +392,9 @@ $.widget("knxcontrol.alarm",{
 			},
 			'update_action': function(event,action_id){
 				this.update_action(action_id);
+			},
+			'click a.add': function(event){
+				knxcontrol.add_alarm(this.options.section);
 			}
         });
 	},

@@ -130,8 +130,10 @@ var knxcontrol = {
 		});
 	},
 	add_alarm: function(section_id){
-		$.post('requests/insert_into_table.php',{table: 'alarms', column: ['hour','minute','sectionid','mon','tue','wed','thu','fri','sat','sun','actionid'].join(), value: [12,0,section_id,1,1,1,1,1,0,0,0].join()},function(result){
+		$.post('requests/insert_into_table.php',{table: 'alarms', column: ['hour','minute','sectionid','mon','tue','wed','thu','fri','sat','sun','action_id'].join(), value: [12,0,section_id,1,1,1,1,1,0,0,0].join()},function(result){
 			alarm_id = JSON.parse(result);
+			alarm_id = alarm_id[0];
+			
 			// add the alarm to knxcontrol
 			knxcontrol.get_alarms(alarm_id);
 		});

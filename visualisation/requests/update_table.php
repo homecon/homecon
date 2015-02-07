@@ -4,8 +4,6 @@
 	
 	if($_SESSION['user_id']>0){
 		
-		$user_id = $_SESSION['user_id'];
-		
 		$table = $_POST['table'];
 		$column = $_POST['column'];
 		$value = $_POST['value'];
