@@ -34,7 +34,8 @@ $(document).on('connect',function(event,user_id){
 	// get a weather forecast and schedule it to run every hour
 	knxcontrol.get_weatherforecast()
 	setInterval(function(){knxcontrol.get_weatherforecast()}, 3600000);
-});		
+});
+/*
 $(document).on('pageinit',function(event){
 	$.each(knxcontrol.alarm,function(index,alarm){
 		$('[data-role="alarm"]').trigger('update',alarm.id);
@@ -44,7 +45,7 @@ $(document).on('pageinit',function(event){
 		$('[data-role="alarm"]').trigger('update_action',alarm_action.id);
 	});
 });
-
+*/
 
 /*****************************************************************************/
 /*                     KNXControl model                                      */
@@ -64,7 +65,7 @@ var knxcontrol = {
 	alarm: {
 		// 1: {id: 1, section_id: 2, hour: 13, minute: 12, mon: 1, tue: 1, wed: 1, thu: 1, fri: 1, sat: 1, sun: 1, action_id: 2},...
 	},
-	alarm_action:{
+	action:{
 		// 1: {id: 1, name: 'Licht aan', section_id: 0, actions: [{id: 1, delay: 0, item: 'living.lights.licht', value: 0},{...},...]},...
 	},
 	
@@ -88,9 +89,7 @@ var knxcontrol = {
 	update_item: function(item,value){
 		// set the item value
 		knxcontrol.item[item] = value;
-		
 		// write the new value of the item to smarthome.py
-		smarthome.write(item, knxcontrol.item[item]);
 
 		// trigger a widget update event
 		$('[data-item="'+item+'"]').trigger('update');
@@ -120,7 +119,7 @@ var knxcontrol = {
 				};
 				$('[data-role="alarm"][data-section="'+alarm.sectionid+'"]').trigger('update',alarm.id);
 			});
-			knxcontrol.get_alarm_actions();
+			knxcontrol.get_actions();
 		});
 	},
 	update_alarm: function(alarm_id,data_field,value){
@@ -138,23 +137,23 @@ var knxcontrol = {
 		});
 	},
 // get alarm actions data	
-	get_alarm_actions: function(){
+	get_actions: function(){
 		$.post('requests/select_from_table.php',{table: 'alarm_actions', column: '*', where: 'id>0'},function(result){
-			var alarm_actions = JSON.parse(result);
-			$.each(alarm_actions,function(index,alarm_action){
-				knxcontrol.alarm_action[alarm_action.id] = {
-					id: alarm_action.id,
-					section_id: alarm_action.sectionid,
-					name: alarm_action.name,
+			var actions = JSON.parse(result);
+			$.each(actions,function(index,action){
+				knxcontrol.action[action.id] = {
+					id: action.id,
+					section_id: action.sectionid,
+					name: action.name,
 					actions: [
-						{id:1, delay: alarm_action.delay1, item: alarm_action.item1, value: alarm_action.value1},
-						{id:2, delay: alarm_action.delay2, item: alarm_action.item2, value: alarm_action.value2},
-						{id:3, delay: alarm_action.delay3, item: alarm_action.item3, value: alarm_action.value3},
-						{id:4, delay: alarm_action.delay4, item: alarm_action.item4, value: alarm_action.value4},
-						{id:5, delay: alarm_action.delay5, item: alarm_action.item5, value: alarm_action.value5},
+						{id:1, delay: action.delay1, item: action.item1, value: action.value1},
+						{id:2, delay: action.delay2, item: action.item2, value: action.value2},
+						{id:3, delay: action.delay3, item: action.item3, value: action.value3},
+						{id:4, delay: action.delay4, item: action.item4, value: action.value4},
+						{id:5, delay: action.delay5, item: action.item5, value: action.value5},
 					]
 				};
-				$('[data-role="alarm"]').trigger('update_action',alarm_action.id);
+				$('[data-role="alarm"]').trigger('update_action',action.id);
 			});
 			
 		});

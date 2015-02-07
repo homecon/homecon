@@ -43,6 +43,7 @@ $.widget('knxcontrol.displayvalue',{
 				var value = Math.round(knxcontrol.item[item]*rounding)/rounding;
 				
 				this.element.html(value);
+				console.log('value');
 			}
 		});
 	}
@@ -67,8 +68,8 @@ $.widget('knxcontrol.lightswitch',{
 		this._on(this.element, {
             'click a': function(event){
 				var item = this.options.item;
-				// update the value in knxcontrol
-				knxcontrol.update_item(item,(knxcontrol.item[item]+1)%2);
+				// update the value in smarthome
+				smarthome.write(item, (knxcontrol.item[item]+1)%2);
 			},
 			'update': function(event){	
 				var item = this.options.item;
@@ -114,12 +115,12 @@ $.widget("knxcontrol.lightdimmer",{
 			},
             'click a.ui-link': function(event){
 				var item = this.options.item;
-				// update the value in knxcontrol
+				// update the value in smarthome
 				if( knxcontrol.item[item] > this.options.val_off){
-					knxcontrol.update_item(item,this.options.val_off);
+					smarthome.write(item, this.options.val_off);
 				}
 				else{
-					knxcontrol.update_item(item,this.options.val_on);
+					smarthome.write(item, this.options.val_on);
 				}
 			},
 			'update': function(event){
@@ -165,17 +166,17 @@ $.widget("knxcontrol.shading",{
 		this._on(this.element, {
 			'change input': function(event){
 				var item = this.options.item;
-				if(!this.lock){	
-					knxcontrol.update_item(item,this.element.find('input').val());
+				if(!this.lock){
+					smarthome.write(item, this.element.find('input').val());
 				}
 			},
             'click a.open': function(event){
 				var item = this.options.item;
-				knxcontrol.update_item(item,this.options.val_off);
+				smarthome.write(item, this.options.val_off);
 			},
 			'click a.close': function(event){
 				var item = this.options.item;
-				knxcontrol.update_item(item,this.options.val_on);
+				smarthome.write(item, this.options.val_on);
 			},
 			'update': function(event){
 				this.lock = true;
@@ -336,6 +337,13 @@ $.widget("knxcontrol.alarm",{
 	_create: function(){
 		// enhance
 		this.element.html('<div class="alarm_list"></div><a class="add" data-role="button">'+language.capitalize(language.add_alarm)+'</a>');
+		that = this;
+		$.each(knxcontrol.alarm,function(index,alarm){
+			that.update(alarm.id);
+		});
+		$.each(knxcontrol.action,function(index,action){
+			that.update_action(action.id);
+		});
 		this.element.enhanceWithin();
 		
 		// bind events
@@ -355,75 +363,77 @@ $.widget("knxcontrol.alarm",{
 				}				
 			},
 			'update': function(event,alarm_id){
-				if(!alarm_id){
-					
-				}
-				// check if the alarm exists in knxcontrol
-				if(knxcontrol.alarm[alarm_id]){
-					// check if the alarm belongs in this section
-					if(knxcontrol.alarm[alarm_id].section_id==this.options.section){
-						// check if the alarm does not already exists in the DOM
-						if(this.element.find('.alarm_list').find('.alarm [data-id="'+alarm_id+'"]').length==0){
-							//set ids
-							var newobject = template.alarm;
-							
-							newobject = newobject.replace(/_0/g, "_"+alarm_id);
-							newobject = newobject.replace(/Select action/g, language.capitalize(language.select_action));
-
-							//add the alarm to the DOM
-							this.element.find('.alarm_list').append(newobject).enhanceWithin();
-							this.element.find('.alarm[data-id="0"]').attr('data-id',alarm_id);
-						}
-						// update the alarm time
-						var time = this.padtime(knxcontrol.alarm[alarm_id].hour) + ":" + this.padtime(knxcontrol.alarm[alarm_id].minute);
-						this.element.find('.alarm[data-id="'+alarm_id+'"]').find('[data-field="time"]').val(time);
-
-						// update alarm days
-						this.element.find('.alarm[data-id="'+alarm_id+'"]').find('[data-field="mon"]').prop('checked', !!+knxcontrol.alarm[alarm_id].mon).checkboxradio('refresh');
-						this.element.find('.alarm[data-id="'+alarm_id+'"]').find('[data-field="tue"]').prop('checked', !!+knxcontrol.alarm[alarm_id].tue).checkboxradio('refresh');
-						this.element.find('.alarm[data-id="'+alarm_id+'"]').find('[data-field="wed"]').prop('checked', !!+knxcontrol.alarm[alarm_id].wed).checkboxradio('refresh');
-						this.element.find('.alarm[data-id="'+alarm_id+'"]').find('[data-field="thu"]').prop('checked', !!+knxcontrol.alarm[alarm_id].thu).checkboxradio('refresh');
-						this.element.find('.alarm[data-id="'+alarm_id+'"]').find('[data-field="fri"]').prop('checked', !!+knxcontrol.alarm[alarm_id].fri).checkboxradio('refresh');
-						this.element.find('.alarm[data-id="'+alarm_id+'"]').find('[data-field="sat"]').prop('checked', !!+knxcontrol.alarm[alarm_id].sat).checkboxradio('refresh');
-						this.element.find('.alarm[data-id="'+alarm_id+'"]').find('[data-field="sun"]').prop('checked', !!+knxcontrol.alarm[alarm_id].sun).checkboxradio('refresh');
-						
-					}
-				}
-				else{
-					// remove the alarm from the DOM
-					this.element.find('.alarm[data-id="'+alarm_id+'"]').remove();
-				}
+				this.update(alarm_id);
 			},
 			'update_action': function(event,action_id){
-				// check if the action belongs in this widget
-				if(knxcontrol.alarm_action[action_id].section_id==0 || knxcontrol.alarm_action[action_id].section_id==this.options.section){
-					// check if the action option exists
-					if(this.element.find('option [data-id="'+action_id+'"]').length==0){	
-						// add the action to the select list
-						var newobject = template.action_select;
-						newobject = newobject.replace(/0/g, action_id);
-						this.element.find('div.alarm_action select').append(newobject).selectmenu('refresh');
-					}
-					// update the option
-					this.element.find('option[data-id="'+action_id+'"]').html(knxcontrol.alarm_action[action_id].name);
-					
-					// check if it is the selected option
-					that = this;
-					$.each(this.element.find('.alarm'),function(index,object){
-						alarm_id = $(object).attr('data-id');
-						if(knxcontrol.alarm[alarm_id].action_id==action_id){
-							that.element.find('.alarm[data-id="'+alarm_id+'"]').find('option[data-id="'+action_id+'"]').attr('selected', true).siblings('option').removeAttr('selected');
-						}
-					});
-					
-					
-					this.element.find('select').selectmenu('refresh');
-					// select action
-					//this.element.find('div.alarm_action select').val(knxcontrol.alarm[alarm_id].action_id).selectmenu('refresh');
-				}
-				
+				this.update_action(action_id);
 			}
         });
+	},
+	update: function(alarm_id){
+		// check if the alarm exists in knxcontrol
+		if(knxcontrol.alarm[alarm_id]){
+			// check if the alarm belongs in this section
+			if(knxcontrol.alarm[alarm_id].section_id==this.options.section){
+				// check if the alarm does not already exists in the DOM
+				if(this.element.find('.alarm_list').find('.alarm [data-id="'+alarm_id+'"]').length==0){
+					//set ids
+					var newobject = template.alarm;
+					
+					newobject = newobject.replace(/_0/g, "_"+alarm_id);
+					newobject = newobject.replace(/Select action/g, language.capitalize(language.select_action));
+
+					//add the alarm to the DOM
+					this.element.find('.alarm_list').append(newobject).enhanceWithin();
+					this.element.find('.alarm[data-id="0"]').attr('data-id',alarm_id);
+				}
+				// update the alarm time
+				var time = this.padtime(knxcontrol.alarm[alarm_id].hour) + ":" + this.padtime(knxcontrol.alarm[alarm_id].minute);
+				this.element.find('.alarm[data-id="'+alarm_id+'"]').find('[data-field="time"]').val(time);
+
+				// update alarm days
+				this.element.find('.alarm[data-id="'+alarm_id+'"]').find('[data-field="mon"]').prop('checked', !!+knxcontrol.alarm[alarm_id].mon).checkboxradio('refresh');
+				this.element.find('.alarm[data-id="'+alarm_id+'"]').find('[data-field="tue"]').prop('checked', !!+knxcontrol.alarm[alarm_id].tue).checkboxradio('refresh');
+				this.element.find('.alarm[data-id="'+alarm_id+'"]').find('[data-field="wed"]').prop('checked', !!+knxcontrol.alarm[alarm_id].wed).checkboxradio('refresh');
+				this.element.find('.alarm[data-id="'+alarm_id+'"]').find('[data-field="thu"]').prop('checked', !!+knxcontrol.alarm[alarm_id].thu).checkboxradio('refresh');
+				this.element.find('.alarm[data-id="'+alarm_id+'"]').find('[data-field="fri"]').prop('checked', !!+knxcontrol.alarm[alarm_id].fri).checkboxradio('refresh');
+				this.element.find('.alarm[data-id="'+alarm_id+'"]').find('[data-field="sat"]').prop('checked', !!+knxcontrol.alarm[alarm_id].sat).checkboxradio('refresh');
+				this.element.find('.alarm[data-id="'+alarm_id+'"]').find('[data-field="sun"]').prop('checked', !!+knxcontrol.alarm[alarm_id].sun).checkboxradio('refresh');
+				
+			}
+		}
+		else{
+			// remove the alarm from the DOM
+			this.element.find('.alarm[data-id="'+alarm_id+'"]').remove();
+		}
+	},
+	update_action: function(action_id){
+		// check if the action belongs in this widget
+		if(knxcontrol.action[action_id].section_id==0 || knxcontrol.action[action_id].section_id==this.options.section){
+			// check if the action option exists
+			if(this.element.find('option [data-id="'+action_id+'"]').length==0){	
+				// add the action to the select list
+				var newobject = template.action_select;
+				newobject = newobject.replace(/0/g, action_id);
+				this.element.find('div.alarm_action select').append(newobject).selectmenu('refresh');
+			}
+			// update the option
+			this.element.find('option[data-id="'+action_id+'"]').html(knxcontrol.action[action_id].name);
+			
+			// check if it is the selected option
+			that = this;
+			$.each(this.element.find('.alarm'),function(index,object){
+				alarm_id = $(object).attr('data-id');
+				if(knxcontrol.alarm[alarm_id].action_id==action_id){
+					that.element.find('.alarm[data-id="'+alarm_id+'"]').find('option[data-id="'+action_id+'"]').attr('selected', true).siblings('option').removeAttr('selected');
+				}
+			});
+			
+			
+			this.element.find('select').selectmenu('refresh');
+			// select action
+			//this.element.find('div.alarm_action select').val(knxcontrol.alarm[alarm_id].action_id).selectmenu('refresh');
+		}
 	},
 	padtime: function(num) {
 		var s = num+"";

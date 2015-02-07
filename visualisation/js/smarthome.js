@@ -27,9 +27,9 @@ var smarthome = {
 		smarthome.open();
 	},
 // write an item to smarthome.py                                             //
-    write: function(item, val){
-		smarthome.send({'cmd': 'item', 'id': item, 'val': val, 'token': smarthome.token});
-		//widget.update(item, val);
+    write: function(item, value){
+		smarthome.send({'cmd': 'item', 'id': item, 'val': value, 'token': smarthome.token});
+		knxcontrol.update_item(item, value);
     },
 // Ask for item values over the websocket                                    //
     monitor: function(){
@@ -52,7 +52,7 @@ var smarthome = {
          };
 		
         smarthome.socket.onmessage = function(event){
-			//console.log(event.data);
+			console.log(event.data);
 			
             var data = JSON.parse(event.data);   
 			
@@ -69,7 +69,8 @@ var smarthome = {
                         // convert binary values
                         if (value === false) value = 0;
                         if (value === true) value = 1;
-
+						console.log(item);
+						console.log(value);
 						// update widgets
                         knxcontrol.update_item(item, value);
                     };
