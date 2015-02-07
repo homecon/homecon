@@ -138,6 +138,12 @@ var knxcontrol = {
 			knxcontrol.get_alarms(alarm_id);
 		});
 	},
+	delete_alarm: function(alarm_id){
+		$.post('requests/delete_from_table.php',{table: 'alarms', where: 'id='+alarm_id},function(result){
+			delete knxcontrol.alarm[alarm_id];
+			$('[data-role="alarm"]').trigger('update',alarm_id);
+		});
+	},
 // get alarm actions data	
 	get_actions: function(){
 		$.post('requests/select_from_table.php',{table: 'alarm_actions', column: '*', where: 'id>0'},function(result){

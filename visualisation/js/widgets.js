@@ -395,6 +395,9 @@ $.widget("knxcontrol.alarm",{
 			},
 			'click a.add': function(event){
 				knxcontrol.add_alarm(this.options.section);
+			},
+			'click a.delete': function(event){
+				knxcontrol.delete_alarm($(event.target).parents('.alarm').attr('data-id'));
 			}
         });
 	},
