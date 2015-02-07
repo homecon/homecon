@@ -18,8 +18,8 @@
 				
 				<section data-role='collapsible' data-theme='a' data-collapsed='false'>
 					<h1>Actions</h1>
-					<div data-role='action_list'></div>
-					
+					<div data-role='action_list'>
+					</div>
 				</section>
 				
 			</div>

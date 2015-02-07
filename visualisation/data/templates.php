@@ -25,9 +25,9 @@
 			</div>
 			
 			
-			<div class='action ui-body-b ui-corner-all' data-id='0'>
+			<div class='action' data-id='0'>
 				<div data-field='name'></div>
-				<a href="#action_def_popup" class='edit' data-role="button" data-rel="popup" data-icon="grid" data-iconpos="notext">Edit</a>
+				<a href="#action_def_popup" class='edit' data-role="button" data-rel="popup" data-icon="grid" data-mini="true" data-iconpos="notext">Edit</a>
 				<a href="#" class='delete' data-role="button" data-icon="delete" data-iconpos="notext">Delete</a>
 			</div>
 			

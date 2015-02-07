@@ -136,24 +136,25 @@ div[data-role="alarm"] label{
 /*****************************************************************************/
 div[data-role="action_list"] div.action{
 	position: relative;
-	margin-bottom: 5px;
-	padding: 5px;
-	min-height: 30px;
+	margin: 0;
 }
 div[data-role="action_list"] a.delete{
 	position: absolute; 
 	top: 0;
 	right: 0;
-	margin: 5px;;
+	margin: 1px;
 }
 div[data-role="action_list"] a.edit{
 	position: absolute; 
 	top: 0;
 	right: 50px;
-	margin: 5px;
+	margin: 1px;
 }
 div[data-role="action_list"] div.action div{
 	font-weight: 600;
+	padding: 6px;
+	width: 70%;
+	border-bottom: 1px solid #222;
 }
 
 /* action definition popup */
