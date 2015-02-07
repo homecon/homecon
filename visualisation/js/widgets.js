@@ -12,7 +12,7 @@
 var template = {
 	alarm: '',
 	action_select: '',
-	action_def: ''
+	action: ''
 };
 
 $(document).on('pagebeforecreate',function(){
@@ -470,5 +470,81 @@ $.widget("knxcontrol.alarm",{
 		var s = num+"";
 		while (s.length < 2) s = "0" + s;
 		return s;
+	}
+});
+
+/*****************************************************************************/
+/*                     action list                                           */
+/*****************************************************************************/
+$.widget("knxcontrol.action_list",{
+	options: {
+		section: 1
+    },
+	_create: function(){
+		// enhance
+		this.element.html('<div class="action_list"></div><a href="#action_def_popup" class="add" data-role="button" data-rel="popup">'+language.capitalize(language.add_action)+'</a>');
+		that = this;
+		$.each(knxcontrol.action,function(index,action){
+			that.update(action.id);
+		});
+		this.element.enhanceWithin();	
+
+		// bind events
+		this._on(this.element, {
+			'update': function(event,action_id){
+				this.update(action_id);
+			},
+			'click a.edit': function(event){
+				// populate the popup
+				action_id = $(event.target).parents('.action').attr('data-id');
+				$('#action_def_popup').find('input[data-field="name"]').val(knxcontrol.action[action_id].name);
+				$('#action_def_popup').find('input[data-field="section_id"]').val(knxcontrol.action[action_id].section_id);
+				
+				$('#action_def_popup').find('input[data-field="delay1"]').val(knxcontrol.action[action_id].actions[0].delay);
+				$('#action_def_popup').find('input[data-field="item1"]').val(knxcontrol.action[action_id].actions[0].item);
+				$('#action_def_popup').find('input[data-field="value1"]').val(knxcontrol.action[action_id].actions[0].value);
+				
+				$('#action_def_popup').find('input[data-field="delay2"]').val(knxcontrol.action[action_id].actions[1].delay);
+				$('#action_def_popup').find('input[data-field="item2"]').val(knxcontrol.action[action_id].actions[1].item);
+				$('#action_def_popup').find('input[data-field="value2"]').val(knxcontrol.action[action_id].actions[1].value);
+				
+				$('#action_def_popup').find('input[data-field="delay3"]').val(knxcontrol.action[action_id].actions[2].delay);
+				$('#action_def_popup').find('input[data-field="item3"]').val(knxcontrol.action[action_id].actions[2].item);
+				$('#action_def_popup').find('input[data-field="value3"]').val(knxcontrol.action[action_id].actions[2].value);
+				
+				$('#action_def_popup').find('input[data-field="delay4"]').val(knxcontrol.action[action_id].actions[3].delay);
+				$('#action_def_popup').find('input[data-field="item4"]').val(knxcontrol.action[action_id].actions[3].item);
+				$('#action_def_popup').find('input[data-field="value4"]').val(knxcontrol.action[action_id].actions[3].value);
+				
+				$('#action_def_popup').find('input[data-field="delay5"]').val(knxcontrol.action[action_id].actions[4].delay);
+				$('#action_def_popup').find('input[data-field="item5"]').val(knxcontrol.action[action_id].actions[4].item);
+				$('#action_def_popup').find('input[data-field="value5"]').val(knxcontrol.action[action_id].actions[4].value);
+			}
+		});		
+	},
+	update: function(action_id){
+		// check if the action exists in knxcontrol
+		if(knxcontrol.action[action_id]){
+			
+			// check if the action does not already exists in the DOM
+			if(this.element.find('.action_list').find('.action [data-id="'+action_id+'"]').length==0){
+				//set ids
+				var newobject = template.action;
+				
+				newobject = newobject.replace(/_0/g, "_"+action_id);
+				
+				//add the action to the DOM
+				this.element.find('.action_list').append(newobject).enhanceWithin();
+				this.element.find('.action[data-id="0"]').attr('data-id',action_id);
+			}
+			// update the action
+			console.log(knxcontrol.action[action_id].name);
+			this.element.find('.action[data-id="'+action_id+'"]').find('[data-field="name"]').html(knxcontrol.action[action_id].name);
+
+		}
+		else{
+			// remove the alarm from the DOM
+			this.element.find('.action[data-id="'+actionid+'"]').remove();
+		}
 	}
 });

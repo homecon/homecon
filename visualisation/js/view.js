@@ -35,8 +35,12 @@ $(document).on('click','#menu_button', function(){
 });
 
 
-
-
+/*****************************************************************************/
+/*                     General popups                                        */
+/*****************************************************************************/
+$(document).on('ready',function() {
+	$("#action_def_popup").enhanceWithin().popup();
+});
 
 
 

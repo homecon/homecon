@@ -9,7 +9,7 @@ language = {
 	alarm: 'wekker',
 	add_alarm: 'wekker toevoegen',
 	select_action: 'selecteer actie',
-	
+	add_action: 'actie toevoegen',
 // methods
 // capitalize 1st letter	
 	capitalize: function(string){

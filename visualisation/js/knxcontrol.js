@@ -27,25 +27,11 @@ $(document).on('connect',function(event,user_id){
 			knxcontrol.location.longitude = data['longitude'];
 		});
 	};
-	
-	// get the alarms 
-	//knxcontrol.get_alarms();
 		
 	// get a weather forecast and schedule it to run every hour
-	knxcontrol.get_weatherforecast()
-	setInterval(function(){knxcontrol.get_weatherforecast()}, 3600000);
+	//knxcontrol.get_weatherforecast()
+	//setInterval(function(){knxcontrol.get_weatherforecast()}, 3600000);
 });
-/*
-$(document).on('pageinit',function(event){
-	$.each(knxcontrol.alarm,function(index,alarm){
-		$('[data-role="alarm"]').trigger('update',alarm.id);
-	});
-
-	$.each(knxcontrol.alarm_action,function(index,alarm_action){
-		$('[data-role="alarm"]').trigger('update_action',alarm_action.id);
-	});
-});
-*/
 
 /*****************************************************************************/
 /*                     KNXControl model                                      */
@@ -162,6 +148,7 @@ var knxcontrol = {
 					]
 				};
 				$('[data-role="alarm"]').trigger('update_action',action.id);
+				$('[data-role="action_list"]').trigger('update',action.id);
 			});
 			
 		});

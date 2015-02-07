@@ -4,7 +4,7 @@
 					
 			<div class='alarm ui-body-b ui-corner-all' data-id='0'>
 				<input type='time' data-field='time' value='12:00'>
-				<a class='delete' href='#'><img src='icons/ws/control_x.png'></a>
+				<a href="#" class='delete' data-role="button" data-icon="delete" data-iconpos="notext">Delete</a>
 				<h1></h1>
 				<div class='days'>
 					<div data-role='controlgroup' data-type='horizontal'>
@@ -25,11 +25,10 @@
 			</div>
 			
 			
-			<div class='action' data-id='0'>
-				<div class='name'></div>
-				<div class='section_id'></div>
-				<a class='edit' href='#action_def_popup'><img src=icons/ws/control_x.png></a>
-				<a class='delete' href='#'><img src=icons/ws/control_x.png></a>
+			<div class='action ui-body-b ui-corner-all' data-id='0'>
+				<div data-field='name'></div>
+				<a href="#action_def_popup" class='edit' data-role="button" data-rel="popup" data-icon="grid" data-iconpos="notext">Edit</a>
+				<a href="#" class='delete' data-role="button" data-icon="delete" data-iconpos="notext">Delete</a>
 			</div>
 			
 		<div>

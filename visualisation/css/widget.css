@@ -119,12 +119,9 @@ div[data-role="alarm"] div.ui-input-text input{
 }
 div[data-role="alarm"] a.delete{
 	position: absolute; 
-	top: 5px;
-	right: 5px;
-	height: 30px;
-}
-div[data-role="alarm"] a.delete img{
-	height: 100%;
+	top: 0;
+	right: 0;
+	margin: 5px;
 }
 div[data-role="alarm"] label{
 	padding-left: 8px;
@@ -135,13 +132,46 @@ div[data-role="alarm"] label{
 
 
 /*****************************************************************************/
-/*                     Alarm action                                          */
+/*                     Action list                                           */
 /*****************************************************************************/
+div[data-role="action_list"] div.action{
+	position: relative;
+	margin-bottom: 5px;
+	padding: 5px;
+	min-height: 30px;
+}
+div[data-role="action_list"] a.delete{
+	position: absolute; 
+	top: 0;
+	right: 0;
+	margin: 5px;;
+}
+div[data-role="action_list"] a.edit{
+	position: absolute; 
+	top: 0;
+	right: 50px;
+	margin: 5px;
+}
+div[data-role="action_list"] div.action div{
+	font-weight: 600;
+}
 
-
-
-
-
+/* action definition popup */
+#action_def_popup .ui-field-contain{
+	border: 0;
+}
+#action_def_popup .ui-grid-b{
+	width: 100%;
+}
+#action_def_popup .ui-block-a{
+	width: 15%; 
+}
+#action_def_popup .ui-block-b{
+	width: 69%
+}
+#action_def_popup .ui-block-c{
+	width: 15%
+}
 
 /*****************************************************************************/
 /*                     Clock                                                 */
