@@ -103,6 +103,7 @@ div[data-role="shading"] .ui-slider input{
 /*                     Alarm                                                 */
 /*****************************************************************************/
 div[data-role="alarm"] div.alarm{
+	position: relative; 
 	margin-bottom: 5px;
 	padding: 5px;
 }
@@ -111,20 +112,23 @@ div[data-role="alarm"] input[type="time"]{
 	padding: 0 !important;
 }
 div[data-role="alarm"] div.ui-input-text{
-	width: 10em;
-	float: left;
+	width: 14.5em;
 }
 div[data-role="alarm"] div.ui-input-text input{
 	min-height: 0 !important;
 }
 div[data-role="alarm"] a.delete{
-	display: block; 
-	float: right;
-	/*margin-top: 10px;*/
+	position: absolute; 
+	top: 5px;
+	right: 5px;
 	height: 30px;
 }
 div[data-role="alarm"] a.delete img{
 	height: 100%;
+}
+div[data-role="alarm"] label{
+	padding-left: 8px;
+	padding-right: 8px;
 }
 
 
