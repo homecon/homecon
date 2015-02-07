@@ -33,19 +33,22 @@ $.widget('knxcontrol.displayvalue',{
     },
 	_create: function(){
 		// enhance
-
+		this.update();
+		
 		// bind events
 		this._on(this.element, {
 			'update': function(event){	
-				var item = this.options.item;
-				var rounding = Math.pow(10,this.options.digits);
-				
-				var value = Math.round(knxcontrol.item[item]*rounding)/rounding;
-				
-				this.element.html(value);
-				console.log('value');
+				this.update();
 			}
 		});
+	},
+	update: function(){
+		var item = this.options.item;
+		var rounding = Math.pow(10,this.options.digits);
+		
+		var value = Math.round(knxcontrol.item[item]*rounding)/rounding;
+		
+		this.element.html(value);
 	}
 });
 
@@ -63,6 +66,7 @@ $.widget('knxcontrol.lightswitch',{
 		// enhance
 		var text = this.element.html();
 		this.element.html('<a href="#"><img src="'+this.options.src_off+'">'+text+'</a>');
+		this.update();
 		
 		// bind events
 		this._on(this.element, {
@@ -71,17 +75,20 @@ $.widget('knxcontrol.lightswitch',{
 				// update the value in smarthome
 				smarthome.write(item, (knxcontrol.item[item]+1)%2);
 			},
-			'update': function(event){	
-				var item = this.options.item;
-				
-				if(knxcontrol.item[item]){
-					this.element.find('img').attr('src',this.options.src_on);
-				}
-				else{
-					this.element.find('img').attr('src',this.options.src_off);
-				}
+			'update': function(event){
+				this.update();
 			}
         });
+	},
+	update: function(){
+		var item = this.options.item;
+				
+		if(knxcontrol.item[item]){
+			this.element.find('img').attr('src',this.options.src_on);
+		}
+		else{
+			this.element.find('img').attr('src',this.options.src_off);
+		}
 	}
 
 });
@@ -103,11 +110,11 @@ $.widget("knxcontrol.lightdimmer",{
 		var text = this.element.html();
 		this.element.html('<p>'+text+'</p><a href="#"><img src="icons/ws/light_light.png"></a><input type="range" value="'+this.options.val_off+'" min="'+this.options.val_off+'" max="'+this.options.val_on+'" step="'+(this.options.val_on-this.options.val_off)/51+'" data-highlight="true"/>');
 		this.element.enhanceWithin();
+		this.update();
 		
 		// bind events
 		this._on(this.element, {
 			'change input': function(event){
-				console.log('change');
 				var item = this.options.item;
 				if(!this.lock){
 					knxcontrol.update_item(item,this.element.find('input').val());
@@ -124,26 +131,28 @@ $.widget("knxcontrol.lightdimmer",{
 				}
 			},
 			'update': function(event){
-				this.lock = true;
-				//console.log(this.options.item+' locked');
-				var that = this;
-				setTimeout(function(){
-					that.lock = false;
-					//console.log(that.options.item+' unlocked');
-				},500);
-				
-				var item = this.options.item;
-				this.element.find('input').val(knxcontrol.item[item]).slider('refresh');
-			
-				if(knxcontrol.item[item]>this.options.val_off){
-					this.element.find('img').attr('src',this.options.src_on);
-				}
-				else{
-					this.element.find('img').attr('src',this.options.src_off);
-				}
-				
+				this.update();
 			}
         });
+	},
+	update: function(){
+		this.lock = true;
+		//console.log(this.options.item+' locked');
+		var that = this;
+		setTimeout(function(){
+			that.lock = false;
+			//console.log(that.options.item+' unlocked');
+		},500);
+		
+		var item = this.options.item;
+		this.element.find('input').val(knxcontrol.item[item]).slider('refresh');
+	
+		if(knxcontrol.item[item]>this.options.val_off){
+			this.element.find('img').attr('src',this.options.src_on);
+		}
+		else{
+			this.element.find('img').attr('src',this.options.src_off);
+		}
 	}
 });
 
@@ -161,6 +170,7 @@ $.widget("knxcontrol.shading",{
 		var text = this.element.html();
 		this.element.html('<p>'+text+'</p><a href="#" class="open"><img src="icons/ws/fts_shutter_10.png"></a><a href="#" class="close"><img src="icons/ws/fts_shutter_100.png"></a><input type="range" value="'+this.options.val_off+'" min="'+this.options.val_off+'" max="'+this.options.val_on+'" step="'+(this.options.val_on-this.options.val_off)/51+'" data-highlight="true"/>');
 		this.element.enhanceWithin();
+		this.update();
 		
 		// bind events
 		this._on(this.element, {
@@ -179,20 +189,23 @@ $.widget("knxcontrol.shading",{
 				smarthome.write(item, this.options.val_on);
 			},
 			'update': function(event){
-				this.lock = true;
-				//console.log(this.options.item+' locked');
-				var that = this;
-				setTimeout(function(){
-					that.lock = false;
-					//console.log(that.options.item+' unlocked');
-				},500);
-				
-				
-				var item = this.options.item;
-
-				this.element.find('input').val(knxcontrol.item[item]).slider('refresh');
+				this.update();
 			}
         });
+	},
+	update: function(){
+		this.lock = true;
+		//console.log(this.options.item+' locked');
+		var that = this;
+		setTimeout(function(){
+			that.lock = false;
+			//console.log(that.options.item+' unlocked');
+		},500);
+		
+		
+		var item = this.options.item;
+
+		this.element.find('input').val(knxcontrol.item[item]).slider('refresh');
 	}
 });
 
@@ -349,18 +362,30 @@ $.widget("knxcontrol.alarm",{
 		// bind events
 		this._on(this.element, {
 			'change': function(event){
-				console.log(event);
-				console.log(JSON.stringify(event));
-				if(false){
-					// if time has changed a little parsing in required
-					
+				
+				alarm_id = $(event.target).parents('.alarm').attr('data-id');
+				data_field = $(event.target).attr('data-field');
+				
+				if(data_field=='time'){
+					time = $(event.target).val().split(':');
+					hour = time[0];
+					minute = time[1];
+					knxcontrol.update_alarm(alarm_id,'hour',hour);
+					knxcontrol.update_alarm(alarm_id,'minute',minute);
+				}
+				else if(data_field=='action_id'){
+					value = $(event.target).val();
+					knxcontrol.update_alarm(alarm_id,data_field,value);
 				}
 				else{
-					alarm_id = 1; // temp
-					data_field = 'mon'; //
-					value = 1; // temp
+					if($(event.target).prop('checked')){
+						value = 1;
+					}
+					else{
+						value = 0;
+					}
 					knxcontrol.update_alarm(alarm_id,data_field,value);
-				}				
+				}
 			},
 			'update': function(event,alarm_id){
 				this.update(alarm_id);

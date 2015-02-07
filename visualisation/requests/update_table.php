@@ -16,13 +16,15 @@
 		
 		// convert column, value pairs to column=value set
 		$set = array();
+
 		for($i=0;$i<count($column);$i++){
 			if(is_string($value[$i])){
 				$value[$i] = "'".$value[$i]."'";
 			}
 			$set[] = $column[$i].'='.$value[$i];
 		}
-		$set = implode( ',' $set);
+		$set = implode(',',$set);
+		
 		
 		$query = "UPDATE $table SET $set WHERE $where";
 		$result = mysql_query($query) or die('MySQL Error: ' . mysql_error());

@@ -52,7 +52,7 @@ var smarthome = {
          };
 		
         smarthome.socket.onmessage = function(event){
-			console.log(event.data);
+			//console.log(event.data);
 			
             var data = JSON.parse(event.data);   
 			
@@ -69,8 +69,7 @@ var smarthome = {
                         // convert binary values
                         if (value === false) value = 0;
                         if (value === true) value = 1;
-						console.log(item);
-						console.log(value);
+
 						// update widgets
                         knxcontrol.update_item(item, value);
                     };
