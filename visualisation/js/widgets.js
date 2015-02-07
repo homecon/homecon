@@ -407,7 +407,7 @@ $.widget("knxcontrol.alarm",{
 			// check if the alarm belongs in this section
 			if(knxcontrol.alarm[alarm_id].section_id==this.options.section){
 				// check if the alarm does not already exists in the DOM
-				if(this.element.find('.alarm_list').find('.alarm [data-id="'+alarm_id+'"]').length==0){
+				if(this.element.find('.alarm_list').find('.alarm[data-id="'+alarm_id+'"]').length==0){
 					//set ids
 					var newobject = template.alarm;
 					
@@ -482,7 +482,7 @@ $.widget("knxcontrol.action_list",{
     },
 	_create: function(){
 		// enhance
-		this.element.html('<div class="action_list"></div><a href="#action_def_popup" class="add" data-role="button" data-rel="popup">'+language.capitalize(language.add_action)+'</a>');
+		this.element.html('<div class="action_list"></div><a href="#" class="add" data-role="button" data-rel="popup">'+language.capitalize(language.add_action)+'</a>');
 		that = this;
 		$.each(knxcontrol.action,function(index,action){
 			that.update(action.id);
@@ -519,6 +519,15 @@ $.widget("knxcontrol.action_list",{
 				$('#action_def_popup').find('input[data-field="delay5"]').val(knxcontrol.action[action_id].actions[4].delay);
 				$('#action_def_popup').find('input[data-field="item5"]').val(knxcontrol.action[action_id].actions[4].item);
 				$('#action_def_popup').find('input[data-field="value5"]').val(knxcontrol.action[action_id].actions[4].value);
+				
+				$('#action_def_popup').find('#action_def_popup_save').attr('data-id',action_id);
+			},
+			'click a.add': function(event){
+				knxcontrol.add_action();
+			},
+			'click a.delete': function(event){
+				action_id = $(event.target).parents('.action').attr('data-id');
+				knxcontrol.delete_action(action_id);
 			}
 		});		
 	},
@@ -527,7 +536,7 @@ $.widget("knxcontrol.action_list",{
 		if(knxcontrol.action[action_id]){
 			
 			// check if the action does not already exists in the DOM
-			if(this.element.find('.action_list').find('.action [data-id="'+action_id+'"]').length==0){
+			if(this.element.find('.action_list').find('.action[data-id="'+action_id+'"]').length==0){
 				//set ids
 				var newobject = template.action;
 				
@@ -538,13 +547,19 @@ $.widget("knxcontrol.action_list",{
 				this.element.find('.action[data-id="0"]').attr('data-id',action_id);
 			}
 			// update the action
-			console.log(knxcontrol.action[action_id].name);
 			this.element.find('.action[data-id="'+action_id+'"]').find('[data-field="name"]').html(knxcontrol.action[action_id].name);
-
 		}
 		else{
 			// remove the alarm from the DOM
-			this.element.find('.action[data-id="'+actionid+'"]').remove();
+			this.element.find('.action[data-id="'+action_id+'"]').remove();
 		}
 	}
+});
+$(document).on('click','#action_def_popup_save',function(event){
+	action_id = $(this).attr('data-id');
+	$('#action_def_popup').popup('close');
+	data_field = ['name','sectionid','delay1','item1','value1','delay2','item2','value2','delay3','item3','value3','delay4','item4','value4','delay5','item5','value5'].join();
+	value = [$('#action_def_popup').find('input[data-field="name"]').val(),$('#action_def_popup').find('input[data-field="section_id"]').val(),$('#action_def_popup').find('input[data-field="delay1"]').val(),$('#action_def_popup').find('input[data-field="item1"]').val(),$('#action_def_popup').find('input[data-field="value1"]').val(),$('#action_def_popup').find('input[data-field="delay2"]').val(),$('#action_def_popup').find('input[data-field="item2"]').val(),$('#action_def_popup').find('input[data-field="value2"]').val(),$('#action_def_popup').find('input[data-field="delay3"]').val(),$('#action_def_popup').find('input[data-field="item3"]').val(),$('#action_def_popup').find('input[data-field="value3"]').val(),$('#action_def_popup').find('input[data-field="delay4"]').val(),$('#action_def_popup').find('input[data-field="item4"]').val(),$('#action_def_popup').find('input[data-field="value4"]').val(),$('#action_def_popup').find('input[data-field="delay5"]').val(),$('#action_def_popup').find('input[data-field="item5"]').val(),$('#action_def_popup').find('input[data-field="value5"]').val()].join();
+	
+	knxcontrol.update_action(action_id,data_field,value);
 });

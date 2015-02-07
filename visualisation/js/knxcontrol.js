@@ -131,8 +131,12 @@ var knxcontrol = {
 		});
 	},
 // get alarm actions data	
-	get_actions: function(){
-		$.post('requests/select_from_table.php',{table: 'alarm_actions', column: '*', where: 'id>0'},function(result){
+	get_actions: function(action_id){
+		var where = 'id>0';
+		if(action_id){
+			where = 'id='+action_id;
+		}
+		$.post('requests/select_from_table.php',{table: 'alarm_actions', column: '*', where: where},function(result){
 			var actions = JSON.parse(result);
 			$.each(actions,function(index,action){
 				knxcontrol.action[action.id] = {
@@ -153,7 +157,28 @@ var knxcontrol = {
 			
 		});
 	},
-	
+	update_action: function(action_id,data_field,value){
+		// set the alarm in the database
+		$.post('requests/update_table.php',{table: 'alarm_actions', column: data_field, value: value, where: 'id='+action_id},function(result){
+			// on success update knxcontrol
+			knxcontrol.get_actions(action_id);
+		});
+	},
+	add_action: function(){
+		$.post('requests/insert_into_table.php',{table: 'alarm_actions', column: ['name','sectionid','delay1'].join(), value: ['Name',0,0].join()},function(result){
+			action_id = JSON.parse(result);
+			action_id = action_id[0];
+			
+			// add the alarm to knxcontrol
+			knxcontrol.get_actions(action_id);
+		});
+	},
+	delete_action: function(action_id){
+		$.post('requests/delete_from_table.php',{table: 'alarm_actions', where: 'id='+action_id},function(result){
+			delete knxcontrol.action[action_id];
+			$('[data-role="action_list"]').trigger('update',action_id);
+		});
+	},
 ////////////////////////////////////////////////////////////////////////
 // this will be moved to smarthome.py in the near future so no dev is happening and widget is broken	
 // update weather forecast data
