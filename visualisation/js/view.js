@@ -40,6 +40,7 @@ $(document).on('click','#menu_button', function(){
 /*****************************************************************************/
 $(document).on('ready',function() {
 	$("#action_def_popup").enhanceWithin().popup();
+	$("#measurement_def_popup").enhanceWithin().popup();
 });
 
 

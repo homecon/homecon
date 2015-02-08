@@ -54,11 +54,14 @@ var knxcontrol = {
 	action:{
 		// 1: {id: 1, name: 'Licht aan', section_id: 0, actions: [{id: 1, delay: 0, item: 'living.lights.licht', value: 0},{...},...]},...
 	},
-	
+	measurement:{
+		// 1: {id: 1, name: 'Temperatuur', item: 'buiten.measurements.temperature', quantity: 'Temperature', unit: 'degC', description: 'Buiten temeratuur'}, 
+	},
 // initialize
 	init: function(){
 		knxcontrol.get_items();
 		knxcontrol.get_alarms();
+		knxcontrol.get_measurements();
 		
 		// request the values of all items from smarthome.py
 		smarthome.monitor();
@@ -105,6 +108,7 @@ var knxcontrol = {
 				};
 				$('[data-role="alarm"][data-section="'+alarm.sectionid+'"]').trigger('update',alarm.id);
 			});
+			//??? here ???
 			knxcontrol.get_actions();
 		});
 	},
@@ -179,6 +183,27 @@ var knxcontrol = {
 			$('[data-role="action_list"]').trigger('update',action_id);
 		});
 	},
+	get_measurements: function(measurement_id){
+		var where = 'id>0';
+		if(measurement_id){
+			where = 'id='+measurement_id;
+		}
+		$.post('requests/select_from_table.php',{table: 'measurements_legend', column: '*', where: where},function(result){
+			var measurements = JSON.parse(result);
+			$.each(measurements,function(index,measurement){
+				knxcontrol.measurement[measurement.id] = {
+					id: measurement.id,
+					name: measurement.name,
+					item: measurement.item,
+					quantity: measurement.quantity,
+					unit: measurement.unit,
+					description: measurement.description,
+				};
+				$('[data-role="measurement_list"]').trigger('update',measurement.id);
+			});
+		});
+	},
+	
 ////////////////////////////////////////////////////////////////////////
 // this will be moved to smarthome.py in the near future so no dev is happening and widget is broken	
 // update weather forecast data

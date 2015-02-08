@@ -31,4 +31,11 @@
 				<a href="#" class='delete' data-role="button" data-icon="delete" data-iconpos="notext">Delete</a>
 			</div>
 			
+			<div class='measurement' data-id='0'>
+				<div class='id' data-field='id'></div>
+				<div class='name' data-field='name'></div>
+				<a href="#measurement_def_popup" class='edit' data-role="button" data-rel="popup" data-icon="grid" data-mini="true" data-iconpos="notext">Edit</a>
+			</div>
+			
+			
 		<div>

@@ -589,6 +589,9 @@ $.widget("knxcontrol.measurement_list",{
 				measurement_id = $(event.target).parents('.measurement').attr('data-id');
 				$('#measurement_def_popup').find('input[data-field="name"]').val(knxcontrol.measurement[measurement_id].name);
 				$('#measurement_def_popup').find('input[data-field="item"]').val(knxcontrol.measurement[measurement_id].item);
+				$('#measurement_def_popup').find('input[data-field="quantity"]').val(knxcontrol.measurement[measurement_id].quantity);
+				$('#measurement_def_popup').find('input[data-field="unit"]').val(knxcontrol.measurement[measurement_id].unit);
+				$('#measurement_def_popup').find('input[data-field="description"]').val(knxcontrol.measurement[measurement_id].description);
 			}
 		});
 	},
@@ -609,7 +612,7 @@ $.widget("knxcontrol.measurement_list",{
 			}
 			// update the measurement
 			this.element.find('.measurement[data-id="'+measurement_id+'"]').find('[data-field="id"]').html(measurement_id);
-			this.element.find('.measurement[data-id="'+measurement_id+'"]').find('[data-field="name"]').html(knxcontrol.measurement[measurement_id].name);
+			this.element.find('.measurement[data-id="'+measurement_id+'"]').find('[data-field="name"]').html(knxcontrol.measurement[measurement_id].name+'&nbsp;');
 		}
 		else{
 			// remove the measurement from the DOM
