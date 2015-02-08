@@ -12,7 +12,8 @@
 var template = {
 	alarm: '',
 	action_select: '',
-	action: ''
+	action: '',
+	measurement: ''
 };
 
 $(document).on('pagebeforecreate',function(){
@@ -230,11 +231,11 @@ $.widget("knxcontrol.clock",{
 	},
 	setDate: function(){
 		now = new Date();
-		var weekday = (now.getDay()-1)%7;
+		var weekday = (now.getDay()+6)%7;
 		var day = now.getDate();
 		var month = now.getMonth();
 		var year = now.getFullYear();
-		
+
 		var date_string = language.capitalize(language.weekday[weekday])+' '+day+' '+language.capitalize(language.month[month])+' '+year;
 	
 		this.element.find('.date').html(date_string);
@@ -562,4 +563,57 @@ $(document).on('click','#action_def_popup_save',function(event){
 	value = [$('#action_def_popup').find('input[data-field="name"]').val(),$('#action_def_popup').find('input[data-field="section_id"]').val(),$('#action_def_popup').find('input[data-field="delay1"]').val(),$('#action_def_popup').find('input[data-field="item1"]').val(),$('#action_def_popup').find('input[data-field="value1"]').val(),$('#action_def_popup').find('input[data-field="delay2"]').val(),$('#action_def_popup').find('input[data-field="item2"]').val(),$('#action_def_popup').find('input[data-field="value2"]').val(),$('#action_def_popup').find('input[data-field="delay3"]').val(),$('#action_def_popup').find('input[data-field="item3"]').val(),$('#action_def_popup').find('input[data-field="value3"]').val(),$('#action_def_popup').find('input[data-field="delay4"]').val(),$('#action_def_popup').find('input[data-field="item4"]').val(),$('#action_def_popup').find('input[data-field="value4"]').val(),$('#action_def_popup').find('input[data-field="delay5"]').val(),$('#action_def_popup').find('input[data-field="item5"]').val(),$('#action_def_popup').find('input[data-field="value5"]').val()].join();
 	
 	knxcontrol.update_action(action_id,data_field,value);
+});
+/*****************************************************************************/
+/*                     measurement list                                      */
+/*****************************************************************************/
+$.widget("knxcontrol.measurement_list",{
+	options: {
+	},
+	_create: function(){
+		// enhance
+		this.element.html('<div class="measurement_list"></div><a href="#" class="add" data-role="button" data-rel="popup">'+language.capitalize(language.add_measurement)+'</a>');
+		that = this;
+		$.each(knxcontrol.measurement,function(index,measurement){
+			that.update(measurement.id);
+		});
+		this.element.enhanceWithin();	
+
+		// bind events
+		this._on(this.element, {
+			'update': function(event,measurement_id){
+				this.update(measurement_id);
+			},
+			'click a.edit': function(event){
+				// populate the popup
+				measurement_id = $(event.target).parents('.measurement').attr('data-id');
+				$('#measurement_def_popup').find('input[data-field="name"]').val(knxcontrol.measurement[measurement_id].name);
+				$('#measurement_def_popup').find('input[data-field="item"]').val(knxcontrol.measurement[measurement_id].item);
+			}
+		});
+	},
+	update: function(measurement_id){
+		// check if the measurement exists in knxcontrol
+		if(knxcontrol.measurement[measurement_id]){
+			
+			// check if the measurement does not already exists in the DOM
+			if(this.element.find('.measurement_list').find('.measurement[data-id="'+measurement_id+'"]').length==0){
+				//set ids
+				var newobject = template.measurement;
+				
+				newobject = newobject.replace(/_0/g, "_"+measurement_id);
+				
+				//add the measurement to the DOM
+				this.element.find('.measurement_list').append(newobject).enhanceWithin();
+				this.element.find('.measurement[data-id="0"]').attr('data-id',measurement_id);
+			}
+			// update the measurement
+			this.element.find('.measurement[data-id="'+measurement_id+'"]').find('[data-field="id"]').html(measurement_id);
+			this.element.find('.measurement[data-id="'+measurement_id+'"]').find('[data-field="name"]').html(knxcontrol.measurement[measurement_id].name);
+		}
+		else{
+			// remove the measurement from the DOM
+			this.element.find('.measurement[data-id="'+measurement_id+'"]').remove();
+		}
+	}
 });
