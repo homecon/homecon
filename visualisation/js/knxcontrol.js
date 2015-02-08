@@ -172,7 +172,6 @@ var knxcontrol = {
 		$.post('requests/insert_into_table.php',{table: 'alarm_actions', column: ['name','sectionid','delay1'].join(), value: ['Name',0,0].join()},function(result){
 			action_id = JSON.parse(result);
 			action_id = action_id[0];
-			
 			// add the alarm to knxcontrol
 			knxcontrol.get_actions(action_id);
 		});
@@ -203,7 +202,13 @@ var knxcontrol = {
 			});
 		});
 	},
-	
+	update_measurement: function(measurement_id,data_field,value){
+		// set the alarm in the database
+		$.post('requests/update_table.php',{table: 'measurements_legend', column: data_field, value: value, where: 'id='+measurement_id},function(result){
+			// on success update knxcontrol
+			knxcontrol.get_measurements(measurement_id);
+		});
+	},
 ////////////////////////////////////////////////////////////////////////
 // this will be moved to smarthome.py in the near future so no dev is happening and widget is broken	
 // update weather forecast data

@@ -592,6 +592,8 @@ $.widget("knxcontrol.measurement_list",{
 				$('#measurement_def_popup').find('input[data-field="quantity"]').val(knxcontrol.measurement[measurement_id].quantity);
 				$('#measurement_def_popup').find('input[data-field="unit"]').val(knxcontrol.measurement[measurement_id].unit);
 				$('#measurement_def_popup').find('input[data-field="description"]').val(knxcontrol.measurement[measurement_id].description);
+				
+				$('#measurement_def_popup').find('#measurement_def_popup_save').attr('data-id',measurement_id);
 			}
 		});
 	},
@@ -619,4 +621,12 @@ $.widget("knxcontrol.measurement_list",{
 			this.element.find('.measurement[data-id="'+measurement_id+'"]').remove();
 		}
 	}
+});
+$(document).on('click','#measurement_def_popup_save',function(event){
+	id = $(this).attr('data-id');
+	$('#measurement_def_popup').popup('close');
+	data_field = ['name','item','quantity','unit','description'].join();
+	value = [$('#measurement_def_popup').find('input[data-field="name"]').val(),$('#measurement_def_popup').find('input[data-field="item"]').val(),$('#measurement_def_popup').find('input[data-field="quantity"]').val(),$('#measurement_def_popup').find('input[data-field="unit"]').val(),$('#measurement_def_popup').find('input[data-field="description"]').val()].join();
+	console.log(id);
+	knxcontrol.update_measurement(id,data_field,value);
 });
