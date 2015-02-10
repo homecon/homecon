@@ -13,6 +13,7 @@
 $(document).on('connect',function(event,user_id){
 	knxcontrol.user_id = user_id;
 	
+		
 	if(!smarthome.socket){
 		//get connection data
 		$.post('requests/select_from_table.php',{table: 'data', column: '*', where: 'id=1'},function(result){
@@ -20,14 +21,21 @@ $(document).on('connect',function(event,user_id){
 			data = data[0];
 			
 			// initialize connection
-			smarthome.init(data['ip'],data['port'],data['token']);
+			if(data['ip'].indexOf(document.URL) > -1){
+				// the address is local if the smarthome ip is the same as the website ip
+				smarthome.init(data['ip'],data['port'],data['token']);
+			}
+			else{
+				// we are on the www
+				smarthome.init(data['web_ip'],data['web_port'],data['token']);
+			}
 			
 			// set location
 			knxcontrol.location.latitude = data['latitude'];
 			knxcontrol.location.longitude = data['longitude'];
 		});
 	};
-		
+	
 	// get a weather forecast and schedule it to run every hour
 	//knxcontrol.get_weatherforecast()
 	//setInterval(function(){knxcontrol.get_weatherforecast()}, 3600000);
@@ -39,6 +47,7 @@ $(document).on('connect',function(event,user_id){
 
 var knxcontrol = {
 	user_id: 0,
+	www: false,
 	location:	{
 		latitude: 51,
 		longitude: -5,
