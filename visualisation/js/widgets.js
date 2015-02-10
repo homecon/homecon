@@ -118,7 +118,7 @@ $.widget("knxcontrol.lightdimmer",{
 			'change input': function(event){
 				var item = this.options.item;
 				if(!this.lock){
-					knxcontrol.update_item(item,this.element.find('input').val());
+					knxcontrol.item.update(item,this.element.find('input').val());
 				}
 			},
             'click a.ui-link': function(event){
@@ -353,10 +353,14 @@ $.widget("knxcontrol.alarm",{
 		this.element.html('<div class="alarm_list"></div><a class="add" data-role="button">'+language.capitalize(language.add_alarm)+'</a>');
 		that = this;
 		$.each(knxcontrol.alarm,function(index,alarm){
-			that.update(alarm.id);
+			if(typeof alarm == 'object'){
+				that.update(alarm.id);
+			}
 		});
 		$.each(knxcontrol.action,function(index,action){
-			that.update_action(action.id);
+			if(typeof action == 'object'){
+				that.update_action(action.id);
+			}
 		});
 		this.element.enhanceWithin();
 		
@@ -364,19 +368,19 @@ $.widget("knxcontrol.alarm",{
 		this._on(this.element, {
 			'change': function(event){
 				
-				alarm_id = $(event.target).parents('.alarm').attr('data-id');
-				data_field = $(event.target).attr('data-field');
+				id = $(event.target).parents('.alarm').attr('data-id');
+				field = $(event.target).attr('data-field');
 				
-				if(data_field=='time'){
+				if(field=='time'){
 					time = $(event.target).val().split(':');
 					hour = time[0];
 					minute = time[1];
-					knxcontrol.update_alarm(alarm_id,'hour',hour);
-					knxcontrol.update_alarm(alarm_id,'minute',minute);
+					knxcontrol.alarm.update(alarm_id,'hour',hour);
+					knxcontrol.alarm.update(alarm_id,'minute',minute);
 				}
-				else if(data_field=='action_id'){
+				else if(field=='action_id'){
 					value = $(event.target).val();
-					knxcontrol.update_alarm(alarm_id,data_field,value);
+					knxcontrol.alarm.update(alarm_id,field,value);
 				}
 				else{
 					if($(event.target).prop('checked')){
@@ -385,86 +389,86 @@ $.widget("knxcontrol.alarm",{
 					else{
 						value = 0;
 					}
-					knxcontrol.update_alarm(alarm_id,data_field,value);
+					knxcontrol.alarm.update(id,field,value);
 				}
 			},
-			'update': function(event,alarm_id){
-				this.update(alarm_id);
+			'update': function(event,id){
+				this.update(id);
 			},
-			'update_action': function(event,action_id){
-				this.update_action(action_id);
+			'update_action': function(event,id){
+				this.update_action(id);
 			},
 			'click a.add': function(event){
-				knxcontrol.add_alarm(this.options.section);
+				knxcontrol.alarm.add(this.options.section);
 			},
 			'click a.delete': function(event){
-				knxcontrol.delete_alarm($(event.target).parents('.alarm').attr('data-id'));
+				knxcontrol.alarm.del($(event.target).parents('.alarm').attr('data-id'));
 			}
         });
 	},
-	update: function(alarm_id){
+	update: function(id){
 		// check if the alarm exists in knxcontrol
-		if(knxcontrol.alarm[alarm_id]){
+		if(knxcontrol.alarm[id]){
 			// check if the alarm belongs in this section
-			if(knxcontrol.alarm[alarm_id].section_id==this.options.section){
+			if(knxcontrol.alarm[id].section_id==this.options.section){
 				// check if the alarm does not already exists in the DOM
-				if(this.element.find('.alarm_list').find('.alarm[data-id="'+alarm_id+'"]').length==0){
+				if(this.element.find('.alarm_list').find('.alarm[data-id="'+id+'"]').length==0){
 					//set ids
 					var newobject = template.alarm;
 					
-					newobject = newobject.replace(/_0/g, "_"+alarm_id);
+					newobject = newobject.replace(/_0/g, "_"+id);
 					newobject = newobject.replace(/Select action/g, language.capitalize(language.select_action));
 
 					//add the alarm to the DOM
 					this.element.find('.alarm_list').append(newobject).enhanceWithin();
-					this.element.find('.alarm[data-id="0"]').attr('data-id',alarm_id);
+					this.element.find('.alarm[data-id="0"]').attr('data-id',id);
 				}
 				// update the alarm time
-				var time = this.padtime(knxcontrol.alarm[alarm_id].hour) + ":" + this.padtime(knxcontrol.alarm[alarm_id].minute);
-				this.element.find('.alarm[data-id="'+alarm_id+'"]').find('[data-field="time"]').val(time);
+				var time = this.padtime(knxcontrol.alarm[id].hour) + ":" + this.padtime(knxcontrol.alarm[id].minute);
+				this.element.find('.alarm[data-id="'+id+'"]').find('[data-field="time"]').val(time);
 
 				// update alarm days
-				this.element.find('.alarm[data-id="'+alarm_id+'"]').find('[data-field="mon"]').prop('checked', !!+knxcontrol.alarm[alarm_id].mon).checkboxradio('refresh');
-				this.element.find('.alarm[data-id="'+alarm_id+'"]').find('[data-field="tue"]').prop('checked', !!+knxcontrol.alarm[alarm_id].tue).checkboxradio('refresh');
-				this.element.find('.alarm[data-id="'+alarm_id+'"]').find('[data-field="wed"]').prop('checked', !!+knxcontrol.alarm[alarm_id].wed).checkboxradio('refresh');
-				this.element.find('.alarm[data-id="'+alarm_id+'"]').find('[data-field="thu"]').prop('checked', !!+knxcontrol.alarm[alarm_id].thu).checkboxradio('refresh');
-				this.element.find('.alarm[data-id="'+alarm_id+'"]').find('[data-field="fri"]').prop('checked', !!+knxcontrol.alarm[alarm_id].fri).checkboxradio('refresh');
-				this.element.find('.alarm[data-id="'+alarm_id+'"]').find('[data-field="sat"]').prop('checked', !!+knxcontrol.alarm[alarm_id].sat).checkboxradio('refresh');
-				this.element.find('.alarm[data-id="'+alarm_id+'"]').find('[data-field="sun"]').prop('checked', !!+knxcontrol.alarm[alarm_id].sun).checkboxradio('refresh');
+				this.element.find('.alarm[data-id="'+id+'"]').find('[data-field="mon"]').prop('checked', !!+knxcontrol.alarm[id].mon).checkboxradio('refresh');
+				this.element.find('.alarm[data-id="'+id+'"]').find('[data-field="tue"]').prop('checked', !!+knxcontrol.alarm[id].tue).checkboxradio('refresh');
+				this.element.find('.alarm[data-id="'+id+'"]').find('[data-field="wed"]').prop('checked', !!+knxcontrol.alarm[id].wed).checkboxradio('refresh');
+				this.element.find('.alarm[data-id="'+id+'"]').find('[data-field="thu"]').prop('checked', !!+knxcontrol.alarm[id].thu).checkboxradio('refresh');
+				this.element.find('.alarm[data-id="'+id+'"]').find('[data-field="fri"]').prop('checked', !!+knxcontrol.alarm[id].fri).checkboxradio('refresh');
+				this.element.find('.alarm[data-id="'+id+'"]').find('[data-field="sat"]').prop('checked', !!+knxcontrol.alarm[id].sat).checkboxradio('refresh');
+				this.element.find('.alarm[data-id="'+id+'"]').find('[data-field="sun"]').prop('checked', !!+knxcontrol.alarm[id].sun).checkboxradio('refresh');
 				
 			}
 		}
 		else{
 			// remove the alarm from the DOM
-			this.element.find('.alarm[data-id="'+alarm_id+'"]').remove();
+			this.element.find('.alarm[data-id="'+id+'"]').remove();
 		}
 	},
-	update_action: function(action_id){
+	update_action: function(id){
 		// check if the action belongs in this widget
-		if(knxcontrol.action[action_id].section_id==0 || knxcontrol.action[action_id].section_id==this.options.section){
+		if(knxcontrol.action[id].section_id==0 || knxcontrol.action[id].section_id==this.options.section){
 			// check if the action option exists
-			if(this.element.find('option [data-id="'+action_id+'"]').length==0){	
+			if(this.element.find('option [data-id="'+id+'"]').length==0){	
 				// add the action to the select list
 				var newobject = template.action_select;
-				newobject = newobject.replace(/0/g, action_id);
+				newobject = newobject.replace(/0/g, id);
 				this.element.find('div.alarm_action select').append(newobject).selectmenu('refresh');
 			}
 			// update the option
-			this.element.find('option[data-id="'+action_id+'"]').html(knxcontrol.action[action_id].name);
+			this.element.find('option[data-id="'+id+'"]').html(knxcontrol.action[id].name);
 			
 			// check if it is the selected option
 			that = this;
 			$.each(this.element.find('.alarm'),function(index,object){
 				alarm_id = $(object).attr('data-id');
-				if(knxcontrol.alarm[alarm_id].action_id==action_id){
-					that.element.find('.alarm[data-id="'+alarm_id+'"]').find('option[data-id="'+action_id+'"]').attr('selected', true).siblings('option').removeAttr('selected');
+				if(knxcontrol.alarm[alarm_id].id==id){
+					that.element.find('.alarm[data-id="'+alarm_id+'"]').find('option[data-id="'+id+'"]').attr('selected', true).siblings('option').removeAttr('selected');
 				}
 			});
 			
 			
 			this.element.find('select').selectmenu('refresh');
 			// select action
-			//this.element.find('div.alarm_action select').val(knxcontrol.alarm[alarm_id].action_id).selectmenu('refresh');
+			//this.element.find('div.alarm_action select').val(knxcontrol.alarm[alarm_id].id).selectmenu('refresh');
 		}
 	},
 	padtime: function(num) {
@@ -486,83 +490,85 @@ $.widget("knxcontrol.action_list",{
 		this.element.html('<div class="action_list"></div><a href="#" class="add" data-role="button" data-rel="popup">'+language.capitalize(language.add_action)+'</a>');
 		that = this;
 		$.each(knxcontrol.action,function(index,action){
-			that.update(action.id);
+			if(typeof action == 'object'){
+				that.update(action.id);
+			}
 		});
 		this.element.enhanceWithin();	
 
 		// bind events
 		this._on(this.element, {
-			'update': function(event,action_id){
-				this.update(action_id);
+			'update': function(event,id){
+				this.update(id);
 			},
 			'click a.edit': function(event){
 				// populate the popup
-				action_id = $(event.target).parents('.action').attr('data-id');
-				$('#action_def_popup').find('input[data-field="name"]').val(knxcontrol.action[action_id].name);
-				$('#action_def_popup').find('input[data-field="section_id"]').val(knxcontrol.action[action_id].section_id);
+				id = $(event.target).parents('.action').attr('data-id');
+				$('#action_def_popup').find('input[data-field="name"]').val(knxcontrol.action[id].name);
+				$('#action_def_popup').find('input[data-field="section_id"]').val(knxcontrol.action[id].section_id);
 				
-				$('#action_def_popup').find('input[data-field="delay1"]').val(knxcontrol.action[action_id].actions[0].delay);
-				$('#action_def_popup').find('input[data-field="item1"]').val(knxcontrol.action[action_id].actions[0].item);
-				$('#action_def_popup').find('input[data-field="value1"]').val(knxcontrol.action[action_id].actions[0].value);
+				$('#action_def_popup').find('input[data-field="delay1"]').val(knxcontrol.action[id].actions[0].delay);
+				$('#action_def_popup').find('input[data-field="item1"]').val(knxcontrol.action[id].actions[0].item);
+				$('#action_def_popup').find('input[data-field="value1"]').val(knxcontrol.action[id].actions[0].value);
 				
-				$('#action_def_popup').find('input[data-field="delay2"]').val(knxcontrol.action[action_id].actions[1].delay);
-				$('#action_def_popup').find('input[data-field="item2"]').val(knxcontrol.action[action_id].actions[1].item);
-				$('#action_def_popup').find('input[data-field="value2"]').val(knxcontrol.action[action_id].actions[1].value);
+				$('#action_def_popup').find('input[data-field="delay2"]').val(knxcontrol.action[id].actions[1].delay);
+				$('#action_def_popup').find('input[data-field="item2"]').val(knxcontrol.action[id].actions[1].item);
+				$('#action_def_popup').find('input[data-field="value2"]').val(knxcontrol.action[id].actions[1].value);
 				
-				$('#action_def_popup').find('input[data-field="delay3"]').val(knxcontrol.action[action_id].actions[2].delay);
-				$('#action_def_popup').find('input[data-field="item3"]').val(knxcontrol.action[action_id].actions[2].item);
-				$('#action_def_popup').find('input[data-field="value3"]').val(knxcontrol.action[action_id].actions[2].value);
+				$('#action_def_popup').find('input[data-field="delay3"]').val(knxcontrol.action[id].actions[2].delay);
+				$('#action_def_popup').find('input[data-field="item3"]').val(knxcontrol.action[id].actions[2].item);
+				$('#action_def_popup').find('input[data-field="value3"]').val(knxcontrol.action[id].actions[2].value);
 				
-				$('#action_def_popup').find('input[data-field="delay4"]').val(knxcontrol.action[action_id].actions[3].delay);
-				$('#action_def_popup').find('input[data-field="item4"]').val(knxcontrol.action[action_id].actions[3].item);
-				$('#action_def_popup').find('input[data-field="value4"]').val(knxcontrol.action[action_id].actions[3].value);
+				$('#action_def_popup').find('input[data-field="delay4"]').val(knxcontrol.action[id].actions[3].delay);
+				$('#action_def_popup').find('input[data-field="item4"]').val(knxcontrol.action[id].actions[3].item);
+				$('#action_def_popup').find('input[data-field="value4"]').val(knxcontrol.action[id].actions[3].value);
 				
-				$('#action_def_popup').find('input[data-field="delay5"]').val(knxcontrol.action[action_id].actions[4].delay);
-				$('#action_def_popup').find('input[data-field="item5"]').val(knxcontrol.action[action_id].actions[4].item);
-				$('#action_def_popup').find('input[data-field="value5"]').val(knxcontrol.action[action_id].actions[4].value);
+				$('#action_def_popup').find('input[data-field="delay5"]').val(knxcontrol.action[id].actions[4].delay);
+				$('#action_def_popup').find('input[data-field="item5"]').val(knxcontrol.action[id].actions[4].item);
+				$('#action_def_popup').find('input[data-field="value5"]').val(knxcontrol.action[id].actions[4].value);
 				
-				$('#action_def_popup').find('#action_def_popup_save').attr('data-id',action_id);
+				$('#action_def_popup').find('#action_def_popup_save').attr('data-id',id);
 			},
 			'click a.add': function(event){
-				knxcontrol.add_action();
+				knxcontrol.action.add();
 			},
 			'click a.delete': function(event){
-				action_id = $(event.target).parents('.action').attr('data-id');
-				knxcontrol.delete_action(action_id);
+				id = $(event.target).parents('.action').attr('data-id');
+				knxcontrol.action.del(id);
 			}
 		});		
 	},
-	update: function(action_id){
+	update: function(id){
 		// check if the action exists in knxcontrol
-		if(knxcontrol.action[action_id]){
+		if(knxcontrol.action[id]){
 			
 			// check if the action does not already exists in the DOM
-			if(this.element.find('.action_list').find('.action[data-id="'+action_id+'"]').length==0){
+			if(this.element.find('.action_list').find('.action[data-id="'+id+'"]').length==0){
 				//set ids
 				var newobject = template.action;
 				
-				newobject = newobject.replace(/_0/g, "_"+action_id);
+				newobject = newobject.replace(/_0/g, "_"+id);
 				
 				//add the action to the DOM
 				this.element.find('.action_list').append(newobject).enhanceWithin();
-				this.element.find('.action[data-id="0"]').attr('data-id',action_id);
+				this.element.find('.action[data-id="0"]').attr('data-id',id);
 			}
 			// update the action
-			this.element.find('.action[data-id="'+action_id+'"]').find('[data-field="name"]').html(knxcontrol.action[action_id].name);
+			this.element.find('.action[data-id="'+id+'"]').find('[data-field="name"]').html(knxcontrol.action[id].name);
 		}
 		else{
 			// remove the alarm from the DOM
-			this.element.find('.action[data-id="'+action_id+'"]').remove();
+			this.element.find('.action[data-id="'+id+'"]').remove();
 		}
 	}
 });
 $(document).on('click','#action_def_popup_save',function(event){
-	action_id = $(this).attr('data-id');
+	id = $(this).attr('data-id');
 	$('#action_def_popup').popup('close');
 	data_field = ['name','sectionid','delay1','item1','value1','delay2','item2','value2','delay3','item3','value3','delay4','item4','value4','delay5','item5','value5'].join();
 	value = [$('#action_def_popup').find('input[data-field="name"]').val(),$('#action_def_popup').find('input[data-field="section_id"]').val(),$('#action_def_popup').find('input[data-field="delay1"]').val(),$('#action_def_popup').find('input[data-field="item1"]').val(),$('#action_def_popup').find('input[data-field="value1"]').val(),$('#action_def_popup').find('input[data-field="delay2"]').val(),$('#action_def_popup').find('input[data-field="item2"]').val(),$('#action_def_popup').find('input[data-field="value2"]').val(),$('#action_def_popup').find('input[data-field="delay3"]').val(),$('#action_def_popup').find('input[data-field="item3"]').val(),$('#action_def_popup').find('input[data-field="value3"]').val(),$('#action_def_popup').find('input[data-field="delay4"]').val(),$('#action_def_popup').find('input[data-field="item4"]').val(),$('#action_def_popup').find('input[data-field="value4"]').val(),$('#action_def_popup').find('input[data-field="delay5"]').val(),$('#action_def_popup').find('input[data-field="item5"]').val(),$('#action_def_popup').find('input[data-field="value5"]').val()].join();
 	
-	knxcontrol.update_action(action_id,data_field,value);
+	knxcontrol.action.update(id,data_field,value);
 });
 /*****************************************************************************/
 /*                     measurement list                                      */
