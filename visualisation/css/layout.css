@@ -24,7 +24,7 @@
 		visibility: hidden;
 	}
 }
-@media all and (max-width: 600px) {
+@media all and (max-width: 500px) {
 	#header .hide{
 		visibility: hidden;
 		width: 0;

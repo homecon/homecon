@@ -29,11 +29,11 @@ var smarthome = {
 // write an item to smarthome.py                                             //
     write: function(item, value){
 		smarthome.send({'cmd': 'item', 'id': item, 'val': value, 'token': smarthome.token});
-		knxcontrol.update_item(item, value);
+		knxcontrol.item.update(item, value);
     },
 // Ask for item values over the websocket                                    //
     monitor: function(){
-		smarthome.send({'cmd': 'monitor', 'items': knxcontrol.getkeys('item').join()});
+		smarthome.send({'cmd': 'monitor', 'items': knxcontrol.getkeys('item')});
     },
 // private functions	
 // Opens the connection and add some handlers                                //
@@ -71,7 +71,7 @@ var smarthome = {
                         if (value === true) value = 1;
 
 						// update widgets
-                        knxcontrol.update_item(item, value);
+                        knxcontrol.item.update(item, value);
                     };
                     break;
 

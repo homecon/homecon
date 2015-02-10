@@ -647,19 +647,10 @@ $.widget("knxcontrol.measurement_export",{
 	_create: function(){
 		// enhance
 		this.element.html('<div class="ui-field-contain">Startdate:<input type="date" class="startdate"></div><div class="ui-field-contain">Enddate:<input type="date" class="enddate"></div><a href="#" class="export" data-role="button" data-rel="popup">'+language.capitalize(language.export_measurements)+'</a>');
-		that = this;
-		$.each(knxcontrol.measurement,function(index,measurement){
-			if(typeof measurement == 'object'){
-				that.update(measurement.id);
-			}
-		});
 		this.element.enhanceWithin();	
 
 		// bind events
 		this._on(this.element, {
-			'update': function(event,id){
-				this.update(id);
-			},
 			'click a.export': function(event){
 				// get start and end date
 				
@@ -715,13 +706,13 @@ $.widget('knxcontrol.chart',{
 		});
 	},
 	update: function(id){
-		console.log(JSON.stringify(knxcontrol.measurement[id].data));
 		this.chart.addSeries({name: 'test' ,data: knxcontrol.measurement[id].data});
 	},
 	get_data: function(){
 		$.each((''+this.options.signals).split(),function(index,id){
 			knxcontrol.measurement.get_data(id);
 		});
+		
 	},
 	chart: {},
 	chart_options: {

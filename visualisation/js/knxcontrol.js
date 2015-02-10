@@ -17,11 +17,12 @@ $(document).on('connect',function(event,user_id){
 	if(!smarthome.socket){
 		//get connection data
 		$.post('requests/select_from_table.php',{table: 'data', column: '*', where: 'id=1'},function(result){
+
 			data = JSON.parse(result);
 			data = data[0];
 			
 			// initialize connection
-			if(data['ip'].indexOf(document.URL) > -1){
+			if((document.URL).indexOf(data['ip']) > -1){
 				// the address is local if the smarthome ip is the same as the website ip
 				smarthome.init(data['ip'],data['port'],data['token']);
 			}
@@ -47,7 +48,6 @@ $(document).on('connect',function(event,user_id){
 
 var knxcontrol = {
 	user_id: 0,
-	www: false,
 	location:	{
 		latitude: 51,
 		longitude: -5,
@@ -57,7 +57,7 @@ var knxcontrol = {
 // initialize
 	init: function(){
 		knxcontrol.item.get();
-		knxcontrol.alarms.get();
+		knxcontrol.alarm.get();
 		knxcontrol.measurement.get();
 		
 		// request the values of all items from smarthome.py
@@ -238,7 +238,7 @@ var knxcontrol = {
 		var ind = [];
 		
 		$.each(knxcontrol[objectstring],function(index,object){
-			if(typeof alarm == 'object'){
+			if(typeof object == 'object' || typeof object == 'number'){
 				ind.push(index);
 			}
 		});

@@ -6,15 +6,11 @@
 		$table = $_POST['table'];
 		$column = $_POST['column'];
 		$where = $_POST['where'];
+		$orderby = "";
 		
-		if(array_key_exists('orderby',$_POST){
+		if(array_key_exists('orderby',$_POST)){
 			$orderby = " ORDER BY ".$_POST['orderby'];
 		}
-		else{
-			$orderby = "";
-		}
-		
-		
 		
 		$query = "SELECT $column FROM $table WHERE $where$orderby";
 		$result = mysql_query($query) or die('MySQL Error: ' . mysql_error());
