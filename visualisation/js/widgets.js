@@ -416,7 +416,7 @@ $.widget("knxcontrol.alarm",{
 					//set ids
 					var newobject = template.alarm;
 					
-					newobject = newobject.replace(/_0/g, "_"+id);
+					//newobject = newobject.replace(/_0/g, "_"+id);
 					newobject = newobject.replace(/Select action/g, language.capitalize(language.select_action));
 
 					//add the alarm to the DOM

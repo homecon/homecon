@@ -8,13 +8,13 @@
 				<h1></h1>
 				<div class='days'>
 					<div data-role='controlgroup' data-type='horizontal'>
-						<input type='checkbox' data-field='mon' id='mon_0' class='custom' data-mini='true' checked> <label for='mon_0'>maa</label>
-						<input type='checkbox' data-field='tue' id='tue_0' class='custom' data-mini='true' checked> <label for='tue_0'>din</label>
-						<input type='checkbox' data-field='wed' id='wed_0' class='custom' data-mini='true' checked> <label for='wed_0'>woe</label>
-						<input type='checkbox' data-field='thu' id='thu_0' class='custom' data-mini='true' checked> <label for='thu_0'>don</label>
-						<input type='checkbox' data-field='fri' id='fri_0' class='custom' data-mini='true' checked> <label for='fri_0'>vri</label>
-						<input type='checkbox' data-field='sat' id='sat_0' class='custom' data-mini='true'> <label id='id_sat_lab' for='sat_0'>zat</label>
-						<input type='checkbox' data-field='sun' id='sun_0' class='custom' data-mini='true'> <label id='id_sun_lab' for='sun_0'>zon</label>
+						<label><input type='checkbox' data-field='mon' class='custom' data-mini='true' checked>maa</label>
+						<label><input type='checkbox' data-field='tue' class='custom' data-mini='true' checked>din</label>
+						<label><input type='checkbox' data-field='wed' class='custom' data-mini='true' checked>woe</label>
+						<label><input type='checkbox' data-field='thu' class='custom' data-mini='true' checked>don</label>
+						<label><input type='checkbox' data-field='fri' class='custom' data-mini='true' checked>vri</label>
+						<label><input type='checkbox' data-field='sat' class='custom' data-mini='true'>zat</label>
+						<label><input type='checkbox' data-field='sun' class='custom' data-mini='true'> zon</label>
 					</div>
 				</div>
 				<div class='alarm_action'>
