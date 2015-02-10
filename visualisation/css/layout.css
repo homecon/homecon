@@ -24,6 +24,13 @@
 		visibility: hidden;
 	}
 }
+@media all and (max-width: 600px) {
+	#header .hide{
+		visibility: hidden;
+		width: 0;
+	}
+}
+
 
 /*****************************************************************************/
 /*                     Main menu                                             */
