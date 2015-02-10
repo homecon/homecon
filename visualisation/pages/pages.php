@@ -38,6 +38,10 @@
 						</div>
 					</div>
 				</section>
+				<section data-role='collapsible' data-theme='a' data-collapsed='false'>
+					<h1>Charts</h1>
+					<div data-role='chart' data-signals='1'></div>
+				</section>
 			</div>
 		</div>
 

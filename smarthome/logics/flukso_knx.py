@@ -14,7 +14,7 @@ for item in sh.building.flukso.return_children():
 		exec("data = " + line.replace("\"nan\"","0"))
 		#exec("data = " + line.replace("\"nan\"","float('nan')"))
 	
-		# check is there are measurements in the array
+		# check if there are measurements in the array
 		values = [row[1] for row in data]
 		if len(values)>0:
 			# calculate the average of all values and set item to this value

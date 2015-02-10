@@ -61,7 +61,7 @@ var knxcontrol = {
 	init: function(){
 		knxcontrol.get_items();
 		knxcontrol.get_alarms();
-		knxcontrol.get_measurements();
+		knxcontrol.measurement.get();
 		
 		// request the values of all items from smarthome.py
 		smarthome.monitor();
@@ -182,32 +182,50 @@ var knxcontrol = {
 			$('[data-role="action_list"]').trigger('update',action_id);
 		});
 	},
-	get_measurements: function(measurement_id){
-		var where = 'id>0';
-		if(measurement_id){
-			where = 'id='+measurement_id;
-		}
-		$.post('requests/select_from_table.php',{table: 'measurements_legend', column: '*', where: where},function(result){
-			var measurements = JSON.parse(result);
-			$.each(measurements,function(index,measurement){
-				knxcontrol.measurement[measurement.id] = {
-					id: measurement.id,
-					name: measurement.name,
-					item: measurement.item,
-					quantity: measurement.quantity,
-					unit: measurement.unit,
-					description: measurement.description,
-				};
-				$('[data-role="measurement_list"]').trigger('update',measurement.id);
+	measurement: {
+		// 1: {id: 1, name: 'Temperatuur', item: 'buiten.measurements.temperature', quantity: 'Temperature', unit: 'degC', description: 'Buiten temeratuur', data: []},
+		get: function(id){
+			var where = 'id>0';
+			if(id){
+				where = 'id='+id;
+			}
+			that = this;
+			$.post('requests/select_from_table.php',{table: 'measurements_legend', column: '*', where: where},function(result){
+				var results = JSON.parse(result);
+				$.each(results,function(index,result){
+					that[result.id] = {
+						id: result.id,
+						name: result.name,
+						item: result.item,
+						quantity: result.quantity,
+						unit: result.unit,
+						description: result.description,
+						data: []
+					};
+					$('[data-role="measurement_list"]').trigger('update',result.id);
+					//that.get_data(result.id);
+				});
+				$('[data-role="chart"]').trigger('get_data');
 			});
-		});
-	},
-	update_measurement: function(measurement_id,data_field,value){
-		// set the alarm in the database
-		$.post('requests/update_table.php',{table: 'measurements_legend', column: data_field, value: value, where: 'id='+measurement_id},function(result){
-			// on success update knxcontrol
-			knxcontrol.get_measurements(measurement_id);
-		});
+		},
+		update: function(id,field,value){
+			that = this;
+			$.post('requests/update_table.php',{table: 'measurements_legend', column: field, value: value, where: 'id='+id},function(result){
+				that.get(id);
+			});
+		},
+		get_data: function(id){
+			that = this;
+			$.post('requests/select_from_table.php',{table: 'measurements_quarterhouraverage', column: 'time,value', where: 'signal_id='+id+' AND time > '+((new Date()).getTime()/1000-7*27*3600), orderby: 'time'},function(result){
+				that[id].data = [];
+				
+				$.each(JSON.parse(result),function(index,value){
+					that[id].data.push([parseFloat(value.time)*1000,parseFloat(value.value)]);
+				});
+				$('[data-role="chart"]').trigger('update',id);
+				
+			});
+		}
 	},
 ////////////////////////////////////////////////////////////////////////
 // this will be moved to smarthome.py in the near future so no dev is happening and widget is broken	

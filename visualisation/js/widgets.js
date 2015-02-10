@@ -575,50 +575,52 @@ $.widget("knxcontrol.measurement_list",{
 		this.element.html('<div class="measurement_list"></div><a href="#" class="add" data-role="button" data-rel="popup">'+language.capitalize(language.add_measurement)+'</a>');
 		that = this;
 		$.each(knxcontrol.measurement,function(index,measurement){
-			that.update(measurement.id);
+			if(typeof measurement == 'object'){
+				that.update(measurement.id);
+			}
 		});
 		this.element.enhanceWithin();	
 
 		// bind events
 		this._on(this.element, {
-			'update': function(event,measurement_id){
-				this.update(measurement_id);
+			'update': function(event,id){
+				this.update(id);
 			},
 			'click a.edit': function(event){
 				// populate the popup
-				measurement_id = $(event.target).parents('.measurement').attr('data-id');
-				$('#measurement_def_popup').find('input[data-field="name"]').val(knxcontrol.measurement[measurement_id].name);
-				$('#measurement_def_popup').find('input[data-field="item"]').val(knxcontrol.measurement[measurement_id].item);
-				$('#measurement_def_popup').find('input[data-field="quantity"]').val(knxcontrol.measurement[measurement_id].quantity);
-				$('#measurement_def_popup').find('input[data-field="unit"]').val(knxcontrol.measurement[measurement_id].unit);
-				$('#measurement_def_popup').find('input[data-field="description"]').val(knxcontrol.measurement[measurement_id].description);
+				id = $(event.target).parents('.measurement').attr('data-id');
+				$('#measurement_def_popup').find('input[data-field="name"]').val(knxcontrol.measurement[id].name);
+				$('#measurement_def_popup').find('input[data-field="item"]').val(knxcontrol.measurement[id].item);
+				$('#measurement_def_popup').find('input[data-field="quantity"]').val(knxcontrol.measurement[id].quantity);
+				$('#measurement_def_popup').find('input[data-field="unit"]').val(knxcontrol.measurement[id].unit);
+				$('#measurement_def_popup').find('input[data-field="description"]').val(knxcontrol.measurement[id].description);
 				
-				$('#measurement_def_popup').find('#measurement_def_popup_save').attr('data-id',measurement_id);
+				$('#measurement_def_popup').find('#measurement_def_popup_save').attr('data-id',id);
 			}
 		});
 	},
-	update: function(measurement_id){
+	update: function(id){
 		// check if the measurement exists in knxcontrol
-		if(knxcontrol.measurement[measurement_id]){
+		if(knxcontrol.measurement[id]){
 			
 			// check if the measurement does not already exists in the DOM
-			if(this.element.find('.measurement_list').find('.measurement[data-id="'+measurement_id+'"]').length==0){
+			if(this.element.find('.measurement_list').find('.measurement[data-id="'+id+'"]').length==0){
 				//set ids
 				var newobject = template.measurement;
 				
-				newobject = newobject.replace(/_0/g, "_"+measurement_id);
+				newobject = newobject.replace(/_0/g, "_"+id);
 				
 				//add the measurement to the DOM
 				this.element.find('.measurement_list').append(newobject).enhanceWithin();
-				this.element.find('.measurement[data-id="0"]').attr('data-id',measurement_id);
+				this.element.find('.measurement[data-id="0"]').attr('data-id',id);
 			}
 			// update the measurement
-			this.element.find('.measurement[data-id="'+measurement_id+'"]').find('[data-field="id"]').html(measurement_id);
-			this.element.find('.measurement[data-id="'+measurement_id+'"]').find('[data-field="name"]').html(knxcontrol.measurement[measurement_id].name+'&nbsp;');
+			this.element.find('.measurement[data-id="'+id+'"]').find('[data-field="id"]').html(id);
+			this.element.find('.measurement[data-id="'+id+'"]').find('[data-field="name"]').html(knxcontrol.measurement[id].name+'&nbsp;');
 		}
 		else{
 			// remove the measurement from the DOM
-			this.element.find('.measurement[data-id="'+measurement_id+'"]').remove();
+			this.element.find('.measurement[data-id="'+id+'"]').remove();
 		}
 	}
 });
@@ -628,5 +630,74 @@ $(document).on('click','#measurement_def_popup_save',function(event){
 	data_field = ['name','item','quantity','unit','description'].join();
 	value = [$('#measurement_def_popup').find('input[data-field="name"]').val(),$('#measurement_def_popup').find('input[data-field="item"]').val(),$('#measurement_def_popup').find('input[data-field="quantity"]').val(),$('#measurement_def_popup').find('input[data-field="unit"]').val(),$('#measurement_def_popup').find('input[data-field="description"]').val()].join();
 	console.log(id);
-	knxcontrol.update_measurement(id,data_field,value);
+	knxcontrol.measurement.update(id,data_field,value);
+});
+
+/*****************************************************************************/
+/*                     chart                                                 */
+/*****************************************************************************/
+$.widget('knxcontrol.chart',{
+	options: {
+      signals: '',
+	  type: 'line'
+    },
+	_create: function(){
+		
+		// Enhance
+		Highcharts.setOptions({
+			global: {
+				useUTC: false
+			}
+		});
+		
+		this.chart_options.chart.type = this.options.type;
+		
+		if(this.options.type == 'line'){
+			this.chart_options.xAxis.range = 2 * 24 * 3600 * 1000;
+			this.chart_options.tooltip.xDateFormat='%Y-%m-%d %H:%M';
+			$(this.element).highcharts('StockChart',this.chart_options);
+		}
+		else{
+			$(this.element).highcharts(this.chart_options);
+		}
+		
+		this.chart = $(this.element).highcharts();
+		//this.update(this.options.signals);
+		
+		// bind events
+		this._on(this.element, {
+			'update': function(event,id){			
+				this.update(id);
+			},
+			'get_data': function(event){			
+				this.get_data();
+			}
+		});
+	},
+	update: function(id){
+		console.log(JSON.stringify(knxcontrol.measurement[id].data));
+		this.chart.addSeries({name: 'test' ,data: knxcontrol.measurement[id].data});
+	},
+	get_data: function(){
+		$.each((''+this.options.signals).split(),function(index,id){
+			knxcontrol.measurement.get_data(id);
+		});
+	},
+	chart: {},
+	chart_options: {
+		chart: {
+		},
+		xAxis: {
+			type: 'datetime',
+		},
+		tooltip: {
+			xDateFormat: '%Y-%m-%d',
+			valueDecimals: 1,
+			shared: true
+		},
+		rangeSelector : {
+			enabled: false
+		},
+		series: []
+	}
 });
