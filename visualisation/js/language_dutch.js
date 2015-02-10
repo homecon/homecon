@@ -11,6 +11,7 @@ language = {
 	select_action: 'selecteer actie',
 	add_action: 'actie toevoegen',
 	add_measurement: 'meting toevoegen',
+	export_measurements: 'metingen exporteren',
 // methods
 // capitalize 1st letter	
 	capitalize: function(string){

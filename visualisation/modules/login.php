@@ -5,15 +5,15 @@
 				<section data-role='collapsible' data-theme='a' data-content-theme='b' data-collapsed='false'>
 					<h1>Couple device</h1>
 					<form action='index.php' method='post' name='login' class='login'>
-						<div data-role='fieldcontain' class='ui-hide-label'>
+						<div class='ui-field-contain ui-hide-label'>
 							<label for='username'>Usernaam:</label>
 							<input type='text' id='username' name='username' placeholder='Usernaam'>
 						</div>
-						<div data-role='fieldcontain' class='ui-hide-label'>
+						<div class='ui-field-contain ui-hide-label'>
 							<label for='password'>Paswoord:</label>
 							<input type='password' id='password' name='password' placeholder='Paswoord'>
 						</div>
-						<div data-role='fieldcontain' class='ui-hide-label'>
+						<div class='ui-field-contain ui-hide-label'>
 							<label for='login'>Login:</label>
 							<input type='submit' value='Login' name='login' id='login'>
 						</div>

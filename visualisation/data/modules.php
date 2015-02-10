@@ -18,8 +18,7 @@
 				
 				<section data-role='collapsible' data-theme='a' data-collapsed='false'>
 					<h1>Actions</h1>
-					<div data-role='action_list'>
-					</div>
+					<div data-role='action_list'></div>
 				</section>
 				
 			</div>
@@ -34,11 +33,13 @@
 				</header>
 				
 				<section data-role='collapsible' data-theme='a' data-collapsed='false'>
-					<h1>Measurements</h1>
-					<div data-role='measurement_list'>
-					</div>
+					<h1>List</h1>
+					<div data-role='measurement_list'></div>
 				</section>
-				
+				<section data-role='collapsible' data-theme='a' data-collapsed='false'>
+					<h1>Export</h1>
+					<div data-role='measurement_export'></div>
+				</section>
 			</div>
 		</div>
 		

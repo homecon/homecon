@@ -435,7 +435,6 @@ $.widget("knxcontrol.alarm",{
 				this.element.find('.alarm[data-id="'+id+'"]').find('[data-field="fri"]').prop('checked', !!+knxcontrol.alarm[id].fri).checkboxradio('refresh');
 				this.element.find('.alarm[data-id="'+id+'"]').find('[data-field="sat"]').prop('checked', !!+knxcontrol.alarm[id].sat).checkboxradio('refresh');
 				this.element.find('.alarm[data-id="'+id+'"]').find('[data-field="sun"]').prop('checked', !!+knxcontrol.alarm[id].sun).checkboxradio('refresh');
-				
 			}
 		}
 		else{
@@ -637,6 +636,41 @@ $(document).on('click','#measurement_def_popup_save',function(event){
 	value = [$('#measurement_def_popup').find('input[data-field="name"]').val(),$('#measurement_def_popup').find('input[data-field="item"]').val(),$('#measurement_def_popup').find('input[data-field="quantity"]').val(),$('#measurement_def_popup').find('input[data-field="unit"]').val(),$('#measurement_def_popup').find('input[data-field="description"]').val()].join();
 	console.log(id);
 	knxcontrol.measurement.update(id,data_field,value);
+});
+
+/*****************************************************************************/
+/*                     measurement export                                    */
+/*****************************************************************************/
+$.widget("knxcontrol.measurement_export",{
+	options: {
+	},
+	_create: function(){
+		// enhance
+		this.element.html('<div class="ui-field-contain">Startdate:<input type="date" class="startdate"></div><div class="ui-field-contain">Enddate:<input type="date" class="enddate"></div><a href="#" class="export" data-role="button" data-rel="popup">'+language.capitalize(language.export_measurements)+'</a>');
+		that = this;
+		$.each(knxcontrol.measurement,function(index,measurement){
+			if(typeof measurement == 'object'){
+				that.update(measurement.id);
+			}
+		});
+		this.element.enhanceWithin();	
+
+		// bind events
+		this._on(this.element, {
+			'update': function(event,id){
+				this.update(id);
+			},
+			'click a.export': function(event){
+				// get start and end date
+				
+				var startdate = $(this.element.find('input.startdate')).val();
+				var enddate   = $(this.element.find('input.enddate')).val();
+
+				// not sure if this will work
+				window.open('requests/measurements_export.php?table=measurements&startdate='+startdate+'&enddate='+enddate);
+			}
+		});
+	}
 });
 
 /*****************************************************************************/
