@@ -33,9 +33,7 @@
 				<section data-role='collapsible' data-theme='a' data-collapsed='false'>
 					<h1>Light</h1>
 					<div class='group'>
-						<div data-role='shading' data-item='central.shading.shading_firstfloor'>
-							Shading first floor
-						</div>
+						<div data-role='shading' data-item='central.shading.shading_firstfloor' data-label='Shading first floor'></div>
 					</div>
 				</section>
 				<section data-role='collapsible' data-theme='a' data-collapsed='false'>
@@ -64,26 +62,14 @@
 						<a id='$id' href='#' data-widget='button' data-item='living.scenes' data-value='3' data-role='button' data-mini='true'>Lights off</a>
 					</div>
 					<div class='group'>
-						<div data-role='lightswitch' data-item='living.lights.spots_eiland'>
-							Kitchen spots
-						</div>
-						<div data-role='lightswitch' data-item='living.lights.licht_eiland'>
-							Kitchen
-						</div>
-						<div data-role='lightswitch' data-item='living.lights.licht_eettafel'>
-							Dinner table spots
-						</div>
-						<div data-role='lightswitch' data-item='living.lights.licht_zithoek'>
-							Dinner table
-						</div>
+						<div data-role='lightswitch' data-item='living.lights.spots_eiland' data-label='Kitchen spots'></div>
+						<div data-role='lightswitch' data-item='living.lights.licht_eiland' data-label='Kitchen'></div>
+						<div data-role='lightswitch' data-item='living.lights.licht_eettafel' data-label='Dinner table spots'></div>
+						<div data-role='lightswitch' data-item='living.lights.licht_zithoek' data-label='Dinner table'></div>
 					</div>
 					<div class='group'>
-						<div data-role='lightdimmer' data-item='living.lights.spots_zithoek.value'>
-							TV lights
-						</div>
-						<div data-role='lightdimmer' data-item='living.lights.mood_light.value'>
-							Mood lights
-						</div>
+						<div data-role='lightdimmer' data-item='living.lights.spots_zithoek.value' data-label='TV lights'></div>
+						<div data-role='lightdimmer' data-item='living.lights.mood_light.value' data-label='Mood lights'></div>
 					</div>
 				</section>
 				

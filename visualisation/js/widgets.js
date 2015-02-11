@@ -58,6 +58,7 @@ $.widget('knxcontrol.displayvalue',{
 /*****************************************************************************/                                                             //
 $.widget('knxcontrol.lightswitch',{
 	options: {
+		label: '',
 		item: '',
 		src_on: 'icons/or/light_light.png',
 		src_off: 'icons/ws/light_light.png',
@@ -65,8 +66,7 @@ $.widget('knxcontrol.lightswitch',{
 	
 	_create: function(){
 		// enhance
-		var text = this.element.html();
-		this.element.html('<a href="#"><img src="'+this.options.src_off+'">'+text+'</a>');
+		this.element.html('<a href="#"><img src="'+this.options.src_off+'">'+this.options.label+'</a>');
 		this.update();
 		
 		// bind events
@@ -99,6 +99,7 @@ $.widget('knxcontrol.lightswitch',{
 /*****************************************************************************/                                                             //
 $.widget("knxcontrol.lightdimmer",{
 	options: {
+		label: '', 
 		item: '',
 		src_on: 'icons/or/light_light.png',
 		src_off: 'icons/ws/light_light.png',
@@ -108,8 +109,7 @@ $.widget("knxcontrol.lightdimmer",{
 	lock: false,
 	_create: function(){
 		// enhance
-		var text = this.element.html();
-		this.element.html('<p>'+text+'</p><a href="#"><img src="icons/ws/light_light.png"></a><input type="range" value="'+this.options.val_off+'" min="'+this.options.val_off+'" max="'+this.options.val_on+'" step="'+(this.options.val_on-this.options.val_off)/51+'" data-highlight="true"/>');
+		this.element.html('<p>'+this.options.label+'</p><a href="#"><img src="icons/ws/light_light.png"></a><input type="range" value="'+this.options.val_off+'" min="'+this.options.val_off+'" max="'+this.options.val_on+'" step="'+(this.options.val_on-this.options.val_off)/51+'" data-highlight="true"/>');
 		this.element.enhanceWithin();
 		this.update();
 		
@@ -162,6 +162,7 @@ $.widget("knxcontrol.lightdimmer",{
 /*****************************************************************************/ 
 $.widget("knxcontrol.shading",{
 	options: {
+		label: '',
 		item: '',
 		val_on: 255,
 		val_off: 0
@@ -169,7 +170,7 @@ $.widget("knxcontrol.shading",{
 	_create: function(){
 		// enhance
 		var text = this.element.html();
-		this.element.html('<p>'+text+'</p><a href="#" class="open"><img src="icons/ws/fts_shutter_10.png"></a><a href="#" class="close"><img src="icons/ws/fts_shutter_100.png"></a><input type="range" value="'+this.options.val_off+'" min="'+this.options.val_off+'" max="'+this.options.val_on+'" step="'+(this.options.val_on-this.options.val_off)/51+'" data-highlight="true"/>');
+		this.element.html('<p>'+this.options.label+'</p><a href="#" class="open"><img src="icons/ws/fts_shutter_10.png"></a><a href="#" class="close"><img src="icons/ws/fts_shutter_100.png"></a><input type="range" value="'+this.options.val_off+'" min="'+this.options.val_off+'" max="'+this.options.val_on+'" step="'+(this.options.val_on-this.options.val_off)/51+'" data-highlight="true"/>');
 		this.element.enhanceWithin();
 		this.update();
 		

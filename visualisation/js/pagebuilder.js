@@ -46,9 +46,18 @@ pagebuilder = {
 							name: '',
 							type: '',
 							widget: [],
-							add_widget: function(widget,options){
+							update: function(name,type){
+								this.name = name;
+								this.type = type;
+							},
+							add_widget: function(type,options){
 								this.widget.push({
-									
+									type: type,
+									options: options,
+									update: function(type,options){
+										this.type = type;
+										this.options = options;
+									}
 								});
 							},
 							del: function(){
@@ -64,29 +73,29 @@ pagebuilder = {
 						console.log('rendering');
 						// add the page elements to the DOM for temporary displaying
 						// clear the container and start fresh
-						$('#pagebuilder div').empty();
+						$('#pagebuilder>div').empty();
 						// add header
-						$('#pagebuilder div').append('<header><img src="icons/ws/'+this.img+'"><h1>'+this.name+'</h1></header>');
+						$('#pagebuilder>div').append('<header><img src="icons/ws/'+this.img+'"><h1>'+this.name+'</h1></header>');
 						if(this.temperature_item != ''){
-							$('#pagebuilder div header').append('<div class="value"><span data-role="displayvalue" data-item="'+this.temperature_item+'" data-digits="1"></span>&deg;C</div>');
+							$('#pagebuilder>div header').append('<div class="value"><span data-role="displayvalue" data-item="'+this.temperature_item+'" data-digits="1"></span>&deg;C</div>');
 						}
 						
 						// sections
 						$.each(this.section,function(index,section){
 							if(section.type=='collabsible'){
-								$('#pagebuilder div').append('<section data-role="collapsible" data-theme="a" data-collapsed="false" data-id="'+index+'"><h1>'+section.name+'</h1>');
+								$('#pagebuilder>div').append('<section data-role="collapsible" data-theme="a" data-collapsed="false" data-id="'+index+'"><h1>'+section.name+'</h1>');
 							}
 							else if(section.type=='collabsible'){
-								$('#pagebuilder div').append('<section data-role="collapsible" data-theme="a" data-collapsed="true" data-id="'+index+'"><h1>'+section.name+'</h1>');
+								$('#pagebuilder>div').append('<section data-role="collapsible" data-theme="a" data-collapsed="true" data-id="'+index+'"><h1>'+section.name+'</h1>');
 							}
 							else{
-								$('#pagebuilder div').append('<section data-id="'+index+'">');
+								$('#pagebuilder>div').append('<section data-id="'+index+'"></section>');
 							}
 							// widgets
+							section_index = index;
 							$.each(section.widget,function(index,widget){
-								$('#pagebuilder div').append('<div data-role="'+widget+'" '+options+' data-id="'+index+'"></div>');
+								$('#pagebuilder>div section[data-id="'+section_index+'"]').append('<div data-role="'+widget.type+'" '+widget.options+' data-id="'+index+'"></div>');
 							});
-							$('#pagebuilder div').append('</section>');
 						});
 						
 						// enhance
@@ -107,11 +116,17 @@ pagebuilder.add_section();
 pagebuilder.section[0].update('firstfloor','First floor');
 pagebuilder.section[0].add_page();
 pagebuilder.section[0].page[0].update('living','Living','scene_livingroom.png','living.measurements.temperature');
-console.log(JSON.stringify(pagebuilder));
+pagebuilder.section[0].page[0].add_section();
+pagebuilder.section[0].page[0].section[0].update('Light','collabsible');
+pagebuilder.section[0].page[0].section[0].add_widget('lightswitch','data-item="item1" data-label="Lightswitch"');
+pagebuilder.section[0].page[0].section[0].add_widget('lightswitch','data-item="item1" data-label="Lightswitch"');
+pagebuilder.section[0].page[0].section[0].add_widget('lightdimmer','data-item="item2" data-label="Lightdimmer"');
+
 
 $(document).on('pageinit','#pagebuilder',function(){
 	pagebuilder.section[0].page[0].render();
 });
+
 
 /* example model
 pagebuilder = {
