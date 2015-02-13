@@ -66,12 +66,12 @@ $.widget('knxcontrol.lightswitch',{
 	
 	_create: function(){
 		// enhance
-		this.element.html('<a href="#"><img src="'+this.options.src_off+'">'+this.options.label+'</a>');
+		this.element.prepend('<a href="#" class="switch"><img src="'+this.options.src_off+'">'+this.options.label+'</a>');
 		this.update();
 		
 		// bind events
 		this._on(this.element, {
-            'click a': function(event){
+            'click a.switch': function(event){
 				var item = this.options.item;
 				// update the value in smarthome
 				smarthome.write(item, (knxcontrol.item[item]+1)%2);
@@ -109,7 +109,7 @@ $.widget("knxcontrol.lightdimmer",{
 	lock: false,
 	_create: function(){
 		// enhance
-		this.element.html('<p>'+this.options.label+'</p><a href="#"><img src="icons/ws/light_light.png"></a><input type="range" value="'+this.options.val_off+'" min="'+this.options.val_off+'" max="'+this.options.val_on+'" step="'+(this.options.val_on-this.options.val_off)/51+'" data-highlight="true"/>');
+		this.element.prepend('<p>'+this.options.label+'</p><a href="#" class="switch"><img src="icons/ws/light_light.png"></a><input type="range" value="'+this.options.val_off+'" min="'+this.options.val_off+'" max="'+this.options.val_on+'" step="'+(this.options.val_on-this.options.val_off)/51+'" data-highlight="true"/>');
 		this.element.enhanceWithin();
 		this.update();
 		
@@ -121,7 +121,7 @@ $.widget("knxcontrol.lightdimmer",{
 					knxcontrol.item.update(item,this.element.find('input').val());
 				}
 			},
-            'click a.ui-link': function(event){
+            'click a.switch': function(event){
 				var item = this.options.item;
 				// update the value in smarthome
 				if( knxcontrol.item[item] > this.options.val_off){
@@ -170,7 +170,7 @@ $.widget("knxcontrol.shading",{
 	_create: function(){
 		// enhance
 		var text = this.element.html();
-		this.element.html('<p>'+this.options.label+'</p><a href="#" class="open"><img src="icons/ws/fts_shutter_10.png"></a><a href="#" class="close"><img src="icons/ws/fts_shutter_100.png"></a><input type="range" value="'+this.options.val_off+'" min="'+this.options.val_off+'" max="'+this.options.val_on+'" step="'+(this.options.val_on-this.options.val_off)/51+'" data-highlight="true"/>');
+		this.element.prepend('<p>'+this.options.label+'</p><a href="#" class="open"><img src="icons/ws/fts_shutter_10.png"></a><a href="#" class="close"><img src="icons/ws/fts_shutter_100.png"></a><input type="range" value="'+this.options.val_off+'" min="'+this.options.val_off+'" max="'+this.options.val_on+'" step="'+(this.options.val_on-this.options.val_off)/51+'" data-highlight="true"/>');
 		this.element.enhanceWithin();
 		this.update();
 		
@@ -219,7 +219,7 @@ $.widget("knxcontrol.clock",{
     },
 	_create: function(){
 		// enhance
-		this.element.html('<div class="time"><div><img class="bg" src="icons/clock/clockbg1.png"><img class="hoursLeft" src="icons/clock/0.png"/><img class="hoursRight" src="icons/clock/1.png"/><hr></div><div><img class="bg" src="icons/clock/clockbg1.png"><img class="minutesLeft" src="icons/clock/2.png"/><img class="minutesRight" src="icons/clock/3.png"/><hr></div></div><div class="date">1 januari 2015</div>');
+		this.element.prepend('<div class="time"><div><img class="bg" src="icons/clock/clockbg1.png"><img class="hoursLeft" src="icons/clock/0.png"/><img class="hoursRight" src="icons/clock/1.png"/><hr></div><div><img class="bg" src="icons/clock/clockbg1.png"><img class="minutesLeft" src="icons/clock/2.png"/><img class="minutesRight" src="icons/clock/3.png"/><hr></div></div><div class="date">1 januari 2015</div>');
 		this.element.enhanceWithin();
 		
 		// bind events
@@ -309,7 +309,7 @@ $.widget("knxcontrol.current_weather",{
     },
 	_create: function(){
 		// enhance
-		this.element.html('<img src="icons/weather/blank.png"><div><span data-role="displayvalue" data-item="'+this.options.item_temperature+'"></span>&deg;C</div><div><span data-role="displayvalue" data-item="'+this.options.item_windspeed+'"></span>m/s <span data-role="displayvalue" data-item="'+this.options.item_winddirection+'">m/s</span></div><div><span data-role="displayvalue" data-item="'+this.options.item_irradiation+'"></span>W/m<sup>2</sup></div>');
+		this.element.prepend('<img src="icons/weather/blank.png"><div><span data-role="displayvalue" data-item="'+this.options.item_temperature+'"></span>&deg;C</div><div><span data-role="displayvalue" data-item="'+this.options.item_windspeed+'"></span>m/s <span data-role="displayvalue" data-item="'+this.options.item_winddirection+'">m/s</span></div><div><span data-role="displayvalue" data-item="'+this.options.item_irradiation+'"></span>W/m<sup>2</sup></div>');
 		this.element.enhanceWithin();
 		
 		// bind events
@@ -351,7 +351,7 @@ $.widget("knxcontrol.alarm",{
     },
 	_create: function(){
 		// enhance
-		this.element.html('<div class="alarm_list"></div><a class="add" data-role="button">'+language.capitalize(language.add_alarm)+'</a>');
+		this.element.prepend('<div class="alarm_list"></div><a class="add" data-role="button">'+language.capitalize(language.add_alarm)+'</a>');
 		that = this;
 		$.each(knxcontrol.alarm,function(index,alarm){
 			if(typeof alarm == 'object'){

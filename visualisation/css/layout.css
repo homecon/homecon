@@ -109,7 +109,7 @@
 
 
 @media all and (min-width: 800px) {
-	.ui-content{
+	div [data-role="content"]{
 		position: absolute;
 		left: 38%;
 		width: 58%;

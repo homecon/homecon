@@ -110,9 +110,9 @@ render_page = function(page){
 		// widgets
 		section_index = index;
 		$.each(section.widget,function(index,widget){
-			$('#renderpage section[data-id="'+section_index+'"]').append('<div data-role="'+widget.type+'" '+widget.options+' data-id="'+index+'"></div>');
+			$('#renderpage section[data-id="'+section_index+'"]').append('<div data-role="'+widget.type+'" '+widget.options+' data-id="'+index+'"><a href"#" class="edit_widget" data-role="button" data-rel="popup" data-icon="grid" data-mini="true" data-iconpos="notext" data-inline="true">Edit</a></div>');
 		});
-		$('#renderpage section[data-id="'+section_index+'"]').append('<a class="add_widget" data-role="button" data-id="'+page.id+'">Add widget</a>');
+		$('#renderpage section[data-id="'+section_index+'"]').append('<fieldset class="ui-grid-a"><div class="ui-block-a"><select  data-native-menu="false"><option>Select Widget</option></select></div><div class="ui-block-b"><a href="#" class="add_widget" data-role="button" data-id="'+page.id+'">Add</a></div>');
 	});
 	$('#renderpage').append('<a data-role="button" data-id="'+page.id+'">Add section</a>');
 	
@@ -150,7 +150,7 @@ pagebuilder.section[0].page[0].section[0].update('Light','collabsible');
 pagebuilder.section[0].page[0].section[0].add_widget('lightswitch','data-item="item1" data-label="Lightswitch"');
 pagebuilder.section[0].page[0].section[0].add_widget('lightswitch','data-item="item1" data-label="Lightswitch"');
 pagebuilder.section[0].page[0].section[0].add_widget('lightdimmer','data-item="item2" data-label="Lightdimmer"');
-
+pagebuilder.section[0].page[0].section[0].add_widget('shading','data-item="item3" data-label="Shading"');
 
 $(document).on('pageinit','#pagebuilder',function(){
 	
@@ -158,9 +158,6 @@ $(document).on('pageinit','#pagebuilder',function(){
 	pagebuilder.section[0].page[0].render();
 });
 
-$(document).on('click','a.add_widget',function() {
-	$("#widget_def_popup").popup('open');
-});
 
 /* example model
 pagebuilder = {

@@ -6,13 +6,20 @@
 // 
 //
 
-
+/*****************************************************************************/
+/*                     General                                               */
+/*****************************************************************************/
+a.edit_widget{
+	position: absolute;
+	margin: 0;
+	z-index: 1001;
+}
 /*****************************************************************************/
 /*                     Light switch                                          */
 /*****************************************************************************/
-
 div[data-role="lightswitch"]{
 	display: inline-block;
+	position: relative;
 	height: 50px;
 	width: 49%;
 	min-width: 200px;
@@ -30,11 +37,23 @@ div[data-role="lightswitch"] a:hover {
 	color: #FFF;
 }
 
+#pagebuilder div[data-role="lightswitch"]{
+	margin-bottom: 5px;
+	margin-right: 1%;
+	width: 45%;
+	border: solid 1px #222;
+}
+#pagebuilder div[data-role="lightswitch"] a.edit_widget{
+    top: -5px;
+	right: -5px;
+}
+
 /*****************************************************************************/
 /*                     Light dimmer                                          */
 /*****************************************************************************/
 div[data-role="lightdimmer"]{
 	display: inline-block;
+	position: relative;
 	height: 60px;
 	width: 90%;
 }
@@ -57,6 +76,13 @@ div[data-role="lightdimmer"] .ui-slider input{
 	visibility: hidden;
 }
 
+#pagebuilder div[data-role="lightdimmer"]{
+	border: solid 1px #222;
+}
+#pagebuilder div[data-role="lightdimmer"] a.edit_widget{
+    top: -5px;
+	right: -5px;
+}
 
 
 /*****************************************************************************/
@@ -64,6 +90,7 @@ div[data-role="lightdimmer"] .ui-slider input{
 /*****************************************************************************/
 div[data-role="shading"]{
 	display: inline-block;
+	position: relative;
 	height: 70px;
 	width: 98%;
 }
@@ -96,8 +123,18 @@ div[data-role="shading"] .ui-slider input{
 	visibility: hidden;
 	width: 0;
 }
-
-
+div[data-role="shading"] a.edit_widget{
+	position: absolute;
+    top: -10px;
+	right: 50px;
+}
+#pagebuilder div[data-role="shading"]{
+	border: solid 1px #222;
+}
+#pagebuilder div[data-role="shading"] a.edit_widget{
+    top: -5px;
+	right: -5px;
+}
 
 /*****************************************************************************/
 /*                     Alarm                                                 */
