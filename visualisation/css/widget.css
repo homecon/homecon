@@ -19,7 +19,7 @@ div[data-role="lightswitch"]{
 }
 div[data-role="lightswitch"] a{
 	text-decoration: none;
-	color: #FFF;
+	color: #FFF !important;
 }
 div[data-role="lightswitch"] img{
 	height: 50px;

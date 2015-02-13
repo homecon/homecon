@@ -43,6 +43,24 @@
 			</div>
 		</div>
 		
+
+		<div id='pagebuilder' data-role='page' data-theme='b'>
+			<div id='renderpage' data-role='content'>
+			</div>
+			
+			<div id='menu_section_def_popup' class='ui-content' data-role='popup' data-position-to='window' data-theme='b' data-overlay-theme='b'>
+				test 123
+			</div>
+			<div id='page_def_popup' class='ui-content' data-role='popup' data-position-to='window' data-theme='b' data-overlay-theme='b'>
+				test 123
+			</div>
+			<div id='page_section_def_popup' class='ui-content' data-role='popup' data-position-to='window' data-theme='b' data-overlay-theme='b'>
+				test 123
+			</div>
+			<div id='widget_def_popup' class='ui-content' data-role='popup' data-position-to='window' data-theme='b' data-overlay-theme='b'>
+				<h3>Add widget</h3>
+			</div>
+		</div>
 		
 		<div id='action_def_popup' class='ui-content' data-role='popup' data-position-to='window' data-theme='b' data-overlay-theme='b'>
 			<div data-role='fieldcontain'>

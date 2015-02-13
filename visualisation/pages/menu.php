@@ -1,6 +1,6 @@
 
-		<div id='menu' data-role='panel' data-display='overlay' data-position='left' data-theme='b'>
-			<nav data-role='collapsible-set' data-corners='false' data-inset='false'>	
+		<div id='menu' class='menupanel' data-role='panel' data-display='overlay' data-position='left' data-theme='b'>
+			<nav id="mainmenu" data-role='collapsible-set' data-corners='false' data-inset='false'>	
 			
 				<section data-role='collapsible' data-section='central' data-theme='a' data-content-theme='b'>
 					<h1>Central</h1>
@@ -30,5 +30,7 @@
 					</ul>
 				</section>
 				
-			</nav>	
+			</nav>
+			<nav id="rendermenu" data-role='collapsible-set' data-corners='false' data-inset='false'>
+			</nav>
 		</div>
