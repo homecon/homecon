@@ -68,9 +68,6 @@ pagebuilder = {
 					},
 					del: function(){
 						delete this;
-					},
-					render: function(){
-						render_page(this);
 					}
 				});
 			},
@@ -85,11 +82,21 @@ pagebuilder = {
 /*****************************************************************************/
 /*                     views                                                 */
 /*****************************************************************************/
-render_page = function(page){
+render_page = function(section_id,page_id){
 	console.log('rendering page');
+	page = pagebuilder.section[section_id].page[page_id];
+	
+	var select_widget_values = {};
+	// if the page is rebuilt get the widget select values
+	$.each($('#renderpage').find('select.select_widget'),function(index,select){
+		select_widget_values[$(select).parents('section').attr('data-id')] = $(select).val();
+	});
+
 	// add the page elements to the DOM for temporary displaying
 	// clear the container and start fresh
 	$('#renderpage').empty();
+	$('#renderpage').attr('data-page_id',page_id);
+	$('#renderpage').attr('data-page_section_id',section_id);
 	// add header
 	$('#renderpage').append('<header><img src="icons/ws/'+page.img+'"><h1>'+page.name+'</h1></header>');
 	if(page.temperature_item != ''){
@@ -112,14 +119,18 @@ render_page = function(page){
 		$.each(section.widget,function(index,widget){
 			$('#renderpage section[data-id="'+section_index+'"]').append('<div data-role="'+widget.type+'" '+widget.options+' data-id="'+index+'"><a href"#" class="edit_widget" data-role="button" data-rel="popup" data-icon="grid" data-mini="true" data-iconpos="notext" data-inline="true">Edit</a></div>');
 		});
-		$('#renderpage section[data-id="'+section_index+'"]').append('<fieldset class="ui-grid-a"><div class="ui-block-a"><select  data-native-menu="false"><option>Select Widget</option></select></div><div class="ui-block-b"><a href="#" class="add_widget" data-role="button" data-id="'+page.id+'">Add</a></div>');
+		$('#renderpage section[data-id="'+section_index+'"]').append('<fieldset class="ui-grid-a"><div class="ui-block-a"><select class="select_widget" data-native-menu="false"><option>Select Widget</option></select></div><div class="ui-block-b"><a href="#" class="add_widget" data-role="button" data-id="'+page.id+'">Add</a></div>');
+		$('#renderpage section[data-id="'+section_index+'"] select').append('<option value="lightswitch">Light switch</option>');
+		if(index in select_widget_values){
+			$('#renderpage section[data-id="'+section_index+'"] select').val(select_widget_values[index]);
+		}
 	});
 	$('#renderpage').append('<a data-role="button" data-id="'+page.id+'">Add section</a>');
 	
 	// enhance
 	$('#pagebuilder').enhanceWithin();
 }
-
+	
 render_menu = function(){
 	console.log('rendering menu');
 	$('#rendermenu').empty();
@@ -139,7 +150,27 @@ render_menu = function(){
 	$('#menu').enhanceWithin();
 }
 
-			
+
+/*****************************************************************************/
+/*                     controls                                              */
+/*****************************************************************************/
+$(document).on('click','a.add_widget',function(){
+
+	var page_section_id = $(this).parents('#renderpage').attr('data-page_section_id');
+	var page_id = $(this).parents('#renderpage').attr('data-page_id');
+	var section_id = $(this).parents('section').attr('data-id');
+	
+	var widget_type = $(this).parents('section').find('select.select_widget').val();
+
+	if(widget_type!='Select Widget'){
+		pagebuilder.section[page_section_id].page[page_id].section[section_id].add_widget(widget_type,'');
+		render_page(page_section_id,page_id);
+	}
+	
+});
+
+
+
 // test
 pagebuilder.add_section();
 pagebuilder.section[0].update('firstfloor','First floor');
@@ -155,7 +186,7 @@ pagebuilder.section[0].page[0].section[0].add_widget('shading','data-item="item3
 $(document).on('pageinit','#pagebuilder',function(){
 	
 	render_menu();
-	pagebuilder.section[0].page[0].render();
+	render_page(0,0);
 });
 
 
