@@ -8,7 +8,9 @@
 		$column = $_POST['column'];
 		$value = $_POST['value'];
 		
-
+		$column = str_replace(';',',', $column);
+		$value  = str_replace(';',',', $value);
+		
 		// insert into the table
 		$query = "INSERT INTO $table ($column) VALUES ($value)";
 		$result = mysql_query($query) or die('Error: ' . mysql_error());

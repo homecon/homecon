@@ -119,7 +119,7 @@ var knxcontrol = {
 			});
 		},
 		add: function(section_id){
-			$.post('requests/insert_into_table.php',{table: 'alarms', column: ['hour','minute','sectionid','mon','tue','wed','thu','fri','sat','sun','action_id'].join(), value: [12,0,section_id,1,1,1,1,1,0,0,0].join()},function(result){
+			$.post('requests/insert_into_table.php',{table: 'alarms', column: ['hour','minute','sectionid','mon','tue','wed','thu','fri','sat','sun','action_id'].join(';'), value: [12,0,section_id,1,1,1,1,1,0,0,0].join(';')},function(result){
 				alarm_id = JSON.parse(result);
 				alarm_id = alarm_id[0];
 				
@@ -171,7 +171,7 @@ var knxcontrol = {
 			});
 		},
 		add: function(){
-			$.post('requests/insert_into_table.php',{table: 'alarm_actions', column: ['name','sectionid','delay1'].join(), value: ['Name',0,0].join()},function(result){
+			$.post('requests/insert_into_table.php',{table: 'alarm_actions', column: ['name','sectionid','delay1'].join(';'), value: ['Name',0,0].join(';')},function(result){
 				id = JSON.parse(result);
 				id = id[0];
 				// add the action to knxcontrol

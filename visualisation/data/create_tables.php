@@ -197,6 +197,24 @@ if($res){
 else{
 	echo "setpoints table creation failed <br>";
 }
-															  
+				
+// Pagebuilder
+$res = mysql_query( "CREATE TABLE IF NOT EXISTS `pagebuilder` (	`id` int(11) NOT NULL AUTO_INCREMENT,
+																`model` MEDIUMTEXT DEFAULT NULL,
+																PRIMARY KEY (`id`)) ENGINE=InnoDB  DEFAULT CHARSET=latin1 AUTO_INCREMENT=1");													
+// add default data
+$res = mysql_query("INSERT INTO `pagebuilder` (id,model) VALUES (1,'[{\"id\":\"home\",\"name\":\"Home\",\"page\":[{\"id\":\"home\",\"name\":\"Home\",\"img\":\"\",\"temperature_item\":\"\",\"section\":[]}]}]'");
+												
+if($res){
+	echo "default data added<br>";
+}
+if($res){
+	echo "pagebuilder table created<br>";
+}
+else{
+	echo "pagebuilder table creation failed <br>";
+}
+
+				
 echo "finished";
 ?>

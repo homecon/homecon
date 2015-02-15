@@ -48,8 +48,10 @@
 			<div id='renderpage' data-role='content'>
 			</div>
 			
-			<div id='menu_section_def_popup' class='ui-content' data-role='popup' data-position-to='window' data-theme='b' data-overlay-theme='b'>
-				test 123
+			<div id='section_def_popup' class='ui-content' data-role='popup' data-position-to='window' data-theme='b' data-overlay-theme='b'>
+				<input type='text' data-field='name'>
+				<a id='section_def_popup_save' data-role='button' data-id='1'>Save</a>
+				<a href="#" data-rel="back" data-role="button" data-theme="b" data-icon="delete" data-iconpos="notext" class="ui-btn-right">Close</a>
 			</div>
 			<div id='page_def_popup' class='ui-content' data-role='popup' data-position-to='window' data-theme='b' data-overlay-theme='b'>
 				test 123

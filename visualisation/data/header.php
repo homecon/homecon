@@ -6,6 +6,7 @@
 				<a class='hide' href='#measurements'><img src='icons/ws/measure_power_meter.png'></a>
 				<a class='hide' href='#settings'><img src='icons/ws/edit_settings.png'></a>
 				<a class='hide' href='#pagebuilder'><img src='icons/ws/time_note.png'></a>
+				<a class='pagebuilder save' href='#'><img src='icons/ws/edit_save.png'></a>
 				<a href='#' id='menu_button'><img src='icons/ws/control_bars.png'></a>
 			</nav>
 		</div>

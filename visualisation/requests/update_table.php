@@ -6,11 +6,12 @@
 		
 		$table = $_POST['table'];
 		$column = $_POST['column'];
+		
 		$value = $_POST['value'];
 		$where = $_POST['where'];
 		
-		$column = explode(',', $column);
-		$value  = explode(',', $value);
+		$column = explode(';', $column);
+		$value  = explode(';', $value);
 		
 		// convert column, value pairs to column=value set
 		$set = array();
@@ -22,7 +23,6 @@
 			$set[] = $column[$i].'='.$value[$i];
 		}
 		$set = implode(',',$set);
-		
 		
 		$query = "UPDATE $table SET $set WHERE $where";
 		$result = mysql_query($query) or die('MySQL Error: ' . mysql_error());

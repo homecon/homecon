@@ -13,6 +13,14 @@ a.edit_widget{
 	position: absolute;
 	margin: 0;
 }
+a.edit_section{
+	/*position: relative;
+	margin: 0;*/
+}
+a.edit_page{
+	position: absolute;
+	margin: 0;
+}
 /*****************************************************************************/
 /*                     Light switch                                          */
 /*****************************************************************************/
