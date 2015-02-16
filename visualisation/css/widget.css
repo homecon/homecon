@@ -21,11 +21,10 @@ a.edit_page{
 	position: absolute;
 	margin: 0;
 }
-div.edit_button{
+span.edit_button{
 	position: absolute;
-	z-index: 1005;
-	top: -10px;
-	right: -10px;
+	top: -5px;
+	right: -5px;
 }
 
 /*****************************************************************************/

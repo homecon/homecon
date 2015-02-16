@@ -17,7 +17,7 @@ pagebuilder = {
 		section.page.push({
 			id: '',
 			name: '',
-			img: '',
+			img: 'scene_livingroom.png',
 			temperature_item:'',
 			section: [],
 		});
@@ -64,7 +64,6 @@ pagebuilder = {
 /*                     views                                                 */
 /*****************************************************************************/
 render_page = function(section_id,page_id){
-	console.log('rendering page');
 	page = pagebuilder.section[section_id].page[page_id];
 	
 	var select_widget_values = {};
@@ -88,7 +87,7 @@ render_page = function(section_id,page_id){
 		}
 	}
 	
-	// sections
+	// pagesections
 	$.each(page.section,function(index,section){
 		if(section.type=='collabsible'){
 			$('#renderpage').append('<section data-role="collapsible" data-theme="a" data-collapsed="false" data-id="'+index+'"><h1>'+section.name+'</h1>');
@@ -117,18 +116,16 @@ render_page = function(section_id,page_id){
 }
 	
 render_menu = function(){
-	console.log('rendering menu');
 	$('#rendermenu').empty();
-	
-	
+
 	// sections
 	$.each(pagebuilder.section,function(index,section){
 		if(section.id!='home'){
-			$('#rendermenu').append('<section data-role="collapsible" data-id="'+index+'"  data-section="'+section.id+'" data-theme="a" data-content-theme="b"><h1><span>'+section.name+'</span><div class=edit_button><input type="button" data-inline="true" data-icon="grid" data-iconpos="notext"/></div></h1><ul data-role="listview" data-inset="false"></ul><a href="#" data-role="button">Add page</a><a href"#section_def_popup" class="edit_section" data-role="button" data-rel="popup" data-icon="grid">Edit</a></section>');
+			$('#rendermenu').append('<section data-id="'+index+'"><ul data-role="listview" data-inset="false" data-icon="false" data-theme="b"><li data-theme="a"><a href="#"><h1>'+section.name+'</h1></a><a class="edit_section" data-icon="grid" data-iconpos="notext">Edit</a></li></ul><a href="#" class="add_page" data-role="button">Add page</a></section>');
 			//pages
 			section_index = index;
 			$.each(section.page,function(index,page){
-				$('#rendermenu section[data-id="'+section_index+'"] ul').append('<li><a href="#"><img src="icons/ws/'+page.img+'" data-id="'+index+'" ><h1>'+page.name+'</h1></a></li>');
+				$('#rendermenu section[data-id="'+section_index+'"] ul').append('<li data-id="'+index+'"><a href="#"><img src="icons/ws/'+page.img+'" data-id="'+index+'" ><h1>'+page.name+'</h1></a><a href="#" class="edit_page" data-inline="true" data-icon="grid" data-iconpos="notext">Edit</a></li>');
 			});
 		}
 	});
@@ -146,19 +143,43 @@ $(document).on('click','a.add_section',function(){
 	pagebuilder.add_section();
 	render_menu();
 });
-$(document).on('click','a.edit_section',function(){
-	var section_id = $(this).parents('section').attr('data-id');
-	$('#section_def_popup').popup('open');
-	$('#section_def_popup_save').attr('data-id',section_id);
-	$('#section_def_popup input[data-field="name"]').val(pagebuilder.section[section_id].name);
+$(document).on('click','a.add_page',function(){
+	var id = $(this).parents('section').attr('data-id')
+	pagebuilder.add_page(pagebuilder.section[id]);
+	render_menu();
 });
-$(document).on('click','#section_def_popup_save',function(){
+$(document).on('click','a.edit_section',function(){
+	var id = $(this).parents('section').attr('data-id');
+	$('#section_def_popup').popup('open');
+	$('#section_def_popup a.save').attr('data-id',id);
+	$('#section_def_popup input[data-field="name"]').val(pagebuilder.section[id].name);
+});
+$(document).on('click','a.edit_page',function(){
+	var section_id = $(this).parents('section').attr('data-id');
+	var id = $(this).parents('li').attr('data-id');
+	$('#page_def_popup').popup('open');
+	$('#page_def_popup a.save').attr('data-section_id',section_id);
+	$('#page_def_popup a.save').attr('data-id',id);
+	$('#page_def_popup input[data-field="name"]').val(pagebuilder.section[section_id].page[id].name);
+	$('#page_def_popup input[data-field="img"]').val(pagebuilder.section[section_id].page[id].img);
+});
+$(document).on('click','#section_def_popup a.save',function(){
 	var section_id = $(this).attr('data-id');
 	$('#section_def_popup').popup('close');
 	pagebuilder.section[section_id].name = $('#section_def_popup input[data-field="name"]').val();
 	pagebuilder.section[section_id].id = $('#section_def_popup input[data-field="name"]').val().toLowerCase();
 	render_menu();
 });
+$(document).on('click','#page_def_popup a.save',function(){
+	var section_id = $(this).attr('data-section_id');
+	var id = $(this).attr('data-id');
+	$('#page_def_popup').popup('close');
+	pagebuilder.section[section_id].page[id].name = $('#page_def_popup input[data-field="name"]').val();
+	pagebuilder.section[section_id].page[id].id = $('#page_def_popup input[data-field="name"]').val().toLowerCase();
+	pagebuilder.section[section_id].page[id].img = $('#page_def_popup input[data-field="img"]').val();
+	render_menu();
+});
+
 
 $(document).on('click','a.add_widget',function(){
 

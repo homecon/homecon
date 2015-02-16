@@ -47,6 +47,7 @@
 }
 .menupanel a{
 	overflow: visible;
+	height: 20px;
 }
 .menupanel nav li a{
 	height: 60px;
@@ -74,8 +75,15 @@
 	}
 }
 
+#rendermenu section{
+	margin-left: -16px;
+	margin-right: -16px;
+}
+#rendermenu a.add_page{
+	margin-left: 16px;
+	margin-right: 16px;
 
-
+}
 
 /*****************************************************************************/
 /*                     Popup                                                 */

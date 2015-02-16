@@ -31,6 +31,6 @@
 				</section>
 				
 			</nav>
-			<nav id="rendermenu" data-role='collapsible-set' data-corners='false' data-inset='false'>
+			<nav id="rendermenu">
 			</nav>
 		</div>
