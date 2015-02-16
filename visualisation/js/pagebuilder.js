@@ -29,7 +29,7 @@ pagebuilder = {
 		page.temperature_item = temperature_item;
 	},
 	delete_page: function(section,id){
-		delete section.page[id];
+		section.page.splice(id,1);
 	},
 	add_page_section: function(page){
 		page.section.push({
@@ -42,6 +42,9 @@ pagebuilder = {
 		section.name = name;
 		section.type = type;
 	},
+	delete_page_section: function(id){
+		pagebuilder.section.splice(id,1);
+	},
 	add_widget: function(section,type,options){
 		section.widget.push({
 			type: type,
@@ -51,6 +54,13 @@ pagebuilder = {
 	update_widget: function(widget,type,options){
 		widget.type = type;
 		widget.options = options;
+	},
+	widgetlist:{
+		clock: 'Clock',
+		lightswitch: 'Light switch',
+		lightdimmer: 'Light dimmer',
+		shading: 'Shading control',
+		chart: 'Chart'
 	}
 };
 /*****************************************************************************/
@@ -104,7 +114,9 @@ render_page = function(section_id,page_id){
 			$('#renderpage section[data-id="'+section_index+'"]').append('<div data-role="'+widget.type+'" '+widget.options+' data-id="'+index+'"><a href"#" class="edit_widget" data-role="button" data-rel="popup" data-icon="grid" data-mini="true" data-iconpos="notext" data-inline="true">Edit</a></div>');
 		});
 		$('#renderpage section[data-id="'+section_index+'"]').append('<fieldset class="ui-grid-a"><div class="ui-block-a"><select class="select_widget" data-native-menu="false"><option>Select Widget</option></select></div><div class="ui-block-b"><a href="#" class="add_widget" data-role="button" data-id="'+page.id+'">Add</a></div>');
-		$('#renderpage section[data-id="'+section_index+'"] select').append('<option value="lightswitch">Light switch</option>');
+		$.each(pagebuilder.widgetlist,function(index,name){
+			$('#renderpage section[data-id="'+section_index+'"] select').append('<option value="'+index+'">'+name+'</option>');
+		});
 		if(index in select_widget_values){
 			$('#renderpage section[data-id="'+section_index+'"] select').val(select_widget_values[index]);
 		}
@@ -120,14 +132,23 @@ render_menu = function(){
 
 	// sections
 	$.each(pagebuilder.section,function(index,section){
-		if(section.id!='home'){
-			$('#rendermenu').append('<section data-id="'+index+'"><ul data-role="listview" data-inset="false" data-icon="false" data-theme="b"><li data-theme="a"><a href="#"><h1>'+section.name+'</h1></a><a class="edit_section" data-icon="grid" data-iconpos="notext">Edit</a></li></ul><a href="#" class="add_page" data-role="button">Add page</a></section>');
-			//pages
-			section_index = index;
-			$.each(section.page,function(index,page){
-				$('#rendermenu section[data-id="'+section_index+'"] ul').append('<li data-id="'+index+'"><a href="#"><img src="icons/ws/'+page.img+'" data-id="'+index+'" ><h1>'+page.name+'</h1></a><a href="#" class="edit_page" data-inline="true" data-icon="grid" data-iconpos="notext">Edit</a></li>');
-			});
+		if(section.id=='home'){
+			$('#rendermenu').append('<section data-id="'+index+'"><ul data-role="listview" data-inset="false" data-icon="false" data-theme="b"></ul></section>');
 		}
+		else{
+			$('#rendermenu').append('<section data-id="'+index+'"><ul data-role="listview" data-inset="false" data-icon="false" data-theme="b"><li class="devider" data-theme="a"><a href="#"><h1>'+section.name+'</h1></a><a class="edit_section" data-icon="grid" data-iconpos="notext">Edit</a></li></ul><a href="#" class="add_page" data-role="button">Add page</a></section>');
+		}
+		//pages
+		section_index = index;
+		$.each(section.page,function(index,page){
+			if(section.id=='home'){
+				$('#rendermenu section[data-id="'+section_index+'"] ul').append('<li data-id="'+index+'"><a href="#" class="renderpage"><h1>'+page.name+'</h1></a></li>');
+			}
+			else{
+				$('#rendermenu section[data-id="'+section_index+'"] ul').append('<li data-id="'+index+'"><a href="#" class="renderpage"><img src="icons/ws/'+page.img+'" data-id="'+index+'" ><h1>'+page.name+'</h1></a><a href="#" class="edit_page" data-inline="true" data-icon="grid" data-iconpos="notext">Edit</a></li>');
+			}
+		});
+		
 	});
 	$('#rendermenu').append('<a href="#" class="add_section" data-role="button">Add section</a>');
 	
@@ -148,37 +169,69 @@ $(document).on('click','a.add_page',function(){
 	pagebuilder.add_page(pagebuilder.section[id]);
 	render_menu();
 });
+$(document).on('click','a.add_page_section',function(){
+	var section_id = $('#renderpage').attr('data-section_id');
+	var id = $('#renderpage').attr('data-page_id');
+	pagebuilder.add_page_section(pagebuilder.section[section_id].page[id]);
+	render_page(section_id,id);
+});
 $(document).on('click','a.edit_section',function(){
 	var id = $(this).parents('section').attr('data-id');
 	$('#section_def_popup').popup('open');
-	$('#section_def_popup a.save').attr('data-id',id);
+	$('#section_def_popup').attr('data-id',id);
 	$('#section_def_popup input[data-field="name"]').val(pagebuilder.section[id].name);
 });
 $(document).on('click','a.edit_page',function(){
 	var section_id = $(this).parents('section').attr('data-id');
 	var id = $(this).parents('li').attr('data-id');
 	$('#page_def_popup').popup('open');
-	$('#page_def_popup a.save').attr('data-section_id',section_id);
-	$('#page_def_popup a.save').attr('data-id',id);
+	$('#page_def_popup').attr('data-section_id',section_id);
+	$('#page_def_popup').attr('data-id',id);
 	$('#page_def_popup input[data-field="name"]').val(pagebuilder.section[section_id].page[id].name);
 	$('#page_def_popup input[data-field="img"]').val(pagebuilder.section[section_id].page[id].img);
 });
 $(document).on('click','#section_def_popup a.save',function(){
-	var section_id = $(this).attr('data-id');
+	var section_id = $('#section_def_popup').attr('data-id');
 	$('#section_def_popup').popup('close');
 	pagebuilder.section[section_id].name = $('#section_def_popup input[data-field="name"]').val();
 	pagebuilder.section[section_id].id = $('#section_def_popup input[data-field="name"]').val().toLowerCase();
 	render_menu();
 });
 $(document).on('click','#page_def_popup a.save',function(){
-	var section_id = $(this).attr('data-section_id');
-	var id = $(this).attr('data-id');
+	var section_id = $('#page_def_popup').attr('data-section_id');
+	var id = $('#page_def_popup').attr('data-id');
 	$('#page_def_popup').popup('close');
 	pagebuilder.section[section_id].page[id].name = $('#page_def_popup input[data-field="name"]').val();
 	pagebuilder.section[section_id].page[id].id = $('#page_def_popup input[data-field="name"]').val().toLowerCase();
 	pagebuilder.section[section_id].page[id].img = $('#page_def_popup input[data-field="img"]').val();
 	render_menu();
 });
+$(document).on('click','#section_def_popup a.delete',function(){
+	var section_id = $('#section_def_popup').attr('data-id');
+	$('#section_def_popup').popup('close');
+	console.log('test');
+	pagebuilder.delete_page_section(section_id);
+	console.log(pagebuilder);
+	render_menu();
+});
+$(document).on('click','#page_def_popup a.delete',function(){
+	var section_id = $('#page_def_popup').attr('data-section_id');
+	var id = $('#page_def_popup').attr('data-id');
+	$('#page_def_popup').popup('close');
+	console.log(pagebuilder);
+	console.log(section_id);
+	console.log(id);
+	pagebuilder.delete_page(pagebuilder.section[section_id],id);
+	console.log(pagebuilder);
+	
+	render_menu();
+});
+$(document).on('click','#rendermenu a.renderpage',function(){
+	var section_id = $(this).parents('section').attr('data-id');
+	var id = $(this).parents('li').attr('data-id');
+	render_page(section_id,id);
+});
+
 
 
 $(document).on('click','a.add_widget',function(){
@@ -200,15 +253,12 @@ $(document).on('click','a.add_widget',function(){
 $(document).on('pageinit','#pagebuilder',function(){
 	
 	$.post('requests/select_from_table.php',{table: 'pagebuilder', column: 'model', where: 'id=1'},function(result){
-		console.log(result);
 		var model = JSON.parse(result);
-		console.log(JSON.parse(model[0].model));
 		
 		pagebuilder.section = JSON.parse(model[0].model);
 	
 		render_menu();
 		render_page(0,0);
-		
 		$('#menu').panel("open");	
 	});
 });
