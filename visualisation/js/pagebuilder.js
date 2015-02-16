@@ -124,7 +124,7 @@ render_menu = function(){
 	// sections
 	$.each(pagebuilder.section,function(index,section){
 		if(section.id!='home'){
-			$('#rendermenu').append('<section data-role="collapsible" data-id="'+index+'"  data-section="'+section.id+'" data-theme="a" data-content-theme="b"><h1>'+section.name+'</h1><ul data-role="listview" data-inset="false"></ul><a href="#" data-role="button">Add page</a><a href"#section_def_popup" class="edit_section" data-role="button" data-rel="popup" data-icon="grid">Edit</a></section>');
+			$('#rendermenu').append('<section data-role="collapsible" data-id="'+index+'"  data-section="'+section.id+'" data-theme="a" data-content-theme="b"><h1><span>'+section.name+'</span><div class=edit_button><input type="button" data-inline="true" data-icon="grid" data-iconpos="notext"/></div></h1><ul data-role="listview" data-inset="false"></ul><a href="#" data-role="button">Add page</a><a href"#section_def_popup" class="edit_section" data-role="button" data-rel="popup" data-icon="grid">Edit</a></section>');
 			//pages
 			section_index = index;
 			$.each(section.page,function(index,page){

@@ -45,6 +45,9 @@
 .menupanel nav{
     margin:0;
 }
+.menupanel a{
+	overflow: visible;
+}
 .menupanel nav li a{
 	height: 60px;
 	padding-top: 0;

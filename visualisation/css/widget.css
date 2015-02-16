@@ -21,6 +21,13 @@ a.edit_page{
 	position: absolute;
 	margin: 0;
 }
+div.edit_button{
+	position: absolute;
+	z-index: 1005;
+	top: -10px;
+	right: -10px;
+}
+
 /*****************************************************************************/
 /*                     Light switch                                          */
 /*****************************************************************************/
@@ -62,7 +69,7 @@ div[data-role="lightdimmer"]{
 	display: inline-block;
 	position: relative;
 	height: 60px;
-	width: 90%;
+	width: 98%;
 }
 div[data-role="lightdimmer"] img{
 	height: 50px;
@@ -76,8 +83,14 @@ div[data-role="lightdimmer"] p{
 	font-weight: 700;
 }
 div[data-role="lightdimmer"] .ui-slider{
+	margin-left: 64px;
+	margin-right: 64px;
 	margin-top: 25px;
 	margin-bottom: 0;
+}
+div[data-role="lightdimmer"] .ui-slider-track{
+	margin-left: 0;
+	margin-right: 0;
 }
 div[data-role="lightdimmer"] .ui-slider input{
 	visibility: hidden;
@@ -108,7 +121,7 @@ div[data-role="shading"] img{
 	float: left;
 }
 div[data-role="shading"] .close img{
-	float: right
+	float: right;
 }
 div[data-role="shading"] p{
 	position: absolute;
@@ -146,6 +159,9 @@ div[data-role="shading"] a.edit_widget{
 /*****************************************************************************/
 /*                     Alarm                                                 */
 /*****************************************************************************/
+div[data-role="alarm"]{
+	width: 98%;
+}
 div[data-role="alarm"] div.alarm{
 	position: relative; 
 	margin-bottom: 5px;
@@ -178,6 +194,9 @@ div[data-role="alarm"] label{
 /*****************************************************************************/
 /*                     Action list                                           */
 /*****************************************************************************/
+div[data-role="action_list"]{
+	width: 98%;
+}
 div[data-role="action_list"] div.action{
 	position: relative;
 	margin: 0;
@@ -221,6 +240,9 @@ div[data-role="action_list"] div.action div{
 /*****************************************************************************/
 /*                     Measurement list                                      */
 /*****************************************************************************/
+div[data-role="measurement_list"]{
+	width: 98%;
+}
 div[data-role="measurement_list"] div.measurement{
 	position: relative;
 	margin: 0;
@@ -264,7 +286,7 @@ div[data-role="measurement_list"] div.measurement div.name{
 /*****************************************************************************/
 
 div[data-role="clock"] {
-	width: 95%;
+	width: 98%;
 	margin-left: auto;
 	margin-right: auto;
 	text-align: center;
@@ -301,7 +323,7 @@ div[data-role="clock"] .date{
 /*                     Current weather                                       */
 /*****************************************************************************/
 div[data-role="current_weather"]{
-	width: 95%;
+	width: 98%;
 	margin-left: auto;
 	margin-right: auto;
 	text-align: center;
