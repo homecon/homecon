@@ -13,6 +13,9 @@ pagebuilder = {
 		this.id = id;
 		this.name = name;
 	},
+	delete_section: function(id){
+		pagebuilder.section.splice(id,1);
+	},
 	add_page: function(section){
 		section.page.push({
 			id: '',
@@ -42,8 +45,8 @@ pagebuilder = {
 		section.name = name;
 		section.type = type;
 	},
-	delete_page_section: function(id){
-		pagebuilder.section.splice(id,1);
+	delete_page_section: function(page,id){
+		page.section.splice(id,1);
 	},
 	add_widget: function(section,type,options){
 		section.widget.push({
@@ -99,15 +102,17 @@ render_page = function(section_id,page_id){
 	
 	// pagesections
 	$.each(page.section,function(index,section){
-		if(section.type=='collabsible'){
-			$('#renderpage').append('<section data-role="collapsible" data-theme="a" data-collapsed="false" data-id="'+index+'"><h1>'+section.name+'</h1>');
+		if(section.type=='collapsible'){
+			$('#renderpage').append('<section data-role="collapsible" data-theme="a" data-collapsed="false" data-id="'+index+'"><h1>'+section.name+'</h1></section>');
 		}
-		else if(section.type=='collabsible'){
-			$('#renderpage').append('<section data-role="collapsible" data-theme="a" data-collapsed="true" data-id="'+index+'"><h1>'+section.name+'</h1>');
+		else if(section.type=='collapsed'){
+			$('#renderpage').append('<section data-role="collapsible" data-theme="a" data-collapsed="true" data-id="'+index+'"><h1>'+section.name+'</h1></section>');
 		}
 		else{
 			$('#renderpage').append('<section data-id="'+index+'"></section>');
 		}
+		$('#renderpage section[data-id="'+index+'"]').append('<a href"#" class="edit_page_section" data-role="button" data-rel="popup" data-icon="grid" data-mini="true" data-iconpos="notext" data-inline="true">Edit</a>');
+		
 		// widgets
 		section_index = index;
 		$.each(section.widget,function(index,widget){
@@ -190,6 +195,15 @@ $(document).on('click','a.edit_page',function(){
 	$('#page_def_popup input[data-field="name"]').val(pagebuilder.section[section_id].page[id].name);
 	$('#page_def_popup input[data-field="img"]').val(pagebuilder.section[section_id].page[id].img);
 });
+$(document).on('click','a.edit_page_section',function(){
+	var id = $(this).parents('section').attr('data-id');
+	var section_id = $('#renderpage').attr('data-section_id');
+	var page_id = $('#renderpage').attr('data-page_id');
+	$('#page_section_def_popup').popup('open');
+	$('#page_section_def_popup').attr('data-id',id);
+	$('#page_section_def_popup input[data-field="name"]').val(pagebuilder.section[section_id].page[page_id].section[id].name);
+	$('#page_section_def_popup input[data-field="type"]').val(pagebuilder.section[section_id].page[page_id].section[id].type);
+});
 $(document).on('click','#section_def_popup a.save',function(){
 	var section_id = $('#section_def_popup').attr('data-id');
 	$('#section_def_popup').popup('close');
@@ -206,26 +220,37 @@ $(document).on('click','#page_def_popup a.save',function(){
 	pagebuilder.section[section_id].page[id].img = $('#page_def_popup input[data-field="img"]').val();
 	render_menu();
 });
+$(document).on('click','#page_section_def_popup a.save',function(){
+	var id = $('#page_section_def_popup').attr('data-id');
+	var section_id = $('#renderpage').attr('data-section_id');
+	var page_id = $('#renderpage').attr('data-page_id');
+	$('#page_section_def_popup').popup('close');
+	pagebuilder.section[section_id].page[page_id].section[id].name = $('#page_section_def_popup input[data-field="name"]').val();
+	pagebuilder.section[section_id].page[page_id].section[id].type = $('#page_section_def_popup input[data-field="type"]').val();
+	render_page(section_id,page_id);
+});
 $(document).on('click','#section_def_popup a.delete',function(){
 	var section_id = $('#section_def_popup').attr('data-id');
 	$('#section_def_popup').popup('close');
-	console.log('test');
-	pagebuilder.delete_page_section(section_id);
-	console.log(pagebuilder);
+	pagebuilder.delete_section(section_id);
 	render_menu();
 });
 $(document).on('click','#page_def_popup a.delete',function(){
 	var section_id = $('#page_def_popup').attr('data-section_id');
 	var id = $('#page_def_popup').attr('data-id');
 	$('#page_def_popup').popup('close');
-	console.log(pagebuilder);
-	console.log(section_id);
-	console.log(id);
 	pagebuilder.delete_page(pagebuilder.section[section_id],id);
-	console.log(pagebuilder);
-	
 	render_menu();
 });
+$(document).on('click','#page_section_def_popup a.delete',function(){
+	var id = $('#page_section_def_popup').attr('data-id');
+	var section_id = $('#renderpage').attr('data-section_id');
+	var page_id = $('#renderpage').attr('data-page_id');
+	$('#page_section_def_popup').popup('close');
+	pagebuilder.delete_page_section(pagebuilder.section[section_id].page[page_id],id);
+	render_page(section_id,page_id);
+});
+
 $(document).on('click','#rendermenu a.renderpage',function(){
 	var section_id = $(this).parents('section').attr('data-id');
 	var id = $(this).parents('li').attr('data-id');

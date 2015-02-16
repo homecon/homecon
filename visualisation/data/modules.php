@@ -62,7 +62,11 @@
 				<a href="#" data-rel="back" data-role="button" data-theme="b" data-icon="delete" data-iconpos="notext" class="ui-btn-right">Close</a>
 			</div>
 			<div id='page_section_def_popup' class='ui-content' data-role='popup' data-position-to='window' data-theme='b' data-overlay-theme='b'>
-				test 123
+				<input type='text' data-field='name'>
+				<input type='text' data-field='type'>
+				<a class='save' data-role='button'>Save</a>
+				<a class='delete' data-role='button'data-section_id='1'>Delete</a>
+				<a href="#" data-rel="back" data-role="button" data-theme="b" data-icon="delete" data-iconpos="notext" class="ui-btn-right">Close</a>
 			</div>
 		</div>
 		

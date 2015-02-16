@@ -86,15 +86,16 @@
 	height: 40px;
 }
 #rendermenu section li.devider h1{
-	margin-top: 5px;
-	margin-bottom: 5px;
+	margin-top: 8px;
+	margin-bottom: 8px;
 }
 #rendermenu a.add_page{
 	margin-left: 16px;
 	margin-right: 16px;
-
 }
-
+#renderpage section{
+	position: relative;
+}
 /*****************************************************************************/
 /*                     Popup                                                 */
 /*****************************************************************************/
