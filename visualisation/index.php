@@ -34,11 +34,11 @@
 		<script src='lib/highchartstheme.js'></script>
 		
 		<!-- knxcontrol -->
+		<script type='text/javascript' src='js/language_dutch.js'></script>
 		<script type='text/javascript' src='js/smarthome.js'></script>
 		<script type='text/javascript' src='js/knxcontrol.js'></script>
 		<script type='text/javascript' src='js/widgets.js'></script>
 		<script type='text/javascript' src='js/view.js'></script>
-		<script type='text/javascript' src='js/language_dutch.js'></script>
 		<script type='text/javascript' src='js/pagebuilder.js'></script>
 				
 		<link rel='stylesheet' type='text/css' href='css/layout.css'/>

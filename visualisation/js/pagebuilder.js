@@ -1,7 +1,9 @@
 
 
 pagebuilder = {
+//model
 	section: [],
+// methods
 	add_section: function(){
 		pagebuilder.section.push({
 			id: '',
@@ -37,7 +39,7 @@ pagebuilder = {
 	add_page_section: function(page){
 		page.section.push({
 			name: '',
-			type: '',
+			type: 'collapsible',
 			widget: []
 		});
 	},
@@ -48,30 +50,30 @@ pagebuilder = {
 	delete_page_section: function(page,id){
 		page.section.splice(id,1);
 	},
-	add_widget: function(section,type,options){
+	add_widget: function(section,type){
 		section.widget.push({
 			type: type,
-			options: options,
+			options: JSON.parse(JSON.stringify($.knxcontrol[type].prototype.options))
 		});
+		console.log($.knxcontrol[type].prototype.options);
 	},
 	update_widget: function(widget,type,options){
 		widget.type = type;
 		widget.options = options;
 	},
+	delete_widget: function(page_section,id){
+		page_section.widget.splice(id,1);
+	},
 	widgetlist:{
-		clock: 'Clock',
-		lightswitch: 'Light switch',
-		lightdimmer: 'Light dimmer',
-		shading: 'Shading control',
-		chart: 'Chart'
+		clock: {name: 'Clock'},
+		lightswitch: {name: 'Light switch'},
+		lightdimmer: {name: 'Light dimmer'},
+		shading: {name: 'Shading control'},
+		alarm: {name: 'Alarm'},
+		chart: {name: 'Chart'},
+		displayvalue: {name: 'Display value'}
 	}
 };
-/*****************************************************************************/
-/*                     methods                                               */
-/*****************************************************************************/
-
-
-
 
 /*****************************************************************************/
 /*                     views                                                 */
@@ -116,11 +118,19 @@ render_page = function(section_id,page_id){
 		// widgets
 		section_index = index;
 		$.each(section.widget,function(index,widget){
-			$('#renderpage section[data-id="'+section_index+'"]').append('<div data-role="'+widget.type+'" '+widget.options+' data-id="'+index+'"><a href"#" class="edit_widget" data-role="button" data-rel="popup" data-icon="grid" data-mini="true" data-iconpos="notext" data-inline="true">Edit</a></div>');
+			$('#renderpage section[data-id="'+section_index+'"]').append('<div data-role="'+widget.type+'" data-id="'+index+'"><a href"#" class="edit_widget" data-role="button" data-rel="popup" data-icon="grid" data-mini="true" data-iconpos="notext" data-inline="true">Edit</a></div>');
+			
+			// widget options
+			widget_index = index;
+			$.each(widget.options,function(index,option){
+				$('#renderpage section[data-id="'+section_index+'"] div[data-id="'+widget_index+'"]').attr('data-'+index,option);
+			});
+			
 		});
+		// widget adding
 		$('#renderpage section[data-id="'+section_index+'"]').append('<fieldset class="ui-grid-a"><div class="ui-block-a"><select class="select_widget" data-native-menu="false"><option>Select Widget</option></select></div><div class="ui-block-b"><a href="#" class="add_widget" data-role="button" data-id="'+page.id+'">Add</a></div>');
-		$.each(pagebuilder.widgetlist,function(index,name){
-			$('#renderpage section[data-id="'+section_index+'"] select').append('<option value="'+index+'">'+name+'</option>');
+		$.each(pagebuilder.widgetlist,function(index,widget){
+			$('#renderpage section[data-id="'+section_index+'"] select').append('<option value="'+index+'">'+widget.name+'</option>');
 		});
 		if(index in select_widget_values){
 			$('#renderpage section[data-id="'+section_index+'"] select').val(select_widget_values[index]);
@@ -204,6 +214,28 @@ $(document).on('click','a.edit_page_section',function(){
 	$('#page_section_def_popup input[data-field="name"]').val(pagebuilder.section[section_id].page[page_id].section[id].name);
 	$('#page_section_def_popup input[data-field="type"]').val(pagebuilder.section[section_id].page[page_id].section[id].type);
 });
+$(document).on('click','a.edit_widget',function(){
+	var id = $(this).parents('div[data-role]').attr('data-id');
+	var section_id = $('#renderpage').attr('data-section_id');
+	var page_id = $('#renderpage').attr('data-page_id');
+	var page_section_id = $(this).parents('section').attr('data-id');
+	var type = $(this).parents('div[data-role]').attr('data-role');
+	
+	$('#widget_def_popup').popup('open');
+	$('#widget_def_popup').attr('data-id',id);
+	$('#widget_def_popup').attr('data-page_section_id',page_section_id);
+	$('#widget_def_popup div.options').empty();
+	$.each(pagebuilder.section[section_id].page[page_id].section[page_section_id].widget[id].options,function(index,option){
+		if( !(index=='disabled' || index=='create') ){
+			$('#widget_def_popup div.options').append('<input type="text" data-field="'+index+'" value="'+option+'" placeholder="'+index+'">');
+		}
+		$('#widget_def_popup div.options').enhanceWithin();
+	});
+});
+
+
+
+
 $(document).on('click','#section_def_popup a.save',function(){
 	var section_id = $('#section_def_popup').attr('data-id');
 	$('#section_def_popup').popup('close');
@@ -229,6 +261,19 @@ $(document).on('click','#page_section_def_popup a.save',function(){
 	pagebuilder.section[section_id].page[page_id].section[id].type = $('#page_section_def_popup input[data-field="type"]').val();
 	render_page(section_id,page_id);
 });
+$(document).on('click','#widget_def_popup a.save',function(){
+	var id = $('#widget_def_popup').attr('data-id');
+	var page_section_id = $('#widget_def_popup').attr('data-page_section_id');
+	var section_id = $('#renderpage').attr('data-section_id');
+	var page_id = $('#renderpage').attr('data-page_id');
+	$('#widget_def_popup').popup('close');
+	$.each($('#widget_def_popup div.options input'),function(index,option){
+		index = $(option).attr('data-field');
+		pagebuilder.section[section_id].page[page_id].section[page_section_id].widget[id].options[index] = $(option).val();
+	});
+	render_page(section_id,page_id);
+});
+
 $(document).on('click','#section_def_popup a.delete',function(){
 	var section_id = $('#section_def_popup').attr('data-id');
 	$('#section_def_popup').popup('close');
@@ -250,6 +295,17 @@ $(document).on('click','#page_section_def_popup a.delete',function(){
 	pagebuilder.delete_page_section(pagebuilder.section[section_id].page[page_id],id);
 	render_page(section_id,page_id);
 });
+$(document).on('click','#widget_def_popup a.delete',function(){
+	var id = $('#widget_def_popup').attr('data-id');
+	var page_section_id = $('#widget_def_popup').attr('data-page_section_id');
+	var section_id = $('#renderpage').attr('data-section_id');
+	var page_id = $('#renderpage').attr('data-page_id');
+	$('#widget_def_popup').popup('close');
+	pagebuilder.delete_widget(pagebuilder.section[section_id].page[page_id].section[page_section_id],id);
+	render_page(section_id,page_id);
+});
+
+
 
 $(document).on('click','#rendermenu a.renderpage',function(){
 	var section_id = $(this).parents('section').attr('data-id');
@@ -268,7 +324,7 @@ $(document).on('click','a.add_widget',function(){
 	var widget_type = $(this).parents('section').find('select.select_widget').val();
 
 	if(widget_type!='Select Widget'){
-		pagebuilder.add_widget(pagebuilder.section[section_id].page[page_id].section[page_section_id],widget_type,'');
+		pagebuilder.add_widget(pagebuilder.section[section_id].page[page_id].section[page_section_id],widget_type);
 		render_page(section_id,page_id);
 	}
 });
