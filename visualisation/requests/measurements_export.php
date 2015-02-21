@@ -8,7 +8,7 @@
 	
 	set_time_limit(600);  // 10 minutes maximum execution time
 	
-	if($_SESSION['userid']>0){
+	if($_SESSION['user_id']>0){
 		$content = '';
 		
 		$table = $_GET['table'];

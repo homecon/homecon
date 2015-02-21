@@ -55,7 +55,6 @@ pagebuilder = {
 			type: type,
 			options: JSON.parse(JSON.stringify($.knxcontrol[type].prototype.options))
 		});
-		console.log($.knxcontrol[type].prototype.options);
 	},
 	update_widget: function(widget,type,options){
 		widget.type = type;
@@ -190,6 +189,7 @@ render_menu = function(){
 /*****************************************************************************/
 /*                     controls                                              */
 /*****************************************************************************/
+/* Adding                                                                    */
 $(document).on('click','a.add_section',function(){
 	pagebuilder.add_section();
 	render_menu();
@@ -205,6 +205,22 @@ $(document).on('click','a.add_page_section',function(){
 	pagebuilder.add_page_section(pagebuilder.section[section_id].page[id]);
 	render_page(section_id,id);
 });
+$(document).on('click','a.add_widget',function(){
+
+	var section_id = $(this).parents('#renderpage').attr('data-section_id');
+	var page_id = $(this).parents('#renderpage').attr('data-page_id');
+	var page_section_id = $(this).parents('section').attr('data-id');
+	
+	var widget_type = $(this).parents('section').find('select.select_widget').val();
+
+	if(widget_type!='Select Widget'){
+		pagebuilder.add_widget(pagebuilder.section[section_id].page[page_id].section[page_section_id],widget_type);
+		render_page(section_id,page_id);
+	}
+});
+
+
+/* Editing                                                                   */
 $(document).on('click','a.edit_section',function(){
 	var id = $(this).parents('section').attr('data-id');
 	$('#section_def_popup').popup('open');
@@ -250,7 +266,7 @@ $(document).on('click','a.edit_widget',function(){
 
 
 
-
+/* Saving                                                                    */
 $(document).on('click','#section_def_popup a.save',function(){
 	var section_id = $('#section_def_popup').attr('data-id');
 	$('#section_def_popup').popup('close');
@@ -289,6 +305,7 @@ $(document).on('click','#widget_def_popup a.save',function(){
 	render_page(section_id,page_id);
 });
 
+/* Deleting                                                                  */
 $(document).on('click','#section_def_popup a.delete',function(){
 	var section_id = $('#section_def_popup').attr('data-id');
 	$('#section_def_popup').popup('close');
@@ -320,6 +337,7 @@ $(document).on('click','#widget_def_popup a.delete',function(){
 	render_page(section_id,page_id);
 });
 
+/* Moving                                                                    */
 $(document).on('click','#widget_def_popup a.move_up',function(){
 	var id = $('#widget_def_popup').attr('data-id');
 	var page_section_id = $('#widget_def_popup').attr('data-page_section_id');
@@ -341,6 +359,12 @@ $(document).on('click','#widget_def_popup a.move_down',function(){
 
 
 
+
+
+
+/*****************************************************************************/
+/*                     rendermenu controls                                   */
+/*****************************************************************************/
 $(document).on('click','#rendermenu a.renderpage',function(){
 	var section_id = $(this).parents('section').attr('data-id');
 	var id = $(this).parents('li').attr('data-id');
@@ -349,22 +373,14 @@ $(document).on('click','#rendermenu a.renderpage',function(){
 
 
 
-$(document).on('click','a.add_widget',function(){
-
-	var section_id = $(this).parents('#renderpage').attr('data-section_id');
-	var page_id = $(this).parents('#renderpage').attr('data-page_id');
-	var page_section_id = $(this).parents('section').attr('data-id');
-	
-	var widget_type = $(this).parents('section').find('select.select_widget').val();
-
-	if(widget_type!='Select Widget'){
-		pagebuilder.add_widget(pagebuilder.section[section_id].page[page_id].section[page_section_id],widget_type);
-		render_page(section_id,page_id);
-	}
-});
 
 
 
+
+
+/*****************************************************************************/
+/*                     global controls                                       */
+/*****************************************************************************/
 $(document).on('pageinit','#pagebuilder',function(){
 	
 	$.post('requests/select_from_table.php',{table: 'pagebuilder', column: 'model', where: 'id=1'},function(result){
@@ -377,9 +393,133 @@ $(document).on('pageinit','#pagebuilder',function(){
 		$('#menu').panel("open");	
 	});
 });
-$(document).on('click','a.pagebuilder.save',function(){
-	console.log(JSON.stringify(pagebuilder.section));
+$(document).on('click','nav div.pagebuilder a.save',function(){
 	$.post('requests/update_table.php',{table: 'pagebuilder', column: 'model', value: JSON.stringify(pagebuilder.section), where: 'id=1'},function(result){
-		console.log(result);
+		console.log('saved');
 	});
 });
+$(document).on('click','nav div.pagebuilder a.export',function(){
+	window.open('requests/pagebuilder_export.php?model='+JSON.stringify(pagebuilder.section));
+	console.log('export');
+});
+$(document).on('click','nav div.pagebuilder a.import',function(){
+    $('#pagebuilder_import').click();
+});
+$(document).on('change','#pagebuilder_import',function(event){
+	console.log('import');
+	
+	var reader = new FileReader();
+	reader.onload = function(e) {
+		var data = e.target.result;
+		data = data.replace("data:text/plain;base64,","");
+
+		pagebuilder.section = JSON.parse( window.atob(data) );
+		render_menu();
+		render_page(0,0);
+	};
+	reader.readAsDataURL(event.target.files[0]);
+	
+});
+$(document).on('click','nav div.pagebuilder a.publish',function(){
+	var publish = '';
+	$.each(pagebuilder.section,function(section_index,section){
+		$.each(section.page,function(page_index,page){
+			publish += publish_page(section_index,page_index);
+		});
+	});
+	$.post('requests/pagebuilder_publish.php',{page: 'pages', model: publish},function(result){
+		console.log('published pages');
+	});
+	
+	publish = publish_menu();
+	console.log(publish);
+	$.post('requests/pagebuilder_publish.php',{page: 'menu', model: publish},function(result){
+		console.log(result);
+		console.log('published menu');
+	});
+});
+
+
+/*****************************************************************************/
+/*                     Publish                                               */
+/*****************************************************************************/
+publish_page = function(section_id,page_id){
+	section = pagebuilder.section[section_id];
+	page = pagebuilder.section[section_id].page[page_id];
+	
+	var publish = '';
+	
+	publish += '%t%t<div id="'+section.id+'_'+page.id+'" data-role="page" data-theme="b" data-section_id="'+section_id+'" data-page_id="'+page_id+'">%n';
+	publish += '%t%t%t<div data-role="content">%n';
+	
+	// add header
+	if(page.id != 'home'){
+		publish += '%t%t%t%t<header>%n%t%t%t%t%t<img src="icons/ws/'+page.img+'">%n%t%t%t%t%t<h1>'+page.name+'</h1>%n';
+		if(page.temperature_item != ''){
+			publish += '%t%t%t%t%t<div class="value"><span data-role="displayvalue" data-item="'+page.temperature_item+'" data-digits="1"></span>&deg;C</div>%n';
+		}
+		publish += '%t%t%t%t</header>%n';
+	}
+	
+	// pagesections
+	$.each(page.section,function(index,section){
+		if(section.type=='collapsible'){
+			publish += '%t%t%t%t<section data-role="collapsible" data-theme="a" data-collapsed="false" data-id="'+index+'">%n%t%t%t%t%t<h1>'+section.name+'</h1>%n';
+		}
+		else if(section.type=='collapsed'){
+			publish += '%t%t%t%t<section data-role="collapsible" data-theme="a" data-collapsed="true" data-id="'+index+'">%n%t%t%t%t%t<h1>'+section.name+'</h1>%n';
+		}
+		else{
+			publish += '%t%t%t%t<section data-id="'+index+'">%n';
+		}
+
+		// widgets
+		section_index = index;
+		$.each(section.widget,function(index,widget){
+			publish += '%t%t%t%t%t<div data-role="'+widget.type+'" data-id="'+index+'"';
+			
+			// widget options
+			widget_index = index;
+			$.each(widget.options,function(index,option){
+				if( !(index=='disabled' || index=='create') ){
+					publish += ' data-'+index+'="'+option+'"';
+				}
+			});
+			
+			publish+= '></div>%n';
+		});
+		publish += '%t%t%t%t</section>%n'
+	});
+	publish += '%t%t%t</div>%n';
+	publish += '%t%t</div>%n'
+	
+	return publish;
+}
+publish_menu = function(){
+
+	var publish = '';
+	
+	publish += '%t%t<div id="menu" class="menupanel" data-role="panel" data-display="overlay" data-position="left" data-theme="b">%n';
+	publish += '%t%t%t<nav id="mainmenu" data-role="collapsible-set" data-corners="false" data-inset="false">%n';
+	
+	// sections
+	$.each(pagebuilder.section,function(index,section){
+		if(section.id!='home'){
+
+			publish += '%t%t%t%t<section data-id="'+index+'" data-role="collapsible" data-section="'+section.id+'" data-theme="a" data-content-theme="b"">%n%t%t%t%t%t<h1>'+section.name+'</h1>%n%t%t%t%t%t<ul data-role="listview" data-inset="false">%n';
+		
+			//pages
+			section_index = index;
+			$.each(section.page,function(index,page){
+				publish += '%t%t%t%t%t%t<li><a href="#'+section.id+'_'+page.id+'"><img src="icons/ws/'+page.img+'"><h1>'+page.name+'</h1></a></li>%n';
+			});
+			publish += '%t%t%t%t%t</ul>%n';
+			publish += '%t%t%t%t</section>%n';
+		}
+	});
+	publish += '%t%t%t</nav>%n';
+	publish += '%t%t%t<nav id="rendermenu"></nav>%n';
+	publish += '%t%t</div>%n';
+	
+	return publish;
+}

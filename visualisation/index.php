@@ -51,8 +51,8 @@
 	
 	if($_SESSION['user_id']>0){
 	
-		include("pages/pages.php");
-		include("pages/menu.php");
+		include("pages/pages.html");
+		include("pages/menu.html");
 		include("data/header.php");
 		include("data/modules.php");
 		include("data/templates.php");

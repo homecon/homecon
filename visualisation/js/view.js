@@ -46,6 +46,7 @@ $(document).on('click','#menu_button', function(){
 
 $(function(){
 	$("#rendermenu").hide();
+	$("#header nav div.pagebuilder").hide();
 });
 $(document).on('pageinit','#pagebuilder', function(){
 	// change the menu panel with the pagebuilder menu
@@ -53,7 +54,8 @@ $(document).on('pageinit','#pagebuilder', function(){
 	$("#rendermenu").show();
 	
 	// remove the normal header buttons
-	$("#header a.hide").hide();
+	$("#header nav div.home").hide();
+	$("#header nav div.pagebuilder").show();
 });
 $(document).on('click','a[href="#pagebuilder"]', function(){
 	// change the menu panel with the pagebuilder menu
@@ -61,15 +63,19 @@ $(document).on('click','a[href="#pagebuilder"]', function(){
 	$("#rendermenu").show();
 	
 	// remove the normal header buttons
-	$("#header a.hide").hide();
+	$("#header nav div.home").hide();
+	$("#header nav div.pagebuilder").show();
 });
-$(document).on('click','a[href="#home"]', function(){
+$(document).on('click','a[#home]', function(){
+	location.reload();
+	
 	// change back to the menu panel
 	$("#rendermenu").hide();
 	$('#mainmenu').show();
 	
 	// show the header buttons
-	$("#header a.hide").show();
+	$("#header nav div.home").show();
+	$("#header nav div.pagebuilder").hide();
 });
 
 
