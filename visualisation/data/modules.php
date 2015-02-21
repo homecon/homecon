@@ -71,6 +71,10 @@
 			<div id='widget_def_popup' class='ui-content' data-role='popup' data-position-to='window' data-theme='b' data-overlay-theme='b'>
 				<div class='options'>
 				</div>
+				<div class='move'>
+					<a class='move_up' data-role='button' data-icon="arrow-u" data-iconpos="notext">Move up</a>
+					<a class='move_down' data-role='button' data-icon="arrow-d" data-iconpos="notext">Move down</a>
+				</div>
 				<a class='save' data-role='button'>Save</a>
 				<a class='delete' data-role='button'data-section_id='1'>Delete</a>
 				<a href="#" data-rel="back" data-role="button" data-theme="b" data-icon="delete" data-iconpos="notext" class="ui-btn-right">Close</a>

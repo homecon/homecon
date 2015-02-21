@@ -64,6 +64,21 @@ pagebuilder = {
 	delete_widget: function(page_section,id){
 		page_section.widget.splice(id,1);
 	},
+	move_widget_up: function(page_section,id){
+		if(id>0){
+			var temp = page_section.widget[id];
+			page_section.widget[id] = page_section.widget[id-1];
+			page_section.widget[id-1] = temp;
+		}
+	},
+	move_widget_down: function(page_section,id){
+		if(id<page_section.widget.length-1){
+			var temp = page_section.widget[id];
+			// -1+2 so it doesn't get treated as a string
+			page_section.widget[id] = page_section.widget[id-1+2];
+			page_section.widget[id-1+2] = temp;
+		}
+	},
 	widgetlist:{
 		clock: {name: 'Clock'},
 		lightswitch: {name: 'Light switch'},
@@ -302,6 +317,25 @@ $(document).on('click','#widget_def_popup a.delete',function(){
 	var page_id = $('#renderpage').attr('data-page_id');
 	$('#widget_def_popup').popup('close');
 	pagebuilder.delete_widget(pagebuilder.section[section_id].page[page_id].section[page_section_id],id);
+	render_page(section_id,page_id);
+});
+
+$(document).on('click','#widget_def_popup a.move_up',function(){
+	var id = $('#widget_def_popup').attr('data-id');
+	var page_section_id = $('#widget_def_popup').attr('data-page_section_id');
+	var section_id = $('#renderpage').attr('data-section_id');
+	var page_id = $('#renderpage').attr('data-page_id');
+	$('#widget_def_popup').popup('close');
+	pagebuilder.move_widget_up(pagebuilder.section[section_id].page[page_id].section[page_section_id],id);
+	render_page(section_id,page_id);
+});
+$(document).on('click','#widget_def_popup a.move_down',function(){
+	var id = $('#widget_def_popup').attr('data-id');
+	var page_section_id = $('#widget_def_popup').attr('data-page_section_id');
+	var section_id = $('#renderpage').attr('data-section_id');
+	var page_id = $('#renderpage').attr('data-page_id');
+	$('#widget_def_popup').popup('close');
+	pagebuilder.move_widget_down(pagebuilder.section[section_id].page[page_id].section[page_section_id],id);
 	render_page(section_id,page_id);
 });
 
