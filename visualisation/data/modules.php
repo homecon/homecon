@@ -56,7 +56,6 @@
 			</div>
 			<div id='page_def_popup'  data-id='1' data-section_id='1' class='ui-content' data-role='popup' data-position-to='window' data-theme='b' data-overlay-theme='b'>
 				<input type='text' data-field='name'>
-				<input type='text' data-field='img'>
 				<select data-field='img'></select>
 				<a class='save' data-role='button'>Save</a>
 				<a class='delete' data-role='button'data-section_id='1'>Delete</a>

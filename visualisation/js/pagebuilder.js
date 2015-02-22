@@ -86,7 +86,95 @@ pagebuilder = {
 		alarm: {name: 'Alarm'},
 		chart: {name: 'Chart'},
 		displayvalue: {name: 'Display value'}
-	}
+	},
+	iconlist:[
+		'fts_sunblind.png',
+		'light_light.png',
+		'measure_current.png',
+		'measure_photovoltaic_inst.png',
+		'measure_power.png',
+		'measure_power_meter.png',
+		'measure_voltage.png',
+		'measure_water_meter.png',
+		'sani_heating.png',
+		'sani_heating_automatic.png',
+		'sani_heating_manual.png',
+		'sani_heating_temp.png',
+		'sani_solar.png',
+		'sani_water_tap.png',
+		'scene_baby.png',
+		'scene_baking_oven.png',
+		'scene_bath.png',
+		'scene_bathroom.png',
+		'scene_childs_room.png',
+		'scene_cinema.png',
+		'scene_cleaning.png',
+		'scene_clothes_dryer.png',
+		'scene_cockle_stove.png',
+		'scene_cooking.png',
+		'scene_cooking_hob.png',
+		'scene_corridor.png',
+		'scene_cubby.png',
+		'scene_day.png',
+		'scene_dinner.png',
+		'scene_dishwasher.png',
+		'scene_dressing_room.png',
+		'scene_drink.png',
+		'scene_fitness.png',
+		'scene_fountain.png',
+		'scene_gaming.png',
+		'scene_garden.png',
+		'scene_hall.png',
+		'scene_keyboard.png',
+		'scene_laundry_room.png',
+		'scene_laundry_room_fem.png',
+		'scene_livingroom.png',
+		'scene_making_love_clean.png',
+		'scene_microwave_oven.png',
+		'scene_night.png',
+		'scene_office.png',
+		'scene_party.png',
+		'scene_pool.png',
+		'scene_robo_lawnmower.png',
+		'scene_robo_vac_cleaner.png',
+		'scene_sauna.png',
+		'scene_scene.png',
+		'scene_shower.png',
+		'scene_sleeping.png',
+		'scene_sleeping_alternat.png',
+		'scene_sleeping_twin_0_0.png',
+		'scene_sleeping_twin_0_1.png',
+		'scene_sleeping_twin_1_0.png',
+		'scene_sleeping_twin_1_1.png',
+		'scene_stairs.png',
+		'scene_storeroom.png',
+		'scene_stove.png',
+		'scene_summerhouse.png',
+		'scene_swimming.png',
+		'scene_terrace.png',
+		'scene_toilet.png',
+		'scene_toilet_alternat.png',
+		'scene_visit_guests.png',
+		'scene_washing_machine.png',
+		'scene_wine_cellar.png',
+		'scene_workshop.png',
+		'scene_x-mas.png',
+		'status_automatic.png',
+		'time_calendar.png',
+		'time_clock.png',
+		'time_statistic.png',
+		'time_timer.png',
+		'time_timer_switch.png',
+		'vent_ventilation.png',
+		'weather_cloudy.png',
+		'weather_cloudy_heavy.png',
+		'weather_cloudy_light.png',
+		'weather_directions.png',
+		'weather_frost.png',
+		'weather_rain.png',
+		'weather_snow_light.png',
+		'weather_station.png'
+	]
 };
 
 /*****************************************************************************/
@@ -233,8 +321,13 @@ $(document).on('click','a.edit_page',function(){
 	$('#page_def_popup').popup('open');
 	$('#page_def_popup').attr('data-section_id',section_id);
 	$('#page_def_popup').attr('data-id',id);
+	console.log('test');
+	$('#page_def_popup select[data-field="img"]').empty();
+	$.each(pagebuilder.iconlist,function(index,icon){
+		$('#page_def_popup select[data-field="img"]').append('<option value="'+icon+'">'+icon+'</option>')
+	});
 	$('#page_def_popup input[data-field="name"]').val(pagebuilder.section[section_id].page[id].name);
-	$('#page_def_popup input[data-field="img"]').val(pagebuilder.section[section_id].page[id].img);
+	$('#page_def_popup select[data-field="img"]').val(pagebuilder.section[section_id].page[id].img).selectmenu('refresh');
 });
 $(document).on('click','a.edit_page_section',function(){
 	var id = $(this).parents('section').attr('data-id');
@@ -280,7 +373,7 @@ $(document).on('click','#page_def_popup a.save',function(){
 	$('#page_def_popup').popup('close');
 	pagebuilder.section[section_id].page[id].name = $('#page_def_popup input[data-field="name"]').val();
 	pagebuilder.section[section_id].page[id].id = $('#page_def_popup input[data-field="name"]').val().toLowerCase();
-	pagebuilder.section[section_id].page[id].img = $('#page_def_popup input[data-field="img"]').val();
+	pagebuilder.section[section_id].page[id].img = $('#page_def_popup select[data-field="img"]').val();
 	render_menu();
 });
 $(document).on('click','#page_section_def_popup a.save',function(){
@@ -437,7 +530,6 @@ $(document).on('click','nav div.pagebuilder a.publish',function(){
 	publish = publish_menu();
 	console.log(publish);
 	$.post('requests/pagebuilder_publish.php',{page: 'menu', model: publish},function(result){
-		console.log(result);
 		console.log('published menu');
 	});
 });
