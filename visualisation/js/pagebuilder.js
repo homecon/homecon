@@ -18,6 +18,27 @@ pagebuilder = {
 	delete_section: function(id){
 		pagebuilder.section.splice(id,1);
 	},
+	move_section_up: function(id){
+		var new_id = id;
+		if(id>0){
+			var temp = pagebuilder.section[id];
+			pagebuilder.section[id] = pagebuilder.section[id-1];
+			pagebuilder.section[id-1] = temp;
+			new_id = new_id-1;
+		}
+		return new_id;
+	},
+	move_section_down: function(id){
+		var new_id = id;
+		if(id<pagebuilder.section.length-1){
+			var temp = pagebuilder.section[id];
+			// -1+2 so it doesn't get treated as a string
+			pagebuilder.section[id] = pagebuilder.section[id-1+2];
+			pagebuilder.section[id-1+2] = temp;
+			new_id = new_id-1+2;
+		}
+		return new_id;
+	},
 	add_page: function(section){
 		section.page.push({
 			id: '',
@@ -36,6 +57,27 @@ pagebuilder = {
 	delete_page: function(section,id){
 		section.page.splice(id,1);
 	},
+	move_page_up: function(section,id){
+		var new_id = id;
+		if(id>0){
+			var temp = section.page[id];
+			section.page[id] = section.page[id-1];
+			section.page[id-1] = temp;
+			new_id = id - 1;
+		}
+		return new_id;
+	},
+	move_page_down: function(section,id){
+		var new_id = id;
+		if(id<section.page.length-1){
+			var temp = section.page[id];
+			// -1+2 so it doesn't get treated as a string
+			section.page[id] = section.page[id-1+2];
+			section.page[id-1+2] = temp;
+			new_id = new_id-1+2;
+		}
+		return new_id;
+	},
 	add_page_section: function(page){
 		page.section.push({
 			name: '',
@@ -49,6 +91,27 @@ pagebuilder = {
 	},
 	delete_page_section: function(page,id){
 		page.section.splice(id,1);
+	},
+	move_page_section_up: function(page,id){
+		var new_id = id;
+		if(id>0){
+			var temp = page.section[id];
+			page.section[id] = page.section[id-1];
+			page.section[id-1] = temp;
+			new_id = id - 1;
+		}
+		return new_id;
+	},
+	move_page_section_down: function(page,id){
+		var new_id = id;
+		if(id<page.section.length-1){
+			var temp = page.section[id];
+			// -1+2 so it doesn't get treated as a string
+			page.section[id] = page.section[id-1+2];
+			page.section[id-1+2] = temp;
+			new_id = id -1+2;
+		}
+		return new_id;
 	},
 	add_widget: function(section,type){
 		section.widget.push({
@@ -64,19 +127,25 @@ pagebuilder = {
 		page_section.widget.splice(id,1);
 	},
 	move_widget_up: function(page_section,id){
+		var new_id = id;
 		if(id>0){
 			var temp = page_section.widget[id];
 			page_section.widget[id] = page_section.widget[id-1];
 			page_section.widget[id-1] = temp;
+			new_id = id - 1;
 		}
+		return new_id;
 	},
 	move_widget_down: function(page_section,id){
+		var new_id = id;
 		if(id<page_section.widget.length-1){
 			var temp = page_section.widget[id];
 			// -1+2 so it doesn't get treated as a string
 			page_section.widget[id] = page_section.widget[id-1+2];
 			page_section.widget[id-1+2] = temp;
+			new_id = id - 1+2;
 		}
+		return new_id;
 	},
 	widgetlist:{
 		clock: {name: 'Clock'},
@@ -431,13 +500,58 @@ $(document).on('click','#widget_def_popup a.delete',function(){
 });
 
 /* Moving                                                                    */
+$(document).on('click','#section_def_popup a.move_up',function(){
+	var id = $('#section_def_popup').attr('data-id');
+	new_id = pagebuilder.move_section_up(id);
+	$('#section_def_popup').attr('data-id',new_id);
+	render_menu();
+});
+$(document).on('click','#section_def_popup a.move_down',function(){
+	var id = $('#section_def_popup').attr('data-id');
+	new_id = pagebuilder.move_section_down(id);
+	$('#section_def_popup').attr('data-id',new_id);
+	render_menu();
+});
+
+$(document).on('click','#page_def_popup a.move_up',function(){
+	var section_id = $('#page_def_popup').attr('data-section_id');
+	var id = $('#page_def_popup').attr('data-id');
+	new_id = pagebuilder.move_page_up(pagebuilder.section[section_id],id);
+	$('#page_def_popup').attr('data-id',new_id);
+	render_menu();
+});
+$(document).on('click','#page_def_popup a.move_down',function(){
+	var section_id = $('#page_def_popup').attr('data-section_id');
+	var id = $('#page_def_popup').attr('data-id');
+	new_id = pagebuilder.move_page_down(pagebuilder.section[section_id],id);
+	$('#page_def_popup').attr('data-id',new_id);
+	render_menu();
+});
+
+$(document).on('click','#page_section_def_popup a.move_up',function(){
+	var id = $('#page_section_def_popup').attr('data-id');
+	var section_id = $('#renderpage').attr('data-section_id');
+	var page_id = $('#renderpage').attr('data-page_id');
+	new_id = pagebuilder.move_page_section_up(pagebuilder.section[section_id].page[page_id],id);
+	$('#page_section_def_popup').attr('data-id',new_id);
+	render_page(section_id,page_id);
+});
+$(document).on('click','#page_section_def_popup a.move_down',function(){
+	var id = $('#page_section_def_popup').attr('data-id');
+	var section_id = $('#renderpage').attr('data-section_id');
+	var page_id = $('#renderpage').attr('data-page_id');
+	new_id = pagebuilder.move_page_section_down(pagebuilder.section[section_id].page[page_id],id);
+	$('#page_section_def_popup').attr('data-id',new_id);
+	render_page(section_id,page_id);
+});
+
 $(document).on('click','#widget_def_popup a.move_up',function(){
 	var id = $('#widget_def_popup').attr('data-id');
 	var page_section_id = $('#widget_def_popup').attr('data-page_section_id');
 	var section_id = $('#renderpage').attr('data-section_id');
 	var page_id = $('#renderpage').attr('data-page_id');
-	$('#widget_def_popup').popup('close');
-	pagebuilder.move_widget_up(pagebuilder.section[section_id].page[page_id].section[page_section_id],id);
+	new_id = pagebuilder.move_widget_up(pagebuilder.section[section_id].page[page_id].section[page_section_id],id);
+	$('#widget_def_popup').attr('data-id',new_id);
 	render_page(section_id,page_id);
 });
 $(document).on('click','#widget_def_popup a.move_down',function(){
@@ -445,8 +559,8 @@ $(document).on('click','#widget_def_popup a.move_down',function(){
 	var page_section_id = $('#widget_def_popup').attr('data-page_section_id');
 	var section_id = $('#renderpage').attr('data-section_id');
 	var page_id = $('#renderpage').attr('data-page_id');
-	$('#widget_def_popup').popup('close');
-	pagebuilder.move_widget_down(pagebuilder.section[section_id].page[page_id].section[page_section_id],id);
+	new_id = pagebuilder.move_widget_down(pagebuilder.section[section_id].page[page_id].section[page_section_id],id);
+	$('#widget_def_popup').attr('data-id',new_id);
 	render_page(section_id,page_id);
 });
 

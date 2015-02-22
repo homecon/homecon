@@ -48,27 +48,45 @@
 			<div id='renderpage' data-role='content'>
 			</div>
 			
-			<div id='section_def_popup' data-id='1' class='ui-content' data-role='popup' data-position-to='window' data-theme='b' data-overlay-theme='b'>
-				<input type='text' data-field='name'>
+			<div id='section_def_popup' class='ui-content def' data-role='popup' data-position-to='window' data-theme='b' data-overlay-theme='b'>
+				<div class='options'>
+					<input type='text' data-field='name'>
+				</div>
+				<div class='move'>
+					<a class='move_up' data-role='button' data-icon="arrow-u" data-iconpos="notext">Move up</a>
+					<a class='move_down' data-role='button' data-icon="arrow-d" data-iconpos="notext">Move down</a>
+				</div>
 				<a class='save' data-role='button'>Save</a>
 				<a class='delete' data-role='button'>Delete</a>
 				<a href="#" data-rel="back" data-role="button" data-theme="b" data-icon="delete" data-iconpos="notext" class="ui-btn-right">Close</a>
 			</div>
-			<div id='page_def_popup'  data-id='1' data-section_id='1' class='ui-content' data-role='popup' data-position-to='window' data-theme='b' data-overlay-theme='b'>
-				<input type='text' data-field='name'>
-				<select data-field='img'></select>
+			<div id='page_def_popup' class='ui-content def' data-role='popup' data-position-to='window' data-theme='b' data-overlay-theme='b'>
+				<div class='options'>
+					<input type='text' data-field='name'>
+					<select data-field='img'></select>
+				</div>
+				<div class='move'>
+					<a class='move_up' data-role='button' data-icon="arrow-u" data-iconpos="notext">Move up</a>
+					<a class='move_down' data-role='button' data-icon="arrow-d" data-iconpos="notext">Move down</a>
+				</div>
 				<a class='save' data-role='button'>Save</a>
 				<a class='delete' data-role='button'data-section_id='1'>Delete</a>
 				<a href="#" data-rel="back" data-role="button" data-theme="b" data-icon="delete" data-iconpos="notext" class="ui-btn-right">Close</a>
 			</div>
-			<div id='page_section_def_popup' class='ui-content' data-role='popup' data-position-to='window' data-theme='b' data-overlay-theme='b'>
-				<input type='text' data-field='name'>
-				<select data-field='type'><option value=''>Invisible</option><option value='collapsible'>Collapsible</option><option value='collapsed'>Collapsed</option></select>
+			<div id='page_section_def_popup' class='ui-content def' data-role='popup' data-position-to='window' data-theme='b' data-overlay-theme='b'>
+				<div class='options'>
+					<input type='text' data-field='name'>
+					<select data-field='type'><option value=''>Invisible</option><option value='collapsible'>Collapsible</option><option value='collapsed'>Collapsed</option></select>
+				</div>
+				<div class='move'>
+					<a class='move_up' data-role='button' data-icon="arrow-u" data-iconpos="notext">Move up</a>
+					<a class='move_down' data-role='button' data-icon="arrow-d" data-iconpos="notext">Move down</a>
+				</div>
 				<a class='save' data-role='button'>Save</a>
 				<a class='delete' data-role='button'data-section_id='1'>Delete</a>
 				<a href="#" data-rel="back" data-role="button" data-theme="b" data-icon="delete" data-iconpos="notext" class="ui-btn-right">Close</a>
 			</div>
-			<div id='widget_def_popup' class='ui-content' data-role='popup' data-position-to='window' data-theme='b' data-overlay-theme='b'>
+			<div id='widget_def_popup' class='ui-content def' data-role='popup' data-position-to='window' data-theme='b' data-overlay-theme='b'>
 				<div class='options'>
 				</div>
 				<div class='move'>

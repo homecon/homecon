@@ -106,11 +106,11 @@
 #requestpopup{
 	bottom: 20px;
 }
-#widget_def_popup div.options{
+div.def div.options{
 	display: inline-block;
 	width: 84%;
 }
-#widget_def_popup div.move{
+div.def div.move{
 	display: inline-block;
 	width: 14%;
 	vertical-align: top;
