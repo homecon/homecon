@@ -48,7 +48,7 @@ $(function(){
 	$("#rendermenu").hide();
 	$("#header nav div.pagebuilder").hide();
 });
-$(document).on('pageinit','#pagebuilder', function(){
+$(document).on('pageinit','#home_pagebuilder', function(){
 	// change the menu panel with the pagebuilder menu
 	$('#mainmenu').hide();
 	$("#rendermenu").show();
@@ -57,7 +57,7 @@ $(document).on('pageinit','#pagebuilder', function(){
 	$("#header nav div.home").hide();
 	$("#header nav div.pagebuilder").show();
 });
-$(document).on('click','a[href="#pagebuilder"]', function(){
+$(document).on('click','a[href="#home_pagebuilder"]', function(){
 	// change the menu panel with the pagebuilder menu
 	$('#mainmenu').hide();
 	$("#rendermenu").show();
@@ -66,7 +66,7 @@ $(document).on('click','a[href="#pagebuilder"]', function(){
 	$("#header nav div.home").hide();
 	$("#header nav div.pagebuilder").show();
 });
-$(document).on('click','a[#home]', function(){
+$(document).on('click','a[href="#home_home"]', function(){
 	location.reload();
 	
 	// change back to the menu panel
@@ -82,7 +82,8 @@ $(document).on('click','a[#home]', function(){
 /*****************************************************************************/
 /*                     General popups                                        */
 /*****************************************************************************/
-$(document).on('ready',function() {
+$(document).on('ready',function(){
+	$("#message_popup").enhanceWithin().popup();
 	$("#action_def_popup").enhanceWithin().popup();
 	$("#measurement_def_popup").enhanceWithin().popup();
 });

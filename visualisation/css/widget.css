@@ -47,13 +47,13 @@ div[data-role="lightswitch"] a:hover {
 	color: #FFF;
 }
 
-#pagebuilder div[data-role="lightswitch"]{
+#home_pagebuilder div[data-role="lightswitch"]{
 	margin-bottom: 5px;
 	margin-right: 1%;
 	width: 48%;
 	border: solid 1px #222;
 }
-#pagebuilder div[data-role="lightswitch"] a.edit_widget{
+#home_pagebuilder div[data-role="lightswitch"] a.edit_widget{
     top: -5px;
 	right: -5px;
 }
@@ -92,10 +92,10 @@ div[data-role="lightdimmer"] .ui-slider input{
 	visibility: hidden;
 }
 
-#pagebuilder div[data-role="lightdimmer"]{
+#home_pagebuilder div[data-role="lightdimmer"]{
 	border: solid 1px #222;
 }
-#pagebuilder div[data-role="lightdimmer"] a.edit_widget{
+#home_pagebuilder div[data-role="lightdimmer"] a.edit_widget{
     top: -5px;
 	right: -5px;
 }
@@ -144,10 +144,10 @@ div[data-role="shading"] a.edit_widget{
     top: -10px;
 	right: 50px;
 }
-#pagebuilder div[data-role="shading"]{
+#home_pagebuilder div[data-role="shading"]{
 	border: solid 1px #222;
 }
-#pagebuilder div[data-role="shading"] a.edit_widget{
+#home_pagebuilder div[data-role="shading"] a.edit_widget{
     top: -5px;
 	right: -5px;
 }
@@ -183,7 +183,7 @@ div[data-role="alarm"] label{
 	padding-left: 8px;
 	padding-right: 8px;
 }
-#pagebuilder div[data-role="alarm"]{
+#home_pagebuilder div[data-role="alarm"]{
 	margin-bottom: 5px;
 	border: solid 1px #222;
 }
@@ -318,11 +318,11 @@ div[data-role="clock"] .date{
 	margin-top: 0;
 	margin-bottom: 0;
 }
-#pagebuilder div[data-role="clock"]{
+#home_pagebuilder div[data-role="clock"]{
 	margin-bottom: 5px;
 	border: solid 1px #222;
 }
-#pagebuilder div[data-role="clock"] a.edit_widget{
+#home_pagebuilder div[data-role="clock"] a.edit_widget{
     top: -5px;
 	right: -5px;
 }

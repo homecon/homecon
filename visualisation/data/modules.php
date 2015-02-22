@@ -1,7 +1,7 @@
 
 
 
-		<div id='users' data-role='page' data-theme='b'>
+		<div id='home_users' data-role='page' data-theme='b'>
 			<div data-role='content'>
 		
 
@@ -9,7 +9,7 @@
 		</div>
 		
 		
-		<div id='alarms' data-role='page' data-theme='b'>
+		<div id='home_alarms' data-role='page' data-theme='b'>
 			<div data-role='content'>
 				<header>
 					<img src='icons/ws/control_alarm.png'>
@@ -25,7 +25,7 @@
 		</div>
 		
 		
-		<div id='measurements' data-role='page' data-theme='b'>
+		<div id='home_measurements' data-role='page' data-theme='b'>
 			<div data-role='content'>
 				<header>
 					<img src='icons/ws/measure_power_meter.png'>
@@ -44,7 +44,7 @@
 		</div>
 		
 
-		<div id='pagebuilder' data-role='page' data-theme='b'>
+		<div id='home_pagebuilder' data-role='page' data-theme='b'>
 			<div id='renderpage' data-role='content'>
 			</div>
 			
@@ -57,13 +57,14 @@
 			<div id='page_def_popup'  data-id='1' data-section_id='1' class='ui-content' data-role='popup' data-position-to='window' data-theme='b' data-overlay-theme='b'>
 				<input type='text' data-field='name'>
 				<input type='text' data-field='img'>
+				<select data-field='img'></select>
 				<a class='save' data-role='button'>Save</a>
 				<a class='delete' data-role='button'data-section_id='1'>Delete</a>
 				<a href="#" data-rel="back" data-role="button" data-theme="b" data-icon="delete" data-iconpos="notext" class="ui-btn-right">Close</a>
 			</div>
 			<div id='page_section_def_popup' class='ui-content' data-role='popup' data-position-to='window' data-theme='b' data-overlay-theme='b'>
 				<input type='text' data-field='name'>
-				<input type='text' data-field='type'>
+				<select data-field='type'><option value=''>Invisible</option><option value='collapsible'>Collapsible</option><option value='collapsed'>Collapsed</option></select>
 				<a class='save' data-role='button'>Save</a>
 				<a class='delete' data-role='button'data-section_id='1'>Delete</a>
 				<a href="#" data-rel="back" data-role="button" data-theme="b" data-icon="delete" data-iconpos="notext" class="ui-btn-right">Close</a>
@@ -174,4 +175,7 @@
 			</div>
 			<a id='measurement_def_popup_save' data-role='button' data-id='1'>Save</a>
 			<a href="#" data-rel="back" data-role="button" data-theme="b" data-icon="delete" data-iconpos="notext" class="ui-btn-right">Close</a>
+		</div>
+		
+		<div id='message_popup' class='ui-content' data-role='popup' data-position-to='window' data-theme='b' data-overlay-theme='b'>
 		</div>

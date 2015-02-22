@@ -153,7 +153,7 @@ render_page = function(section_id,page_id){
 	$('#renderpage').append('<a href="#" class="add_page_section" data-role="button" data-id="'+page.id+'">Add section</a>');
 	
 	// enhance
-	$('#pagebuilder').enhanceWithin();
+	$('#renderpage').enhanceWithin();
 }
 	
 render_menu = function(){
@@ -243,7 +243,7 @@ $(document).on('click','a.edit_page_section',function(){
 	$('#page_section_def_popup').popup('open');
 	$('#page_section_def_popup').attr('data-id',id);
 	$('#page_section_def_popup input[data-field="name"]').val(pagebuilder.section[section_id].page[page_id].section[id].name);
-	$('#page_section_def_popup input[data-field="type"]').val(pagebuilder.section[section_id].page[page_id].section[id].type);
+	$('#page_section_def_popup select[data-field="type"]').val(pagebuilder.section[section_id].page[page_id].section[id].type).selectmenu('refresh');
 });
 $(document).on('click','a.edit_widget',function(){
 	var id = $(this).parents('div[data-role]').attr('data-id');
@@ -289,7 +289,7 @@ $(document).on('click','#page_section_def_popup a.save',function(){
 	var page_id = $('#renderpage').attr('data-page_id');
 	$('#page_section_def_popup').popup('close');
 	pagebuilder.section[section_id].page[page_id].section[id].name = $('#page_section_def_popup input[data-field="name"]').val();
-	pagebuilder.section[section_id].page[page_id].section[id].type = $('#page_section_def_popup input[data-field="type"]').val();
+	pagebuilder.section[section_id].page[page_id].section[id].type = $('#page_section_def_popup select[data-field="type"]').val();
 	render_page(section_id,page_id);
 });
 $(document).on('click','#widget_def_popup a.save',function(){
@@ -381,7 +381,7 @@ $(document).on('click','#rendermenu a.renderpage',function(){
 /*****************************************************************************/
 /*                     global controls                                       */
 /*****************************************************************************/
-$(document).on('pageinit','#pagebuilder',function(){
+$(document).on('pageinit','#home_pagebuilder',function(){
 	
 	$.post('requests/select_from_table.php',{table: 'pagebuilder', column: 'model', where: 'id=1'},function(result){
 		var model = JSON.parse(result);
@@ -396,6 +396,9 @@ $(document).on('pageinit','#pagebuilder',function(){
 $(document).on('click','nav div.pagebuilder a.save',function(){
 	$.post('requests/update_table.php',{table: 'pagebuilder', column: 'model', value: JSON.stringify(pagebuilder.section), where: 'id=1'},function(result){
 		console.log('saved');
+		$("#message_popup").html('<h3>Model saved</h3>');
+		$("#message_popup").popup('open');
+		setTimeout(function(){$("#message_popup").popup('close');}, 1000);
 	});
 });
 $(document).on('click','nav div.pagebuilder a.export',function(){
