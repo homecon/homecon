@@ -1,9 +1,20 @@
-//
-// 
-// widget.js is part of KNXControl
-// @author: Brecht Baeten
-// @license: GNU GENERAL PUBLIC LICENSE
-// 
+/*
+    Copyright 2015 Brecht Baeten
+    This file is part of KNXControl.
+
+    KNXControl is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    KNXControl is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with KNXControl.  If not, see <http://www.gnu.org/licenses/>.
+*/
 //
 
 /*****************************************************************************/
@@ -676,6 +687,8 @@ $.widget('knxcontrol.chart',{
 	_create: function(){
 		
 		// Enhance
+		this.element.append('<div class="chart_container"></div>');
+		
 		Highcharts.setOptions({
 			global: {
 				useUTC: false
@@ -687,13 +700,13 @@ $.widget('knxcontrol.chart',{
 		if(this.options.type == 'line'){
 			this.chart_options.xAxis.range = 2 * 24 * 3600 * 1000;
 			this.chart_options.tooltip.xDateFormat='%Y-%m-%d %H:%M';
-			$(this.element).highcharts('StockChart',this.chart_options);
+			$(this.element).children('.chart_container').highcharts('StockChart',this.chart_options);
 		}
 		else{
-			$(this.element).highcharts(this.chart_options);
+			$(this.element).children('.chart_container').highcharts(this.chart_options);
 		}
 		
-		this.chart = $(this.element).highcharts();
+		this.chart = $(this.element).children('.chart_container').highcharts();
 		//this.update(this.options.signals);
 		
 		// bind events
