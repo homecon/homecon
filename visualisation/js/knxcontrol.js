@@ -196,7 +196,7 @@ var knxcontrol = {
 		}
 	},
 	
-// measurements                                                              //
+// measurement                                                             //
 	measurement: {
 		// 1: {id: 1, name: 'Temperatuur', item: 'buiten.measurements.temperature', quantity: 'Temperature', unit: 'degC', description: 'Buiten temeratuur', data: []},
 		get: function(id){
@@ -214,12 +214,12 @@ var knxcontrol = {
 						item: result.item,
 						quantity: result.quantity,
 						unit: result.unit,
-						description: result.description,
-						data: []
+						description: result.description
 					};
 					$('[data-role="measurement_list"]').trigger('update',result.id);
-					//that.get_data(result.id);
+					//that.get_data(result.id);  // this will load all data which results in a lot of data traffic
 				});
+				console.log('legend finished');
 				$('[data-role="chart"]').trigger('get_data');
 			});
 		},
@@ -230,16 +230,19 @@ var knxcontrol = {
 			});
 		},
 		get_data: function(id){
-			that = this;
-			$.post('requests/select_from_table.php',{table: 'measurements_quarterhouraverage', column: 'time,value', where: 'signal_id='+id+' AND time > '+((new Date()).getTime()/1000-7*27*3600), orderby: 'time'},function(result){
-				that[id].data = [];
-				
-				$.each(JSON.parse(result),function(index,value){
-					that[id].data.push([parseFloat(value.time)*1000,parseFloat(value.value)]);
+			if(this[id]){
+			
+				that = this;
+				$.post('requests/select_from_table.php',{table: 'measurements_quarterhouraverage', column: 'time,value', where: 'signal_id='+id+' AND time > '+((new Date()).getTime()/1000-7*27*3600), orderby: 'time'},function(result){
+					data = []
+					
+					$.each(JSON.parse(result),function(index,value){
+						data.push([parseFloat(value.time)*1000,parseFloat(value.value)]);
+					});
+					$('[data-role="chart"]').trigger('update',[id,data]);
+					
 				});
-				$('[data-role="chart"]').trigger('update',id);
-				
-			});
+			}
 		}
 	},
 	

@@ -681,7 +681,7 @@ $.widget("knxcontrol.measurement_export",{
 /*****************************************************************************/
 $.widget('knxcontrol.chart',{
 	options: {
-      signals: '',
+      signals: '1',
 	  type: 'line'
     },
 	_create: function(){
@@ -697,6 +697,13 @@ $.widget('knxcontrol.chart',{
 		
 		this.chart_options.chart.type = this.options.type;
 		
+		// add blank series
+		var that = this;
+		that.chart_options.series = [];
+		$.each((''+this.options.signals).split(','),function(index,id){
+			that.chart_options.series.push({name: 'temp', data: [[Date.now()-2*24*3600*1000,0],[Date.now(),0]], step: true});
+		});
+		
 		if(this.options.type == 'line'){
 			this.chart_options.xAxis.range = 2 * 24 * 3600 * 1000;
 			this.chart_options.tooltip.xDateFormat='%Y-%m-%d %H:%M';
@@ -705,28 +712,34 @@ $.widget('knxcontrol.chart',{
 		else{
 			$(this.element).children('.chart_container').highcharts(this.chart_options);
 		}
-		
 		this.chart = $(this.element).children('.chart_container').highcharts();
-		//this.update(this.options.signals);
+		
+		// try to get data
+		this.get_data();		
 		
 		// bind events
 		this._on(this.element, {
-			'update': function(event,id){			
-				this.update(id);
+			'update': function(event,id,data){			
+				this.update(id,data);
 			},
 			'get_data': function(event){			
 				this.get_data();
 			}
 		});
 	},
-	update: function(id){
-		this.chart.addSeries({name: 'test' ,data: knxcontrol.measurement[id].data});
+	update: function(id,data){
+		that = this;
+		$.each((''+this.options.signals).split(','),function(index,signal){
+			if(signal==id){
+				that.chart.series[index].name = knxcontrol.measurement[id].name ;
+				that.chart.series[index].setData(data);
+			}
+		});
 	},
 	get_data: function(){
-		$.each((''+this.options.signals).split(),function(index,id){
+		$.each((''+this.options.signals).split(','),function(index,id){
 			knxcontrol.measurement.get_data(id);
-		});
-		
+		});	
 	},
 	chart: {},
 	chart_options: {
