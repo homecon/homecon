@@ -50,9 +50,11 @@
 	
 	// check if a logout request was sent
 	if(array_key_exists('logout',$_GET)){
-		setcookie("knxcontrol_user", '', time()-1);
-		setcookie("knxcontrol_pass", '', time()-1);
+		unset($_COOKIE['knxcontrol_user']);
+		unset($_COOKIE['knxcontrol_pass']);
 		$_SESSION['user_id'] = -1;	
+		setcookie('knxcontrol_user',null,-1);
+		setcookie('knxcontrol_pass',null,-1);
 	}
 	
 	if($_SESSION['user_id']>0){
