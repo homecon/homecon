@@ -24,6 +24,7 @@ pagebuilder = {
 		pagebuilder.section.push({
 			id: '',
 			name: '',
+			init: 'false',
 			page: []
 		});
 	},
@@ -434,6 +435,7 @@ $(document).on('click','a.edit_section',function(){
 	$('#section_def_popup').popup('open');
 	$('#section_def_popup').attr('data-id',id);
 	$('#section_def_popup input[data-field="name"]').val(pagebuilder.section[id].name);
+	$('#section_def_popup input[data-field="init"]').val(pagebuilder.section[id].init);
 });
 $(document).on('click','a.edit_page',function(){
 	var section_id = $(this).parents('section').attr('data-id');
@@ -486,6 +488,7 @@ $(document).on('click','#section_def_popup a.save',function(){
 	$('#section_def_popup').popup('close');
 	pagebuilder.section[section_id].name = $('#section_def_popup input[data-field="name"]').val();
 	pagebuilder.section[section_id].id = $('#section_def_popup input[data-field="name"]').val().toLowerCase();
+	pagebuilder.section[section_id].init = $('#section_def_popup input[data-field="init"]').val();
 	render_menu();
 });
 $(document).on('click','#page_def_popup a.save',function(){
@@ -746,9 +749,12 @@ publish_menu = function(){
 	// sections
 	$.each(pagebuilder.section,function(index,section){
 		if(section.id!='home'){
-
-			publish += '%t%t%t%t<section data-id="'+index+'" data-role="collapsible" data-section="'+section.id+'" data-theme="a" data-content-theme="b"">%n%t%t%t%t%t<h1>'+section.name+'</h1>%n%t%t%t%t%t<ul data-role="listview" data-inset="false">%n';
-		
+			var data_collapsed = '';
+			if(section.init){
+				data_collapsed = 'data-collapsed="false"';
+			}
+			publish += '%t%t%t%t<section data-id="'+index+'" data-role="collapsible" '+data_collapsed+' data-section="'+section.id+'" data-theme="a" data-content-theme="b"">%n%t%t%t%t%t<h1>'+section.name+'</h1>%n%t%t%t%t%t<ul data-role="listview" data-inset="false">%n';
+			
 			//pages
 			section_index = index;
 			$.each(section.page,function(index,page){

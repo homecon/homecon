@@ -78,7 +78,8 @@
 			
 			<div id='section_def_popup' class='ui-content def' data-role='popup' data-position-to='window' data-theme='b' data-overlay-theme='b'>
 				<div class='options'>
-					<input type='text' data-field='name'>
+					<input type='text' data-field='name' placeholder='name'>
+					<input type='text' data-field='init' placeholder='initially open'>
 				</div>
 				<div class='move'>
 					<a class='move_up' data-role='button' data-icon="arrow-u" data-iconpos="notext">Move up</a>
@@ -90,8 +91,8 @@
 			</div>
 			<div id='page_def_popup' class='ui-content def' data-role='popup' data-position-to='window' data-theme='b' data-overlay-theme='b'>
 				<div class='options'>
-					<input type='text' data-field='name'>
-					<input type='text' data-field='measurement_item'>
+					<input type='text' data-field='name' placeholder='name'>
+					<input type='text' data-field='measurement_item' placeholder='measurement_item'>
 					<select data-field='img'></select>
 				</div>
 				<div class='move'>
@@ -104,7 +105,7 @@
 			</div>
 			<div id='page_section_def_popup' class='ui-content def' data-role='popup' data-position-to='window' data-theme='b' data-overlay-theme='b'>
 				<div class='options'>
-					<input type='text' data-field='name'>
+					<input type='text' data-field='name' placeholder='name'>
 					<select data-field='type'><option value=''>Invisible</option><option value='collapsible'>Collapsible</option><option value='collapsed'>Collapsed</option></select>
 				</div>
 				<div class='move'>
