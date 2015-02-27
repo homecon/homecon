@@ -163,6 +163,31 @@ pagebuilder = {
 		}
 		return new_id;
 	},
+	save: function(){
+		$.post('requests/update_table.php',{table: 'pagebuilder', column: 'model', value: JSON.stringify(pagebuilder.section), where: 'id=1'},function(result){
+			console.log('saved');
+		});
+	},
+	publish: function(){
+		var publish = '';
+		$.each(pagebuilder.section,function(section_index,section){
+			$.each(section.page,function(page_index,page){
+				publish += publish_page(section_index,page_index);
+			});
+		});
+		$.post('requests/pagebuilder_publish.php',{page: 'pages', model: publish},function(result){
+			console.log('published pages');
+		
+			publish = publish_menu();
+			$.post('requests/pagebuilder_publish.php',{page: 'menu', model: publish},function(result){
+				console.log('published menu');
+			
+				$("#message_popup").html('<h3>Model published</h3>');
+				$("#message_popup").popup('open');
+				setTimeout(function(){$("#message_popup").popup('close');}, 500);
+			});
+		});
+	},	
 	widgetlist:{
 		clock: {name: 'Clock'},
 		line: {name: 'Separator'},
@@ -268,7 +293,10 @@ pagebuilder = {
 /*                     views                                                 */
 /*****************************************************************************/
 render_page = function(section_id,page_id){
+	// save
+	pagebuilder.save();
 	
+	// start rendering
 	page = pagebuilder.section[section_id].page[page_id];
 	
 	var select_widget_values = {};
@@ -333,6 +361,10 @@ render_page = function(section_id,page_id){
 }
 	
 render_menu = function(){
+	// save
+	pagebuilder.save();
+	
+	// start rendering
 	$('#rendermenu').empty();
 
 	// sections
@@ -619,14 +651,6 @@ $(document).on('pageinit','#home_pagebuilder',function(){
 		$('#menu').panel("open");	
 	});
 });
-$(document).on('click','nav div.pagebuilder a.save',function(){
-	$.post('requests/update_table.php',{table: 'pagebuilder', column: 'model', value: JSON.stringify(pagebuilder.section), where: 'id=1'},function(result){
-		console.log('saved');
-		$("#message_popup").html('<h3>Model saved</h3>');
-		$("#message_popup").popup('open');
-		setTimeout(function(){$("#message_popup").popup('close');}, 1000);
-	});
-});
 $(document).on('click','nav div.pagebuilder a.export',function(){
 	window.open('requests/pagebuilder_export.php?model='+JSON.stringify(pagebuilder.section));
 	console.log('export');
@@ -650,20 +674,7 @@ $(document).on('change','#pagebuilder_import',function(event){
 	
 });
 $(document).on('click','nav div.pagebuilder a.publish',function(){
-	var publish = '';
-	$.each(pagebuilder.section,function(section_index,section){
-		$.each(section.page,function(page_index,page){
-			publish += publish_page(section_index,page_index);
-		});
-	});
-	$.post('requests/pagebuilder_publish.php',{page: 'pages', model: publish},function(result){
-		console.log('published pages');
-	});
-	
-	publish = publish_menu();
-	$.post('requests/pagebuilder_publish.php',{page: 'menu', model: publish},function(result){
-		console.log('published menu');
-	});
+	pagebuilder.publish();
 });
 
 

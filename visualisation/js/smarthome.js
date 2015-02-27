@@ -33,7 +33,6 @@ var smarthome = {
     },
 // Ask for item values over the websocket                                    //
     monitor: function(){
-		console.log(knxcontrol.getkeys('item'));
 		smarthome.send({'cmd': 'monitor', 'items': knxcontrol.getkeys('item')});
     },
 // private functions	

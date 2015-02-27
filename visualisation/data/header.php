@@ -27,11 +27,10 @@
 					<a class='hide' href='#home_pagebuilder'><img src='icons/ws/time_note.png'></a>
 				</div>	
 				<div class='pagebuilder'>
-					<a class='save' href='#'><img src='icons/ws/edit_save.png'></a>
+					<a class='publish' href='#'><img src='icons/ws/edit_save.png'></a>
 					<input type='file' id='pagebuilder_import'/>
 					<a class='import' href='#'><img src='icons/ws/edit_open.png'></a>
 					<a class='export' href='#'><img src='icons/ws/control_arrow_down.png'></a>
-					<a class='publish' href='#'><img src='icons/ws/control_arrow_up_right.png'></a>
 				</div>
 			</nav>
 		</div>
