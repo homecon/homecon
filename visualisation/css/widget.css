@@ -103,6 +103,7 @@ div[data-role="lightdimmer"]{
 	position: relative;
 	height: 60px;
 	width: 98%;
+	text-align: left;
 }
 div[data-role="lightdimmer"] img{
 	height: 50px;
@@ -146,6 +147,7 @@ div[data-role="shading"]{
 	position: relative;
 	height: 70px;
 	width: 98%;
+	text-align: left;
 }
 div[data-role="shading"] img{
 	height: 50px;
@@ -194,6 +196,7 @@ div[data-role="shading"] a.edit_widget{
 /*****************************************************************************/
 div[data-role="alarm"]{
 	width: 98%;
+	text-align: left;
 }
 div[data-role="alarm"] div.alarm{
 	position: relative; 
@@ -232,6 +235,7 @@ div[data-role="alarm"] label{
 /*****************************************************************************/
 div[data-role="action_list"]{
 	width: 98%;
+	text-align: left;
 }
 div[data-role="action_list"] div.action{
 	position: relative;
@@ -278,6 +282,7 @@ div[data-role="action_list"] div.action div{
 /*****************************************************************************/
 div[data-role="measurement_list"]{
 	width: 98%;
+	text-align: left;
 }
 div[data-role="measurement_list"] div.measurement{
 	position: relative;
@@ -316,6 +321,13 @@ div[data-role="measurement_list"] div.measurement div.name{
 	border: 0;
 }
 
+/*****************************************************************************/
+/*                     Settings                                              */
+/*****************************************************************************/
+div[data-role="settings"]{
+	width: 98%;
+	text-align: left;
+}
 
 /*****************************************************************************/
 /*                     Clock                                                 */
@@ -426,6 +438,7 @@ div[data-role="btn"] img{
     top: -5px;
 	right: -5px;
 }
+
 
 /*----------------------------------------------------------------------------------*/
 /*     setpoint                                                                     */

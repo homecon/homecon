@@ -158,9 +158,6 @@ div.def div.move{
 section>div.ui-collapsible-content{
 	text-align: center;
 }
-label{
-	text-align: left;
-}
 
 @media all and (min-width: 800px) {
 	div [data-role="content"]{
