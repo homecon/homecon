@@ -70,7 +70,6 @@ var knxcontrol = {
 		
 		// request the values of all items from smarthome.py
 		smarthome.monitor();
-		
 	},
 //items                                                                      //
 	item: {
@@ -83,7 +82,6 @@ var knxcontrol = {
 		},	
 		update: function(item,value){
 			knxcontrol.item[item] = value;
-			
 			$('[data-item="'+item+'"]').trigger('update');
 		},
 	},

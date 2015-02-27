@@ -268,6 +268,7 @@ pagebuilder = {
 /*                     views                                                 */
 /*****************************************************************************/
 render_page = function(section_id,page_id){
+	
 	page = pagebuilder.section[section_id].page[page_id];
 	
 	var select_widget_values = {};
@@ -408,7 +409,7 @@ $(document).on('click','a.edit_page',function(){
 	$('#page_def_popup').popup('open');
 	$('#page_def_popup').attr('data-section_id',section_id);
 	$('#page_def_popup').attr('data-id',id);
-	console.log('test');
+
 	$('#page_def_popup select[data-field="img"]').empty();
 	$.each(pagebuilder.iconlist,function(index,icon){
 		$('#page_def_popup select[data-field="img"]').append('<option value="'+icon+'">'+icon+'</option>')
@@ -660,7 +661,6 @@ $(document).on('click','nav div.pagebuilder a.publish',function(){
 	});
 	
 	publish = publish_menu();
-	console.log(publish);
 	$.post('requests/pagebuilder_publish.php',{page: 'menu', model: publish},function(result){
 		console.log('published menu');
 	});
