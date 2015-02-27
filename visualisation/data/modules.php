@@ -58,6 +58,19 @@
 			</div>
 		</div>
 		
+		<div id='home_settings' data-role='page' data-theme='b'>
+			<div data-role='content'>
+				<header>
+					<img src='icons/ws/edit_settings.png'>
+					<h1>Settings</h1>
+				</header>
+				<section data-role='collapsible' data-theme='a' data-collapsed='false'>
+					<h1>General</h1>
+					<div data-role='settings'></div>
+				</section>
+			</div>
+		</div>
+		
 
 		<div id='home_pagebuilder' data-role='page' data-theme='b'>
 			<div id='renderpage' data-role='content'>

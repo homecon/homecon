@@ -30,6 +30,8 @@ language = {
 	add_action: 'actie toevoegen',
 	add_measurement: 'meting toevoegen',
 	export_measurements: 'metingen exporteren',
+	save: 'opslaan',
+	settings_saved: 'settings opgeslagen',
 // methods
 // capitalize 1st letter	
 	capitalize: function(string){
