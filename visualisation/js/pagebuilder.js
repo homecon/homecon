@@ -165,12 +165,14 @@ pagebuilder = {
 	},
 	widgetlist:{
 		clock: {name: 'Clock'},
+		line: {name: 'Separator'},
 		lightswitch: {name: 'Light switch'},
 		lightdimmer: {name: 'Light dimmer'},
 		shading: {name: 'Shading control'},
 		alarm: {name: 'Alarm'},
 		chart: {name: 'Chart'},
-		displayvalue: {name: 'Display value'}
+		displayvalue: {name: 'Display value'},
+		btn: {name: 'Button'}
 	},
 	iconlist:[
 		'fts_sunblind.png',

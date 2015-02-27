@@ -155,8 +155,8 @@ div.def div.move{
 	right: 10px;
 	font-weight: 600;
 }
-.ui-content div.group{
-	margin-bottom: 10px;
+section>div.ui-collapsible-content{
+	text-align: center;
 }
 
 

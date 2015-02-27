@@ -34,6 +34,20 @@ $(document).on('pagebeforecreate',function(){
 });
 
 
+/*****************************************************************************/
+/*                     separation line                                       */
+/*****************************************************************************/
+$.widget('knxcontrol.line',{
+	options: {
+		line: 'true'
+    },
+	_create: function(){
+		// enhance
+		if(this.options.line){
+			this.element.addClass("line");
+		}
+	},
+});
 
 /*****************************************************************************/
 /*                     display value                                         */
@@ -61,6 +75,35 @@ $.widget('knxcontrol.displayvalue',{
 		var value = Math.round(knxcontrol.item[item]*rounding)/rounding;
 		
 		this.element.html(value);
+	}
+});
+
+/*****************************************************************************/
+/*                     button                                                */
+/*****************************************************************************/
+$.widget('knxcontrol.btn',{
+	options: {
+		label: '',
+		item: '',
+		value: '',
+		src: '',
+    },
+	
+	_create: function(){
+		// enhance
+		this.element.append('<a data-role="button" data-corners="false">'+this.options.label+'</a>');
+		if(this.options.src!=''){
+			this.element.append('<img src="'+this.options.src+'"/>');
+		}
+		this.element.enhanceWithin();
+	
+		// bind events
+		this._on(this.element, {
+            'click a': function(event){
+				// update the value in smarthome
+				smarthome.write(this.options.item, this.options.value);
+			},
+        });
 	}
 });
 
@@ -127,13 +170,14 @@ $.widget("knxcontrol.lightdimmer",{
 		// bind events
 		this._on(this.element, {
 			'change input': function(event){
-				var item = this.options.item;
+				var item = this.options.item+'.val';
+				console.log(item);
 				if(!this.lock){
 					knxcontrol.item.update(item,this.element.find('input').val());
 				}
 			},
             'click a.switch': function(event){
-				var item = this.options.item;
+				var item = this.options.item+'.val';
 				// update the value in smarthome
 				if( knxcontrol.item[item] > this.options.val_off){
 					smarthome.write(item, this.options.val_off);
@@ -156,7 +200,7 @@ $.widget("knxcontrol.lightdimmer",{
 			//console.log(that.options.item+' unlocked');
 		},500);
 		
-		var item = this.options.item;
+		var item = this.options.item+'.val';
 		this.element.find('input').val(knxcontrol.item[item]).slider('refresh');
 	
 		if(knxcontrol.item[item]>this.options.val_off){

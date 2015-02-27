@@ -217,7 +217,6 @@ var knxcontrol = {
 					$('[data-role="measurement_list"]').trigger('update',result.id);
 					//that.get_data(result.id);  // this will load all data which results in a lot of data traffic
 				});
-				console.log('legend finished');
 				$('[data-role="chart"]').trigger('get_data');
 			});
 		},
