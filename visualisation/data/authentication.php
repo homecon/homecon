@@ -27,7 +27,6 @@
 		if($user = mysql_fetch_array($result)){
 			if(md5($_COOKIE['knxcontrol_pass'])==$user['password']){
 				$_SESSION['user_id'] = $user['id'];
-				
 			}
 		}
 	}
@@ -47,6 +46,13 @@
 				$incorrect = 0;
 			}
 		}
+	}
+	
+	// check if a logout request was sent
+	if(array_key_exists('logout',$_GET)){
+		setcookie("knxcontrol_user", '', time()-1);
+		setcookie("knxcontrol_pass", '', time()-1);
+		$_SESSION['user_id'] = -1;	
 	}
 	
 	if($_SESSION['user_id']>0){

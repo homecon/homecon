@@ -25,6 +25,7 @@
 					<a class='hide' href='#home_measurements'><img src='icons/ws/measure_power_meter.png'></a>
 					<a class='hide' href='#home_settings'><img src='icons/ws/edit_settings.png'></a>
 					<a class='hide' href='#home_pagebuilder'><img src='icons/ws/time_note.png'></a>
+					<a href='index.php?logout=1' data-ajax='false'><img src='icons/ws/control_logout.png'></a>
 				</div>	
 				<div class='pagebuilder'>
 					<a class='publish' href='#'><img src='icons/ws/edit_save.png'></a>
