@@ -76,17 +76,6 @@ $(document).on('click','a[href="#home_pagebuilder"]', function(){
 	$("#header nav div.home").hide();
 	$("#header nav div.pagebuilder").show();
 });
-$(document).on('click','a[href="#home_home"]', function(){
-	location.reload();
-	
-	// change back to the menu panel
-	$("#rendermenu").hide();
-	$('#mainmenu').show();
-	
-	// show the header buttons
-	$("#header nav div.home").show();
-	$("#header nav div.pagebuilder").hide();
-});
 
 
 /*****************************************************************************/

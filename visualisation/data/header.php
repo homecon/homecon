@@ -18,7 +18,7 @@
 
 		<div id='header' data-role='header' data-position='fixed' data-tap-toggle='false' data-theme='b'>
 			<nav>
-				<a href='#home_home' id='home'><img src='icons/ws/control_building_empty.png'></a>
+				<a href='index.php' data-ajax='false' id='home'><img src='icons/ws/control_building_empty.png'></a>
 				<a href='#' id='menu_button'><img src='icons/ws/control_bars.png'></a>
 				<div class='home'>
 					<a class='hide' href='#home_alarms'><img src='icons/ws/control_alarm.png'></a>
