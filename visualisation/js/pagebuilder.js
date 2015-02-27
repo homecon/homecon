@@ -60,15 +60,15 @@ pagebuilder = {
 			id: '',
 			name: '',
 			img: 'scene_livingroom.png',
-			temperature_item:'',
+			measurement_item: '',
 			section: [],
 		});
 	},
-	update_page: function(page,id,name,img,temperature_item){
+	update_page: function(page,id,name,img,measurement_item){
 		page.id = id;
 		page.name = name;
 		page.img = img;
-		page.temperature_item = temperature_item;
+		page.measurement_item = measurement_item;
 	},
 	delete_page: function(section,id){
 		section.page.splice(id,1);
@@ -315,8 +315,8 @@ render_page = function(section_id,page_id){
 	// add header
 	if(page.id != 'home'){
 		$('#renderpage').append('<header><img src="icons/ws/'+page.img+'"><h1>'+page.name+'</h1></header>');
-		if(page.temperature_item != ''){
-			$('#renderpage header').append('<div class="value"><span data-role="displayvalue" data-item="'+page.temperature_item+'" data-digits="1"></span>&deg;C</div>');
+		if(page.measurement_item != ''){
+			$('#renderpage header').append('<div class="value"><span data-role="displayvalue" data-item="'+page.measurement_item+'" data-digits="1"></span>&deg;C</div>');
 		}
 	}
 	
@@ -447,6 +447,7 @@ $(document).on('click','a.edit_page',function(){
 		$('#page_def_popup select[data-field="img"]').append('<option value="'+icon+'">'+icon+'</option>')
 	});
 	$('#page_def_popup input[data-field="name"]').val(pagebuilder.section[section_id].page[id].name);
+	$('#page_def_popup input[data-field="measurement_item"]').val(pagebuilder.section[section_id].page[id].measurement_item);
 	$('#page_def_popup select[data-field="img"]').val(pagebuilder.section[section_id].page[id].img).selectmenu('refresh');
 });
 $(document).on('click','a.edit_page_section',function(){
@@ -493,6 +494,7 @@ $(document).on('click','#page_def_popup a.save',function(){
 	$('#page_def_popup').popup('close');
 	pagebuilder.section[section_id].page[id].name = $('#page_def_popup input[data-field="name"]').val();
 	pagebuilder.section[section_id].page[id].id = $('#page_def_popup input[data-field="name"]').val().toLowerCase();
+	pagebuilder.section[section_id].page[id].measurement_item = $('#page_def_popup input[data-field="measurement_item"]').val();
 	pagebuilder.section[section_id].page[id].img = $('#page_def_popup select[data-field="img"]').val();
 	render_menu();
 });
@@ -694,8 +696,8 @@ publish_page = function(section_id,page_id){
 	// add header
 	if(page.id != 'home'){
 		publish += '%t%t%t%t<header>%n%t%t%t%t%t<img src="icons/ws/'+page.img+'">%n%t%t%t%t%t<h1>'+page.name+'</h1>%n';
-		if(page.temperature_item != ''){
-			publish += '%t%t%t%t%t<div class="value"><span data-role="displayvalue" data-item="'+page.temperature_item+'" data-digits="1"></span>&deg;C</div>%n';
+		if(page.measurement_item != ''){
+			publish += '%t%t%t%t%t<div class="value"><span data-role="displayvalue" data-item="'+page.measurement_item+'" data-digits="1"></span>&deg;C</div>%n';
 		}
 		publish += '%t%t%t%t</header>%n';
 	}

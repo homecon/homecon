@@ -78,6 +78,7 @@
 			<div id='page_def_popup' class='ui-content def' data-role='popup' data-position-to='window' data-theme='b' data-overlay-theme='b'>
 				<div class='options'>
 					<input type='text' data-field='name'>
+					<input type='text' data-field='measurement_item'>
 					<select data-field='img'></select>
 				</div>
 				<div class='move'>
