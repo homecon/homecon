@@ -32,10 +32,12 @@ $(document).on('connect',function(event,user_id){
 			data = data[0];
 			
 			// initialize connection
-			// try local connection
-			smarthome.init(data['ip'],data['port'],data['token']);
-			if(!smarthome.socket){
-				// try www connection
+			if((document.URL).indexOf(data['ip']) > -1){
+				// the address is local if the smarthome ip is the same as the website ip
+				smarthome.init(data['ip'],data['port'],data['token']);
+			}
+			else{
+				// we are on the www
 				smarthome.init(data['web_ip'],data['web_port'],data['token']);
 			}
 			
