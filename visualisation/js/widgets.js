@@ -169,7 +169,7 @@ $.widget("knxcontrol.lightdimmer",{
 		this.element.attr('data-item',this.options.item);
 		this.element.enhanceWithin();
 		this.update();
-		
+
 		// bind events
 		this._on(this.element, {
 			'change input': function(event){

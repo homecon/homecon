@@ -51,11 +51,13 @@ $(document).on('connect',function(event,user_id){
 	//knxcontrol.get_weatherforecast()
 	//setInterval(function(){knxcontrol.get_weatherforecast()}, 3600000);
 });
-
+$(document).on('pagebeforeshow',function(){
+	knxcontrol.item.get();
+	smarthome.monitor();
+});
 /*****************************************************************************/
 /*                     KNXControl model                                      */
 /*****************************************************************************/
-
 var knxcontrol = {
 	user_id: 0,
 	location:	{
