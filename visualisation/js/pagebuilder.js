@@ -346,6 +346,9 @@ render_page = function(section_id,page_id){
 			});
 			
 		});
+		// end of section div
+		$('#renderpage section[data-id="'+section_index+'"]').append('<div class="endofsection"></div>');
+		
 		// widget adding
 		$('#renderpage section[data-id="'+section_index+'"]').append('<fieldset class="ui-grid-a"><div class="ui-block-a"><select class="select_widget" data-native-menu="false"><option>Select Widget</option></select></div><div class="ui-block-b"><a href="#" class="add_widget" data-role="button" data-id="'+page.id+'">Add</a></div>');
 		$.each(pagebuilder.widgetlist,function(index,widget){
@@ -732,6 +735,8 @@ publish_page = function(section_id,page_id){
 			
 			publish+= '></div>%n';
 		});
+				// end of section div
+		publish += '%t%t%t%t%t<div class="endofsection"></div>%n';
 		publish += '%t%t%t%t</section>%n'
 	});
 	publish += '%t%t%t</div>%n';
