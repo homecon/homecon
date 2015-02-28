@@ -23,33 +23,9 @@
 $(document).on('connect',function(event,user_id){
 	knxcontrol.user_id = user_id;
 	
-		
-	if(!smarthome.socket){
-		//get connection data
-		$.post('requests/select_from_table.php',{table: 'data', column: '*', where: 'id=1'},function(result){
-
-			data = JSON.parse(result);
-			data = data[0];
-			
-			// initialize connection
-			if((document.URL).indexOf(data['ip']) > -1){
-				// the address is local if the smarthome ip is the same as the website ip
-				smarthome.init(data['ip'],data['port'],data['token']);
-			}
-			else{
-				// we are on the www
-				smarthome.init(data['web_ip'],data['web_port'],data['token']);
-			}
-			
-			// set location
-			knxcontrol.location.latitude = data['latitude'];
-			knxcontrol.location.longitude = data['longitude'];
-		});
-	};
+	knxcontrol.settings.get();
+	knxcontrol.location.get();
 	
-	// get a weather forecast and schedule it to run every hour
-	//knxcontrol.get_weatherforecast()
-	//setInterval(function(){knxcontrol.get_weatherforecast()}, 3600000);
 });
 $(document).on('pagebeforeshow',function(){
 	knxcontrol.item.get();
@@ -61,9 +37,63 @@ $(document).on('pagebeforeshow',function(){
 var knxcontrol = {
 	user_id: 0,
 	location:	{
-		latitude: 51,
-		longitude: -5,
-		altitude: 80
+		latitude: 0,
+		longitude: 0,
+		altitude: 80,
+		get: function(){
+			$.post('requests/select_from_table.php',{table: 'data', column: 'latitude,longitude', where: 'id=1'},function(result){
+				data = JSON.parse(result);
+				data = data[0];
+				
+				knxcontrol.location.latitude = data['latitude'];
+				knxcontrol.location.longitude = data['longitude'];
+			});
+		},
+		update: function(){
+			$.post('requests/update_table.php',{table: 'data', column: ['latitude','longitude'].join(';'), value: [this.latitude,this.longitude].join(';'), where: 'id=1'},function(result){
+				$("#message_popup").html('<h3>'+language.settings_saved+'</h3>');
+				$("#message_popup").popup('open');
+				setTimeout(function(){$("#message_popup").popup('close');}, 500);
+			});
+		}
+	},
+	settings:{
+		ip: '',
+		port: '',
+		web_ip: '',
+		web_port: '',
+		token: '',
+		get: function(){
+			$.post('requests/select_from_table.php',{table: 'data', column: '*', where: 'id=1'},function(result){
+				data = JSON.parse(result);
+				data = data[0];
+				
+				knxcontrol.settings.ip = data['ip'];
+				knxcontrol.settings.port = data['port'];
+				knxcontrol.settings.web_ip = data['web_ip'];
+				knxcontrol.settings.web_port = data['web_port'];
+				knxcontrol.settings.token = data['token'];
+			
+				// initialize connection
+				if((document.URL).indexOf(data['ip']) > -1){
+					// the address is local if the smarthome ip is the same as the website ip
+					smarthome.init(knxcontrol.settings.ip,knxcontrol.settings.port,knxcontrol.settings.token);
+				}
+				else{
+					// we are on the www
+					smarthome.init(knxcontrol.settings.web_ip,knxcontrol.settings.web_port,knxcontrol.settings.token);
+				}
+				
+				$('[data-role="settings"]').trigger('update');
+			});
+		},
+		update: function(){
+			$.post('requests/update_table.php',{table: 'data', column: ['ip','port','web_ip','web_port','token'].join(';'), value: [this.ip,this.port,this.web_ip,this.web_port,this.token].join(';'), where: 'id=1'},function(result){
+				$("#message_popup").html('<h3>'+language.settings_saved+'</h3>');
+				$("#message_popup").popup('open');
+				setTimeout(function(){$("#message_popup").popup('close');}, 500);
+			});
+		}
 	},
 	weatherforecast: [], // will be removed
 // initialize

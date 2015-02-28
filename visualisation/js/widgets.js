@@ -737,36 +737,30 @@ $.widget("knxcontrol.settings",{
 							'<div data-role="fieldcontain"><label for="home_settings_token">Token:</label><input type="text" id="home_settings_token" data-field="token"></div>'+
 							'<a href="#" class="save" data-role="button" data-rel="popup">'+language.capitalize(language.save)+'</a>');
 		this.element.enhanceWithin();	
-		
-		// load values  ajax request here? for security reasons?
-		that = this;
-		$.post('requests/select_from_table.php',{table: 'data', column: '*', where: 'id=1'},function(result){
-			var settings = JSON.parse(result);
-			settings = settings[0];
-			
-			that.element.find('[data-field="ip"]').val(settings['ip']);
-			that.element.find('[data-field="port"]').val(settings['port']);
-			that.element.find('[data-field="web_ip"]').val(settings['web_ip']);
-			that.element.find('[data-field="web_port"]').val(settings['web_port']);
-			that.element.find('[data-field="token"]').val(settings['token']);
-		});
-		
+		this.update();
+
 		// bind events
 		this._on(this.element, {
+			'update': function(event){
+				this.update();
+			},
 			'click a.save': function(event){
-				ip = this.element.find('[data-field="ip"]').val();
-				port = this.element.find('[data-field="port"]').val();
-				web_ip = this.element.find('[data-field="web_ip"]').val();
-				web_port = this.element.find('[data-field="web_port"]').val();
-				token = this.element.find('[data-field="token"]').val();
+				knxcontrol.settings.ip = this.element.find('[data-field="ip"]').val();
+				knxcontrol.settings.port = this.element.find('[data-field="port"]').val();
+				knxcontrol.settings.web_ip = this.element.find('[data-field="web_ip"]').val();
+				knxcontrol.settings.web_port = this.element.find('[data-field="web_port"]').val();
+				knxcontrol.settings.token = this.element.find('[data-field="token"]').val();
+				knxcontrol.settings.update();
 				
-				$.post('requests/update_table.php',{table: 'data', column: ['ip','port','web_ip','web_port','token'].join(';'), value: [ip,port,web_ip,web_port,token].join(';'), where: 'id=1'},function(result){
-					$("#message_popup").html('<h3>'+language.settings_saved+'</h3>');
-					$("#message_popup").popup('open');
-					setTimeout(function(){$("#message_popup").popup('close');}, 500);
-				});
 			}
 		});
+	},
+	update: function(){
+		this.element.find('[data-field="ip"]').val(knxcontrol.settings.ip);
+		this.element.find('[data-field="port"]').val(knxcontrol.settings.port);
+		this.element.find('[data-field="web_ip"]').val(knxcontrol.settings.web_ip);
+		this.element.find('[data-field="web_port"]').val(knxcontrol.settings.web_port);
+		this.element.find('[data-field="token"]').val(knxcontrol.settings.token);
 	}
 });
 
