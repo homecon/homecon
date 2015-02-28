@@ -40,7 +40,7 @@ a.edit_page{
 div[data-role="line"]{
 	display: block;
 	position: relative;
-	height: 1px;
+	height: 0px;
 	margin-top: 5px;
 	margin-bottom: 5px;
 	width: 98%;
@@ -377,20 +377,51 @@ div[data-role="clock"] .date{
 }
 
 /*****************************************************************************/
-/*                     Current weather                                       */
+/*                     Weather block                                       */
 /*****************************************************************************/
-div[data-role="current_weather"]{
+div[data-role="weather_block"]{
+	position: relative;
+	display: inline-block;
 	width: 98%;
 	margin-left: auto;
 	margin-right: auto;
 	text-align: center;
 }
-div[data-role="current_weather"] img{
-	width: 350px;
+div[data-role="weather_block"] img{
+	width: 90%;
+	max-width: 300px;
+	margin-top: -10px;
+	margin-bottom: -10px;
 }
-
-
-
+div[data-role="weather_block"] div{
+	height: 20px;
+}
+div[data-role="weather_block"] div[data-field="date"]{
+	height: 0;
+}
+div[data-role="weather_block"].mini{
+	width: 20%;
+	min-width: 75px;
+	max-width: 150px;
+	margin-left: 0;
+	margin-right: 0;
+	font-size: 0.9em;
+}
+div[data-role="weather_block"].mini img{
+	width: 100%;
+	margin-bottom: -10px;
+}
+div[data-role="weather_block"].mini div{
+	height: 15px;
+}
+#home_pagebuilder div[data-role="weather_block"]{
+	margin-bottom: 5px;
+	border: solid 1px #222;
+}
+#home_pagebuilder div[data-role="weather_block"] a.edit_widget{
+    top: -5px;
+	right: -5px;
+}
 
 /*****************************************************************************/
 /*                     Chart                                                 */
@@ -509,77 +540,8 @@ div.setpoint_chart{
 	}
 }
 
-/*----------------------------------------------------------------------------------*/
-/*     Weather forecast                                                             */
-/*----------------------------------------------------------------------------------*/
-/*
-#weather_forecast_detailed{
-	width: 95%;
-	margin-left: auto;
-	margin-right: auto;
-}
-#weather_forecast_detailed .forecast_details{
-	margin-top: 0.5em;
-	display: inline-block;
-	width: 19%;
-	text-align: center;
-}
-#weather_forecast_detailed .forecast_details img{
-	width: 90%;
-	margin-left: auto;
-	margin-right: auto;
-}
 
-#weather_forecast_averaged{
-	width: 95%;
-	margin-left: auto;
-	margin-right: auto;
-}
-#weather_forecast_averaged .forecast_details{
-	margin-top: 0.1em;
-	display: inline-block;
-	width: 24%;
-	text-align: center;
-}
-#weather_forecast_averaged .forecast_details img{
-	width: 90%;
-	margin-left: auto;
-	margin-right: auto;
-}
 
-#current_weather{
-	width: 95%;
-	margin-left: auto;
-	margin-right: auto;
-	text-align: center;
-}
-#current_weather img{
-	max-height: 180px;
-}
-
-/*        weather        */
-/*---------------------*/
-/*
-section.lokaal_weer{
-	width: 90%;
-	margin-top: 20px;
-	margin-left: auto;
-	margin-right: auto;
-	text-align: center;
-}
-section.lokaal_weer div{
-
-}
-
-/*        charts       */
-/*---------------------*/
-/*
-div.chart{
-	width: 100%;
-	height: 300px;
-	margin-bottom: 10px;
-
-}
 
 /*----------------------------------------------------------------------------------*/
 /*     setpoint                                                                     */

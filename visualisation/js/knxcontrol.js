@@ -95,7 +95,6 @@ var knxcontrol = {
 			});
 		}
 	},
-	weatherforecast: [], // will be removed
 // initialize
 	init: function(){
 		knxcontrol.item.get();
@@ -285,41 +284,5 @@ var knxcontrol = {
 			}
 		});
 		return ind;
-	},
-////////////////////////////////////////////////////////////////////////
-// this will be moved to smarthome.py in the near future so no dev is happening and widget is broken	
-// update weather forecast data
-	get_weatherforecast: function(){
-		
-		$.post('http://api.openweathermap.org/data/2.5/forecast?lat='+this.location.latitude+'&lon='+this.location.longitude,function(result){
-			var weatherforecast = [];
-
-			for(var i=0;i<result.list.length; i++){
-				data = result.list[i];
-				var temp = {
-					timestamp: data.dt*1000,
-					temperature: data.main.temp-273.15,
-					minimum_temperature: data.main.temp_min-273.15,
-					maximum_temperature: data.main.temp_max-273.15,
-					pressure: data.main.pressure,
-					humidity: data.main.humidity,
-					windspeed: data.wind.speed,
-					winddirection: data.wind.deg,
-					cloudfactor: 1-data.clouds.all/100,
-					precipitation: 0,
-					icon: data.weather[0].icon
-				};
-				
-				if(data.hasOwnProperty('rain')){
-					temp.precipitation= data.rain['3h']/3;
-				}
-				weatherforecast.push(temp);
-			}
-			knxcontrol.weatherforecast = weatherforecast;
-			
-			// trigger a widget update event
-			$(document).trigger('weatherforecastupdate');
-		});
-	},
-///////////////////////////////////////////////////////////////////////////:	
+	}	
 }

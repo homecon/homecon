@@ -155,7 +155,7 @@ div.def div.move{
 	right: 10px;
 	font-weight: 600;
 }
-section>div.ui-collapsible-content{
+.ui-content section{
 	text-align: center;
 	line-height: 1em;
 }

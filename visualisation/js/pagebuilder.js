@@ -198,7 +198,8 @@ pagebuilder = {
 		alarm: {name: 'Alarm'},
 		chart: {name: 'Chart'},
 		displayvalue: {name: 'Display value'},
-		btn: {name: 'Button'}
+		btn: {name: 'Button'},
+		weather_block: {name: 'Weather block'}
 	},
 	iconlist:[
 		'fts_sunblind.png',
