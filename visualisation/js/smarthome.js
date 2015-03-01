@@ -73,7 +73,9 @@ var smarthome = {
                         knxcontrol.item.update(item, value);
                     };
                     break;
-
+				case 'log':
+					knxcontrol.smarthome_log.update(data.log);
+					break;
                 case 'series':                   
                     data.sid = data.sid.substr(0, data.sid.length - 3) + '0';
                     widget.update(data.sid.replace(/\|/g, '\.'), data.series);

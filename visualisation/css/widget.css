@@ -470,6 +470,26 @@ div[data-role="btn"] img{
 	right: -5px;
 }
 
+/*****************************************************************************/
+/*                     Smarthome log                                         */
+/*****************************************************************************/
+div[data-role="smarthome_log"]{
+	display: inline-block;
+	position: relative;
+	width: 98%;
+	text-align: left;
+}
+div[data-role="smarthome_log"]>div{
+	margin-bottom: 5px;
+}
+div[data-role="smarthome_log"] div.time{
+	font-size: 0.7em;
+	color: #bbb;
+}
+div[data-role="smarthome_log"] div.message{
+	font-size: 0.9em;
+	padding-left: 10px;
+}
 
 /*----------------------------------------------------------------------------------*/
 /*     setpoint                                                                     */

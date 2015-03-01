@@ -68,6 +68,10 @@
 					<h1>General</h1>
 					<div data-role='settings'></div>
 				</section>
+				<section data-role='collapsible' data-theme='a' data-collapsed='false'>
+					<h1>Smarthome log</h1>
+					<div data-role='smarthome_log'></div>
+				</section>
 			</div>
 		</div>
 		

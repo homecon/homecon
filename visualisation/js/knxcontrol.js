@@ -100,9 +100,10 @@ var knxcontrol = {
 		knxcontrol.item.get();
 		knxcontrol.alarm.get();
 		knxcontrol.measurement.get();
-		
+
 		// request the values of all items from smarthome.py
 		smarthome.monitor();
+		knxcontrol.smarthome_log.get();
 	},
 //items                                                                      //
 	item: {
@@ -118,7 +119,16 @@ var knxcontrol = {
 			$('[data-item="'+item+'"]').trigger('update');
 		},
 	},
-	
+	smarthome_log: {
+		log: [],
+		get: function(){
+			smarthome.send({'cmd': 'log', 'name': 'env.core.log', 'max': 100});
+		},
+		update: function(log){
+			this.log = log.concat(this.log);
+			$('[data-role="smarthome_log"]').trigger('update');
+		}
+	},
 // alarms                                                                    //
 	alarm: {
 		// 1: {id: 1, section_id: 2, hour: 13, minute: 12, mon: 1, tue: 1, wed: 1, thu: 1, fri: 1, sat: 1, sun: 1, action_id: 2},...

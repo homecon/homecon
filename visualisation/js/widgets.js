@@ -917,3 +917,50 @@ $.widget('knxcontrol.chart',{
 		series: []
 	}
 });
+
+/*****************************************************************************/
+/*                     smarthome log                                              */
+/*****************************************************************************/
+$.widget("knxcontrol.smarthome_log",{
+	options: {
+	},
+	_create: function(){
+		// enhance
+		this.element.html('');
+		this.element.enhanceWithin();	
+		this.update();
+		
+		// bind events
+		this._on(this.element, {
+			'update': function(event,id,data){			
+				this.update();
+			},
+		});
+	},
+	update: function(){
+		this.element.empty();
+		
+		that = this;
+		$.each(knxcontrol.smarthome_log.log,function(index,value){
+			var date = new Date(value.time);
+			var hour = date.getHours();
+			var minute = date.getMinutes();
+			var second = date.getSeconds();
+			if(hour<10){
+				hour = '0'+hour;
+			}
+			if(minute<10){
+				minute = '0'+minute;
+			}
+			if(second<10){
+				second = '0'+second;
+			}
+			
+			
+			date_string = date.getDate()+'-'+(date.getMonth()+1)+'-'+date.getFullYear()+', '+hour+':'+minute+':'+second;
+
+		
+			that.element.append('<div><div class="time">'+date_string+'</div><div class="message">'+value.level+':'+value.message+'</div></div>')
+		});
+	}
+});
