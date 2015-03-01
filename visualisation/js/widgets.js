@@ -851,11 +851,12 @@ $.widget('knxcontrol.chart',{
 		
 		this.chart_options.chart.type = this.options.type;
 		
-		// add blank series
+		
+		// add empty series
 		var that = this;
 		that.chart_options.series = [];
 		$.each((''+this.options.signals).split(','),function(index,id){
-			that.chart_options.series.push({name: 'temp', data: [[Date.now()-2*24*3600*1000,0],[Date.now(),0]], step: true});
+			that.chart_options.series.push({name: 'temp', step: true});
 		});
 		
 		if(this.options.type == 'line'){
@@ -867,6 +868,7 @@ $.widget('knxcontrol.chart',{
 			$(this.element).children('.chart_container').highcharts(this.chart_options);
 		}
 		this.chart = $(this.element).children('.chart_container').highcharts();
+		this.chart.reflow();
 		
 		// try to get data
 		this.get_data();		
@@ -875,6 +877,7 @@ $.widget('knxcontrol.chart',{
 		this._on(this.element, {
 			'update': function(event,id,data){			
 				this.update(id,data);
+				this.chart.reflow();
 			},
 			'get_data': function(event){			
 				this.get_data();
@@ -901,6 +904,7 @@ $.widget('knxcontrol.chart',{
 		},
 		xAxis: {
 			type: 'datetime',
+			ordinal: false
 		},
 		tooltip: {
 			xDateFormat: '%Y-%m-%d',
