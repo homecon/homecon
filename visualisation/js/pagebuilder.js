@@ -487,7 +487,9 @@ $(document).on('click','a.edit_widget',function(){
 	$('#widget_def_popup div.options').empty();
 	$.each(pagebuilder.section[section_id].page[page_id].section[page_section_id].widget[widget_id].options,function(index,option){
 		if( !(index=='disabled' || index=='create') ){
-			$('#widget_def_popup div.options').append('<input type="text" data-field="'+index+'" value="'+option+'" placeholder="'+index+'">');
+			if( !(index=='item' && option=='building.weatherforecast')){
+				$('#widget_def_popup div.options').append('<input type="text" data-field="'+index+'" value="'+option+'" placeholder="'+index+'">');
+			}
 		}
 		$('#widget_def_popup div.options').enhanceWithin();
 	});
