@@ -136,6 +136,9 @@ div.def div.move{
 /*****************************************************************************/
 /*                     Content                                               */
 /*****************************************************************************/
+div[data-role="page"]{
+	-webkit-overflow-scrolling: touch;
+}
 .ui-content header{
 	position: relative;
 }
