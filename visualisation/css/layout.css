@@ -93,6 +93,9 @@
 		-webkit-transform: none !important;
 		transform: none !important;
 	}
+	.ui-panel-closed{
+		max-height: 1000% !important;
+	}
 }
 
 #rendermenu section{
