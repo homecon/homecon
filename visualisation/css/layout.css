@@ -176,3 +176,9 @@ section div.endofsection{
 		width: 58%;
 	}
 }
+.ui-content header a.edit_page{
+	position: absolute;
+	top: -10px;
+	left: -10px;
+}
+
