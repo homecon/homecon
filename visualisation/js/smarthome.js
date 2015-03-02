@@ -47,7 +47,6 @@ var smarthome = {
 			// initialize widgets
 			knxcontrol.init();
 			
-			
 			//smarthome.monitor();
          };
 		

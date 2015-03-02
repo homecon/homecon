@@ -27,10 +27,6 @@ $(document).on('connect',function(event,user_id){
 	knxcontrol.location.get();
 	
 });
-$(document).on('pagebeforeshow',function(){
-	knxcontrol.item.get();
-	smarthome.monitor();
-});
 /*****************************************************************************/
 /*                     KNXControl model                                      */
 /*****************************************************************************/

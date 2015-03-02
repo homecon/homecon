@@ -150,7 +150,7 @@ $.widget('knxcontrol.lightswitch',{
 
 /*****************************************************************************/
 /*                     light dimmer                                          */
-/*****************************************************************************/                                                             //
+/*****************************************************************************/
 $.widget("knxcontrol.lightdimmer",{
 	options: {
 		label: '', 
@@ -164,9 +164,6 @@ $.widget("knxcontrol.lightdimmer",{
 	_create: function(){
 		// enhance
 		this.element.prepend('<p>'+this.options.label+'</p><a href="#" class="switch"><img src="icons/ws/light_light.png"></a><input type="range" value="'+this.options.val_off+'" min="'+this.options.val_off+'" max="'+this.options.val_on+'" step="'+(this.options.val_on-this.options.val_off)/51+'" data-highlight="true"/>');
-		//change the data-item
-		this.options.item = this.options.item+'.value';
-		this.element.attr('data-item',this.options.item);
 		this.element.enhanceWithin();
 		this.update();
 

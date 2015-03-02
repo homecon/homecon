@@ -343,6 +343,14 @@ render_page = function(section_id,page_id){
 			// widget options
 			widget_index = index;
 			$.each(widget.options,function(index,option){
+				if(index=='item'){
+					if(widget.type=='lightdimmer'){
+						option = option+'.value';
+					}
+					else if(widget.type=='shading'){
+						option = option+'.shading.pos';
+					}
+				}
 				$('#renderpage section[data-id="'+section_index+'"] div[data-id="'+widget_index+'"]').attr('data-'+index,option);
 			});
 			
@@ -730,6 +738,14 @@ publish_page = function(section_id,page_id){
 			widget_index = index;
 			$.each(widget.options,function(index,option){
 				if( !(index=='disabled' || index=='create') ){
+					if(index=='item'){
+						if(widget.type=='lightdimmer'){
+							option = option+'.value';
+						}
+						else if(widget.type=='shading'){
+							option = option+'.shading.pos';
+						}
+					}
 					publish += ' data-'+index+'="'+option+'"';
 				}
 			});
