@@ -25,7 +25,7 @@ $(document).on('connect',function(event,user_id){
 	
 	knxcontrol.settings.get();
 	knxcontrol.location.get();
-	
+
 });
 /*****************************************************************************/
 /*                     KNXControl model                                      */
@@ -61,6 +61,7 @@ var knxcontrol = {
 		token: '',
 		get: function(){
 			$.post('requests/select_from_table.php',{table: 'data', column: '*', where: 'id=1'},function(result){
+
 				data = JSON.parse(result);
 				data = data[0];
 				
@@ -69,7 +70,7 @@ var knxcontrol = {
 				knxcontrol.settings.web_ip = data['web_ip'];
 				knxcontrol.settings.web_port = data['web_port'];
 				knxcontrol.settings.token = data['token'];
-			
+				
 				// initialize connection
 				if((document.URL).indexOf(data['ip']) > -1){
 					// the address is local if the smarthome ip is the same as the website ip
