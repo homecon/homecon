@@ -2,23 +2,24 @@ import os
 import subprocess
 
 
-cols = {'b': '#000000', 'w': '#ffffff', 'o': '#f79a1f'}
+cols = ['#000000','#ffffff','#f79a1f']
 
 for file in os.listdir("svg"):
 	print file
 	
-	for key in cols:
-		f1 = open("svg/"+file, 'r')
-		f2 = open("svg/"+file+".tmp", 'w')
+	for col in cols:
+		f1 = open('svg/'+file, 'r')
+		f2 = open('svg/'+file[0:-4]+'_tmp.svg', 'w')
+
 		for line in f1:
-			f2.write(line.replace('#000000', cols[key]))
+			f2.write(line.replace('#000000', col))
 		f2.close()
 		f1.close()
 		
 		# export
-		subprocess.call('inkscape svg/'+file+'.tmp --export-width=200 --export-png='+key+'/'+file[0:-4]+'.png')
+		subprocess.call('inkscape svg/'+file[0:-4]+'_tmp.svg --export-width=200 --export-png='+col[1:]+'/'+file[0:-4]+'.png')
 		
 		# remove tmp file
-		os.remove("svg/"+file+".tmp")
+		os.remove('svg/'+file[0:-4]+'_tmp.svg')
 	
 	f1.close()
