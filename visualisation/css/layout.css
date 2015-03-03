@@ -94,7 +94,7 @@
 		transform: none !important;
 	}
 	.ui-panel-closed{
-		max-height: 1000% !important;
+		max-height: none;
 	}
 }
 
@@ -174,7 +174,7 @@ section div.endofsection{
 
 @media all and (min-width: 800px) {
 	div [data-role="content"]{
-		position: absolute;
+		position: relative;
 		left: 38%;
 		width: 58%;
 	}
