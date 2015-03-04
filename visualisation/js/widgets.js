@@ -595,15 +595,15 @@ $.widget("knxcontrol.alarm",{
 		// check if the action belongs in this widget
 		if(knxcontrol.action[id].section_id==0 || knxcontrol.action[id].section_id==this.options.section){
 			// check if the action option exists
-			if(this.element.find('option [data-id="'+id+'"]').length==0){	
+			if($(this.element).find('option[data-id="'+id+'"]').length==0){
 				// add the action to the select list
 				this.element.find('div.alarm_action select').append('<option class="action_select" value="'+id+'" data-id="'+id+'">'+knxcontrol.action[id].name+'</option>').selectmenu('refresh');
 			}
 			// check if it is the selected option
-			that = this;
+			var that = this;
 			$.each(this.element.find('.alarm'),function(index,object){
 				alarm_id = $(object).attr('data-id');
-				if(knxcontrol.alarm[alarm_id].id==id){
+				if(knxcontrol.alarm[alarm_id].action_id==id){
 					that.element.find('.alarm[data-id="'+alarm_id+'"]').find('option[data-id="'+id+'"]').attr('selected', true).siblings('option').removeAttr('selected');
 				}
 			});
