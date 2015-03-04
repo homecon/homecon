@@ -61,7 +61,7 @@
 		echo "
 		<script>
 			$(document).on('pagebeforeshow',function(){
-				$(document).trigger('connect',".$user['id'].");
+				$(document).trigger('authenticated',".$user['id'].");
 			});
 		</script>";
 	}

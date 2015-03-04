@@ -20,12 +20,25 @@
 /*                     Main event handlers                                   */
 /*****************************************************************************/
 // initialize
-$(document).on('connect',function(event,user_id){
+$(document).on('authenticated',function(event,user_id){
+	// gather values for knxcontrol and make connection to smarthome.py
 	knxcontrol.user_id = user_id;
 	
 	knxcontrol.settings.get();
 	knxcontrol.location.get();
-
+	knxcontrol.alarm.get();
+	knxcontrol.measurement.get();
+});
+$(document).on('connect',function(event,user_id){
+	// initialize connection to smarthome.py
+	if((document.URL).indexOf(data['ip']) > -1){
+		// the address is local if the smarthome.py ip is the same as the website ip
+		smarthome.init(knxcontrol.settings.ip,knxcontrol.settings.port,knxcontrol.settings.token);
+	}
+	else{
+		// we are on the www
+		smarthome.init(knxcontrol.settings.web_ip,knxcontrol.settings.web_port,knxcontrol.settings.token);
+	}
 });
 /*****************************************************************************/
 /*                     KNXControl model                                      */
@@ -71,16 +84,7 @@ var knxcontrol = {
 				knxcontrol.settings.web_port = data['web_port'];
 				knxcontrol.settings.token = data['token'];
 				
-				// initialize connection
-				if((document.URL).indexOf(data['ip']) > -1){
-					// the address is local if the smarthome ip is the same as the website ip
-					smarthome.init(knxcontrol.settings.ip,knxcontrol.settings.port,knxcontrol.settings.token);
-				}
-				else{
-					// we are on the www
-					smarthome.init(knxcontrol.settings.web_ip,knxcontrol.settings.web_port,knxcontrol.settings.token);
-				}
-				
+				$('document').trigger('connect');
 				$('[data-role="settings"]').trigger('update');
 			});
 		},
@@ -91,16 +95,6 @@ var knxcontrol = {
 				setTimeout(function(){$("#message_popup").popup('close');}, 500);
 			});
 		}
-	},
-// initialize
-	init: function(){
-		knxcontrol.item.get();
-		knxcontrol.alarm.get();
-		knxcontrol.measurement.get();
-
-		// request the values of all items from smarthome.py
-		smarthome.monitor();
-		knxcontrol.smarthome_log.get();
 	},
 //items                                                                      //
 	item: {

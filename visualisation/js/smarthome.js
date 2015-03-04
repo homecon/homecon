@@ -45,9 +45,13 @@ var smarthome = {
             console.log('connected to smarthome.py');
 			
 			// initialize widgets
-			knxcontrol.init();
+			knxcontrol.item.get();
 			
-			//smarthome.monitor();
+			// request the values of all items from smarthome.py
+			smarthome.monitor();
+			
+			// get the smarthome.py log
+			knxcontrol.smarthome_log.get();
          };
 		
         smarthome.socket.onmessage = function(event){
