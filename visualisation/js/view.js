@@ -23,7 +23,7 @@ $(function(){
 	$("body>[data-role='header']").toolbar();
 });
 // hide header elements from non admin users
-$(document).on('connect',function(event,user_id){
+$(document).on('authenticated',function(event,user_id){
 	if(user_id!=1){
 		$("#header a.hide").remove();
 	}

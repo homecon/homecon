@@ -262,7 +262,7 @@ $.widget("knxcontrol.clock",{
     },
 	_create: function(){
 		// enhance
-		this.element.prepend('<div class="time"><div>'+
+		this.element.append('<div class="time"><div>'+
 								'<img class="bg" src="icons/clock/clockbg1.png">'+
 								'<img class="hoursLeft" src="icons/clock/0.png"/>'+
 								'<img class="hoursRight" src="icons/clock/1.png"/><hr>'+
@@ -272,8 +272,8 @@ $.widget("knxcontrol.clock",{
 								'<img class="minutesRight" src="icons/clock/3.png"/><hr>'+
 							  '</div></div>'+
 							  '<div class="date">1 januari 2015</div>');
-		this.element.enhanceWithin();
-		
+		//this.element.enhanceWithin();
+
 		// bind events
 		this.setDate();
 		this.setTime();
@@ -294,7 +294,6 @@ $.widget("knxcontrol.clock",{
 		this.element.find('.date').html(date_string);
 	},
 	setTime: function(){
-		
 		now = new Date();
 		h1 = Math.floor( now.getHours() / 10 );
 		h2 = now.getHours() % 10;
@@ -318,12 +317,13 @@ $.widget("knxcontrol.clock",{
 		}
 	},
 	flip: function(selector,num){
+	
 		var src1 = 'icons/clock/'+num+'-1.png';
 		var src2 = 'icons/clock/'+num+'-2.png';
 		var src3 = 'icons/clock/'+num+'-3.png';
 		var src  = 'icons/clock/'+num+'.png';
 		
-		that = this;
+		var that = this;
 		if(this.h1_current==-1){
 			// avoid animation on refresh
 			that.element.find(selector).attr('src',src);
@@ -597,7 +597,7 @@ $.widget("knxcontrol.alarm",{
 			// check if the action option exists
 			if(this.element.find('option [data-id="'+id+'"]').length==0){	
 				// add the action to the select list
-				this.element.find('div.alarm_action select').append('<option class="action_select" value="'+id+'" data-id="'+id+'">'+knxcontrol.action[id].name+'</option>'+).selectmenu('refresh');
+				this.element.find('div.alarm_action select').append('<option class="action_select" value="'+id+'" data-id="'+id+'">'+knxcontrol.action[id].name+'</option>').selectmenu('refresh');
 			}
 			// check if it is the selected option
 			that = this;
@@ -778,9 +778,9 @@ $.widget("knxcontrol.measurement_list",{
 			if(this.element.find('.measurement_list').find('.measurement[data-id="'+id+'"]').length==0){
 				//add the measurement to the DOM
 				this.element.find('.measurement_list').append('<div class="measurement" data-id="'+id+'">'+
-																'<div class="id" data-field="id">'+id+'</div>'
-																'<div class="name" data-field="name">'+knxcontrol.measurement[id].name+'&nbsp;</div>'
-																'<a href="#measurement_def_popup" class="edit" data-role="button" data-rel="popup" data-icon="grid" data-mini="true" data-iconpos="notext">Edit</a>'
+																'<div class="id" data-field="id">'+id+'</div>'+
+																'<div class="name" data-field="name">'+knxcontrol.measurement[id].name+'&nbsp;</div>'+
+																'<a href="#measurement_def_popup" class="edit" data-role="button" data-rel="popup" data-icon="grid" data-mini="true" data-iconpos="notext">Edit</a>'+
 															  '</div>').enhanceWithin();
 			}
 		}
