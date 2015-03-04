@@ -708,7 +708,7 @@ $(document).on('click','#action_def_popup_save',function(event){
 				  'delay2','item2','value2',
 				  'delay3','item3','value3',
 				  'delay4','item4','value4',
-				  'delay5','item5','value5'].join();
+				  'delay5','item5','value5'];
 	value = [$('#action_def_popup').find('input[data-field="name"]').val(),
 			 $('#action_def_popup').find('input[data-field="section_id"]').val(),
 			 $('#action_def_popup').find('input[data-field="delay1"]').val(),
@@ -725,8 +725,8 @@ $(document).on('click','#action_def_popup_save',function(event){
 			 $('#action_def_popup').find('input[data-field="value4"]').val(),
 			 $('#action_def_popup').find('input[data-field="delay5"]').val(),
 			 $('#action_def_popup').find('input[data-field="item5"]').val(),
-			 $('#action_def_popup').find('input[data-field="value5"]').val()].join();
-	
+			 $('#action_def_popup').find('input[data-field="value5"]').val()];
+			 
 	knxcontrol.action.update(id,data_field,value);
 });
 $(document).on('click','#action_def_popup_delete',function(event){

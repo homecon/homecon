@@ -206,8 +206,9 @@ var knxcontrol = {
 		},
 		update: function(id,data_field,value){
 			// set the alarm in the database
-			$.post('requests/update_table.php',{table: 'alarm_actions', column: data_field, value: value, where: 'id='+id},function(result){
+			$.post('requests/update_table.php',{table: 'alarm_actions', column: data_field.join(';'), value: value.join(';'), where: 'id='+id},function(result){
 				// on success update knxcontrol
+				console.log(result);
 				knxcontrol.action.get(id);
 			});
 		},
