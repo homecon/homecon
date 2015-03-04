@@ -200,6 +200,7 @@
 				</div>
 			</div>
 			<a id='action_def_popup_save' data-role='button' data-id='1'>Save</a>
+			<a id='action_def_popup_delete' data-role='button' data-id='1'>Delete</a>
 			<a href="#" data-rel="back" data-role="button" data-theme="b" data-icon="delete" data-iconpos="notext" class="ui-btn-right">Close</a>
 		</div>
 		

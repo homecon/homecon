@@ -17,22 +17,6 @@
 */
 //
 
-/*****************************************************************************/
-/*                     Templates                                             */
-/*****************************************************************************/
-var template = {
-	alarm: '',
-	action_select: '',
-	action: '',
-	measurement: ''
-};
-
-$(document).on('pagebeforecreate',function(){
-	$.each(template,function(key,value){
-		template[key] = $('#templates .'+key).prop('outerHTML');
-	});
-});
-
 
 /*****************************************************************************/
 /*                     separation line                                       */
@@ -109,7 +93,7 @@ $.widget('knxcontrol.btn',{
 
 /*****************************************************************************/
 /*                     light switch                                          */
-/*****************************************************************************/                                                             //
+/*****************************************************************************/
 $.widget('knxcontrol.lightswitch',{
 	options: {
 		label: '',
@@ -163,7 +147,9 @@ $.widget("knxcontrol.lightdimmer",{
 	lock: false,
 	_create: function(){
 		// enhance
-		this.element.prepend('<p>'+this.options.label+'</p><a href="#" class="switch"><img src="icons/ws/light_light.png"></a><input type="range" value="'+this.options.val_off+'" min="'+this.options.val_off+'" max="'+this.options.val_on+'" step="'+(this.options.val_on-this.options.val_off)/51+'" data-highlight="true"/>');
+		this.element.prepend('<p>'+this.options.label+'</p>'+
+							 '<a href="#" class="switch"><img src="icons/ws/light_light.png"></a>'+
+							 '<input type="range" value="'+this.options.val_off+'" min="'+this.options.val_off+'" max="'+this.options.val_on+'" step="'+(this.options.val_on-this.options.val_off)/51+'" data-highlight="true"/>');
 		this.element.enhanceWithin();
 		this.update();
 
@@ -224,7 +210,10 @@ $.widget("knxcontrol.shading",{
 	_create: function(){
 		// enhance
 		var text = this.element.html();
-		this.element.prepend('<p>'+this.options.label+'</p><a href="#" class="open"><img src="icons/ws/fts_shutter_10.png"></a><a href="#" class="close"><img src="icons/ws/fts_shutter_100.png"></a><input type="range" value="'+this.options.val_off+'" min="'+this.options.val_off+'" max="'+this.options.val_on+'" step="'+(this.options.val_on-this.options.val_off)/51+'" data-highlight="true"/>');
+		this.element.prepend('<p>'+this.options.label+'</p>'+
+							 '<a href="#" class="open"><img src="icons/ws/fts_shutter_10.png"></a>'+
+							 '<a href="#" class="close"><img src="icons/ws/fts_shutter_100.png"></a>'+
+							 '<input type="range" value="'+this.options.val_off+'" min="'+this.options.val_off+'" max="'+this.options.val_on+'" step="'+(this.options.val_on-this.options.val_off)/51+'" data-highlight="true"/>');
 		this.element.enhanceWithin();
 		this.update();
 		
@@ -273,7 +262,16 @@ $.widget("knxcontrol.clock",{
     },
 	_create: function(){
 		// enhance
-		this.element.prepend('<div class="time"><div><img class="bg" src="icons/clock/clockbg1.png"><img class="hoursLeft" src="icons/clock/0.png"/><img class="hoursRight" src="icons/clock/1.png"/><hr></div><div><img class="bg" src="icons/clock/clockbg1.png"><img class="minutesLeft" src="icons/clock/2.png"/><img class="minutesRight" src="icons/clock/3.png"/><hr></div></div><div class="date">1 januari 2015</div>');
+		this.element.prepend('<div class="time"><div>'+
+								'<img class="bg" src="icons/clock/clockbg1.png">'+
+								'<img class="hoursLeft" src="icons/clock/0.png"/>'+
+								'<img class="hoursRight" src="icons/clock/1.png"/><hr>'+
+							  '</div><div>'+
+								'<img class="bg" src="icons/clock/clockbg1.png">'+
+								'<img class="minutesLeft" src="icons/clock/2.png"/>'+
+								'<img class="minutesRight" src="icons/clock/3.png"/><hr>'+
+							  '</div></div>'+
+							  '<div class="date">1 januari 2015</div>');
 		this.element.enhanceWithin();
 		
 		// bind events
@@ -459,7 +457,24 @@ $.widget("knxcontrol.weather_block",{
 			}
 		}
 	},
-	icons: {'01d': 'sun_1.png','02d': 'sun_3.png','03d': 'cloud_4.png','04d': 'cloud_5.png','09d': 'cloud_7.png','10d': 'sun_7.png' ,'11d': 'cloud_10.png','13d': 'cloud_13.png','50d': 'sun_6.png','01n': 'moon_1.png','02n': 'moon_3.png','03n': 'cloud_4.png','04n': 'cloud_5.png','09n': 'cloud_7.png','10n': 'moon_7.png','11n': 'cloud_10.png','13n': 'cloud_13.png','50n': 'moon_6.png'}
+	icons: {'01d': 'sun_1.png',
+			'02d': 'sun_3.png',
+			'03d': 'cloud_4.png',
+			'04d': 'cloud_5.png',
+			'09d': 'cloud_7.png',
+			'10d': 'sun_7.png' ,
+			'11d': 'cloud_10.png',
+			'13d': 'cloud_13.png',
+			'50d': 'sun_6.png',
+			'01n': 'moon_1.png',
+			'02n': 'moon_3.png',
+			'03n': 'cloud_4.png',
+			'04n': 'cloud_5.png',
+			'09n': 'cloud_7.png',
+			'10n': 'moon_7.png',
+			'11n': 'cloud_10.png',
+			'13n': 'cloud_13.png',
+			'50n': 'moon_6.png'}
 });
 
 /*****************************************************************************/
@@ -534,15 +549,28 @@ $.widget("knxcontrol.alarm",{
 			if(knxcontrol.alarm[id].section_id==this.options.section){
 				// check if the alarm does not already exists in the DOM
 				if(this.element.find('.alarm_list').find('.alarm[data-id="'+id+'"]').length==0){
-					//set ids
-					var newobject = template.alarm;
-					
-					//newobject = newobject.replace(/_0/g, "_"+id);
-					newobject = newobject.replace(/Select action/g, language.capitalize(language.select_action));
-
 					//add the alarm to the DOM
-					this.element.find('.alarm_list').append(newobject).enhanceWithin();
-					this.element.find('.alarm[data-id="0"]').attr('data-id',id);
+					this.element.find('.alarm_list').append('<div class="alarm ui-body-b ui-corner-all" data-id="'+id+'">'+
+																'<input type="time" data-field="time" value="12:00">'+
+																'<a href="#" class="delete" data-role="button" data-icon="delete" data-iconpos="notext">Delete</a>'+
+																'<h1></h1>'+
+																'<div class="days">'+
+																	'<div data-role="controlgroup" data-type="horizontal">'+
+																		'<label><input type="checkbox" data-field="mon" class="custom" data-mini="true">'+language.capitalize(language.weekday_short[0])+'</label>'+
+																		'<label><input type="checkbox" data-field="tue" class="custom" data-mini="true">'+language.capitalize(language.weekday_short[1])+'</label>'+
+																		'<label><input type="checkbox" data-field="wed" class="custom" data-mini="true">'+language.capitalize(language.weekday_short[2])+'</label>'+
+																		'<label><input type="checkbox" data-field="thu" class="custom" data-mini="true">'+language.capitalize(language.weekday_short[3])+'</label>'+
+																		'<label><input type="checkbox" data-field="fri" class="custom" data-mini="true">'+language.capitalize(language.weekday_short[4])+'</label>'+
+																		'<label><input type="checkbox" data-field="sat" class="custom" data-mini="true">'+language.capitalize(language.weekday_short[5])+'</label>'+
+																		'<label><input type="checkbox" data-field="sun" class="custom" data-mini="true"> '+language.capitalize(language.weekday_short[6])+'</label>'+
+																	'</div>'+
+																'</div>'+
+																'<div class="alarm_action">'+
+																	'<select data-field="action_id" data-native-menu="false">'+
+																		'<option class="action_select" value="0" data-id="0">Select action</option>'+
+																	'</select>'+
+																'</div>'+
+															'</div>').enhanceWithin();
 				}
 				// update the alarm time
 				var time = this.padtime(knxcontrol.alarm[id].hour) + ":" + this.padtime(knxcontrol.alarm[id].minute);
@@ -569,13 +597,8 @@ $.widget("knxcontrol.alarm",{
 			// check if the action option exists
 			if(this.element.find('option [data-id="'+id+'"]').length==0){	
 				// add the action to the select list
-				var newobject = template.action_select;
-				newobject = newobject.replace(/0/g, id);
-				this.element.find('div.alarm_action select').append(newobject).selectmenu('refresh');
+				this.element.find('div.alarm_action select').append('<option class="action_select" value="'+id+'" data-id="'+id+'">'+knxcontrol.action[id].name+'</option>'+).selectmenu('refresh');
 			}
-			// update the option
-			this.element.find('option[data-id="'+id+'"]').html(knxcontrol.action[id].name);
-			
 			// check if it is the selected option
 			that = this;
 			$.each(this.element.find('.alarm'),function(index,object){
@@ -584,7 +607,6 @@ $.widget("knxcontrol.alarm",{
 					that.element.find('.alarm[data-id="'+alarm_id+'"]').find('option[data-id="'+id+'"]').attr('selected', true).siblings('option').removeAttr('selected');
 				}
 			});
-			
 			
 			this.element.find('select').selectmenu('refresh');
 			// select action
@@ -607,7 +629,8 @@ $.widget("knxcontrol.action_list",{
     },
 	_create: function(){
 		// enhance
-		this.element.html('<div class="action_list"></div><a href="#" class="add" data-role="button" data-rel="popup">'+language.capitalize(language.add_action)+'</a>');
+		this.element.html('<div class="action_list"></div>'+
+		                  '<a href="#" class="add" data-role="button" data-rel="popup">'+language.capitalize(language.add_action)+'</a>');
 		that = this;
 		$.each(knxcontrol.action,function(index,action){
 			if(typeof action == 'object'){
@@ -648,13 +671,10 @@ $.widget("knxcontrol.action_list",{
 				$('#action_def_popup').find('input[data-field="value5"]').val(knxcontrol.action[id].actions[4].value);
 				
 				$('#action_def_popup').find('#action_def_popup_save').attr('data-id',id);
+				$('#action_def_popup').find('#action_def_popup_delete').attr('data-id',id);
 			},
 			'click a.add': function(event){
 				knxcontrol.action.add();
-			},
-			'click a.delete': function(event){
-				id = $(event.target).parents('.action').attr('data-id');
-				knxcontrol.action.del(id);
 			}
 		});		
 	},
@@ -664,14 +684,12 @@ $.widget("knxcontrol.action_list",{
 			
 			// check if the action does not already exists in the DOM
 			if(this.element.find('.action_list').find('.action[data-id="'+id+'"]').length==0){
-				//set ids
-				var newobject = template.action;
-				
-				newobject = newobject.replace(/_0/g, "_"+id);
-				
+
 				//add the action to the DOM
-				this.element.find('.action_list').append(newobject).enhanceWithin();
-				this.element.find('.action[data-id="0"]').attr('data-id',id);
+				this.element.find('.action_list').append('<div class="action" data-id="'+id+'">'+
+															'<div data-field="name"></div>'+
+															'<a href="#action_def_popup" class="edit" data-role="button" data-rel="popup" data-icon="grid" data-mini="true" data-iconpos="notext">Edit</a>'+
+														 '</div>').enhanceWithin();
 			}
 			// update the action
 			this.element.find('.action[data-id="'+id+'"]').find('[data-field="name"]').html(knxcontrol.action[id].name);
@@ -685,10 +703,37 @@ $.widget("knxcontrol.action_list",{
 $(document).on('click','#action_def_popup_save',function(event){
 	id = $(this).attr('data-id');
 	$('#action_def_popup').popup('close');
-	data_field = ['name','sectionid','delay1','item1','value1','delay2','item2','value2','delay3','item3','value3','delay4','item4','value4','delay5','item5','value5'].join();
-	value = [$('#action_def_popup').find('input[data-field="name"]').val(),$('#action_def_popup').find('input[data-field="section_id"]').val(),$('#action_def_popup').find('input[data-field="delay1"]').val(),$('#action_def_popup').find('input[data-field="item1"]').val(),$('#action_def_popup').find('input[data-field="value1"]').val(),$('#action_def_popup').find('input[data-field="delay2"]').val(),$('#action_def_popup').find('input[data-field="item2"]').val(),$('#action_def_popup').find('input[data-field="value2"]').val(),$('#action_def_popup').find('input[data-field="delay3"]').val(),$('#action_def_popup').find('input[data-field="item3"]').val(),$('#action_def_popup').find('input[data-field="value3"]').val(),$('#action_def_popup').find('input[data-field="delay4"]').val(),$('#action_def_popup').find('input[data-field="item4"]').val(),$('#action_def_popup').find('input[data-field="value4"]').val(),$('#action_def_popup').find('input[data-field="delay5"]').val(),$('#action_def_popup').find('input[data-field="item5"]').val(),$('#action_def_popup').find('input[data-field="value5"]').val()].join();
+	data_field = ['name','sectionid',
+				  'delay1','item1','value1',
+				  'delay2','item2','value2',
+				  'delay3','item3','value3',
+				  'delay4','item4','value4',
+				  'delay5','item5','value5'].join();
+	value = [$('#action_def_popup').find('input[data-field="name"]').val(),
+			 $('#action_def_popup').find('input[data-field="section_id"]').val(),
+			 $('#action_def_popup').find('input[data-field="delay1"]').val(),
+			 $('#action_def_popup').find('input[data-field="item1"]').val(),
+			 $('#action_def_popup').find('input[data-field="value1"]').val(),
+			 $('#action_def_popup').find('input[data-field="delay2"]').val(),
+			 $('#action_def_popup').find('input[data-field="item2"]').val(),
+			 $('#action_def_popup').find('input[data-field="value2"]').val(),
+			 $('#action_def_popup').find('input[data-field="delay3"]').val(),
+			 $('#action_def_popup').find('input[data-field="item3"]').val(),
+			 $('#action_def_popup').find('input[data-field="value3"]').val(),
+			 $('#action_def_popup').find('input[data-field="delay4"]').val(),
+			 $('#action_def_popup').find('input[data-field="item4"]').val(),
+			 $('#action_def_popup').find('input[data-field="value4"]').val(),
+			 $('#action_def_popup').find('input[data-field="delay5"]').val(),
+			 $('#action_def_popup').find('input[data-field="item5"]').val(),
+			 $('#action_def_popup').find('input[data-field="value5"]').val()].join();
 	
 	knxcontrol.action.update(id,data_field,value);
+});
+$(document).on('click','#action_def_popup_delete',function(event){
+	id = $(this).attr('data-id');
+	$('#action_def_popup').popup('close');
+	
+	knxcontrol.action.del(id);
 });
 /*****************************************************************************/
 /*                     measurement list                                      */
@@ -731,18 +776,13 @@ $.widget("knxcontrol.measurement_list",{
 			
 			// check if the measurement does not already exists in the DOM
 			if(this.element.find('.measurement_list').find('.measurement[data-id="'+id+'"]').length==0){
-				//set ids
-				var newobject = template.measurement;
-				
-				newobject = newobject.replace(/_0/g, "_"+id);
-				
 				//add the measurement to the DOM
-				this.element.find('.measurement_list').append(newobject).enhanceWithin();
-				this.element.find('.measurement[data-id="0"]').attr('data-id',id);
+				this.element.find('.measurement_list').append('<div class="measurement" data-id="'+id+'">'+
+																'<div class="id" data-field="id">'+id+'</div>'
+																'<div class="name" data-field="name">'+knxcontrol.measurement[id].name+'&nbsp;</div>'
+																'<a href="#measurement_def_popup" class="edit" data-role="button" data-rel="popup" data-icon="grid" data-mini="true" data-iconpos="notext">Edit</a>'
+															  '</div>').enhanceWithin();
 			}
-			// update the measurement
-			this.element.find('.measurement[data-id="'+id+'"]').find('[data-field="id"]').html(id);
-			this.element.find('.measurement[data-id="'+id+'"]').find('[data-field="name"]').html(knxcontrol.measurement[id].name+'&nbsp;');
 		}
 		else{
 			// remove the measurement from the DOM
@@ -754,7 +794,11 @@ $(document).on('click','#measurement_def_popup_save',function(event){
 	id = $(this).attr('data-id');
 	$('#measurement_def_popup').popup('close');
 	data_field = ['name','item','quantity','unit','description'].join();
-	value = [$('#measurement_def_popup').find('input[data-field="name"]').val(),$('#measurement_def_popup').find('input[data-field="item"]').val(),$('#measurement_def_popup').find('input[data-field="quantity"]').val(),$('#measurement_def_popup').find('input[data-field="unit"]').val(),$('#measurement_def_popup').find('input[data-field="description"]').val()].join();
+	value = [$('#measurement_def_popup').find('input[data-field="name"]').val(),
+			 $('#measurement_def_popup').find('input[data-field="item"]').val(),
+			 $('#measurement_def_popup').find('input[data-field="quantity"]').val(),
+			 $('#measurement_def_popup').find('input[data-field="unit"]').val(),
+			 $('#measurement_def_popup').find('input[data-field="description"]').val()].join();
 	console.log(id);
 	knxcontrol.measurement.update(id,data_field,value);
 });
@@ -793,12 +837,12 @@ $.widget("knxcontrol.settings",{
 	},
 	_create: function(){
 		// enhance
-		this.element.html(	'<div data-role="fieldcontain"><label for="home_settings_ip">IP:</label><input type="text" id="home_settings_ip" data-field="ip"></div>'+
-							'<div data-role="fieldcontain"><label for="home_settings_port">Port:</label><input type="text" id="home_settings_port" data-field="port"></div>'+
-							'<div data-role="fieldcontain"><label for="home_settings_webip">Web-IP:</label><input type="text" id="home_settings_webip" data-field="web_ip"></div>'+
-							'<div data-role="fieldcontain"><label for="home_settings_webport">Web-Port:</label><input type="text" id="home_settings_webport" data-field="web_port"></div>'+
-							'<div data-role="fieldcontain"><label for="home_settings_token">Token:</label><input type="text" id="home_settings_token" data-field="token"></div>'+
-							'<a href="#" class="save" data-role="button" data-rel="popup">'+language.capitalize(language.save)+'</a>');
+		this.element.html('<div data-role="fieldcontain"><label for="home_settings_ip">IP:</label><input type="text" id="home_settings_ip" data-field="ip"></div>'+
+						  '<div data-role="fieldcontain"><label for="home_settings_port">Port:</label><input type="text" id="home_settings_port" data-field="port"></div>'+
+						  '<div data-role="fieldcontain"><label for="home_settings_webip">Web-IP:</label><input type="text" id="home_settings_webip" data-field="web_ip"></div>'+
+						  '<div data-role="fieldcontain"><label for="home_settings_webport">Web-Port:</label><input type="text" id="home_settings_webport" data-field="web_port"></div>'+
+						  '<div data-role="fieldcontain"><label for="home_settings_token">Token:</label><input type="text" id="home_settings_token" data-field="token"></div>'+
+						  '<a href="#" class="save" data-role="button" data-rel="popup">'+language.capitalize(language.save)+'</a>');
 		this.element.enhanceWithin();	
 		this.update();
 
