@@ -29,6 +29,7 @@ $(document).on('authenticated',function(event,user_id){
 	knxcontrol.location.get();
 	knxcontrol.alarm.get();
 	knxcontrol.measurement.get();
+	knxcontrol.user.get();
 });
 $(document).on('connect',function(event){
 	// initialize connection to smarthome.py
@@ -121,6 +122,50 @@ var knxcontrol = {
 			$('[data-role="smarthome_log"]').trigger('update');
 		}
 	},
+// users                                                                     //	
+	user:{
+		// 1: {id: 1, username: 'test',...}
+		get: function(id){
+			var where = 'id>0';
+			if(id){
+				where = 'id='+id;
+			}
+			$.post('requests/select_from_table.php',{table: 'users', column: 'id,username', where: where},function(result){
+				var users = JSON.parse(result);
+				$.each(users,function(index,user){
+					knxcontrol.user[user.id] = {
+						id: user.id,
+						username: user.username,
+					};
+					$('[data-role="user_list"]').trigger('update',user.id);
+					$('[data-role="user_profile"]').trigger('update');
+				});
+			});
+		},
+		update: function(id,field,value){
+			// set the alarm in the database
+			$.post('requests/update_table.php',{table: 'users', column: field.join(';'), value: value.join(';'), where: 'id='+id},function(result){
+				// on success update knxcontrol
+				console.log(result);
+				knxcontrol.user.get(id);
+			});
+		},
+		add: function(){
+			$.post('requests/insert_into_table.php',{table: 'users', column: ['name','password'].join(';'), value: ['New user','newpass'].join(';')},function(result){
+				id = JSON.parse(result);
+				id = id[0];
+				// add the action to knxcontrol
+				knxcontrol.user.get(id);
+			});
+		},
+		del: function(id){
+			$.post('requests/delete_from_table.php',{table: 'users', where: 'id='+id},function(result){
+				delete knxcontrol.user[id];
+				$('[data-role="user_list"]').trigger('update',id);
+			});
+		}
+	},
+
 // alarms                                                                    //
 	alarm: {
 		// 1: {id: 1, section_id: 2, hour: 13, minute: 12, mon: 1, tue: 1, wed: 1, thu: 1, fri: 1, sat: 1, sun: 1, action_id: 2},...

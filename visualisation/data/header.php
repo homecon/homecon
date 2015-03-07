@@ -21,6 +21,7 @@
 				<a href='index.php' data-ajax='false' id='home'><img src='icons/ws/control_building_empty.png'></a>
 				<a href='#' id='menu_button'><img src='icons/ws/control_bars.png'></a>
 				<div class='home'>
+					<a class='hide' href='#home_users'><img src='icons/ws/edit_settings.png'></a>
 					<a class='hide' href='#home_alarms'><img src='icons/ws/control_alarm.png'></a>
 					<a class='hide' href='#home_measurements'><img src='icons/ws/measure_power_meter.png'></a>
 					<a class='hide' href='#home_settings'><img src='icons/ws/edit_settings.png'></a>

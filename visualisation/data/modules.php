@@ -18,8 +18,20 @@
 
 		<div id='home_users' data-role='page' data-theme='b'>
 			<div data-role='content'>
-		
-
+				<header>
+					<img src='icons/ws/users.png'>
+					<h1>Users</h1>
+				</header>
+				<section data-role='collapsible' data-theme='a' data-collapsed='false'>
+					<h1>Profile</h1>
+					<div data-role='user_profile'></div>
+				</section>
+				<?php if($_SESSION['user_id']==1){ ?>
+				<section data-role='collapsible' data-theme='a' data-collapsed='false'>
+					<h1>Users</h1>
+					<div data-role='user_list'></div>
+				</section>
+				<?php } ?>
 			</div>
 		</div>
 		
@@ -226,8 +238,40 @@
 				<input type='text' id='measurement_def_popup_description' data-field='description'>
 			</div>
 			<a id='measurement_def_popup_save' data-role='button' data-id='1'>Save</a>
+			<a id='measurement_def_popup_delete' data-role='button' data-id='1'>Delete</a>
 			<a href="#" data-rel="back" data-role="button" data-theme="b" data-icon="delete" data-iconpos="notext" class="ui-btn-right">Close</a>
 		</div>
+		
+		<div id='user_def_popup' class='ui-content' data-role='popup' data-position-to='window' data-theme='b' data-overlay-theme='b'>
+			<div data-role='fieldcontain'>
+				<label for='user_def_popup_name'>Name:</label>
+				<input type='text' id='measurement_def_popup_name' data-field='name'>
+			</div>	
+			<a id='user_def_popup_save' data-role='button' data-id='1'>Save</a>
+			<a id='user_def_popup_reset' data-role='button' data-id='1'>Reset password</a>
+			<a id='user_def_popup_delete' data-role='button' data-id='1'>Delete</a>
+			<a href="#" data-rel="back" data-role="button" data-theme="b" data-icon="delete" data-iconpos="notext" class="ui-btn-right">Close</a>
+		</div>
+		
+		<div id='password_def_popup' class='ui-content' data-role='popup' data-position-to='window' data-theme='b' data-overlay-theme='b'>
+			<div data-role='fieldcontain'>
+				<label for='password_def_popup_name'>Name:</label>
+				<input type='text' id='measurement_def_popup_name' data-field='name'>
+			</div>
+			<div data-role='fieldcontain'>
+				<label for='password_def_popup_pass'>Password:</label>
+				<input type='password' id='measurement_def_popup_pass' data-field='pass'>
+			</div>
+			<div data-role='fieldcontain'>
+				<label for='password_def_popup_pass2'>Repeat password:</label>
+				<input type='password' id='measurement_def_popup_pass2' data-field='pass2'>
+			</div>
+			<a id='user_def_popup_save' data-role='button' data-id='1'>Save</a>
+			<a href="#" data-rel="back" data-role="button" data-theme="b" data-icon="delete" data-iconpos="notext" class="ui-btn-right">Close</a>
+		</div>
+		
+		
+		
 		
 		<div id='message_popup' class='ui-content' data-role='popup' data-position-to='window' data-theme='b' data-overlay-theme='b'>
 		</div>

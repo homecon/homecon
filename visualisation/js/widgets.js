@@ -1005,3 +1005,117 @@ $.widget("knxcontrol.smarthome_log",{
 		});
 	}
 });
+
+/*****************************************************************************/
+/*                     users list                                            */
+/*****************************************************************************/
+$.widget("knxcontrol.user_list",{
+	options: {
+	},
+	_create: function(){
+		this.element.html('<div class="user_list"></div><a href="#" class="add" data-role="button" data-rel="popup">'+language.capitalize(language.add_user)+'</a>');
+		var that = this;
+		$.each(knxcontrol.user,function(index,user){
+			if(typeof user == 'object'){
+				that.update(user.id);
+			}
+		});
+		this.element.enhanceWithin();	
+
+		// bind events
+		this._on(this.element, {
+			'update': function(event,id){
+				this.update(id);
+			},
+			'click a.edit': function(event){
+				// populate the popup
+				id = $(event.target).parents('.user').attr('data-id');
+				$('#user_def_popup').find('input[data-field="name"]').val(knxcontrol.user[id].username);
+				
+				$('#user_def_popup').find('#user_def_popup_save').attr('data-id',id);
+			}
+		});
+	},
+	update: function(id){
+		// check if the user exists in knxcontrol
+		if(knxcontrol.user[id]){
+			
+			// check if the user does not already exists in the DOM
+			if(this.element.find('.user_list').find('.user[data-id="'+id+'"]').length==0){
+				//add the user to the DOM
+				this.element.find('.user_list').append('<div class="user" data-id="'+id+'">'+
+															'<div class="name" data-field="name">'+knxcontrol.user[id].username+'&nbsp;</div>'+
+															'<a href="#user_def_popup" class="edit" data-role="button" data-rel="popup" data-icon="grid" data-mini="true" data-iconpos="notext">Edit</a>'+
+													   '</div>').enhanceWithin();
+			}
+			else{
+				// update the user in the DOM
+				this.element.find('.user_list').find('.user[data-id="'+id+'"]').html('<div class="user" data-id="'+id+'">'+
+																						'<div class="name" data-field="name">'+knxcontrol.user[id].username+'&nbsp;</div>'+
+																						'<a href="#user_def_popup" class="edit" data-role="button" data-rel="popup" data-icon="grid" data-mini="true" data-iconpos="notext">Edit</a>'+
+																					 '</div>').enhanceWithin();
+			}
+		}
+		else{
+			// remove the user from the DOM
+			this.element.find('.user[data-id="'+id+'"]').remove();
+		}
+	}
+});
+$(document).on('click','#user_def_popup_save',function(event){
+	id = $(this).attr('data-id');
+	$('#user_def_popup').popup('close');
+	field = ['username'];
+	value = [$('#user_def_popup').find('input[data-field="name"]').val()];
+	console.log(id);
+	knxcontrol.user.update(id,field,value);
+});
+/*****************************************************************************/
+/*                     user profile                                          */
+/*****************************************************************************/
+$.widget("knxcontrol.user_profile",{
+	options: {
+	},
+	_create: function(){
+		var id = knxcontrol.user_id;
+		this.element.html('<div class="user" data-id="'+id+'">'+
+							'<div class="name" data-field="name">'+knxcontrol.user[id].username+'&nbsp;</div>'+
+							'<a href="#user_def_popup" class="edit" data-role="button" data-rel="popup" data-icon="grid" data-mini="true" data-iconpos="notext">Edit</a>'+
+					     '</div><a href="#" class="delete" data-role="button" data-rel="popup">'+language.capitalize(language.delete_user)+'</a>');
+		this.element.enhanceWithin();	
+
+		// bind events
+		this._on(this.element, {
+			'update': function(event){
+				this.update();
+			},
+			'click a.edit': function(event){
+				// populate the popup
+				var id = knxcontrol.user_id;
+				$('#password_def_popup').find('input[data-field="name"]').val(knxcontrol.user[id].username);
+				
+				$('#password_def_popup').find('#password_def_popup_save').attr('data-id',id);
+			}
+		});
+	},
+	update: function(){
+		// check if the user exists in knxcontrol
+		var id = knxcontrol.user[knxcontrol.user_id];
+		if(id){
+			// update measurement to the DOM
+			this.element.find('.name').html(knxcontrol.user[id].username).enhanceWithin();
+		}
+		else{
+			// remove the measurement from the DOM
+			this.element.find('.user[data-id="'+id+'"]').remove();
+		}
+	}
+});
+$(document).on('click','#password_def_popup_save',function(event){
+	id = $(this).attr('data-id');
+	$('#user_def_popup').popup('close');
+	field = ['username'];
+	value = [$('#user_def_popup').find('input[data-field="name"]').val()];
+	console.log(id);
+	//knxcontrol.user.update(id,field,value);
+});
