@@ -85,6 +85,8 @@ $(document).on('ready',function(){
 	$("#message_popup").enhanceWithin().popup();
 	$("#action_def_popup").enhanceWithin().popup();
 	$("#measurement_def_popup").enhanceWithin().popup();
+	$("#user_def_popup").enhanceWithin().popup();
+	$("#password_def_popup").enhanceWithin().popup();
 });
 
 
