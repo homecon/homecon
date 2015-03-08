@@ -50,6 +50,13 @@ $(document).on('click','#menu_button', function(){
 	$('#menu').panel("toggle");		
 });
 
+// keep panel from closing in pagebuilder when width > 800
+$(document).on('pageinit','#home_pagebuilder',function(event){
+	if($(window).width() >= 800){
+		$('#menu').css('position','absolute');
+	}
+});
+
 /*****************************************************************************/
 /*                     Pagebuilder                                           */
 /*****************************************************************************/

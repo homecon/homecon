@@ -83,18 +83,21 @@
 .menupanel section>div>a{
 	margin-top: 20px;
 }
+
 @media all and (min-width: 800px){
+
 	.ui-panel{
-		position: relative;
+		position: fixed;
 		width: 38%;
 		visibility: visible;
+		overflow: visible;
 		-webkit-backface-visibility: visible;
 		-ms-transform: none !important;
 		-webkit-transform: none !important;
 		transform: none !important;
 	}
 	.ui-panel-closed{
-		max-height: none;
+		clip: auto;
 	}
 }
 
