@@ -599,18 +599,11 @@ $.widget("knxcontrol.alarm",{
 				// add the action to the select list
 				this.element.find('div.alarm_action select').append('<option class="action_select" value="'+id+'" data-id="'+id+'">'+knxcontrol.action[id].name+'</option>').selectmenu('refresh');
 			}
-			// check if it is the selected option
-			var that = this;
-			$.each(this.element.find('.alarm'),function(index,object){
-				alarm_id = $(object).attr('data-id');
-				if(knxcontrol.alarm[alarm_id].action_id==id){
-					that.element.find('.alarm[data-id="'+alarm_id+'"]').find('option[data-id="'+id+'"]').attr('selected', true).siblings('option').removeAttr('selected');
-				}
-			});
+			// check the selected action
+			var alarm_id = this.element.find('div.alarm').attr('data-id');
+			this.element.find('div.alarm_action select').val( knxcontrol.alarm[alarm_id].action_id );
 			
-			this.element.find('select').selectmenu('refresh');
-			// select action
-			//this.element.find('div.alarm_action select').val(knxcontrol.alarm[alarm_id].id).selectmenu('refresh');
+			this.element.find('div.alarm_action select').selectmenu('refresh');
 		}
 	},
 	padtime: function(num) {
