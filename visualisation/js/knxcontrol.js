@@ -275,13 +275,13 @@ var knxcontrol = {
 	
 // measurement                                                             //
 	measurement: {
-		// 1: {id: 1, name: 'Temperatuur', item: 'buiten.measurements.temperature', quantity: 'Temperature', unit: 'degC', description: 'Buiten temeratuur', data: []},
+		// 1: {id: 1, name: 'Temperatuur', item: 'buiten.measurements.temperature', quantity: 'Temperature', unit: 'degC', description: 'Buiten temeratuur', quarterhourdata: [], daydata: [], weekdata: [], monthdata: []},
 		get: function(id){
 			var where = 'id>0';
 			if(id){
 				where = 'id='+id;
 			}
-			that = this;
+			var that = this;
 			$.post('requests/select_from_table.php',{table: 'measurements_legend', column: '*', where: where},function(result){
 				var results = JSON.parse(result);
 				$.each(results,function(index,result){
@@ -300,24 +300,82 @@ var knxcontrol = {
 			});
 		},
 		update: function(id,field,value){
-			that = this;
+			var that = this;
 			$.post('requests/update_table.php',{table: 'measurements_legend', column: field, value: value, where: 'id='+id},function(result){
 				that.get(id);
 			});
 		},
-		get_data: function(id){
+		get_quarterhourdata: function(id){
 			if(this[id]){
-			
-				that = this;
-				$.post('requests/select_from_table.php',{table: 'measurements_quarterhouraverage', column: 'time,value', where: 'signal_id='+id+' AND time > '+((new Date()).getTime()/1000-7*27*3600), orderby: 'time'},function(result){
-					data = []
-					
+				
+				var that = this[id];
+				$.post('requests/select_from_table.php',{table: 'measurements_quarterhouraverage', column: 'time,value', where: 'signal_id='+id+' AND time > '+((new Date()).getTime()/1000-7*24*3600), orderby: 'time'},function(result){
+					that.quarterhourdata = []
 					$.each(JSON.parse(result),function(index,value){
-						data.push([parseFloat(value.time)*1000,parseFloat(value.value)]);
+						that.quarterhourdata.push([parseFloat(value.time)*1000,parseFloat(value.value)]);
 					});
-					$('[data-role="chart"]').trigger('update',[id,data]);
+					
+					// devide the data in days and average
+					var starttime = [];
+					var sum = [];
+					var numel = [];
+					
+					var oldhour =  0;
+					
+					$.each(that.quarterhourdata,function(index,value){
+						var date = new Date(value[0]);
+						var hour =  date.getHours();
+
+						if(hour<oldhour){
+							starttime.push(value[0]);
+							sum.push(0);
+							numel.push(0);
+						}
+						if(sum.length>0){
+							sum[sum.length - 1] += value[1];
+							numel[sum.length - 1] += 1;
+						}
+						oldhour = hour;
+					});
+
+					that.daydata = [];
+					$.each(sum,function(index,value){
+						that.daydata.push([starttime[index],sum[index]/numel[index]]);
+					});
+					
+					$('[data-role="chart"]').trigger('update',id);
 					
 				});
+			}
+		},
+		get_weekdata: function(id){
+			if(this[id]){
+			
+				var that = this[id];
+				$.post('requests/select_from_table.php',{table: 'measurements_weekaverage', column: 'time,value', where: 'signal_id='+id+' AND time > '+((new Date()).getTime()/1000-52*7*24*3600), orderby: 'time'},function(result){
+					that.weekdata = []
+					
+					$.each(JSON.parse(result),function(index,value){
+						that.weekdata.push([parseFloat(value.time)*1000,parseFloat(value.value)]);
+					});
+				});
+				
+				$('[data-role="chart"]').trigger('update',id);
+			}
+		},
+		get_monthdata: function(id){
+			if(this[id]){
+			
+				that = this[id];
+				$.post('requests/select_from_table.php',{table: 'measurements_monthaverage', column: 'time,value', where: 'signal_id='+id+' AND time > '+((new Date()).getTime()/1000-365*24*3600), orderby: 'time'},function(result){
+					that.monthdata = []
+					
+					$.each(JSON.parse(result),function(index,value){
+						that.monthdata.push([parseFloat(value.time)*1000,parseFloat(value.value)]);
+					});
+				});
+				
+				$('[data-role="chart"]').trigger('update',id);
 			}
 		}
 	},

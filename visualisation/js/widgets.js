@@ -870,7 +870,8 @@ $.widget("knxcontrol.settings",{
 $.widget('knxcontrol.chart',{
 	options: {
       signals: '1',
-	  type: 'line'
+	  type: 'quarterhour',
+	  step: false
     },
 	_create: function(){
 		
@@ -882,35 +883,40 @@ $.widget('knxcontrol.chart',{
 				useUTC: false
 			}
 		});
-		
-		this.chart_options.chart.type = this.options.type;
-		
-		
+				
 		// add empty series
 		var that = this;
 		that.chart_options.series = [];
 		$.each((''+this.options.signals).split(','),function(index,id){
-			that.chart_options.series.push({name: 'temp', step: true});
+			that.chart_options.series.push({name: ' ', step: that.options.step});
 		});
 		
-		if(this.options.type == 'line'){
+		if(this.options.type == 'quarterhour'){
+			this.chart_options.chart.type = 'line';
 			this.chart_options.xAxis.range = 2 * 24 * 3600 * 1000;
 			this.chart_options.tooltip.xDateFormat='%Y-%m-%d %H:%M';
 			$(this.element).children('.chart_container').highcharts('StockChart',this.chart_options);
 		}
-		else{
+		else if(this.options.type == 'week'){
+			this.chart_options.chart.type = 'line';
+			this.chart_options.plotOptions = { line: { marker: { enabled: false} } };
 			$(this.element).children('.chart_container').highcharts(this.chart_options);
 		}
+		else{
+			this.chart_options.chart.type = 'column';
+			$(this.element).children('.chart_container').highcharts(this.chart_options);
+		}
+		
 		this.chart = $(this.element).children('.chart_container').highcharts();
 		this.chart.reflow();
-		
+
 		// try to get data
 		this.get_data();		
 		
 		// bind events
 		this._on(this.element, {
-			'update': function(event,id,data){			
-				this.update(id,data);
+			'update': function(event,id){			
+				this.update(id);
 				this.chart.reflow();
 			},
 			'get_data': function(event){			
@@ -918,23 +924,58 @@ $.widget('knxcontrol.chart',{
 			}
 		});
 	},
-	update: function(id,data){
-		that = this;
+	update: function(id){
+		var that = this;
 		$.each((''+this.options.signals).split(','),function(index,signal){
 			if(signal==id){
-				that.chart.series[index].name = knxcontrol.measurement[id].name ;
-				that.chart.series[index].setData(data);
+				that.chart.series[index].name = knxcontrol.measurement[id].name;
+				that.chart.yAxis[0].setTitle({text: knxcontrol.measurement[id].unit});
+				
+				if(that.options.type == 'quarterhour'){
+					that.chart.series[index].setData(knxcontrol.measurement[id].quarterhourdata);
+				}
+				else if(that.options.type == 'day'){
+					that.chart.series[index].setData(knxcontrol.measurement[id].daydata);
+					that.chart.legend.allItems[index].update({name: knxcontrol.measurement[id].name});
+				}
+				else if(that.options.type == 'week'){
+					that.chart.series[index].setData(knxcontrol.measurement[id].weekdata);
+					that.chart.legend.allItems[index].update({name: knxcontrol.measurement[id].name});
+				}
+				else if(that.options.type == 'month'){
+					that.chart.series[index].setData(knxcontrol.measurement[id].monthdata);
+					that.chart.legend.allItems[index].update({name: knxcontrol.measurement[id].name});
+				}
 			}
 		});
+		
+		// update the yaxis limits
+		extr = that.chart.yAxis[0].getExtremes();
+		if(extr.dataMin ==0){
+			that.chart.yAxis[0].update({ min: 0 });
+		}
+		
 	},
 	get_data: function(){
+		var that = this;
 		$.each((''+this.options.signals).split(','),function(index,id){
-			knxcontrol.measurement.get_data(id);
-		});	
+			if(that.options.type == 'quarterhour' || that.options.type == 'day'){
+				knxcontrol.measurement.get_quarterhourdata(id);
+			}
+			else if(that.options.type == 'week'){
+				knxcontrol.measurement.get_weekdata(id);
+			}
+			else if(that.options.type == 'month'){
+				knxcontrol.measurement.get_monthdata(id);
+			}
+		});
 	},
 	chart: {},
 	chart_options: {
 		chart: {
+		},
+		title: {
+			text: ''
 		},
 		xAxis: {
 			type: 'datetime',
@@ -953,7 +994,7 @@ $.widget('knxcontrol.chart',{
 });
 
 /*****************************************************************************/
-/*                     smarthome log                                              */
+/*                     smarthome log                                         */
 /*****************************************************************************/
 $.widget("knxcontrol.smarthome_log",{
 	options: {
