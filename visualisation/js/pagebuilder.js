@@ -283,7 +283,7 @@ render_page = function(section_id,page_id){
 	
 	// add header
 	if(page.id != 'home'){
-		$('#renderpage').append('<header><img src="icons/ws/'+page.img+'"><h1>'+page.name+'</h1></header>');
+		$('#renderpage').append('<header><img src="icons/ffffff/'+page.img+'"><h1>'+page.name+'</h1></header>');
 		if(page.temperature_item != ''){
 			$('#renderpage header').append('<div class="value"><span data-role="displayvalue" data-item="'+page.temperature_item+'" data-digits="1"></span>&deg;C</div>');
 		}
@@ -347,7 +347,7 @@ render_menu = function(){
 				$('#rendermenu section[data-id="'+section_index+'"] ul').append('<li data-id="'+index+'"><a href="#" class="renderpage"><h1>'+page.name+'</h1></a></li>');
 			}
 			else{
-				$('#rendermenu section[data-id="'+section_index+'"] ul').append('<li data-id="'+index+'"><a href="#" class="renderpage"><img src="icons/ws/'+page.img+'" data-id="'+index+'" ><h1>'+page.name+'</h1></a><a href="#" class="edit_page" data-inline="true" data-icon="grid" data-iconpos="notext">Edit</a></li>');
+				$('#rendermenu section[data-id="'+section_index+'"] ul').append('<li data-id="'+index+'"><a href="#" class="renderpage"><img src="icons/ffffff/'+page.img+'" data-id="'+index+'" ><h1>'+page.name+'</h1></a><a href="#" class="edit_page" data-inline="true" data-icon="grid" data-iconpos="notext">Edit</a></li>');
 			}
 		});
 		
@@ -680,7 +680,7 @@ publish_page = function(section_id,page_id){
 	
 	// add header
 	if(page.id != 'home'){
-		publish += '%t%t%t%t<header>%n%t%t%t%t%t<img src="icons/ws/'+page.img+'">%n%t%t%t%t%t<h1>'+page.name+'</h1>%n';
+		publish += '%t%t%t%t<header>%n%t%t%t%t%t<img src="icons/ffffff/'+page.img+'">%n%t%t%t%t%t<h1>'+page.name+'</h1>%n';
 		if(page.temperature_item != ''){
 			publish += '%t%t%t%t%t<div class="value"><span data-role="displayvalue" data-item="'+page.temperature_item+'" data-digits="1"></span>&deg;C</div>%n';
 		}
@@ -737,7 +737,7 @@ publish_menu = function(){
 			//pages
 			section_index = index;
 			$.each(section.page,function(index,page){
-				publish += '%t%t%t%t%t%t<li><a href="#'+section.id+'_'+page.id+'"><img src="icons/ws/'+page.img+'"><h1>'+page.name+'</h1></a></li>%n';
+				publish += '%t%t%t%t%t%t<li><a href="#'+section.id+'_'+page.id+'"><img src="icons/ffffff/'+page.img+'"><h1>'+page.name+'</h1></a></li>%n';
 			});
 			publish += '%t%t%t%t%t</ul>%n';
 			publish += '%t%t%t%t</section>%n';

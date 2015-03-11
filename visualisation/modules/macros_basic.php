@@ -7,8 +7,8 @@ function add_switch($item,$text){
 	$id = $page .'_'. str_replace('.','_',$item);
 
 	echo "
-						<span class='switch' id='$id' data-widget='basic.switch' data-item='$item' data-val-on='1' data-val-off='0' data-pic-on='icons/or/light_light.png' data-pic-off='icons/ws/light_light.png'>
-							<a><img class='icon' src='icons/ws/light_light.png'/>$text</a>
+						<span class='switch' id='$id' data-widget='basic.switch' data-item='$item' data-val-on='1' data-val-off='0' data-pic-on='icons/or/light_light.png' data-pic-off='icons/ffffff/light_light.png'>
+							<a><img class='icon' src='icons/ffffff/light_light.png'/>$text</a>
 						</span>
 	";
 }
@@ -45,8 +45,8 @@ function add_dimmer($item,$text){
 	
 						<span class='dimmer'>
 							<p>$text</p>
-							<span id='$switch_id' data-widget='basic.switch' data-item='$item' data-val-on='1' data-val-off='0' data-pic-on='icons/or/light_light.png' data-pic-off='icons/ws/light_light.png' class='switch'>
-								<a class='ui-link'><img class='icon' src='icons/ws/light_light.png'></a>
+							<span id='$switch_id' data-widget='basic.switch' data-item='$item' data-val-on='1' data-val-off='0' data-pic-on='icons/or/light_light.png' data-pic-off='icons/ffffff/light_light.png' class='switch'>
+								<a class='ui-link'><img class='icon' src='icons/ffffff/light_light.png'></a>
 							</span>
 							<input id='$slider_id' data-widget='basic.slider' data-item='$item.value' type='range' value='0' min='0' max='255' step='5' data-highlight='true'/>
 						</span>
@@ -63,9 +63,9 @@ function add_shade_control($item,$text){
 	echo "
 						<span class='shading'>
 							<p>$text</p>
-							<a id='$up_id'  data-widget='basic.button' data-item='$item.pos' data-val='0' class='left'><img class='icon' src='icons/ws/fts_shutter_10.png'></a>
+							<a id='$up_id'  data-widget='basic.button' data-item='$item.pos' data-val='0' class='left'><img class='icon' src='icons/ffffff/fts_shutter_10.png'></a>
 							<input id='$slider_id' data-widget='basic.slider' data-item='$item.pos' type='range' value='0' min='0' max='255' step='5' data-highlight='true'/>
-							<a id='$down_id'  data-widget='basic.button' data-item='$item.pos' data-val='255' class='right'><img class='icon' src='icons/ws/fts_shutter_100.png'></a>
+							<a id='$down_id'  data-widget='basic.button' data-item='$item.pos' data-val='255' class='right'><img class='icon' src='icons/ffffff/fts_shutter_100.png'></a>
 						</span>";
 };
 function add_checkbox($item,$text){

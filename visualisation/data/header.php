@@ -18,20 +18,20 @@
 
 		<div id='header' data-role='header' data-position='fixed' data-tap-toggle='false' data-theme='b'>
 			<nav>
-				<a href='#home_home' id='home'><img src='icons/ws/control_building_empty.png'></a>
-				<a href='#' id='menu_button'><img src='icons/ws/control_bars.png'></a>
+				<a href='#home_home' id='home'><img src='icons/ffffff/control_building_empty.png'></a>
+				<a href='#' id='menu_button'><img src='icons/ffffff/control_bars.png'></a>
 				<div class='home'>
-					<a class='hide' href='#home_alarms'><img src='icons/ws/control_alarm.png'></a>
-					<a class='hide' href='#home_measurements'><img src='icons/ws/measure_power_meter.png'></a>
-					<a class='hide' href='#home_settings'><img src='icons/ws/edit_settings.png'></a>
-					<a class='hide' href='#home_pagebuilder'><img src='icons/ws/time_note.png'></a>
+					<a class='hide' href='#home_alarms'><img src='icons/ffffff/control_alarm.png'></a>
+					<a class='hide' href='#home_measurements'><img src='icons/ffffff/measure_power_meter.png'></a>
+					<a class='hide' href='#home_settings'><img src='icons/ffffff/edit_settings.png'></a>
+					<a class='hide' href='#home_pagebuilder'><img src='icons/ffffff/time_note.png'></a>
 				</div>	
 				<div class='pagebuilder'>
-					<a class='save' href='#'><img src='icons/ws/edit_save.png'></a>
+					<a class='save' href='#'><img src='icons/ffffff/edit_save.png'></a>
 					<input type='file' id='pagebuilder_import'/>
-					<a class='import' href='#'><img src='icons/ws/edit_open.png'></a>
-					<a class='export' href='#'><img src='icons/ws/control_arrow_down.png'></a>
-					<a class='publish' href='#'><img src='icons/ws/control_arrow_up_right.png'></a>
+					<a class='import' href='#'><img src='icons/ffffff/edit_open.png'></a>
+					<a class='export' href='#'><img src='icons/ffffff/control_arrow_down.png'></a>
+					<a class='publish' href='#'><img src='icons/ffffff/control_arrow_up_right.png'></a>
 				</div>
 			</nav>
 		</div>

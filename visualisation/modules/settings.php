@@ -27,7 +27,7 @@ $token = $row['token'];
 
 echo "
 		<article class=$page_class>
-			<header><img src='icons/ws/edit_settings.png'><h1>Settings</h1></header>
+			<header><img src='icons/ffffff/edit_settings.png'><h1>Settings</h1></header>
 
 			<section data-role='collapsible' data-theme='c' data-content-theme='a' data-collapsed='false'>
 				<h1>General</h1>

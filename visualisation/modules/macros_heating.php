@@ -223,7 +223,7 @@ function add_setpoint($zone){
 				<input type='time' name='$id_time' id='$id_time' value='$str_time'>
 				<input type='number' name='$id_setpoint' id='$id_setpoint' value='$setpoint' min='10' max='30'>
 				<p>&deg;C</p>
-				<a class='delete' href='index.php?web=$web&page=pages/$page&delete_zone=$zone&delete_setpoint=$id'><img src=icons/ws/control_x.png></a>";
+				<a class='delete' href='index.php?web=$web&page=pages/$page&delete_zone=$zone&delete_setpoint=$id'><img src=icons/ffffff/control_x.png></a>";
 
 			
 			// echo the script to change values through ajax

@@ -27,7 +27,7 @@
 		<div id='home_alarms' data-role='page' data-theme='b'>
 			<div data-role='content'>
 				<header>
-					<img src='icons/ws/control_alarm.png'>
+					<img src='icons/ffffff/control_alarm.png'>
 					<h1>Alarms</h1>
 				</header>
 				
@@ -43,7 +43,7 @@
 		<div id='home_measurements' data-role='page' data-theme='b'>
 			<div data-role='content'>
 				<header>
-					<img src='icons/ws/measure_power_meter.png'>
+					<img src='icons/ffffff/measure_power_meter.png'>
 					<h1>Measurements</h1>
 				</header>
 				
