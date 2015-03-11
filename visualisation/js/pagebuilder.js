@@ -622,7 +622,7 @@ render_page = function(section_id,page_id){
 	
 	// add header
 	if(page.id != 'home'){
-		$('#renderpage').append('<header><img src="icons/ws/'+page.img+'"><h1>'+page.name+'</h1></header>');
+		$('#renderpage').append('<header><img src="icons/ffffff/'+page.img+'"><h1>'+page.name+'</h1></header>');
 		if(page.measurement_item != ''){
 			$('#renderpage header').append('<div class="value"><span data-role="displayvalue" data-item="'+page.measurement_item+'" data-digits="1"></span>&deg;C</div>');
 		}
@@ -702,7 +702,7 @@ render_menu = function(){
 				$('#rendermenu section[data-id="'+section_index+'"] ul').append('<li data-id="'+index+'"><a href="#" class="renderpage"><h1>'+page.name+'</h1></a></li>');
 			}
 			else{
-				$('#rendermenu section[data-id="'+section_index+'"] ul').append('<li data-id="'+index+'"><a href="#" class="renderpage"><img src="icons/ws/'+page.img+'" data-id="'+index+'" ><h1>'+page.name+'</h1></a></li>');
+				$('#rendermenu section[data-id="'+section_index+'"] ul').append('<li data-id="'+index+'"><a href="#" class="renderpage"><img src="icons/ffffff/'+page.img+'" data-id="'+index+'" ><h1>'+page.name+'</h1></a></li>');
 			}
 		});
 		
