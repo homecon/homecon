@@ -70,6 +70,7 @@
 			</div>
 		</div>
 		
+		
 		<div id='home_settings' data-role='page' data-theme='b'>
 			<div data-role='content'>
 				<header>
@@ -145,6 +146,7 @@
 			</div>
 		</div>
 		
+		
 		<div id='action_def_popup' class='ui-content' data-role='popup' data-position-to='window' data-theme='b' data-overlay-theme='b'>
 			<div data-role='fieldcontain'>
 				<label for='action_def_popup_name'>Name:</label>
@@ -216,6 +218,7 @@
 			<a href="#" data-rel="back" data-role="button" data-theme="b" data-icon="delete" data-iconpos="notext" class="ui-btn-right">Close</a>
 		</div>
 		
+		
 		<div id='measurement_def_popup' class='ui-content' data-role='popup' data-position-to='window' data-theme='b' data-overlay-theme='b'>
 			<div data-role='fieldcontain'>
 				<label for='measurement_def_popup_name'>Name:</label>
@@ -242,6 +245,7 @@
 			<a href="#" data-rel="back" data-role="button" data-theme="b" data-icon="delete" data-iconpos="notext" class="ui-btn-right">Close</a>
 		</div>
 		
+		
 		<div id='user_def_popup' class='ui-content' data-role='popup' data-position-to='window' data-theme='b' data-overlay-theme='b'>
 			<div data-role='fieldcontain'>
 				<label for='user_def_popup_name'>Name:</label>
@@ -252,6 +256,7 @@
 			<a id='user_def_popup_delete' data-role='button' data-id='1'>Delete</a>
 			<a href="#" data-rel="back" data-role="button" data-theme="b" data-icon="delete" data-iconpos="notext" class="ui-btn-right">Close</a>
 		</div>
+		
 		
 		<div id='password_def_popup' class='ui-content' data-role='popup' data-position-to='window' data-theme='b' data-overlay-theme='b'>
 			<div data-role='fieldcontain'>
@@ -270,8 +275,6 @@
 			<a href="#" data-rel="back" data-role="button" data-theme="b" data-icon="delete" data-iconpos="notext" class="ui-btn-right">Close</a>
 		</div>
 		
-		
-		
-		
+
 		<div id='message_popup' class='ui-content' data-role='popup' data-position-to='window' data-theme='b' data-overlay-theme='b'>
 		</div>
