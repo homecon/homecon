@@ -19,7 +19,7 @@
 		<div id='home_users' data-role='page' data-theme='b'>
 			<div data-role='content'>
 				<header>
-					<img src='icons/ws/users.png'>
+					<img src='icons/ffffff/users.png'>
 					<h1>Users</h1>
 				</header>
 				<section data-role='collapsible' data-theme='a' data-collapsed='false'>
@@ -73,7 +73,7 @@
 		<div id='home_settings' data-role='page' data-theme='b'>
 			<div data-role='content'>
 				<header>
-					<img src='icons/ws/edit_settings.png'>
+					<img src='icons/ffffff/edit_settings.png'>
 					<h1>Settings</h1>
 				</header>
 				<section data-role='collapsible' data-theme='a' data-collapsed='false'>

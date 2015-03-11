@@ -148,7 +148,7 @@ $.widget("knxcontrol.lightdimmer",{
 	_create: function(){
 		// enhance
 		this.element.prepend('<p>'+this.options.label+'</p>'+
-							 '<a href="#" class="switch"><img src="icons/ws/light_light.png"></a>'+
+							 '<a href="#" class="switch"><img src="icons/ffffff/light_light.png"></a>'+
 							 '<input type="range" value="'+this.options.val_off+'" min="'+this.options.val_off+'" max="'+this.options.val_on+'" step="'+(this.options.val_on-this.options.val_off)/51+'" data-highlight="true"/>');
 		this.element.enhanceWithin();
 		this.update();
@@ -211,8 +211,8 @@ $.widget("knxcontrol.shading",{
 		// enhance
 		var text = this.element.html();
 		this.element.prepend('<p>'+this.options.label+'</p>'+
-							 '<a href="#" class="open"><img src="icons/ws/fts_shutter_10.png"></a>'+
-							 '<a href="#" class="close"><img src="icons/ws/fts_shutter_100.png"></a>'+
+							 '<a href="#" class="open"><img src="icons/ffffff/fts_shutter_10.png"></a>'+
+							 '<a href="#" class="close"><img src="icons/ffffff/fts_shutter_100.png"></a>'+
 							 '<input type="range" value="'+this.options.val_off+'" min="'+this.options.val_off+'" max="'+this.options.val_on+'" step="'+(this.options.val_on-this.options.val_off)/51+'" data-highlight="true"/>');
 		this.element.enhanceWithin();
 		this.update();
