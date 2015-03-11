@@ -23,7 +23,7 @@ $(function(){
 	$("body>[data-role='header']").toolbar();
 });
 // hide header elements from non admin users
-$(document).on('connect',function(event,user_id){
+$(document).on('authenticated',function(event,user_id){
 	if(user_id!=1){
 		$("#header a.hide").remove();
 	}
@@ -48,6 +48,13 @@ $(document).on('swiperight', function(){
 // menu bars
 $(document).on('click','#menu_button', function(){
 	$('#menu').panel("toggle");		
+});
+
+// keep panel from closing in pagebuilder when width > 800
+$(document).on('pageinit','#home_pagebuilder',function(event){
+	if($(window).width() >= 800){
+		$('#menu').css('position','absolute');
+	}
 });
 
 /*****************************************************************************/
@@ -76,17 +83,6 @@ $(document).on('click','a[href="#home_pagebuilder"]', function(){
 	$("#header nav div.home").hide();
 	$("#header nav div.pagebuilder").show();
 });
-$(document).on('click','a[href="#home_home"]', function(){
-	location.reload();
-	
-	// change back to the menu panel
-	$("#rendermenu").hide();
-	$('#mainmenu').show();
-	
-	// show the header buttons
-	$("#header nav div.home").show();
-	$("#header nav div.pagebuilder").hide();
-});
 
 
 /*****************************************************************************/
@@ -96,6 +92,8 @@ $(document).on('ready',function(){
 	$("#message_popup").enhanceWithin().popup();
 	$("#action_def_popup").enhanceWithin().popup();
 	$("#measurement_def_popup").enhanceWithin().popup();
+	$("#user_def_popup").enhanceWithin().popup();
+	$("#password_def_popup").enhanceWithin().popup();
 });
 
 

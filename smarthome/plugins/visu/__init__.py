@@ -18,7 +18,9 @@
 #  You should have received a copy of the GNU General Public License
 #  along with SmartHome.py. If not, see <http://www.gnu.org/licenses/>.
 #########################################################################
-
+#
+# Changes made around line 280 to add some web security
+#
 import base64
 import datetime
 import hashlib

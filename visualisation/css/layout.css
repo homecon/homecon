@@ -83,15 +83,21 @@
 .menupanel section>div>a{
 	margin-top: 20px;
 }
+
 @media all and (min-width: 800px){
+
 	.ui-panel{
-		position: relative;
+		position: fixed;
 		width: 38%;
 		visibility: visible;
+		overflow: visible;
 		-webkit-backface-visibility: visible;
 		-ms-transform: none !important;
 		-webkit-transform: none !important;
 		transform: none !important;
+	}
+	.ui-panel-closed{
+		clip: auto;
 	}
 }
 
@@ -136,6 +142,9 @@ div.def div.move{
 /*****************************************************************************/
 /*                     Content                                               */
 /*****************************************************************************/
+div[data-role="page"]{
+	-webkit-overflow-scrolling: touch;
+}
 .ui-content header{
 	position: relative;
 }
@@ -155,15 +164,27 @@ div.def div.move{
 	right: 10px;
 	font-weight: 600;
 }
-.ui-content div.group{
-	margin-bottom: 10px;
+.ui-content section{
+	text-align: center;
+	line-height: 1em;
 }
-
+section div.endofsection{
+	width: 100%;
+	height: 0;
+	display: inline-block;
+	position: relative;
+}
 
 @media all and (min-width: 800px) {
 	div [data-role="content"]{
-		position: absolute;
+		position: relative;
 		left: 38%;
 		width: 58%;
 	}
 }
+.ui-content header a.edit_page{
+	position: absolute;
+	top: -10px;
+	left: -10px;
+}
+

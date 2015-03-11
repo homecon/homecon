@@ -22,7 +22,7 @@
 				<?php if($incorrect){ echo "<h3>Usernaam of paswoord niet correct</h3>";} ?>
 				<section data-role='collapsible' data-theme='a' data-content-theme='b' data-collapsed='false'>
 					<h1>Couple device</h1>
-					<form action='index.php' method='post' name='login' class='login'>
+					<form action='index.php' method='post' data-ajax='false' name='login' class='login'>
 						<div class='ui-field-contain ui-hide-label'>
 							<label for='username'>Usernaam:</label>
 							<input type='text' id='username' name='username' placeholder='Usernaam'>

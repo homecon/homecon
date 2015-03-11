@@ -20,57 +20,83 @@
 /*                     Main event handlers                                   */
 /*****************************************************************************/
 // initialize
-$(document).on('connect',function(event,user_id){
+$(document).on('authenticated',function(event,user_id){
+
+	// gather values for knxcontrol and make connection to smarthome.py
 	knxcontrol.user_id = user_id;
 	
-		
-	if(!smarthome.socket){
-		//get connection data
-		$.post('requests/select_from_table.php',{table: 'data', column: '*', where: 'id=1'},function(result){
-
-			data = JSON.parse(result);
-			data = data[0];
-			
-			// initialize connection
-			// try local connection
-			smarthome.init(data['ip'],data['port'],data['token']);
-			if(!smarthome.socket){
-				// try www connection
-				smarthome.init(data['web_ip'],data['web_port'],data['token']);
-			}
-			
-			// set location
-			knxcontrol.location.latitude = data['latitude'];
-			knxcontrol.location.longitude = data['longitude'];
-		});
-	};
-	
-	// get a weather forecast and schedule it to run every hour
-	//knxcontrol.get_weatherforecast()
-	//setInterval(function(){knxcontrol.get_weatherforecast()}, 3600000);
+	knxcontrol.settings.get();
+	knxcontrol.location.get();
+	knxcontrol.alarm.get();
+	knxcontrol.measurement.get();
+	knxcontrol.user.get();
 });
-
+$(document).on('connect',function(event){
+	// initialize connection to smarthome.py
+	if((document.URL).indexOf(knxcontrol.settings.ip) > -1){
+		// the address is local if the smarthome.py ip is the same as the website ip
+		smarthome.init(knxcontrol.settings.ip,knxcontrol.settings.port,knxcontrol.settings.token);
+	}
+	else{
+		// we are on the www
+		smarthome.init(knxcontrol.settings.web_ip,knxcontrol.settings.web_port,knxcontrol.settings.token);
+	}
+});
 /*****************************************************************************/
 /*                     KNXControl model                                      */
 /*****************************************************************************/
-
 var knxcontrol = {
 	user_id: 0,
 	location:	{
-		latitude: 51,
-		longitude: -5,
-		altitude: 80
+		latitude: 0,
+		longitude: 0,
+		altitude: 80,
+		get: function(){
+			$.post('requests/select_from_table.php',{table: 'data', column: 'latitude,longitude', where: 'id=1'},function(result){
+				data = JSON.parse(result);
+				data = data[0];
+				
+				knxcontrol.location.latitude = data['latitude'];
+				knxcontrol.location.longitude = data['longitude'];
+			});
+		},
+		update: function(){
+			$.post('requests/update_table.php',{table: 'data', column: ['latitude','longitude'].join(';'), value: [this.latitude,this.longitude].join(';'), where: 'id=1'},function(result){
+				$("#message_popup").html('<h3>'+language.settings_saved+'</h3>');
+				$("#message_popup").popup('open');
+				setTimeout(function(){$("#message_popup").popup('close');}, 500);
+			});
+		}
 	},
-	weatherforecast: [], // will be removed
-// initialize
-	init: function(){
-		knxcontrol.item.get();
-		knxcontrol.alarm.get();
-		knxcontrol.measurement.get();
-		
-		// request the values of all items from smarthome.py
-		smarthome.monitor();
-		
+	settings:{
+		ip: '',
+		port: '',
+		web_ip: '',
+		web_port: '',
+		token: '',
+		get: function(){
+			$.post('requests/select_from_table.php',{table: 'data', column: '*', where: 'id=1'},function(result){
+
+				data = JSON.parse(result);
+				data = data[0];
+				
+				knxcontrol.settings.ip = data['ip'];
+				knxcontrol.settings.port = data['port'];
+				knxcontrol.settings.web_ip = data['web_ip'];
+				knxcontrol.settings.web_port = data['web_port'];
+				knxcontrol.settings.token = data['token'];
+				
+				$(document).trigger('connect');
+				$('[data-role="settings"]').trigger('update');
+			});
+		},
+		update: function(){
+			$.post('requests/update_table.php',{table: 'data', column: ['ip','port','web_ip','web_port','token'].join(';'), value: [this.ip,this.port,this.web_ip,this.web_port,this.token].join(';'), where: 'id=1'},function(result){
+				$("#message_popup").html('<h3>'+language.settings_saved+'</h3>');
+				$("#message_popup").popup('open');
+				setTimeout(function(){$("#message_popup").popup('close');}, 500);
+			});
+		}
 	},
 //items                                                                      //
 	item: {
@@ -83,11 +109,63 @@ var knxcontrol = {
 		},	
 		update: function(item,value){
 			knxcontrol.item[item] = value;
-			
 			$('[data-item="'+item+'"]').trigger('update');
 		},
 	},
-	
+	smarthome_log: {
+		log: [],
+		get: function(){
+			smarthome.send({'cmd': 'log', 'name': 'env.core.log', 'max': 100});
+		},
+		update: function(log){
+			this.log = log.concat(this.log);
+			$('[data-role="smarthome_log"]').trigger('update');
+		}
+	},
+// users                                                                     //	
+	user:{
+		// 1: {id: 1, username: 'test',...}
+		get: function(id){
+			var where = 'id>0';
+			if(id){
+				where = 'id='+id;
+			}
+			$.post('requests/select_from_table.php',{table: 'users', column: 'id,username', where: where},function(result){
+				var users = JSON.parse(result);
+				$.each(users,function(index,user){
+					knxcontrol.user[user.id] = {
+						id: user.id,
+						username: user.username,
+					};
+					$('[data-role="user_list"]').trigger('update',user.id);
+					$('[data-role="user_profile"]').trigger('update');
+				});
+			});
+		},
+		update: function(id,field,value){
+			// set the alarm in the database
+			$.post('requests/update_table.php',{table: 'users', column: field.join(';'), value: value.join(';'), where: 'id='+id},function(result){
+				// on success update knxcontrol
+				console.log(result);
+				knxcontrol.user.get(id);
+			});
+		},
+		add: function(){
+			$.post('requests/insert_into_table.php',{table: 'users', column: ['name','password'].join(';'), value: ['New user','newpass'].join(';')},function(result){
+				id = JSON.parse(result);
+				id = id[0];
+				// add the action to knxcontrol
+				knxcontrol.user.get(id);
+			});
+		},
+		del: function(id){
+			$.post('requests/delete_from_table.php',{table: 'users', where: 'id='+id},function(result){
+				delete knxcontrol.user[id];
+				$('[data-role="user_list"]').trigger('update',id);
+			});
+		}
+	},
+
 // alarms                                                                    //
 	alarm: {
 		// 1: {id: 1, section_id: 2, hour: 13, minute: 12, mon: 1, tue: 1, wed: 1, thu: 1, fri: 1, sat: 1, sun: 1, action_id: 2},...
@@ -173,8 +251,9 @@ var knxcontrol = {
 		},
 		update: function(id,data_field,value){
 			// set the alarm in the database
-			$.post('requests/update_table.php',{table: 'alarm_actions', column: data_field, value: value, where: 'id='+id},function(result){
+			$.post('requests/update_table.php',{table: 'alarm_actions', column: data_field.join(';'), value: value.join(';'), where: 'id='+id},function(result){
 				// on success update knxcontrol
+				console.log(result);
 				knxcontrol.action.get(id);
 			});
 		},
@@ -196,13 +275,13 @@ var knxcontrol = {
 	
 // measurement                                                             //
 	measurement: {
-		// 1: {id: 1, name: 'Temperatuur', item: 'buiten.measurements.temperature', quantity: 'Temperature', unit: 'degC', description: 'Buiten temeratuur', data: []},
+		// 1: {id: 1, name: 'Temperatuur', item: 'buiten.measurements.temperature', quantity: 'Temperature', unit: 'degC', description: 'Buiten temeratuur', quarterhourdata: [], daydata: [], weekdata: [], monthdata: []},
 		get: function(id){
 			var where = 'id>0';
 			if(id){
 				where = 'id='+id;
 			}
-			that = this;
+			var that = this;
 			$.post('requests/select_from_table.php',{table: 'measurements_legend', column: '*', where: where},function(result){
 				var results = JSON.parse(result);
 				$.each(results,function(index,result){
@@ -217,29 +296,86 @@ var knxcontrol = {
 					$('[data-role="measurement_list"]').trigger('update',result.id);
 					//that.get_data(result.id);  // this will load all data which results in a lot of data traffic
 				});
-				console.log('legend finished');
 				$('[data-role="chart"]').trigger('get_data');
 			});
 		},
 		update: function(id,field,value){
-			that = this;
+			var that = this;
 			$.post('requests/update_table.php',{table: 'measurements_legend', column: field, value: value, where: 'id='+id},function(result){
 				that.get(id);
 			});
 		},
-		get_data: function(id){
+		get_quarterhourdata: function(id){
 			if(this[id]){
-			
-				that = this;
-				$.post('requests/select_from_table.php',{table: 'measurements_quarterhouraverage', column: 'time,value', where: 'signal_id='+id+' AND time > '+((new Date()).getTime()/1000-7*27*3600), orderby: 'time'},function(result){
-					data = []
-					
+				
+				var that = this[id];
+				$.post('requests/select_from_table.php',{table: 'measurements_quarterhouraverage', column: 'time,value', where: 'signal_id='+id+' AND time > '+((new Date()).getTime()/1000-7*24*3600), orderby: 'time'},function(result){
+					that.quarterhourdata = []
 					$.each(JSON.parse(result),function(index,value){
-						data.push([parseFloat(value.time)*1000,parseFloat(value.value)]);
+						that.quarterhourdata.push([parseFloat(value.time)*1000,parseFloat(value.value)]);
 					});
-					$('[data-role="chart"]').trigger('update',[id,data]);
+					
+					// devide the data in days and average
+					var starttime = [];
+					var sum = [];
+					var numel = [];
+					
+					var oldhour =  0;
+					
+					$.each(that.quarterhourdata,function(index,value){
+						var date = new Date(value[0]);
+						var hour =  date.getHours();
+
+						if(hour<oldhour){
+							starttime.push(value[0]);
+							sum.push(0);
+							numel.push(0);
+						}
+						if(sum.length>0){
+							sum[sum.length - 1] += value[1];
+							numel[sum.length - 1] += 1;
+						}
+						oldhour = hour;
+					});
+
+					that.daydata = [];
+					$.each(sum,function(index,value){
+						that.daydata.push([starttime[index],sum[index]/numel[index]]);
+					});
+					
+					$('[data-role="chart"]').trigger('update',id);
 					
 				});
+			}
+		},
+		get_weekdata: function(id){
+			if(this[id]){
+			
+				var that = this[id];
+				$.post('requests/select_from_table.php',{table: 'measurements_weekaverage', column: 'time,value', where: 'signal_id='+id+' AND time > '+((new Date()).getTime()/1000-52*7*24*3600), orderby: 'time'},function(result){
+					that.weekdata = []
+					
+					$.each(JSON.parse(result),function(index,value){
+						that.weekdata.push([parseFloat(value.time)*1000,parseFloat(value.value)]);
+					});
+				});
+				
+				$('[data-role="chart"]').trigger('update',id);
+			}
+		},
+		get_monthdata: function(id){
+			if(this[id]){
+			
+				that = this[id];
+				$.post('requests/select_from_table.php',{table: 'measurements_monthaverage', column: 'time,value', where: 'signal_id='+id+' AND time > '+((new Date()).getTime()/1000-365*24*3600), orderby: 'time'},function(result){
+					that.monthdata = []
+					
+					$.each(JSON.parse(result),function(index,value){
+						that.monthdata.push([parseFloat(value.time)*1000,parseFloat(value.value)]);
+					});
+				});
+				
+				$('[data-role="chart"]').trigger('update',id);
 			}
 		}
 	},
@@ -254,41 +390,5 @@ var knxcontrol = {
 			}
 		});
 		return ind;
-	},
-////////////////////////////////////////////////////////////////////////
-// this will be moved to smarthome.py in the near future so no dev is happening and widget is broken	
-// update weather forecast data
-	get_weatherforecast: function(){
-		
-		$.post('http://api.openweathermap.org/data/2.5/forecast?lat='+this.location.latitude+'&lon='+this.location.longitude,function(result){
-			var weatherforecast = [];
-
-			for(var i=0;i<result.list.length; i++){
-				data = result.list[i];
-				var temp = {
-					timestamp: data.dt*1000,
-					temperature: data.main.temp-273.15,
-					minimum_temperature: data.main.temp_min-273.15,
-					maximum_temperature: data.main.temp_max-273.15,
-					pressure: data.main.pressure,
-					humidity: data.main.humidity,
-					windspeed: data.wind.speed,
-					winddirection: data.wind.deg,
-					cloudfactor: 1-data.clouds.all/100,
-					precipitation: 0,
-					icon: data.weather[0].icon
-				};
-				
-				if(data.hasOwnProperty('rain')){
-					temp.precipitation= data.rain['3h']/3;
-				}
-				weatherforecast.push(temp);
-			}
-			knxcontrol.weatherforecast = weatherforecast;
-			
-			// trigger a widget update event
-			$(document).trigger('weatherforecastupdate');
-		});
-	},
-///////////////////////////////////////////////////////////////////////////:	
+	}	
 }

@@ -35,6 +35,31 @@ a.edit_page{
 }
 
 /*****************************************************************************/
+/*                     Separator line                                        */
+/*****************************************************************************/
+div[data-role="line"]{
+	display: block;
+	position: relative;
+	height: 0px;
+	margin-top: 5px;
+	margin-bottom: 5px;
+	width: 98%;
+}
+div[data-role="line"].line{
+	border-bottom: solid 1px #ddd;
+}
+#home_pagebuilder div[data-role="line"]{
+	height: 5px;
+	border-bottom: solid 1px #444;
+}
+#home_pagebuilder div[data-role="line"].line{
+	border-bottom: solid 1px #ddd;
+}
+#home_pagebuilder div[data-role="line"] a.edit_widget{
+    top: -15px;
+	right: -5px;
+}
+/*****************************************************************************/
 /*                     Light switch                                          */
 /*****************************************************************************/
 div[data-role="lightswitch"]{
@@ -43,6 +68,8 @@ div[data-role="lightswitch"]{
 	height: 50px;
 	width: 49%;
 	min-width: 200px;
+	text-align: left;
+	float: left;
 }
 div[data-role="lightswitch"] a{
 	text-decoration: none;
@@ -76,6 +103,7 @@ div[data-role="lightdimmer"]{
 	position: relative;
 	height: 60px;
 	width: 98%;
+	text-align: left;
 }
 div[data-role="lightdimmer"] img{
 	height: 50px;
@@ -85,7 +113,7 @@ div[data-role="lightdimmer"] img{
 div[data-role="lightdimmer"] p{
 	position: absolute;
 	margin-left: 54px;
-	margin-top: 2px;
+	margin-top: 5px;
 	font-weight: 700;
 }
 div[data-role="lightdimmer"] .ui-slider{
@@ -119,6 +147,7 @@ div[data-role="shading"]{
 	position: relative;
 	height: 70px;
 	width: 98%;
+	text-align: left;
 }
 div[data-role="shading"] img{
 	height: 50px;
@@ -132,7 +161,7 @@ div[data-role="shading"] .close img{
 div[data-role="shading"] p{
 	position: absolute;
 	margin-left: 54px;
-	margin-top: 2px;
+	margin-top: 5px;
 	font-weight: 700;
 }
 div[data-role="shading"] .ui-slider{
@@ -167,6 +196,7 @@ div[data-role="shading"] a.edit_widget{
 /*****************************************************************************/
 div[data-role="alarm"]{
 	width: 98%;
+	text-align: left;
 }
 div[data-role="alarm"] div.alarm{
 	position: relative; 
@@ -205,6 +235,7 @@ div[data-role="alarm"] label{
 /*****************************************************************************/
 div[data-role="action_list"]{
 	width: 98%;
+	text-align: left;
 }
 div[data-role="action_list"] div.action{
 	position: relative;
@@ -251,6 +282,7 @@ div[data-role="action_list"] div.action div{
 /*****************************************************************************/
 div[data-role="measurement_list"]{
 	width: 98%;
+	text-align: left;
 }
 div[data-role="measurement_list"] div.measurement{
 	position: relative;
@@ -289,6 +321,13 @@ div[data-role="measurement_list"] div.measurement div.name{
 	border: 0;
 }
 
+/*****************************************************************************/
+/*                     Settings                                              */
+/*****************************************************************************/
+div[data-role="settings"]{
+	width: 98%;
+	text-align: left;
+}
 
 /*****************************************************************************/
 /*                     Clock                                                 */
@@ -338,20 +377,51 @@ div[data-role="clock"] .date{
 }
 
 /*****************************************************************************/
-/*                     Current weather                                       */
+/*                     Weather block                                       */
 /*****************************************************************************/
-div[data-role="current_weather"]{
+div[data-role="weather_block"]{
+	position: relative;
+	display: inline-block;
 	width: 98%;
 	margin-left: auto;
 	margin-right: auto;
 	text-align: center;
 }
-div[data-role="current_weather"] img{
-	width: 350px;
+div[data-role="weather_block"] img{
+	width: 90%;
+	max-width: 300px;
+	margin-top: -10px;
+	margin-bottom: -10px;
 }
-
-
-
+div[data-role="weather_block"] div{
+	height: 20px;
+}
+div[data-role="weather_block"] div[data-field="date"]{
+	height: 0;
+}
+div[data-role="weather_block"].mini{
+	width: 20%;
+	min-width: 75px;
+	max-width: 150px;
+	margin-left: 0;
+	margin-right: 0;
+	font-size: 0.9em;
+}
+div[data-role="weather_block"].mini img{
+	width: 100%;
+	margin-bottom: -10px;
+}
+div[data-role="weather_block"].mini div{
+	height: 15px;
+}
+#home_pagebuilder div[data-role="weather_block"]{
+	margin-bottom: 5px;
+	border: solid 1px #222;
+}
+#home_pagebuilder div[data-role="weather_block"] a.edit_widget{
+    top: -5px;
+	right: -5px;
+}
 
 /*****************************************************************************/
 /*                     Chart                                                 */
@@ -370,6 +440,56 @@ div[data-role="chart"]{
 	right: -5px;
 }
 
+/*****************************************************************************/
+/*                     Button                                                */
+/*****************************************************************************/
+div[data-role="btn"]{
+    display: inline-block;
+    position: relative;
+    margin: 0;
+    width: 24.5%;
+    min-width: 120px;
+}
+div[data-role="btn"] a{
+    margin: 0;
+    margin-right: -5px;
+    margin-bottom: -5px;
+    padding-left: 5px;
+    padding-right: 5px;
+}
+div[data-role="btn"] img{
+    position: absolute;
+    width: 30px;
+    height: 30px;
+    top: 5px;
+    left: 5px;
+}
+#home_pagebuilder div[data-role="btn"] a.edit_widget{
+	z-index: 1;
+    top: -5px;
+	right: -5px;
+}
+
+/*****************************************************************************/
+/*                     Smarthome log                                         */
+/*****************************************************************************/
+div[data-role="smarthome_log"]{
+	display: inline-block;
+	position: relative;
+	width: 98%;
+	text-align: left;
+}
+div[data-role="smarthome_log"]>div{
+	margin-bottom: 5px;
+}
+div[data-role="smarthome_log"] div.time{
+	font-size: 0.7em;
+	color: #bbb;
+}
+div[data-role="smarthome_log"] div.message{
+	font-size: 0.9em;
+	padding-left: 10px;
+}
 
 /*----------------------------------------------------------------------------------*/
 /*     setpoint                                                                     */
@@ -440,77 +560,8 @@ div.setpoint_chart{
 	}
 }
 
-/*----------------------------------------------------------------------------------*/
-/*     Weather forecast                                                             */
-/*----------------------------------------------------------------------------------*/
-/*
-#weather_forecast_detailed{
-	width: 95%;
-	margin-left: auto;
-	margin-right: auto;
-}
-#weather_forecast_detailed .forecast_details{
-	margin-top: 0.5em;
-	display: inline-block;
-	width: 19%;
-	text-align: center;
-}
-#weather_forecast_detailed .forecast_details img{
-	width: 90%;
-	margin-left: auto;
-	margin-right: auto;
-}
 
-#weather_forecast_averaged{
-	width: 95%;
-	margin-left: auto;
-	margin-right: auto;
-}
-#weather_forecast_averaged .forecast_details{
-	margin-top: 0.1em;
-	display: inline-block;
-	width: 24%;
-	text-align: center;
-}
-#weather_forecast_averaged .forecast_details img{
-	width: 90%;
-	margin-left: auto;
-	margin-right: auto;
-}
 
-#current_weather{
-	width: 95%;
-	margin-left: auto;
-	margin-right: auto;
-	text-align: center;
-}
-#current_weather img{
-	max-height: 180px;
-}
-
-/*        weather        */
-/*---------------------*/
-/*
-section.lokaal_weer{
-	width: 90%;
-	margin-top: 20px;
-	margin-left: auto;
-	margin-right: auto;
-	text-align: center;
-}
-section.lokaal_weer div{
-
-}
-
-/*        charts       */
-/*---------------------*/
-/*
-div.chart{
-	width: 100%;
-	height: 300px;
-	margin-bottom: 10px;
-
-}
 
 /*----------------------------------------------------------------------------------*/
 /*     setpoint                                                                     */

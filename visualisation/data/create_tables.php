@@ -222,6 +222,7 @@ $res = mysql_query( "CREATE TABLE IF NOT EXISTS `pagebuilder` (	`id` int(11) NOT
 																PRIMARY KEY (`id`)) ENGINE=InnoDB  DEFAULT CHARSET=latin1 AUTO_INCREMENT=1");													
 // add default data
 $res = mysql_query("INSERT INTO `pagebuilder` (id,model) VALUES (1,'[{\"id\":\"home\",\"name\":\"Home\",\"page\":[{\"id\":\"home\",\"name\":\"Home\",\"img\":\"\",\"temperature_item\":\"\",\"section\":[]}]}]'");
+$res = mysql_query("INSERT INTO `pagebuilder` (id,model) VALUES (2,'[{\"id\":\"home\",\"name\":\"Home\",\"page\":[{\"id\":\"home\",\"name\":\"Home\",\"img\":\"\",\"temperature_item\":\"\",\"section\":[]}]}]'");
 												
 if($res){
 	echo "default data added<br>";

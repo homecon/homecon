@@ -30,6 +30,10 @@ language = {
 	add_action: 'actie toevoegen',
 	add_measurement: 'meting toevoegen',
 	export_measurements: 'metingen exporteren',
+	save: 'opslaan',
+	settings_saved: 'settings opgeslagen',
+	add_user: 'gebruiker toevoegen',
+	delete_user: 'gebruiker verwijderen',
 // methods
 // capitalize 1st letter	
 	capitalize: function(string){

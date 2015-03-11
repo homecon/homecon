@@ -253,7 +253,7 @@ class Item():
         try:
             self._value = self.cast(self._value)
         except:
-            logger.error("Item {}: value {} does not match type {}.".format(self._path, self._value, self._type))
+            logger.error("Item {}: value {} does test not match type {}.".format(self._path, self._value, self._type))
             raise
         self.__prev_value = self._value
         #############################################################

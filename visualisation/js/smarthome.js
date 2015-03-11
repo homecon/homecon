@@ -45,17 +45,19 @@ var smarthome = {
             console.log('connected to smarthome.py');
 			
 			// initialize widgets
-			knxcontrol.init();
+			knxcontrol.item.get();
 			
+			// request the values of all items from smarthome.py
+			smarthome.monitor();
 			
-			//smarthome.monitor();
+			// get the smarthome.py log
+			knxcontrol.smarthome_log.get();
          };
 		
         smarthome.socket.onmessage = function(event){
 			//console.log(event.data);
 			
             var data = JSON.parse(event.data);   
-			
             switch(data.cmd){
 				
                 case 'item':
@@ -74,7 +76,9 @@ var smarthome = {
                         knxcontrol.item.update(item, value);
                     };
                     break;
-
+				case 'log':
+					knxcontrol.smarthome_log.update(data.log);
+					break;
                 case 'series':                   
                     data.sid = data.sid.substr(0, data.sid.length - 3) + '0';
                     widget.update(data.sid.replace(/\|/g, '\.'), data.series);
