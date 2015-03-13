@@ -115,6 +115,7 @@ var knxcontrol = {
 	smarthome_log: {
 		log: [],
 		get: function(){
+			this.log = [];
 			smarthome.send({'cmd': 'log', 'name': 'env.core.log', 'max': 100});
 		},
 		update: function(log){
