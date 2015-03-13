@@ -19,7 +19,7 @@
 		<div id='header' data-role='header' data-position='fixed' data-tap-toggle='false' data-theme='b'>
 			<nav>
 				<a href='index.php' data-ajax='false' id='home'><img src='icons/ffffff/knxcontrol_home.png'></a>
-				<a href='#' id='menu_button'><img src='icons/ffffff/control_bars.png'></a>
+				<a href='#' id='menu_button'><img src='icons/ffffff/knxcontrol_bars.png'></a>
 				<div class='home'>
 					<a class='hide' href='#home_users'><img src='icons/ffffff/knxcontrol_users.png'></a>
 					<a class='hide' href='#home_alarms'><img src='icons/ffffff/knxcontrol_alarm.png'></a>
