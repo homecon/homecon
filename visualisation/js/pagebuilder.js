@@ -799,7 +799,7 @@ publish_menu = function(){
 			if(section.init=='true'){
 				data_collapsed = 'data-collapsed="false"';
 			}
-			publish += '%t%t%t%t<section data-id="'+index+'" data-role="collapsible" '+data_collapsed+' data-section="'+section.id+'" data-theme="a" data-content-theme="b"">%n%t%t%t%t%t<h1>'+section.name+'</h1>%n%t%t%t%t%t<ul data-role="listview" data-inset="false">%n';
+			publish += '%t%t%t%t<section data-id="'+index+'" data-role="collapsible" '+data_collapsed+' data-section="'+section.id+'" data-theme="a" data-content-theme="b"">%n%t%t%t%t%t<h1>'+section.name+'</h1>%n%t%t%t%t%t<ul data-role="listview" data-inset="false" data-icon="false">%n';
 			
 			//pages
 			section_index = index;
