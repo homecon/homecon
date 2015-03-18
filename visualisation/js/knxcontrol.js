@@ -292,7 +292,10 @@ var knxcontrol = {
 						item: result.item,
 						quantity: result.quantity,
 						unit: result.unit,
-						description: result.description
+						description: result.description,
+						loading_quarterhourdata: false,
+						loading_weekdata: false,
+						loading_monthdata: false
 					};
 					$('[data-role="measurement_list"]').trigger('update',result.id);
 					//that.get_data(result.id);  // this will load all data which results in a lot of data traffic
@@ -310,73 +313,85 @@ var knxcontrol = {
 			if(this[id]){
 				
 				var that = this[id];
-				$.post('requests/select_from_table.php',{table: 'measurements_quarterhouraverage', column: 'time,value', where: 'signal_id='+id+' AND time > '+((new Date()).getTime()/1000-7*24*3600), orderby: 'time'},function(result){
-					that.quarterhourdata = []
-					$.each(JSON.parse(result),function(index,value){
-						that.quarterhourdata.push([parseFloat(value.time)*1000,parseFloat(value.value)]);
-					});
-					
-					// devide the data in days and average
-					var starttime = [];
-					var sum = [];
-					var numel = [];
-					
-					var oldhour =  0;
-					
-					$.each(that.quarterhourdata,function(index,value){
-						var date = new Date(value[0]);
-						var hour =  date.getHours();
+				// a loading variable as the load time is significant to not load double
+				if(~that.loading_quarterhourdata){
+					that.loading_quarterhourdata = true;
+					$.post('requests/select_from_table.php',{table: 'measurements_quarterhouraverage', column: 'time,value', where: 'signal_id='+id+' AND time > '+((new Date()).getTime()/1000-7*24*3600), orderby: 'time'},function(result){
+						that.quarterhourdata = []
+						$.each(JSON.parse(result),function(index,value){
+							that.quarterhourdata.push([parseFloat(value.time)*1000,parseFloat(value.value)]);
+						});
+						
+						// devide the data in days and average
+						var starttime = [];
+						var sum = [];
+						var numel = [];
+						
+						var oldhour =  0;
+						
+						$.each(that.quarterhourdata,function(index,value){
+							var date = new Date(value[0]);
+							var hour =  date.getHours();
 
-						if(hour<oldhour){
-							starttime.push(value[0]);
-							sum.push(0);
-							numel.push(0);
-						}
-						if(sum.length>0){
-							sum[sum.length - 1] += value[1];
-							numel[sum.length - 1] += 1;
-						}
-						oldhour = hour;
-					});
+							if(hour<oldhour){
+								starttime.push(value[0]);
+								sum.push(0);
+								numel.push(0);
+							}
+							if(sum.length>0){
+								sum[sum.length - 1] += value[1];
+								numel[sum.length - 1] += 1;
+							}
+							oldhour = hour;
+						});
 
-					that.daydata = [];
-					$.each(sum,function(index,value){
-						that.daydata.push([starttime[index],sum[index]/numel[index]]);
+						that.daydata = [];
+						$.each(sum,function(index,value){
+							that.daydata.push([starttime[index],sum[index]/numel[index]]);
+						});
+						that.loading_quarterhourdata = false;
+						$('[data-role="chart"]').trigger('update',id);
+						
 					});
-					
-					$('[data-role="chart"]').trigger('update',id);
-					
-				});
+				}
 			}
 		},
 		get_weekdata: function(id){
 			if(this[id]){
 			
 				var that = this[id];
-				$.post('requests/select_from_table.php',{table: 'measurements_weekaverage', column: 'time,value', where: 'signal_id='+id+' AND time > '+((new Date()).getTime()/1000-52*7*24*3600), orderby: 'time'},function(result){
-					that.weekdata = []
-					
-					$.each(JSON.parse(result),function(index,value){
-						that.weekdata.push([parseFloat(value.time)*1000,parseFloat(value.value)]);
+				if(~that.loading_weekdata){
+					that.loading_weekdata = true;
+					$.post('requests/select_from_table.php',{table: 'measurements_weekaverage', column: 'time,value', where: 'signal_id='+id+' AND time > '+((new Date()).getTime()/1000-52*7*24*3600), orderby: 'time'},function(result){
+						that.weekdata = []
+						
+						$.each(JSON.parse(result),function(index,value){
+							that.weekdata.push([parseFloat(value.time)*1000,parseFloat(value.value)]);
+						});
+						
+						that.loading_weekdata = false;
+						$('[data-role="chart"]').trigger('update',id);
 					});
-				});
-				
-				$('[data-role="chart"]').trigger('update',id);
+				}
 			}
 		},
 		get_monthdata: function(id){
 			if(this[id]){
 			
 				that = this[id];
-				$.post('requests/select_from_table.php',{table: 'measurements_monthaverage', column: 'time,value', where: 'signal_id='+id+' AND time > '+((new Date()).getTime()/1000-365*24*3600), orderby: 'time'},function(result){
-					that.monthdata = []
-					
-					$.each(JSON.parse(result),function(index,value){
-						that.monthdata.push([parseFloat(value.time)*1000,parseFloat(value.value)]);
+				if(~that.loading_monthdata){
+					that.loading_monthdata = true;
+					$.post('requests/select_from_table.php',{table: 'measurements_monthaverage', column: 'time,value', where: 'signal_id='+id+' AND time > '+((new Date()).getTime()/1000-365*24*3600), orderby: 'time'},function(result){
+						that.monthdata = []
+						
+						$.each(JSON.parse(result),function(index,value){
+							that.monthdata.push([parseFloat(value.time)*1000,parseFloat(value.value)]);
+						});
+						
+						that.loading_monthdata = false;
+						$('[data-role="chart"]').trigger('update',id);
 					});
-				});
-				
-				$('[data-role="chart"]').trigger('update',id);
+				}
 			}
 		}
 	},

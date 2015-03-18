@@ -395,65 +395,76 @@ $.widget("knxcontrol.weather_block",{
 				index = 0;
 			}
 			
-			this.element.find('img').attr('src','icons/weather/'+this.icons[knxcontrol.item['building.weatherforecast'][index].icon]);
-			
-			var temperature = 0;
-			var windspeed = 0;
-			var winddirection = '';
-			var irradiation = 0;
-			
-			
-			date = new Date(knxcontrol.item['building.weatherforecast'][index].datetime*1000);
-			var weekday = (date.getDay()+6)%7;
-			var day = date.getDate();
-			var month = date.getMonth();
+			if(index < knxcontrol.item['building.weatherforecast'].length){
+				
+				this.element.find('img').attr('src','icons/weather/'+this.icons[knxcontrol.item['building.weatherforecast'][index].icon]);
+				
+				var temperature = 0;
+				var windspeed = 0;
+				var winddirection = '';
+				var irradiation = 0;
+				
+				
+				date = new Date(knxcontrol.item['building.weatherforecast'][index].datetime*1000);
+				var weekday = (date.getDay()+6)%7;
+				var day = date.getDate();
+				var month = date.getMonth();
 
-			var hour =  date.getHours();
-			var minutes = date.getMinutes();
-			if(hour<10){
-				hour = '0'+hour;
-			}
-			if(minutes<10){
-				minutes = '0'+minutes;
-			}
-			
-			var date_string = language.weekday_short[weekday];
-			
-			if(this.options.item_temperature == ''){
-				temperature = knxcontrol.item['building.weatherforecast'][index].temperature;
+				var hour =  date.getHours();
+				var minutes = date.getMinutes();
+				if(hour<10){
+					hour = '0'+hour;
+				}
+				if(minutes<10){
+					minutes = '0'+minutes;
+				}
+				
+				var date_string = language.weekday_short[weekday];
+				
+				if(this.options.item_temperature == ''){
+					temperature = knxcontrol.item['building.weatherforecast'][index].temperature;
+				}
+				else{
+					temperature = knxcontrol.item[this.options.item_temperature];
+				}
+				if(this.options.item_windspeed == ''){
+					windspeed = knxcontrol.item['building.weatherforecast'][index].wind_speed;
+				}
+				else{
+					windspeed = knxcontrol.item[this.options.item_windspeed];
+				}
+				if(this.options.item_winddirection == ''){
+					winddirection = language.winddirection(knxcontrol.item['building.weatherforecast'][index].wind_direction)
+				}
+				else{
+					winddirection = language.winddirection(knxcontrol.item[this.options.item_winddirection]);
+				}
+				if(this.options.item_irradiation == ''){
+					irradiation = knxcontrol.item['building.weatherforecast'][index].cloudfactor;
+				}
+				else{
+					irradiation = knxcontrol.item[this.options.item_irradiation];
+				}
+				
+				if(this.options.mini){
+					this.element.find('[data-field="date"]').html(date_string);
+					this.element.find('[data-field="temperature"]').html(Math.round(temperature)/10+'&deg;C');
+					this.element.find('[data-field="wind"]').html(Math.round(windspeed*1)/1+' m/s '+ winddirection);
+					this.element.find('[data-field="irradiation"]').html(Math.round(irradiation*1)/1+' W/m<sup>2</sup>');
+				}
+				else{
+					this.element.find('[data-field="temperature"]').html(language.capitalize(language.temperature)+': '+Math.round(temperature)/10+'&deg;C');
+					this.element.find('[data-field="wind"]').html(language.capitalize(language.wind)+': '+Math.round(windspeed*1)/1+' m/s '+ winddirection);
+					this.element.find('[data-field="irradiation"]').html(language.capitalize(language.irradiation)+': '+Math.round(irradiation*1)/1+' W/m<sup>2</sup>');
+				}
 			}
 			else{
-				temperature = knxcontrol.item[this.options.item_temperature];
-			}
-			if(this.options.item_windspeed == ''){
-				windspeed = knxcontrol.item['building.weatherforecast'][index].wind_speed;
-			}
-			else{
-				windspeed = knxcontrol.item[this.options.item_windspeed];
-			}
-			if(this.options.item_winddirection == ''){
-				winddirection = language.winddirection(knxcontrol.item['building.weatherforecast'][index].wind_direction)
-			}
-			else{
-				winddirection = language.winddirection(knxcontrol.item[this.options.item_winddirection]);
-			}
-			if(this.options.item_irradiation == ''){
-				irradiation = knxcontrol.item['building.weatherforecast'][index].cloudfactor;
-			}
-			else{
-				irradiation = knxcontrol.item[this.options.item_irradiation];
-			}
-			
-			if(this.options.mini){
-				this.element.find('[data-field="date"]').html(date_string);
-				this.element.find('[data-field="temperature"]').html(Math.round(temperature)/10+'&deg;C');
-				this.element.find('[data-field="wind"]').html(Math.round(windspeed*1)/1+' m/s '+ winddirection);
-				this.element.find('[data-field="irradiation"]').html(Math.round(irradiation*1)/1+' W/m<sup>2</sup>');
-			}
-			else{
-				this.element.find('[data-field="temperature"]').html(language.capitalize(language.temperature)+': '+Math.round(temperature)/10+'&deg;C');
-				this.element.find('[data-field="wind"]').html(language.capitalize(language.wind)+': '+Math.round(windspeed*1)/1+' m/s '+ winddirection);
-				this.element.find('[data-field="irradiation"]').html(language.capitalize(language.irradiation)+': '+Math.round(irradiation*1)/1+' W/m<sup>2</sup>');
+				this.element.find('img').attr('src','icons/weather/na.png');
+				
+				this.element.find('[data-field="date"]').html('-');
+				this.element.find('[data-field="temperature"]').html('-');
+				this.element.find('[data-field="wind"]').html('-');
+				this.element.find('[data-field="irradiation"]').html('-');
 			}
 		}
 	},
