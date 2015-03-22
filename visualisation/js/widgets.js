@@ -522,12 +522,12 @@ $.widget("knxcontrol.alarm",{
 					time = $(event.target).val().split(':');
 					hour = time[0];
 					minute = time[1];
-					knxcontrol.alarm.update(alarm_id,'hour',hour);
-					knxcontrol.alarm.update(alarm_id,'minute',minute);
+					knxcontrol.alarm.update(id,'hour',hour);
+					knxcontrol.alarm.update(id,'minute',minute);
 				}
 				else if(field=='action_id'){
 					value = $(event.target).val();
-					knxcontrol.alarm.update(alarm_id,field,value);
+					knxcontrol.alarm.update(id,field,value);
 				}
 				else{
 					if($(event.target).prop('checked')){
