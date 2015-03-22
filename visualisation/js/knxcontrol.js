@@ -144,7 +144,7 @@ var knxcontrol = {
 			});
 		},
 		update: function(id,field,value){
-			// set the alarm in the database
+			// set the user in the database
 			$.post('requests/update_table.php',{table: 'users', column: field.join(';'), value: value.join(';'), where: 'id='+id},function(result){
 				// on success update knxcontrol
 				console.log(result);

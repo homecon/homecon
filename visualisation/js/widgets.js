@@ -605,16 +605,19 @@ $.widget("knxcontrol.alarm",{
 	update_action: function(id){
 		// check if the action belongs in this widget
 		if(knxcontrol.action[id].section_id==0 || knxcontrol.action[id].section_id==this.options.section){
-			// check if the action option exists
-			if($(this.element).find('option[data-id="'+id+'"]').length==0){
-				// add the action to the select list
-				this.element.find('div.alarm_action select').append('<option class="action_select" value="'+id+'" data-id="'+id+'">'+knxcontrol.action[id].name+'</option>').selectmenu('refresh');
-			}
-			// check the selected action
-			var alarm_id = this.element.find('div.alarm').attr('data-id');
-			this.element.find('div.alarm_action select').val( knxcontrol.alarm[alarm_id].action_id );
-			
-			this.element.find('div.alarm_action select').selectmenu('refresh');
+			//loop through all alarms
+			$.each(this.element.find('.alarm'),function(index,alarm){
+				// check if the action option exists
+				if($(alarm).find('option[data-id="'+id+'"]').length==0){
+					// add the action to the select list
+					$(alarm).find('div.alarm_action select').append('<option class="action_select" value="'+id+'" data-id="'+id+'">'+knxcontrol.action[id].name+'</option>').selectmenu('refresh');
+				}
+				// check the selected action
+				var alarm_id = $(alarm).attr('data-id');
+				$(alarm).find('div.alarm_action select').val( knxcontrol.alarm[alarm_id].action_id );
+				
+				$(alarm).find('div.alarm_action select').selectmenu('refresh');
+			});
 		}
 	},
 	padtime: function(num) {
