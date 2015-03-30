@@ -963,12 +963,6 @@ $.widget('knxcontrol.chart',{
 			}
 		});
 		
-		// update the yaxis limits
-		extr = that.chart.yAxis[0].getExtremes();
-		if(extr.dataMin ==0){
-			that.chart.yAxis[0].update({ min: 0 });
-		}
-		
 	},
 	get_data: function(){
 		var that = this;
@@ -1150,11 +1144,11 @@ $.widget("knxcontrol.user_profile",{
 		// check if the user exists in knxcontrol
 		var id = knxcontrol.user[knxcontrol.user_id];
 		if(id){
-			// update measurement to the DOM
+			// update user to the DOM
 			this.element.find('.name').html(knxcontrol.user[id].username).enhanceWithin();
 		}
 		else{
-			// remove the measurement from the DOM
+			// remove the user from the DOM
 			this.element.find('.user[data-id="'+id+'"]').remove();
 		}
 	}
