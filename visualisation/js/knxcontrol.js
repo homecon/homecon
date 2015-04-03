@@ -395,6 +395,80 @@ var knxcontrol = {
 			}
 		}
 	},
+// profile                                                                   //
+	profile: {
+		// 1: {id: 1, name: 'Temperatuur', quantity: 'Temperature', unit: 'degC', description: 'Buiten temeratuur', data: []},
+		get: function(id){
+			var where = 'id>0';
+			if(id){
+				where = 'id='+id;
+			}
+			var that = this;
+			$.post('requests/select_from_table.php',{table: 'profile_legend', column: '*', where: where},function(result){
+				var results = JSON.parse(result);
+				$.each(results,function(index,result){
+					that[result.id] = {
+						id: result.id,
+						name: result.name,
+						quantity: result.quantity,
+						unit: result.unit,
+						description: result.description,
+					};
+					// get values
+					get_data(id);
+				});
+			});
+		},
+		update: function(id,field,value){
+			var that = this;
+			$.post('requests/update_table.php',{table: 'profile_legend', column: field, value: value, where: 'id='+id},function(result){
+				that.get(id);
+			});
+		},
+		add: function(){
+			var that = this;
+			$.post('requests/insert_into_table.php',{table: 'profile_legend', column: ['name','quantity','unit','description'].join(';'), value: ['Name','','',''].join(';')},function(result){
+				id = JSON.parse(result);
+				id = id[0];
+				that.get(id);
+			});
+		},
+		del: function(id){
+			var that = this;
+			$.post('requests/delete_from_table.php',{table: 'profile_legend', where: 'id='+id},function(result){
+				delete that[id];
+				$('[data-role="profile"]').trigger('update',id);
+			});
+		},
+		get_data: function(id){
+			if(this[id]){
+			
+				var that = this[id];
+				$.post('requests/select_from_table.php',{table: 'profile', column: 'time,value', where: 'profile_id='+id, orderby: 'time'},function(result){
+					that.data = []
+					$.each(JSON.parse(result),function(index,value){
+						that.data.push([parseFloat(value.time)*1000,parseFloat(value.value)]);
+					});
+					$('[data-role="profile"]').trigger('update',id);
+				});
+			}
+		},
+		update_data: function(id,field,value){
+			if(this[id]){
+			
+				var that = this[id];
+				$.post('requests/update_table.php',{table: 'profile', column: field, value: value, where: 'id='+id},function(result){
+					that.get_data(id);
+				});
+			}
+		},
+		add_data: function(id,time,value){
+			var that = this;
+			$.post('requests/insert_into_table.php',{table: 'profile', column: ['profile_id','time','value'].join(';'), value: [id,time,value].join(';')},function(result){
+				that.get_data(id);
+			});
+		}
+	},
 	
 // helping functions                                                         //
 	getkeys: function(objectstring){

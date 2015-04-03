@@ -1002,6 +1002,102 @@ $.widget('knxcontrol.chart',{
 });
 
 /*****************************************************************************/
+/*                     profile list                                          */
+/*****************************************************************************/
+$.widget('knxcontrol.profile_list',{
+	options: {
+    },
+	_create: function(){
+		// enhance
+		this.element.html('<div class="profile_list"></div><a href="#" class="add" data-role="button" data-rel="popup">'+language.capitalize(language.add)+'</a>');
+		that = this;
+		$.each(knxcontrol.profile,function(index,profile){
+			if(typeof profile == 'object'){
+				that.update(profile.id);
+			}
+		});
+
+	},
+	update: function(id){
+		// check if the profile exists in knxcontrol
+		if(knxcontrol.profile[id]){
+			
+			// check if the measurement does not already exists in the DOM
+			if(this.element.find('.profile_list').find('.profile[data-id="'+id+'"]').length==0){
+				//add the measurement to the DOM
+				this.element.find('.profile_list').append('<div class="profile" data-id="'+id+'">'+
+														  '</div>');
+			}
+			// update
+			this.element.find('.profile[data-id="'+id+'"]').html('<div class="chart_container"></div>'+
+																 '<div class="data">'+
+																	'<div class="id" data-field="id">'+id+'</div>'+
+																	'<div class="name" data-field="name">'+knxcontrol.profile[id].name+'&nbsp;</div>'+
+																	'<a href="#profile_def_popup" class="edit" data-role="button" data-rel="popup" data-icon="grid">Edit</a>'+
+																 '</div>').enhanceWithin();
+			// update chart
+			var tempdata = knxcontrol.profile[id].data;
+			if(tempdata[0][0] > 0){
+				// add last data point at time 0 to obtain a cyclic signal
+				tempdata.unshift([0,tempdata[tempdata.length-1][1]]);
+			}
+			
+			this.chart_options.series[0].data = tempdata;
+			this.chart_options.yAxis.title({text: knxcontrol.profile[id].unit});
+			$(this.element).children('.profile[data-id="'+id+'"] .chart_container').highcharts(this.chart_options);
+			
+		}
+		else{
+			// remove the measurement from the DOM
+			this.element.find('.profile[data-id="'+id+'"]').remove();
+		}
+	},
+	chart_options: {
+		chart: {
+			type: 'line',
+			margin: [20, 20, 20, 70]
+		},
+		plotOptions: {
+			line: {
+				marker: { 
+					enabled: false
+				}
+			}
+		},
+		legend: {
+			enabled: false
+		},
+		title: {
+			text: ''
+		},
+		xAxis: {
+			type: 'datetime',
+			ordinal: false,
+			dateTimeLabelFormats: {
+				millisecond: '%H:%M:%S.%L',
+				second: '%H:%M:%S',
+				minute: '%H:%M',
+				hour: '%H:%M',
+				day: '%a %H:%M',
+				week: '%a %H:%M'
+			}
+		},
+		tooltip: {
+			xDateFormat: '%a %H:%M',
+			valueDecimals: 1,
+			shared: true
+		},
+		series: [{
+			name: '',
+			step: true,
+			data: []
+		}]
+	}
+});
+
+
+
+/*****************************************************************************/
 /*                     smarthome log                                         */
 /*****************************************************************************/
 $.widget("knxcontrol.smarthome_log",{

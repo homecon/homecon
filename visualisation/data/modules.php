@@ -67,6 +67,10 @@
 					<h1>Export</h1>
 					<div data-role='measurement_export'></div>
 				</section>
+				<section data-role='collapsible' data-theme='a' data-collapsed='false'>
+					<h1>Profiles</h1>
+					<div data-role='profile_list'></div>
+				</section>
 			</div>
 		</div>
 		
@@ -275,6 +279,38 @@
 			<a href="#" data-rel="back" data-role="button" data-theme="b" data-icon="delete" data-iconpos="notext" class="ui-btn-right">Close</a>
 		</div>
 		
-
+		
+		<div id='profile_def_popup' class='ui-content' data-role='popup' data-position-to='window' data-theme='b' data-overlay-theme='b'>
+			<div data-role='fieldcontain'>
+				<label for='action_def_popup_name'>Name:</label>
+				<input type='text' id='action_def_popup_name' data-field='name'>
+			</div>	
+			<div data-role='fieldcontain'>
+				<label for='action_def_popup_section'>Quantity:</label>
+				<input type='text' id='action_def_popup_quantity' data-field='quantity'>
+			</div>
+			<div data-role='fieldcontain'>
+				<label for='action_def_popup_section'>Quantity:</label>
+				<input type='text' id='action_def_popup_unit' data-field='unit'>
+			</div>	
+			<div data-role='fieldcontain'>
+				<label for='action_def_popup_section'>Quantity:</label>
+				<input type='text' id='action_def_popup_description' data-field='description'>
+			</div>	
+			<div class='ui-grid-a profile_def_list'>
+				<div class='ui-block-a'>
+					Time:
+				</div>
+				<div class='ui-block-b'>
+					Value:
+				</div>
+			</div>
+			<a id='user_def_popup_addrow' data-role='button'>Add row</a>
+			<a id='user_def_popup_save' data-role='button' data-id='1'>Save</a>
+			<a id='user_def_popup_delete' data-role='button' data-id='1'>Delete</a>
+			<a href="#" data-rel="back" data-role="button" data-theme="b" data-icon="delete" data-iconpos="notext" class="ui-btn-right">Close</a>
+		</div>
+		
+		
 		<div id='message_popup' class='ui-content' data-role='popup' data-position-to='window' data-theme='b' data-overlay-theme='b'>
 		</div>

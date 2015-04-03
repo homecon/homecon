@@ -491,109 +491,57 @@ div[data-role="smarthome_log"] div.message{
 	padding-left: 10px;
 }
 
-/*----------------------------------------------------------------------------------*/
-/*     setpoint                                                                     */
-/*----------------------------------------------------------------------------------*/
-/*
-div.setpoint p{
+/*****************************************************************************/
+/*                     Profile list                                          */
+/*****************************************************************************/
+div[data-role="profile_list"]{
+	width: 98%;
+	text-align: left;
+}
+div[data-role="profile_list"] div.profile{
+	position: relative;
+	margin: 0;
+	
+	-moz-column-count: 2;
+    -webkit-column-count: 2;
+    column-count: 2;
+	
+    -moz-column-gap: 5px;
+    -webkit-column-gap: 5px;
+    column-gap: 5px;
+}
+div[data-role="profile_list"] div.profile div.chart_container{
 	display: inline-block;
-	font-size: 150%;
-	margin-top: 9px;
-	margin-bottom: 0px;
-	vertical-align: top;
+	width: 400px;
+	height: 50px;
 }
-div.setpoint a.delete img{
-	float: right;
-	margin-top: 10px;
-	height: 30px;
-}
-div.setpoint div.ui-select{
+div[data-role="profile_list"] div.profile div.data{
 	display: inline-block;
-	width: 100px;
-	height: 40px;
+	width: 200px;
 }
-div.setpoint div.ui-select a{
-	margin-top: 0px;
-	margin-bottom: 0px;
-}
-div.setpoint div.ui-input-text{
+div[data-role="profile_list"] div.profile div.id{
 	display: inline-block;
-	height: 40px;
-	margin-top: 0px;
-	margin-bottom: 0px;
-	margin-left: 10px;
-	padding: 0px;
-	vertical-align: top;
-}
-.setpoint input[type="time"]{
-	font-size: 150%;
-	padding-left: 10px !important;
-	padding-top: 2px !important;
-}
-.setpoint input[type="number"]{
-	font-size: 150%;
-	width: 60px;
-	padding-left: 10px !important;
-	padding-top: 4px !important;
-}
-div.setpoint_chart{
+	padding: 6px;
 	width: 100%;
-	height: 150px;
-	margin-bottom: 10px;
 }
-@media all and (max-width: 600px) {
-	.setpoint input[type="time"]{
-		font-size: 100%;
-		padding-top: 8px !important;
-	}
-	.setpoint input[type="number"]{
-		font-size: 100%;
-		padding-top: 8px !important;
-	}
-}
-@media all and (max-width: 400px) {
-	div.setpoint div.ui-input-text{
-		margin-left: 0px;
-	}
-	div.setpoint div.ui-select{
-		width: 80px;
-	}
-}
-
-
-
-
-/*----------------------------------------------------------------------------------*/
-/*     setpoint                                                                     */
-/*----------------------------------------------------------------------------------*/
-/*
-div.measurements_define div.ui-input-text{
+div[data-role="profile_list"] div.measurement div.name{
 	display: inline-block;
-	height: 30px;
-	margin-top: 0px;
-	margin-bottom: 0px;
+	font-weight: 600;
+	padding: 6px;
+	width: 100%;
 }
-div.measurements_define input[data-column="id"]{
-	width: 20px;
-	padding-top: 4px;
+div[data-role="profile_list"] div.profile a.edit{
+	position: absolute; 
+	top: 0;
+	right: 50px;
+	margin: 1px;
 }
-div.measurements_define input[data-column="item"]{
-	width: 220px;
-	padding-top: 4px;
+
+/* profile definition popup */
+#profile_def_popup-popup{
+	width: 90%;
 }
-div.measurements_define input[data-column="name"]{
-	width: 80px;
-	padding-top: 4px;
+#profile_def_popup .ui-field-contain{
+	border: 0;
 }
-div.measurements_define input[data-column="quantity"]{
-	width: 60px;
-	padding-top: 4px;
-}
-div.measurements_define input[data-column="unit"]{
-	width: 30px;
-	padding-top: 4px;
-}
-div.measurements_define input[data-column="description"]{
-	width: 140px;
-	padding-top: 4px;
-}
+
