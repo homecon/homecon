@@ -33,6 +33,9 @@ a.edit_page{
 	position: absolute;
 	margin: 0;
 }
+div[data-role="fieldcontain"]{
+	padding: .1em 0;
+}
 
 /*****************************************************************************/
 /*                     Separator line                                        */
@@ -501,23 +504,18 @@ div[data-role="profile_list"]{
 div[data-role="profile_list"] div.profile{
 	position: relative;
 	margin: 0;
-	
-	-moz-column-count: 2;
-    -webkit-column-count: 2;
-    column-count: 2;
-	
-    -moz-column-gap: 5px;
-    -webkit-column-gap: 5px;
-    column-gap: 5px;
 }
 div[data-role="profile_list"] div.profile div.chart_container{
 	display: inline-block;
-	width: 400px;
-	height: 50px;
+	width: 100%;
+	max-width: 300px;
+	height: 100px;
+	margin-right: 10px;
 }
 div[data-role="profile_list"] div.profile div.data{
 	display: inline-block;
 	width: 200px;
+	height: 100px;
 }
 div[data-role="profile_list"] div.profile div.id{
 	display: inline-block;
@@ -531,10 +529,12 @@ div[data-role="profile_list"] div.measurement div.name{
 	width: 100%;
 }
 div[data-role="profile_list"] div.profile a.edit{
+	display: inline-block;
+/*
 	position: absolute; 
 	top: 0;
 	right: 50px;
-	margin: 1px;
+	margin: 1px;*/
 }
 
 /* profile definition popup */

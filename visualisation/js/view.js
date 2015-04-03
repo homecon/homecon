@@ -94,6 +94,7 @@ $(document).on('ready',function(){
 	$("#measurement_def_popup").enhanceWithin().popup();
 	$("#user_def_popup").enhanceWithin().popup();
 	$("#password_def_popup").enhanceWithin().popup();
+	$("#profile_def_popup").enhanceWithin().popup();
 });
 
 

@@ -275,7 +275,7 @@
 				<label for='password_def_popup_pass2'>Repeat password:</label>
 				<input type='password' id='measurement_def_popup_pass2' data-field='pass2'/>
 			</div>
-			<a id='user_def_popup_save' data-role='button' data-id='1'>Save</a>
+			<a id='password_def_popup_save' data-role='button' data-id='1'>Save</a>
 			<a href="#" data-rel="back" data-role="button" data-theme="b" data-icon="delete" data-iconpos="notext" class="ui-btn-right">Close</a>
 		</div>
 		
@@ -290,11 +290,11 @@
 				<input type='text' id='action_def_popup_quantity' data-field='quantity'>
 			</div>
 			<div data-role='fieldcontain'>
-				<label for='action_def_popup_section'>Quantity:</label>
+				<label for='action_def_popup_section'>Unit:</label>
 				<input type='text' id='action_def_popup_unit' data-field='unit'>
 			</div>	
 			<div data-role='fieldcontain'>
-				<label for='action_def_popup_section'>Quantity:</label>
+				<label for='action_def_popup_section'>Description:</label>
 				<input type='text' id='action_def_popup_description' data-field='description'>
 			</div>	
 			<div class='ui-grid-a profile_def_list'>
@@ -305,9 +305,9 @@
 					Value:
 				</div>
 			</div>
-			<a id='user_def_popup_addrow' data-role='button'>Add row</a>
-			<a id='user_def_popup_save' data-role='button' data-id='1'>Save</a>
-			<a id='user_def_popup_delete' data-role='button' data-id='1'>Delete</a>
+			<a id='profile_def_popup_addrow' data-role='button'>Add row</a>
+			<a id='profile_def_popup_save' data-role='button' data-id='1'>Save</a>
+			<a id='profile_def_popup_delete' data-role='button' data-id='1'>Delete</a>
 			<a href="#" data-rel="back" data-role="button" data-theme="b" data-icon="delete" data-iconpos="notext" class="ui-btn-right">Close</a>
 		</div>
 		

@@ -30,6 +30,7 @@ $(document).on('authenticated',function(event,user_id){
 	knxcontrol.alarm.get();
 	knxcontrol.measurement.get();
 	knxcontrol.user.get();
+	knxcontrol.profile.get();
 });
 $(document).on('connect',function(event){
 	// initialize connection to smarthome.py
@@ -415,7 +416,7 @@ var knxcontrol = {
 						description: result.description,
 					};
 					// get values
-					get_data(id);
+					that.get_data(result.id);
 				});
 			});
 		},
@@ -427,17 +428,22 @@ var knxcontrol = {
 		},
 		add: function(){
 			var that = this;
-			$.post('requests/insert_into_table.php',{table: 'profile_legend', column: ['name','quantity','unit','description'].join(';'), value: ['Name','','',''].join(';')},function(result){
-				id = JSON.parse(result);
+			$.post('requests/insert_into_table.php',{table: 'profile_legend', column: ['name','quantity','unit','description'].join(';'), value: ["'Name'","''","''","''"].join(';')},function(result){
+				var id = JSON.parse(result);
 				id = id[0];
-				that.get(id);
+				//add blank data
+				$.post('requests/insert_into_table.php',{table: 'profile', column: ['profile_id','time','value'].join(';'), value: [id,0,0].join(';')},function(result){
+					that.get(id);
+				});
 			});
 		},
 		del: function(id){
 			var that = this;
 			$.post('requests/delete_from_table.php',{table: 'profile_legend', where: 'id='+id},function(result){
-				delete that[id];
-				$('[data-role="profile"]').trigger('update',id);
+				$.post('requests/delete_from_table.php',{table: 'profile', where: 'profile_id='+id},function(result){
+					delete that[id];
+					$('[data-role="profile_list"]').trigger('update',id);
+				});
 			});
 		},
 		get_data: function(id){
@@ -449,7 +455,7 @@ var knxcontrol = {
 					$.each(JSON.parse(result),function(index,value){
 						that.data.push([parseFloat(value.time)*1000,parseFloat(value.value)]);
 					});
-					$('[data-role="profile"]').trigger('update',id);
+					$('[data-role="profile_list"]').trigger('update',id);
 				});
 			}
 		},

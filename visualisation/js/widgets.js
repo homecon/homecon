@@ -628,189 +628,6 @@ $.widget("knxcontrol.alarm",{
 });
 
 /*****************************************************************************/
-/*                     action list                                           */
-/*****************************************************************************/
-$.widget("knxcontrol.action_list",{
-	options: {
-		section: 1
-    },
-	_create: function(){
-		// enhance
-		this.element.html('<div class="action_list"></div>'+
-		                  '<a href="#" class="add" data-role="button" data-rel="popup">'+language.capitalize(language.add_action)+'</a>');
-		that = this;
-		$.each(knxcontrol.action,function(index,action){
-			if(typeof action == 'object'){
-				that.update(action.id);
-			}
-		});
-		this.element.enhanceWithin();	
-
-		// bind events
-		this._on(this.element, {
-			'update': function(event,id){
-				this.update(id);
-			},
-			'click a.edit': function(event){
-				// populate the popup
-				id = $(event.target).parents('.action').attr('data-id');
-				$('#action_def_popup').find('input[data-field="name"]').val(knxcontrol.action[id].name);
-				$('#action_def_popup').find('input[data-field="section_id"]').val(knxcontrol.action[id].section_id);
-				
-				$('#action_def_popup').find('input[data-field="delay1"]').val(knxcontrol.action[id].actions[0].delay);
-				$('#action_def_popup').find('input[data-field="item1"]').val(knxcontrol.action[id].actions[0].item);
-				$('#action_def_popup').find('input[data-field="value1"]').val(knxcontrol.action[id].actions[0].value);
-				
-				$('#action_def_popup').find('input[data-field="delay2"]').val(knxcontrol.action[id].actions[1].delay);
-				$('#action_def_popup').find('input[data-field="item2"]').val(knxcontrol.action[id].actions[1].item);
-				$('#action_def_popup').find('input[data-field="value2"]').val(knxcontrol.action[id].actions[1].value);
-				
-				$('#action_def_popup').find('input[data-field="delay3"]').val(knxcontrol.action[id].actions[2].delay);
-				$('#action_def_popup').find('input[data-field="item3"]').val(knxcontrol.action[id].actions[2].item);
-				$('#action_def_popup').find('input[data-field="value3"]').val(knxcontrol.action[id].actions[2].value);
-				
-				$('#action_def_popup').find('input[data-field="delay4"]').val(knxcontrol.action[id].actions[3].delay);
-				$('#action_def_popup').find('input[data-field="item4"]').val(knxcontrol.action[id].actions[3].item);
-				$('#action_def_popup').find('input[data-field="value4"]').val(knxcontrol.action[id].actions[3].value);
-				
-				$('#action_def_popup').find('input[data-field="delay5"]').val(knxcontrol.action[id].actions[4].delay);
-				$('#action_def_popup').find('input[data-field="item5"]').val(knxcontrol.action[id].actions[4].item);
-				$('#action_def_popup').find('input[data-field="value5"]').val(knxcontrol.action[id].actions[4].value);
-				
-				$('#action_def_popup').find('#action_def_popup_save').attr('data-id',id);
-				$('#action_def_popup').find('#action_def_popup_delete').attr('data-id',id);
-			},
-			'click a.add': function(event){
-				knxcontrol.action.add();
-			}
-		});		
-	},
-	update: function(id){
-		// check if the action exists in knxcontrol
-		if(knxcontrol.action[id]){
-			
-			// check if the action does not already exists in the DOM
-			if(this.element.find('.action_list').find('.action[data-id="'+id+'"]').length==0){
-
-				//add the action to the DOM
-				this.element.find('.action_list').append('<div class="action" data-id="'+id+'">'+
-															'<div data-field="name"></div>'+
-															'<a href="#action_def_popup" class="edit" data-role="button" data-rel="popup" data-icon="grid" data-mini="true" data-iconpos="notext">Edit</a>'+
-														 '</div>').enhanceWithin();
-			}
-			// update the action
-			this.element.find('.action[data-id="'+id+'"]').find('[data-field="name"]').html(knxcontrol.action[id].name);
-		}
-		else{
-			// remove the alarm from the DOM
-			this.element.find('.action[data-id="'+id+'"]').remove();
-		}
-	}
-});
-$(document).on('click','#action_def_popup_save',function(event){
-	id = $(this).attr('data-id');
-	$('#action_def_popup').popup('close');
-	data_field = ['name','sectionid',
-				  'delay1','item1','value1',
-				  'delay2','item2','value2',
-				  'delay3','item3','value3',
-				  'delay4','item4','value4',
-				  'delay5','item5','value5'];
-	value = [$('#action_def_popup').find('input[data-field="name"]').val(),
-			 $('#action_def_popup').find('input[data-field="section_id"]').val(),
-			 $('#action_def_popup').find('input[data-field="delay1"]').val(),
-			 $('#action_def_popup').find('input[data-field="item1"]').val(),
-			 $('#action_def_popup').find('input[data-field="value1"]').val(),
-			 $('#action_def_popup').find('input[data-field="delay2"]').val(),
-			 $('#action_def_popup').find('input[data-field="item2"]').val(),
-			 $('#action_def_popup').find('input[data-field="value2"]').val(),
-			 $('#action_def_popup').find('input[data-field="delay3"]').val(),
-			 $('#action_def_popup').find('input[data-field="item3"]').val(),
-			 $('#action_def_popup').find('input[data-field="value3"]').val(),
-			 $('#action_def_popup').find('input[data-field="delay4"]').val(),
-			 $('#action_def_popup').find('input[data-field="item4"]').val(),
-			 $('#action_def_popup').find('input[data-field="value4"]').val(),
-			 $('#action_def_popup').find('input[data-field="delay5"]').val(),
-			 $('#action_def_popup').find('input[data-field="item5"]').val(),
-			 $('#action_def_popup').find('input[data-field="value5"]').val()];
-			 
-	knxcontrol.action.update(id,data_field,value);
-});
-$(document).on('click','#action_def_popup_delete',function(event){
-	id = $(this).attr('data-id');
-	$('#action_def_popup').popup('close');
-	
-	knxcontrol.action.del(id);
-});
-/*****************************************************************************/
-/*                     measurement list                                      */
-/*****************************************************************************/
-$.widget("knxcontrol.measurement_list",{
-	options: {
-	},
-	_create: function(){
-		// enhance
-		this.element.html('<div class="measurement_list"></div><a href="#" class="add" data-role="button" data-rel="popup">'+language.capitalize(language.add_measurement)+'</a>');
-		that = this;
-		$.each(knxcontrol.measurement,function(index,measurement){
-			if(typeof measurement == 'object'){
-				that.update(measurement.id);
-			}
-		});
-		this.element.enhanceWithin();	
-
-		// bind events
-		this._on(this.element, {
-			'update': function(event,id){
-				this.update(id);
-			},
-			'click a.edit': function(event){
-				// populate the popup
-				id = $(event.target).parents('.measurement').attr('data-id');
-				$('#measurement_def_popup').find('input[data-field="name"]').val(knxcontrol.measurement[id].name);
-				$('#measurement_def_popup').find('input[data-field="item"]').val(knxcontrol.measurement[id].item);
-				$('#measurement_def_popup').find('input[data-field="quantity"]').val(knxcontrol.measurement[id].quantity);
-				$('#measurement_def_popup').find('input[data-field="unit"]').val(knxcontrol.measurement[id].unit);
-				$('#measurement_def_popup').find('input[data-field="description"]').val(knxcontrol.measurement[id].description);
-				
-				$('#measurement_def_popup').find('#measurement_def_popup_save').attr('data-id',id);
-			}
-		});
-	},
-	update: function(id){
-		// check if the measurement exists in knxcontrol
-		if(knxcontrol.measurement[id]){
-			
-			// check if the measurement does not already exists in the DOM
-			if(this.element.find('.measurement_list').find('.measurement[data-id="'+id+'"]').length==0){
-				//add the measurement to the DOM
-				this.element.find('.measurement_list').append('<div class="measurement" data-id="'+id+'">'+
-																'<div class="id" data-field="id">'+id+'</div>'+
-																'<div class="name" data-field="name">'+knxcontrol.measurement[id].name+'&nbsp;</div>'+
-																'<a href="#measurement_def_popup" class="edit" data-role="button" data-rel="popup" data-icon="grid" data-mini="true" data-iconpos="notext">Edit</a>'+
-															  '</div>').enhanceWithin();
-			}
-		}
-		else{
-			// remove the measurement from the DOM
-			this.element.find('.measurement[data-id="'+id+'"]').remove();
-		}
-	}
-});
-$(document).on('click','#measurement_def_popup_save',function(event){
-	id = $(this).attr('data-id');
-	$('#measurement_def_popup').popup('close');
-	data_field = ['name','item','quantity','unit','description'].join();
-	value = [$('#measurement_def_popup').find('input[data-field="name"]').val(),
-			 $('#measurement_def_popup').find('input[data-field="item"]').val(),
-			 $('#measurement_def_popup').find('input[data-field="quantity"]').val(),
-			 $('#measurement_def_popup').find('input[data-field="unit"]').val(),
-			 $('#measurement_def_popup').find('input[data-field="description"]').val()].join();
-	console.log(id);
-	knxcontrol.measurement.update(id,data_field,value);
-});
-
-/*****************************************************************************/
 /*                     measurement export                                    */
 /*****************************************************************************/
 $.widget("knxcontrol.measurement_export",{
@@ -1002,6 +819,190 @@ $.widget('knxcontrol.chart',{
 });
 
 /*****************************************************************************/
+/*                     action list                                           */
+/*****************************************************************************/
+$.widget("knxcontrol.action_list",{
+	options: {
+		section: 1
+    },
+	_create: function(){
+		// enhance
+		this.element.html('<div class="action_list"></div>'+
+		                  '<a href="#" class="add" data-role="button" data-rel="popup">'+language.capitalize(language.add_action)+'</a>');
+		that = this;
+		$.each(knxcontrol.action,function(index,action){
+			if(typeof action == 'object'){
+				that.update(action.id);
+			}
+		});
+		this.element.enhanceWithin();	
+
+		// bind events
+		this._on(this.element, {
+			'update': function(event,id){
+				this.update(id);
+			},
+			'click a.edit': function(event){
+				// populate the popup
+				id = $(event.target).parents('.action').attr('data-id');
+				$('#action_def_popup').find('input[data-field="name"]').val(knxcontrol.action[id].name);
+				$('#action_def_popup').find('input[data-field="section_id"]').val(knxcontrol.action[id].section_id);
+				
+				$('#action_def_popup').find('input[data-field="delay1"]').val(knxcontrol.action[id].actions[0].delay);
+				$('#action_def_popup').find('input[data-field="item1"]').val(knxcontrol.action[id].actions[0].item);
+				$('#action_def_popup').find('input[data-field="value1"]').val(knxcontrol.action[id].actions[0].value);
+				
+				$('#action_def_popup').find('input[data-field="delay2"]').val(knxcontrol.action[id].actions[1].delay);
+				$('#action_def_popup').find('input[data-field="item2"]').val(knxcontrol.action[id].actions[1].item);
+				$('#action_def_popup').find('input[data-field="value2"]').val(knxcontrol.action[id].actions[1].value);
+				
+				$('#action_def_popup').find('input[data-field="delay3"]').val(knxcontrol.action[id].actions[2].delay);
+				$('#action_def_popup').find('input[data-field="item3"]').val(knxcontrol.action[id].actions[2].item);
+				$('#action_def_popup').find('input[data-field="value3"]').val(knxcontrol.action[id].actions[2].value);
+				
+				$('#action_def_popup').find('input[data-field="delay4"]').val(knxcontrol.action[id].actions[3].delay);
+				$('#action_def_popup').find('input[data-field="item4"]').val(knxcontrol.action[id].actions[3].item);
+				$('#action_def_popup').find('input[data-field="value4"]').val(knxcontrol.action[id].actions[3].value);
+				
+				$('#action_def_popup').find('input[data-field="delay5"]').val(knxcontrol.action[id].actions[4].delay);
+				$('#action_def_popup').find('input[data-field="item5"]').val(knxcontrol.action[id].actions[4].item);
+				$('#action_def_popup').find('input[data-field="value5"]').val(knxcontrol.action[id].actions[4].value);
+				
+				$('#action_def_popup').find('#action_def_popup_save').attr('data-id',id);
+				$('#action_def_popup').find('#action_def_popup_delete').attr('data-id',id);
+			},
+			'click a.add': function(event){
+				knxcontrol.action.add();
+			}
+		});		
+	},
+	update: function(id){
+		// check if the action exists in knxcontrol
+		if(knxcontrol.action[id]){
+			
+			// check if the action does not already exists in the DOM
+			if(this.element.find('.action_list').find('.action[data-id="'+id+'"]').length==0){
+
+				//add the action to the DOM
+				this.element.find('.action_list').append('<div class="action" data-id="'+id+'">'+
+															'<div data-field="name"></div>'+
+															'<a href="#action_def_popup" class="edit" data-role="button" data-rel="popup" data-icon="grid" data-mini="true" data-iconpos="notext">Edit</a>'+
+														 '</div>').enhanceWithin();
+			}
+			// update the action
+			this.element.find('.action[data-id="'+id+'"]').find('[data-field="name"]').html(knxcontrol.action[id].name);
+		}
+		else{
+			// remove the alarm from the DOM
+			this.element.find('.action[data-id="'+id+'"]').remove();
+		}
+	}
+});
+$(document).on('click','#action_def_popup_save',function(event){
+	id = $(this).attr('data-id');
+	$('#action_def_popup').popup('close');
+	data_field = ['name','sectionid',
+				  'delay1','item1','value1',
+				  'delay2','item2','value2',
+				  'delay3','item3','value3',
+				  'delay4','item4','value4',
+				  'delay5','item5','value5'];
+	value = [$('#action_def_popup').find('input[data-field="name"]').val(),
+			 $('#action_def_popup').find('input[data-field="section_id"]').val(),
+			 $('#action_def_popup').find('input[data-field="delay1"]').val(),
+			 $('#action_def_popup').find('input[data-field="item1"]').val(),
+			 $('#action_def_popup').find('input[data-field="value1"]').val(),
+			 $('#action_def_popup').find('input[data-field="delay2"]').val(),
+			 $('#action_def_popup').find('input[data-field="item2"]').val(),
+			 $('#action_def_popup').find('input[data-field="value2"]').val(),
+			 $('#action_def_popup').find('input[data-field="delay3"]').val(),
+			 $('#action_def_popup').find('input[data-field="item3"]').val(),
+			 $('#action_def_popup').find('input[data-field="value3"]').val(),
+			 $('#action_def_popup').find('input[data-field="delay4"]').val(),
+			 $('#action_def_popup').find('input[data-field="item4"]').val(),
+			 $('#action_def_popup').find('input[data-field="value4"]').val(),
+			 $('#action_def_popup').find('input[data-field="delay5"]').val(),
+			 $('#action_def_popup').find('input[data-field="item5"]').val(),
+			 $('#action_def_popup').find('input[data-field="value5"]').val()];
+			 
+	knxcontrol.action.update(id,data_field,value);
+});
+$(document).on('click','#action_def_popup_delete',function(event){
+	id = $(this).attr('data-id');
+	$('#action_def_popup').popup('close');
+	
+	knxcontrol.action.del(id);
+});
+
+/*****************************************************************************/
+/*                     measurement list                                      */
+/*****************************************************************************/
+$.widget("knxcontrol.measurement_list",{
+	options: {
+	},
+	_create: function(){
+		// enhance
+		this.element.html('<div class="measurement_list"></div><a href="#" class="add" data-role="button" data-rel="popup">'+language.capitalize(language.add_measurement)+'</a>');
+		that = this;
+		$.each(knxcontrol.measurement,function(index,measurement){
+			if(typeof measurement == 'object'){
+				that.update(measurement.id);
+			}
+		});
+		this.element.enhanceWithin();	
+
+		// bind events
+		this._on(this.element, {
+			'update': function(event,id){
+				this.update(id);
+			},
+			'click a.edit': function(event){
+				// populate the popup
+				id = $(event.target).parents('.measurement').attr('data-id');
+				$('#measurement_def_popup').find('input[data-field="name"]').val(knxcontrol.measurement[id].name);
+				$('#measurement_def_popup').find('input[data-field="item"]').val(knxcontrol.measurement[id].item);
+				$('#measurement_def_popup').find('input[data-field="quantity"]').val(knxcontrol.measurement[id].quantity);
+				$('#measurement_def_popup').find('input[data-field="unit"]').val(knxcontrol.measurement[id].unit);
+				$('#measurement_def_popup').find('input[data-field="description"]').val(knxcontrol.measurement[id].description);
+				
+				$('#measurement_def_popup').find('#measurement_def_popup_save').attr('data-id',id);
+			}
+		});
+	},
+	update: function(id){
+		// check if the measurement exists in knxcontrol
+		if(knxcontrol.measurement[id]){
+			
+			// check if the measurement does not already exists in the DOM
+			if(this.element.find('.measurement_list').find('.measurement[data-id="'+id+'"]').length==0){
+				//add the measurement to the DOM
+				this.element.find('.measurement_list').append('<div class="measurement" data-id="'+id+'">'+
+																'<div class="id" data-field="id">'+id+'</div>'+
+																'<div class="name" data-field="name">'+knxcontrol.measurement[id].name+'&nbsp;</div>'+
+																'<a href="#measurement_def_popup" class="edit" data-role="button" data-rel="popup" data-icon="grid" data-mini="true" data-iconpos="notext">Edit</a>'+
+															  '</div>').enhanceWithin();
+			}
+		}
+		else{
+			// remove the measurement from the DOM
+			this.element.find('.measurement[data-id="'+id+'"]').remove();
+		}
+	}
+});
+$(document).on('click','#measurement_def_popup_save',function(event){
+	id = $(this).attr('data-id');
+	$('#measurement_def_popup').popup('close');
+	data_field = ['name','item','quantity','unit','description'].join();
+	value = [$('#measurement_def_popup').find('input[data-field="name"]').val(),
+			 $('#measurement_def_popup').find('input[data-field="item"]').val(),
+			 $('#measurement_def_popup').find('input[data-field="quantity"]').val(),
+			 $('#measurement_def_popup').find('input[data-field="unit"]').val(),
+			 $('#measurement_def_popup').find('input[data-field="description"]').val()].join();
+	console.log(id);
+	knxcontrol.measurement.update(id,data_field,value);
+});
+
+/*****************************************************************************/
 /*                     profile list                                          */
 /*****************************************************************************/
 $.widget('knxcontrol.profile_list',{
@@ -1016,12 +1017,33 @@ $.widget('knxcontrol.profile_list',{
 				that.update(profile.id);
 			}
 		});
+		this.element.enhanceWithin();	
 
+		// bind events
+		this._on(this.element, {
+			'update': function(event,id){
+				this.update(id);
+			},
+			'click a.add': function(event){
+				knxcontrol.profile.add();
+				
+			},
+			'click a.edit': function(event){
+				// populate the popup
+				id = $(event.target).parents('.profile').attr('data-id');
+				$('#profile_def_popup').find('input[data-field="name"]').val(knxcontrol.profile[id].name);
+				$('#profile_def_popup').find('input[data-field="quantity"]').val(knxcontrol.profile[id].quantity);
+				$('#profile_def_popup').find('input[data-field="unit"]').val(knxcontrol.profile[id].unit);
+				$('#profile_def_popup').find('input[data-field="description"]').val(knxcontrol.profile[id].description);
+				
+				$('#profile_def_popup').find('#profile_def_popup_save').attr('data-id',id);
+				$('#profile_def_popup').find('#profile_def_popup_delete').attr('data-id',id);
+			}
+		});
 	},
 	update: function(id){
 		// check if the profile exists in knxcontrol
 		if(knxcontrol.profile[id]){
-			
 			// check if the measurement does not already exists in the DOM
 			if(this.element.find('.profile_list').find('.profile[data-id="'+id+'"]').length==0){
 				//add the measurement to the DOM
@@ -1043,8 +1065,8 @@ $.widget('knxcontrol.profile_list',{
 			}
 			
 			this.chart_options.series[0].data = tempdata;
-			this.chart_options.yAxis.title({text: knxcontrol.profile[id].unit});
-			$(this.element).children('.profile[data-id="'+id+'"] .chart_container').highcharts(this.chart_options);
+			this.chart_options.yAxis.title = {text: knxcontrol.profile[id].unit};
+			$(this.element).find('.profile[data-id="'+id+'"] div.chart_container').highcharts(this.chart_options);
 			
 		}
 		else{
@@ -1055,7 +1077,7 @@ $.widget('knxcontrol.profile_list',{
 	chart_options: {
 		chart: {
 			type: 'line',
-			margin: [20, 20, 20, 70]
+			margin: [20, 20, 20, 40]
 		},
 		plotOptions: {
 			line: {
@@ -1082,6 +1104,9 @@ $.widget('knxcontrol.profile_list',{
 				week: '%a %H:%M'
 			}
 		},
+		yAxis:{
+			title: {}
+		},
 		tooltip: {
 			xDateFormat: '%a %H:%M',
 			valueDecimals: 1,
@@ -1094,8 +1119,22 @@ $.widget('knxcontrol.profile_list',{
 		}]
 	}
 });
-
-
+$(document).on('click','#profile_def_popup_save',function(event){
+	id = $(this).attr('data-id');
+	$('#profile_def_popup').popup('close');
+	field = ['name','quantity','unit','description'].join(';');
+	value = [$('#profile_def_popup').find('input[data-field="name"]').val(),
+			 $('#profile_def_popup').find('input[data-field="quantity"]').val(),
+			 $('#profile_def_popup').find('input[data-field="unit"]').val(),
+			 $('#profile_def_popup').find('input[data-field="description"]').val()].join(';');
+		console.log(id);
+	knxcontrol.profile.update(id,field,value);
+});
+$(document).on('click','#profile_def_popup_delete',function(event){
+	id = $(this).attr('data-id');
+	$('#profile_def_popup').popup('close');
+	knxcontrol.profile.del(id);
+});
 
 /*****************************************************************************/
 /*                     smarthome log                                         */
