@@ -314,7 +314,7 @@ var knxcontrol = {
 				
 				var that = this[id];
 				// a loading variable as the load time is significant to not load double
-				if(~that.loading_quarterhourdata){
+				if(that.loading_quarterhourdata==false){
 					that.loading_quarterhourdata = true;
 					$.post('requests/select_from_table.php',{table: 'measurements_quarterhouraverage', column: 'time,value', where: 'signal_id='+id+' AND time > '+((new Date()).getTime()/1000-7*24*3600), orderby: 'time'},function(result){
 						that.quarterhourdata = []
@@ -360,7 +360,7 @@ var knxcontrol = {
 			if(this[id]){
 			
 				var that = this[id];
-				if(~that.loading_weekdata){
+				if(that.loading_weekdata==false){
 					that.loading_weekdata = true;
 					$.post('requests/select_from_table.php',{table: 'measurements_weekaverage', column: 'time,value', where: 'signal_id='+id+' AND time > '+((new Date()).getTime()/1000-52*7*24*3600), orderby: 'time'},function(result){
 						that.weekdata = []
@@ -379,7 +379,7 @@ var knxcontrol = {
 			if(this[id]){
 			
 				that = this[id];
-				if(~that.loading_monthdata){
+				if(that.loading_monthdata==false){
 					that.loading_monthdata = true;
 					$.post('requests/select_from_table.php',{table: 'measurements_monthaverage', column: 'time,value', where: 'signal_id='+id+' AND time > '+((new Date()).getTime()/1000-365*24*3600), orderby: 'time'},function(result){
 						that.monthdata = []
