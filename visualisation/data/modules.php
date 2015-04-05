@@ -152,13 +152,13 @@
 		
 		
 		<div id='action_def_popup' class='ui-content' data-role='popup' data-position-to='window' data-theme='b' data-overlay-theme='b'>
-			<div data-role='fieldcontain'>
-				<label for='action_def_popup_name'>Name:</label>
-				<input type='text' id='action_def_popup_name' data-field='name'>
+			<div class='labeledfield'>
+				<div class='label'>Name:</div>
+				<input type='text' data-field='name'>
 			</div>	
-			<div data-role='fieldcontain'>
-				<label for='action_def_popup_section'>Section filter:</label>
-				<input type='text' id='action_def_popup_section' data-field='section_id'>
+			<div class='labeledfield'>
+				<div class='label'>Section filter:</div>
+				<input type='text' data-field='section_id'>
 			</div>	
 			
 			<div class='ui-grid-b action_def_list'>
@@ -224,25 +224,25 @@
 		
 		
 		<div id='measurement_def_popup' class='ui-content' data-role='popup' data-position-to='window' data-theme='b' data-overlay-theme='b'>
-			<div data-role='fieldcontain'>
-				<label for='measurement_def_popup_name'>Name:</label>
-				<input type='text' id='measurement_def_popup_name' data-field='name'/>
+			<div class='labeledfield'>
+				<div class='label'>Name:</div>
+				<input type='text' data-field='name'/>
 			</div>	
-			<div data-role='fieldcontain'>
-				<label for='measurement_def_popup_item'>Item:</label>
-				<input type='text' id='measurement_def_popup_item' data-field='item'/>
+			<div class='labeledfield'>
+				<div class='label'>Item:</div>
+				<input type='text' data-field='item'/>
 			</div>
-			<div data-role='fieldcontain'>
-				<label for='measurement_def_popup_quantity'>Quantity:</label>
-				<input type='text' id='measurement_def_popup_quantity' data-field='quantity'/>
+			<div class='labeledfield'>
+				<div class='label'>Quantity:</div>
+				<input type='text' data-field='quantity'/>
 			</div>	
-			<div data-role='fieldcontain'>
-				<label for='measurement_def_popup_unit'>Unit:</label>
-				<input type='text' id='measurement_def_popup_unit' data-field='unit'/>
+			<div class='labeledfield'>
+				<div class='label'>Unit:</div>
+				<input type='text' data-field='unit'/>
 			</div>
-			<div data-role='fieldcontain'>
-				<label for='measurement_def_popup_description'>Description:</label>
-				<input type='text' id='measurement_def_popup_description' data-field='description'/>
+			<div class='labeledfield'>
+				<div class='label'>Description:</div>
+				<input type='text' data-field='description'/>
 			</div>
 			<a id='measurement_def_popup_save' data-role='button' data-id='1'>Save</a>
 			<a id='measurement_def_popup_delete' data-role='button' data-id='1'>Delete</a>
@@ -251,9 +251,9 @@
 		
 		
 		<div id='user_def_popup' class='ui-content' data-role='popup' data-position-to='window' data-theme='b' data-overlay-theme='b'>
-			<div data-role='fieldcontain'>
-				<label for='user_def_popup_name'>Name:</label>
-				<input type='text' id='measurement_def_popup_name' data-field='name'/>
+			<div class='labeledfield'>
+				<div class='label'>Name:</div>
+				<input type='text' data-field='name'/>
 			</div>
 			<a id='user_def_popup_save' data-role='button' data-id='1'>Save</a>
 			<a id='user_def_popup_reset' data-role='button' data-id='1'>Reset password</a>
@@ -263,16 +263,16 @@
 		
 		
 		<div id='password_def_popup' class='ui-content' data-role='popup' data-position-to='window' data-theme='b' data-overlay-theme='b'>
-			<div data-role='fieldcontain'>
-				<label for='password_def_popup_name'>Name:</label>
-				<input type='text' id='measurement_def_popup_name' data-field='name'/>
+			<div class='labeledfield'>
+				<div class='label'>Name:</div>
+				<input type='text' data-field='name'/>
 			</div>
-			<div data-role='fieldcontain'>
-				<label for='password_def_popup_pass'>Password:</label>
-				<input type='password' id='measurement_def_popup_pass' data-field='pass'/>
+			<div class='labeledfield'>
+				<div class='label'>Password:</div>
+				<input type='password' data-field='pass'/>
 			</div>
-			<div data-role='fieldcontain'>
-				<label for='password_def_popup_pass2'>Repeat password:</label>
+			<div class='labeledfield'>
+				<div class='label'>Repeat password:</div>
 				<input type='password' id='measurement_def_popup_pass2' data-field='pass2'/>
 			</div>
 			<a id='password_def_popup_save' data-role='button' data-id='1'>Save</a>
@@ -281,20 +281,20 @@
 		
 		
 		<div id='profile_def_popup' class='ui-content' data-role='popup' data-position-to='window' data-theme='b' data-overlay-theme='b'>
-			<div data-role='fieldcontain'>
-				<label for='action_def_popup_name'>Name:</label>
+			<div class='labeledfield'>
+				<div class='label'>Name:</div>
 				<input type='text' id='action_def_popup_name' data-field='name'>
 			</div>	
-			<div data-role='fieldcontain'>
-				<label for='action_def_popup_section'>Quantity:</label>
+			<div class='labeledfield'>
+				<div class='label'>Quantity:</div>
 				<input type='text' id='action_def_popup_quantity' data-field='quantity'>
 			</div>
-			<div data-role='fieldcontain'>
-				<label for='action_def_popup_section'>Unit:</label>
+			<div class='labeledfield'>
+				<div class='label'>Unit:</div>
 				<input type='text' id='action_def_popup_unit' data-field='unit'>
 			</div>	
-			<div data-role='fieldcontain'>
-				<label for='action_def_popup_section'>Description:</label>
+			<div class='labeledfield'>
+				<div class='label'>Description:</div>
 				<input type='text' id='action_def_popup_description' data-field='description'>
 			</div>	
 			<div class='ui-grid-a profile_def_list'>

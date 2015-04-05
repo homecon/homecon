@@ -188,3 +188,27 @@ section div.endofsection{
 	left: -10px;
 }
 
+.ui-block-a div.ui-input-text,.ui-block-b div.ui-input-text,.ui-block-c div.ui-input-text,.ui-block-d div.ui-input-text,.ui-block-e div.ui-input-text{
+	margin: 0;
+	border-radius: 0 !important;
+}
+.ui-block-a div.ui-input-text input,.ui-block-b div.ui-input-text input,.ui-block-c div.ui-input-text input,.ui-block-d div.ui-input-text input,.ui-block-e div.ui-input-text input{
+	min-height: 1.2em;
+	padding-top: 0.1em;
+	padding-bottom: 0.1em;
+}
+
+
+.labeledfield{
+	width: 100%;
+}
+.labeledfield div.label{
+	display: inline-block;
+	width: 20%;
+	min-width: 100px;
+}
+.labeledfield div.ui-input-text{
+	display: inline-block;
+	width: 70% !important;
+	margin: 0.1em 0;
+}

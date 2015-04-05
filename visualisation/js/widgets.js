@@ -1038,6 +1038,37 @@ $.widget('knxcontrol.profile_list',{
 				
 				$('#profile_def_popup').find('#profile_def_popup_save').attr('data-id',id);
 				$('#profile_def_popup').find('#profile_def_popup_delete').attr('data-id',id);
+				
+				// add data
+				$('#profile_def_popup').find('.profile_def_list').html('<div class="ui-block-a">Time:</div>'+
+																	   '<div class="ui-block-b">Value:</div>');
+				$.each(knxcontrol.profile[id].data,function(index,data){
+				
+					// convert timestamp to day of the week and time
+					var date = (data[0]-345600*1000)/1000;
+					var day = Math.floor(date/24/3600);
+					var time = 0+date-day*24*3600;
+					hour = Math.floor(time/3600);
+					minute = Math.floor((time-hour*3600)/60);
+	
+					if(hour<10){
+						hour = '0'+hour;
+					}
+					if(minute<10){
+						minute = '0'+minute;
+					}
+					console.log(date);
+					console.log(day);
+					console.log(hour);
+					console.log(minute);
+					
+					var date_string = language.weekday_short[day]+' '+hour+':'+minute;
+					console.log(date_string);
+
+					$('#profile_def_popup').find('.profile_def_list').append('<div class="ui-block-a"><input value="'+date_string+'" data-field="time"/></div>'+
+																			 '<div class="ui-block-b"><input value="'+data[1]+'" data-field="value"/></div>');
+				});
+				$('#profile_def_popup').find('.profile_def_list').enhanceWithin();
 			}
 		});
 	},
@@ -1058,11 +1089,18 @@ $.widget('knxcontrol.profile_list',{
 																	'<a href="#profile_def_popup" class="edit" data-role="button" data-rel="popup" data-icon="grid">Edit</a>'+
 																 '</div>').enhanceWithin();
 			// update chart
-			var tempdata = knxcontrol.profile[id].data;
-			if(tempdata[0][0] > 0){
+			var tempdata = knxcontrol.profile[id].data.slice();
+			if(knxcontrol.profile[id].data[0][0] > 0){
 				// add last data point at time 0 to obtain a cyclic signal
 				tempdata.unshift([0,tempdata[tempdata.length-1][1]]);
 			}
+			if(knxcontrol.profile[id].data[knxcontrol.profile[id].data.length-1][0] < 604800*1000){
+				tempdata.push([604800*1000,tempdata[tempdata.length-1][1]]);
+			}
+			// update time to start on monday 0h
+			$.each(tempdata,function(index,value){
+				tempdata[index][0] = tempdata[index][0]+4*24*3600*1000;
+			});
 			
 			this.chart_options.series[0].data = tempdata;
 			this.chart_options.yAxis.title = {text: knxcontrol.profile[id].unit};
@@ -1077,7 +1115,7 @@ $.widget('knxcontrol.profile_list',{
 	chart_options: {
 		chart: {
 			type: 'line',
-			margin: [20, 20, 20, 40]
+			margin: [20, 20, 30, 60]
 		},
 		plotOptions: {
 			line: {
@@ -1122,13 +1160,41 @@ $.widget('knxcontrol.profile_list',{
 $(document).on('click','#profile_def_popup_save',function(event){
 	id = $(this).attr('data-id');
 	$('#profile_def_popup').popup('close');
-	field = ['name','quantity','unit','description'].join(';');
-	value = [$('#profile_def_popup').find('input[data-field="name"]').val(),
-			 $('#profile_def_popup').find('input[data-field="quantity"]').val(),
-			 $('#profile_def_popup').find('input[data-field="unit"]').val(),
-			 $('#profile_def_popup').find('input[data-field="description"]').val()].join(';');
-		console.log(id);
+	var field = ['name','quantity','unit','description'].join(';');
+	var value = [$('#profile_def_popup').find('input[data-field="name"]').val(),
+			     $('#profile_def_popup').find('input[data-field="quantity"]').val(),
+			     $('#profile_def_popup').find('input[data-field="unit"]').val(),
+			     $('#profile_def_popup').find('input[data-field="description"]').val()].join(';');
+
 	knxcontrol.profile.update(id,field,value);
+		
+	
+	var time = [];
+	var value = [];
+	$.each( $('#profile_def_popup div.profile_def_list').find('[data-field="time"]'),function(index,datestr){
+		// convert datestring to timestamp
+		var datestr = $(datestr).val();
+		var dateParts = datestr.split(' ');
+		
+		var day = language.weekday_short.indexOf(dateParts[0]);
+		var timeParts = dateParts[1].split(':');
+		
+		var timestamp = day*24*3600 + timeParts[0]*3600 + timeParts[1]*60;
+		console.log(timestamp);
+	
+		time.push(timestamp);
+	});
+	$.each( $('#profile_def_popup div.profile_def_list').find('[data-field="value"]'),function(index,data){
+		value.push($(data).val());
+	});
+	
+
+	knxcontrol.profile.update_data(id,time,value);
+});
+$(document).on('click','#profile_def_popup_addrow',function(event){
+	$('#profile_def_popup').find('.profile_def_list').append('<div class="ui-block-a"><input value="0" data-field="time"/></div>'+
+															 '<div class="ui-block-b"><input value="0" data-field="value"/></div>');
+	$('#profile_def_popup').find('.profile_def_list').enhanceWithin();
 });
 $(document).on('click','#profile_def_popup_delete',function(event){
 	id = $(this).attr('data-id');
@@ -1173,8 +1239,7 @@ $.widget("knxcontrol.smarthome_log",{
 			if(second<10){
 				second = '0'+second;
 			}
-			
-			
+
 			date_string = date.getDate()+'-'+(date.getMonth()+1)+'-'+date.getFullYear()+', '+hour+':'+minute+':'+second;
 
 		

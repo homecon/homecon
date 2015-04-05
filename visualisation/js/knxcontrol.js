@@ -414,6 +414,7 @@ var knxcontrol = {
 						quantity: result.quantity,
 						unit: result.unit,
 						description: result.description,
+						data: []
 					};
 					// get values
 					that.get_data(result.id);
@@ -449,30 +450,31 @@ var knxcontrol = {
 		get_data: function(id){
 			if(this[id]){
 			
-				var that = this[id];
+				var that = this;
 				$.post('requests/select_from_table.php',{table: 'profile', column: 'time,value', where: 'profile_id='+id, orderby: 'time'},function(result){
-					that.data = []
+					var data = [];
 					$.each(JSON.parse(result),function(index,value){
-						that.data.push([parseFloat(value.time)*1000,parseFloat(value.value)]);
+						data.push([parseFloat(value.time)*1000,parseFloat(value.value)]);
 					});
+					that[id].data = data;
 					$('[data-role="profile_list"]').trigger('update',id);
 				});
 			}
 		},
-		update_data: function(id,field,value){
+		update_data: function(id,time,value){
 			if(this[id]){
 			
-				var that = this[id];
-				$.post('requests/update_table.php',{table: 'profile', column: field, value: value, where: 'id='+id},function(result){
-					that.get_data(id);
+				var that = this;
+				$.post('requests/delete_from_table.php',{table: 'profile', where: 'profile_id='+id},function(result){
+				
+					$.each(time,function(index,data){
+						$.post('requests/insert_into_table.php',{table: 'profile', column: ['profile_id','time','value'].join(';'), value: [id,time[index],value[index]].join(';')},function(result){
+							console.log(result);
+							that.get_data(id);
+						});
+					});
 				});
 			}
-		},
-		add_data: function(id,time,value){
-			var that = this;
-			$.post('requests/insert_into_table.php',{table: 'profile', column: ['profile_id','time','value'].join(';'), value: [id,time,value].join(';')},function(result){
-				that.get_data(id);
-			});
 		}
 	},
 	
