@@ -215,7 +215,8 @@ pagebuilder = {
 		chart: {name: 'Chart'},
 		displayvalue: {name: 'Display value'},
 		btn: {name: 'Button'},
-		weather_block: {name: 'Weather block'}
+		weather_block: {name: 'Weather block'},
+		ventilation_control: {name: 'Ventilation control'}
 	},
 	iconlist:[
 		'fts_sunblind.png',
@@ -331,13 +332,6 @@ $(document).on('click','nav div.pagebuilder a.export',function(){
 	exportElement.download = 'pagebuilder.txt';
 	exportElement.click();
 	
-	/*
-	window.open('requests/pagebuilder_export.php?model='+JSON.stringify(pagebuilder.section));
-	console.log('export');
-	$.post('requests/pagebuilder_export.php',{model: JSON.stringify(pagebuilder.section)},function(result){
-		console.log(result);
-	});
-	*/
 });
 $(document).on('click','nav div.pagebuilder a.import',function(){
     $('#pagebuilder_import').click();

@@ -1203,6 +1203,80 @@ $(document).on('click','#profile_def_popup_delete',function(event){
 });
 
 /*****************************************************************************/
+/*                     ventilation control                                   */
+/*****************************************************************************/
+$.widget('knxcontrol.ventilation_control',{
+	options: {
+		label: '',
+		item: 'building.ventilation.speedcontrol',
+		src_auto_off: 'icons/ffffff/vent_ventilation_level_automatic.png',
+		src_auto_on: 'icons/f79a1f/vent_ventilation_level_automatic.png',
+		src_0_off: 'icons/ffffff/vent_ventilation_level_0.png',
+		src_1_off: 'icons/ffffff/vent_ventilation_level_1.png',
+		src_2_off: 'icons/ffffff/vent_ventilation_level_2.png',
+		src_3_off: 'icons/ffffff/vent_ventilation_level_3.png',
+		src_0_on: 'icons/f79a1f/vent_ventilation_level_0.png',
+		src_1_on: 'icons/f79a1f/vent_ventilation_level_1.png',
+		src_2_on: 'icons/f79a1f/vent_ventilation_level_2.png',
+		src_3_on: 'icons/f79a1f/vent_ventilation_level_3.png'
+    },
+	
+	_create: function(){
+		// enhance
+		this.element.prepend('<p>'+this.options.label+'</p>'+
+							 '<!--<a href="#" class="auto"><img src="'+this.options.src_auto_off+'"></a>-->'+
+							 '<div class="speedcontrol">'+
+								'<a href="#" data-value="0"><img src="'+this.options.src_0_off+'"></a>'+
+								'<a href="#" data-value="1"><img src="'+this.options.src_1_off+'"></a>'+
+								'<a href="#" data-value="2"><img src="'+this.options.src_2_off+'"></a>'+
+								'<a href="#" data-value="3"><img src="'+this.options.src_3_off+'"></a>'+
+							 '</div>').enhanceWithin();
+		this.update();
+		
+		// bind events
+		this._on(this.element, {
+            'click div.speedcontrol a': function(event){
+				// update the value in smarthome
+				smarthome.write(this.options.item, $(event.target).parents('a').attr('data-value'));
+			},
+			'update': function(event){
+				this.update();
+			}
+        });
+	},
+	update: function(){
+		var item = this.options.item;
+		var speedcontrol = item+'.speedcontrol';
+		
+		if(knxcontrol.item[item]==0){
+			this.element.find('a[data-value="0"] img').attr('src',this.options.src_0_on);
+			this.element.find('a[data-value="1"] img').attr('src',this.options.src_1_off);
+			this.element.find('a[data-value="2"] img').attr('src',this.options.src_2_off);
+			this.element.find('a[data-value="3"] img').attr('src',this.options.src_3_off);
+		}
+		else if(knxcontrol.item[item]==1){
+			this.element.find('a[data-value="0"] img').attr('src',this.options.src_0_off);
+			this.element.find('a[data-value="1"] img').attr('src',this.options.src_1_on);
+			this.element.find('a[data-value="2"] img').attr('src',this.options.src_2_off);
+			this.element.find('a[data-value="3"] img').attr('src',this.options.src_3_off);
+		}
+		else if(knxcontrol.item[item]==2){
+			this.element.find('a[data-value="0"] img').attr('src',this.options.src_0_off);
+			this.element.find('a[data-value="1"] img').attr('src',this.options.src_1_off);
+			this.element.find('a[data-value="2"] img').attr('src',this.options.src_2_on);
+			this.element.find('a[data-value="3"] img').attr('src',this.options.src_3_off);
+		}
+		else if(knxcontrol.item[item]==3){
+			this.element.find('a[data-value="0"]  img').attr('src',this.options.src_0_off);
+			this.element.find('a[data-value="1"]  img').attr('src',this.options.src_1_off);
+			this.element.find('a[data-value="2"]  img').attr('src',this.options.src_2_off);
+			this.element.find('a[data-value="3"]  img').attr('src',this.options.src_3_on);
+		}
+	}
+
+});
+
+/*****************************************************************************/
 /*                     smarthome log                                         */
 /*****************************************************************************/
 $.widget("knxcontrol.smarthome_log",{

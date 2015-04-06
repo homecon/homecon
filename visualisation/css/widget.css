@@ -472,6 +472,40 @@ div[data-role="btn"] img{
     top: -5px;
 	right: -5px;
 }
+/*****************************************************************************/
+/*                     Ventilation control                                   */
+/*****************************************************************************/
+div[data-role="ventilation_control"]{
+	display: inline-block;
+	position: relative;
+	width: 98%;
+	text-align: left;
+}
+div[data-role="ventilation_control"] p{
+	position: relative;
+	margin-left: 5px;
+	margin-top: 5px;
+	margin-bottom: 0;
+	font-weight: 700;
+}
+div[data-role="ventilation_control"] div.speedcontrol{
+	display: inline-block;
+}
+div[data-role="ventilation_control"] img{
+	height: 50px;
+	vertical-align: middle;
+	float: left;
+}
+div[data-role="ventilation_control"] a.auto img{
+	margin-right: 50px;
+}
+#home_pagebuilder div[data-role="ventilation_control"]{
+	border: solid 1px #222;
+}
+#home_pagebuilder div[data-role="ventilation_control"] a.edit_widget{
+    top: -5px;
+	right: -5px;
+}
 
 /*****************************************************************************/
 /*                     Smarthome log                                         */
