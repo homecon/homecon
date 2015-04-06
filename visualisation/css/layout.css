@@ -212,3 +212,12 @@ section div.endofsection{
 	width: 70% !important;
 	margin: 0.1em 0;
 }
+
+
+#widget_def_popup div.ui-input-text{
+	margin: 0.1em 0;
+}
+#widget_def_popup div.ui-input-text  input{
+	  padding: .2em .4em;
+	  min-height: 1.2em;
+}

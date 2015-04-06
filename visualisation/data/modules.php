@@ -144,8 +144,8 @@
 					<a class='move_up' data-role='button' data-icon="arrow-u" data-iconpos="notext">Move up</a>
 					<a class='move_down' data-role='button' data-icon="arrow-d" data-iconpos="notext">Move down</a>
 				</div>
-				<a class='save' data-role='button'>Save</a>
-				<a class='delete' data-role='button'data-section_id='1'>Delete</a>
+				<a class='save' data-role='button' data-mini='true'>Save</a>
+				<a class='delete' data-role='button' data-mini='true' data-section_id='1'>Delete</a>
 				<a href="#" data-rel="back" data-role="button" data-theme="b" data-icon="delete" data-iconpos="notext" class="ui-btn-right">Close</a>
 			</div>
 		</div>
