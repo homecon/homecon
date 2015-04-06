@@ -660,7 +660,7 @@ render_page = function(section_id,page_id){
 		$('#renderpage section[data-id="'+section_index+'"]').append('<div class="endofsection"></div>');
 		
 		// widget adding
-		$('#renderpage section[data-id="'+section_index+'"]').append('<fieldset class="ui-grid-a"><div class="ui-block-a"><select class="select_widget" data-native-menu="false"><option>Select Widget</option></select></div><div class="ui-block-b"><a href="#" class="add_widget" data-role="button" data-id="'+page.id+'">Add</a></div>');
+		$('#renderpage section[data-id="'+section_index+'"]').append('<fieldset class="ui-grid-a"><div class="ui-block-a"><select class="select_widget" data-native-menu="false" data-theme="b" data-overlay-theme="b"><option>Select Widget</option></select></div><div class="ui-block-b"><a href="#" class="add_widget" data-role="button" data-id="'+page.id+'">Add</a></div>');
 		$.each(pagebuilder.widgetlist,function(index,widget){
 			$('#renderpage section[data-id="'+section_index+'"] select').append('<option value="'+index+'">'+widget.name+'</option>');
 		});
