@@ -153,9 +153,9 @@ EIB_IF="ipt:192.168.1.3"
 ```
 Save the file and Exit using `Ctrl+O` `Return` and `Ctrl+X`
 
-Move the file "eibd" from the installation folder to /etc/init.d
+Copy the file "eibd" from the installation folder to /etc/init.d
 ```
-$ sudo mv /usr/local/knxcontrol/installation/eibd /etc/init.d/eibd
+$ sudo cp /usr/local/knxcontrol/installation/eibd /etc/init.d/eibd
 ```
 
 Change the owner and group to root and set permissions
@@ -172,7 +172,7 @@ $ sudo update-rc.d eibd defaults
 
 Restart EIBD
 ```
-$ /etc/init.d/eibd restart
+$ sudo /etc/init.d/eibd restart
 ```
 
 ### Test	
@@ -233,9 +233,9 @@ Install the mysql server package
 ```
 $ sudo apt-get install mysql-server
 ```
-During the install procedure a root account for mysql will be created. Set it to admin as the default setting.
+During the install procedure a root account for mysql will be created. Set it to "admin" as the default setting.
 
-Enable php to comunicate with mysql by installing php5-mysql:
+Enable php to communicate with mysql by installing php5-mysql:
 ```
 $ sudo apt-get install  php5-mysql
 ```
