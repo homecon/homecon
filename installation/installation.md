@@ -526,7 +526,44 @@ Most internet providers don't provide a static ip address to your router, but wh
 The trick to use id DDNS. We basically install a small program on the raspberry pi which continuously checks its outside ip address and sends it to a DDNS server.
 This server links an easily readable name to the ip address so you can access the pi from the outside.
 
-I used NO-IP for this service. It's free and provides nice names so thats fun. To install it go to www.noip.com and register. Now add a host and choose a domain name to your liking.
+#### DuckDNS
+Go to www.duckdns.org and login using facebook or some other options, create a blank Facebook account if necessary.
+
+Choose a domain name and fill it in and click go.
+
+Go to install, select your new domain name in the box at the bottom and click linux cron, this will give you a set of instructions for which the essentials are copied here.
+Go to a folder using  `cd /usr/local`, make a directory and a shell script
+```
+$ sudo mkdir duckdns
+$ cd duckdns
+$ sudo nano duck.sh
+```
+No copy the text from the website into the file. I should look like this:
+```
+echo url="https://www.duckdns.org/update?domains=yourdomain&token=yourtoken&ip=" | curl -k -o /usr/local/duckdns/duck.log -K -
+```
+Save the file using `Ctrl+O` and exit `Ctrl+X`
+Change the file permissions:
+```
+$ sudo chmod 700 duck.sh
+```
+Next change the cron file to run the script every 5 minutes. Open the crontab file
+```
+$ sudo crontab -e
+```
+Paste this at the bottom:
+```
+*/5 * * * * /usr/local/duckdns/duck.sh >/dev/null 2>&1
+```
+Test using
+```
+$ sudo ./duck.sh
+$ cat duck.log
+```
+And were done.
+
+#### NO-IP
+You can also use NO-IP for this service. It's free and provides nice names so thats fun, the downside is you have to confirm your address every month. To install it go to www.noip.com and register. Now add a host and choose a domain name to your liking.
 
 Now we need to download the client, install it on the raspberry pi and configure it to point to your domain name:
 ```
@@ -556,7 +593,6 @@ $ sudo -i
 ```
 And were done.
 
- 
 
 ## Create an image
 At this step you can make an image as backup. This is done on a different machine running some linux version. I used a bootable usb drive with Ubuntu 14.04.1.
