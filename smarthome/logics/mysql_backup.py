@@ -11,9 +11,9 @@ import datetime
 
 DB_HOST = 'localhost'
 DB_USER = 'knxcontrol'
-DB_USER_PASSWORD = sh.building.mysql.conf['password']
+DB_USER_PASSWORD = sh.knxcontrol.mysql.conf['password']
 DB_NAME = 'knxcontrol'
-BACKUP_PATH = sh.building.mysql.conf['backupdir']
+BACKUP_PATH = sh.knxcontrol.mysql.conf['backupdir']
 
 if BACKUP_PATH:
 	# Getting current datetime to create separate backup folder like "12012013-071334".
@@ -24,4 +24,4 @@ if BACKUP_PATH:
 	dumpcmd = "mysqldump -u " + DB_USER + " -p" + DB_USER_PASSWORD + " " + DB_NAME + " alarm_actions alarms data measurements_legend temperature_setpoints users" + " > " + BACKUP_PATH + "/" + DB_NAME + "_" + DATETIME  + ".sql"
 	os.system(dumpcmd)
 
-	logger.warning("Database backup created")
+	logger.info("Database backup created")

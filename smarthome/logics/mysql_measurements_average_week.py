@@ -22,18 +22,18 @@ starttimestamp = int( (startdate - epoch).total_seconds() )
 endtimestamp = int( (endddate - epoch).total_seconds() )
 
 # connect to database
-con = pymysql.connect('localhost', 'knxcontrol', sh.building.mysql.conf['password'], 'knxcontrol')
+con = pymysql.connect('localhost', 'knxcontrol', sh.knxcontrol.mysql.conf['password'], 'knxcontrol')
 cur = con.cursor()
 
-query = "INSERT INTO measurements_weekaverage(signal_id,time,value) VALUES "
+query = "INSERT INTO measurement_average_week(signal_id,time,value) VALUES "
 
-cur.execute("SELECT * FROM measurements_legend")
+cur.execute("SELECT * FROM measurement_legend")
 
 for measurement in cur:
 
 	signalcur = con.cursor()
 	
-	signalcur.execute("SELECT AVG(value) FROM measurements WHERE signal_id=%s AND time >= '%s' AND time < '%s'" % (measurement[0],starttimestamp,endtimestamp))
+	signalcur.execute("SELECT AVG(value) FROM measurement WHERE signal_id=%s AND time >= '%s' AND time < '%s'" % (measurement[0],starttimestamp,endtimestamp))
 	row = signalcur.fetchall()
 	if (row[0][0] is None):
 		avg = 0

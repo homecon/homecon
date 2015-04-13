@@ -52,11 +52,11 @@ except:
 	logger.warning("Could not add data to database")
 
 # location data
-#query = "UPDATE data (latitude,longitude,elevation) VALUES (%f,%f,%f) WHERE id=1" % (sh._lat(),sh._lon(),sh._elev())
-#try:
-#	cur.execute( query )
-#except:
-#	logger.warning("Could not add location to database")
+query = "UPDATE data SET latitude=%f,longitude=%f,elevation=%f WHERE id=1" % (float(sh._lat),float(sh._lon),float(sh._elev))
+try:
+	cur.execute( query )
+except:
+	logger.warning("Could not add location to database")
 
 # alarms
 query = ("CREATE TABLE IF NOT EXISTS `alarms` ("
@@ -111,7 +111,7 @@ except:
 	logger.warning("Could not add actions table to database")
 
 # measurements legend
-query = ("CREATE TABLE IF NOT EXISTS `measurements_legend` ("
+query = ("CREATE TABLE IF NOT EXISTS `measurement_legend` ("
          "`id` tinyint(4) NOT NULL AUTO_INCREMENT,"
          "`item` varchar(255) DEFAULT NULL,"
          "`name` varchar(255) DEFAULT NULL,"
@@ -123,11 +123,11 @@ query = ("CREATE TABLE IF NOT EXISTS `measurements_legend` ("
 try:
 	cur.execute( query )
 except:
-	logger.warning("Could not add measurements_legend table to database")
+	logger.warning("Could not add measurement_legend table to database")
 
 
 # measurements
-query = ("CREATE TABLE IF NOT EXISTS `measurements` ("
+query = ("CREATE TABLE IF NOT EXISTS `measurement` ("
          "`id` bigint(20) NOT NULL AUTO_INCREMENT,"
          "`signal_id` tinyint(4) NOT NULL,"
          "`time` bigint(20) NOT NULL,"
@@ -137,16 +137,16 @@ query = ("CREATE TABLE IF NOT EXISTS `measurements` ("
 try:
 	cur.execute( query )
 except:
-	logger.warning("Could not add measurements table to database")
+	logger.warning("Could not add measurement table to database")
 
-query = "CREATE INDEX time_signal_id ON measurements(time, signal_id)"
+query = "CREATE INDEX time_signal_id ON measurement(time, signal_id)"
 try:
 	cur.execute( query )
 except:
 	logger.warning("Index on measurements allready exists")
 
 # quarterhour average measurements
-query = ("CREATE TABLE IF NOT EXISTS `measurements_average_quarterhour` ("
+query = ("CREATE TABLE IF NOT EXISTS `measurement_average_quarterhour` ("
          "`id` bigint(20) NOT NULL AUTO_INCREMENT,"
          "`signal_id` tinyint(4) NOT NULL,"
          "`time` int(11) NOT NULL,"
@@ -156,16 +156,16 @@ query = ("CREATE TABLE IF NOT EXISTS `measurements_average_quarterhour` ("
 try:
 	cur.execute( query )
 except:
-	logger.warning("Could not add quarterhour measurements table to database")
+	logger.warning("Could not add quarterhour measurement_average_quarterhour table to database")
 
-query = "CREATE INDEX time_signal_id ON measurements_average_quarterhour(time, signal_id)"
+query = "CREATE INDEX time_signal_id ON measurement_average_quarterhour(time, signal_id)"
 try:
 	cur.execute( query )
 except:
-	logger.warning("Index on measurements_average_quarterhour allready exists")
+	logger.warning("Index on measurement_average_quarterhour allready exists")
 
 # week average measurements
-query = ("CREATE TABLE IF NOT EXISTS `measurements_average_week` ("
+query = ("CREATE TABLE IF NOT EXISTS `measurement_average_week` ("
          "`id` bigint(20) NOT NULL AUTO_INCREMENT,"
          "`signal_id` tinyint(4) NOT NULL,"
          "`time` int(11) NOT NULL,"
@@ -175,16 +175,16 @@ query = ("CREATE TABLE IF NOT EXISTS `measurements_average_week` ("
 try:
 	cur.execute( query )
 except:
-	logger.warning("Could not add week measurements table to database")
+	logger.warning("Could not add measurement_average_week table to database")
 
-query = "CREATE INDEX time_signal_id ON measurements_average_week(time, signal_id)"
+query = "CREATE INDEX time_signal_id ON measurement_average_week(time, signal_id)"
 try:
 	cur.execute( query )
 except:
-	logger.warning("Index on measurements_average_week allready exists")
+	logger.warning("Index on measurement_average_week allready exists")
 
 # month average measurements
-query = ("CREATE TABLE IF NOT EXISTS `measurements_average_month` ("
+query = ("CREATE TABLE IF NOT EXISTS `measurement_average_month` ("
          "`id` bigint(20) NOT NULL AUTO_INCREMENT,"
          "`signal_id` tinyint(4) NOT NULL,"
          "`time` int(11) NOT NULL,"
@@ -194,13 +194,13 @@ query = ("CREATE TABLE IF NOT EXISTS `measurements_average_month` ("
 try:
 	cur.execute( query )
 except:
-	logger.warning("Could not add month measurements table to database")
+	logger.warning("Could not add measurement_average_month table to database")
 
-query = "CREATE INDEX time_signal_id ON measurements_average_month(time, signal_id)"
+query = "CREATE INDEX time_signal_id ON measurement_average_month(time, signal_id)"
 try:
 	cur.execute( query )
 except:
-	logger.warning("Index on measurements_average_month allready exists")
+	logger.warning("Index on measurement_average_month allready exists")
 
 
 # profile legend
@@ -261,7 +261,7 @@ logger.info("Database initialized")
 ########################################################################################
 # Create entries in measurements_legend for items that must be logged
 
-query = "REPLACE INTO measurements_legend (id,item,name,quantity,unit,description) VALUES "
+query = "REPLACE INTO measurement_legend (id,item,name,quantity,unit,description) VALUES "
 id = 0
 
 # current weather 15 components max
@@ -272,7 +272,7 @@ query = query+"('"+str(id)+"','knxcontrol.weather.current.irradiation.theoretica
 id = id+1
 query = query+"('"+str(id)+"','knxcontrol.weather.current.irradiation.theoretical.altitude','Altitude','Angle','deg','Solar altitude'),"
 id = id+1
-query = query+"('"+str(id)+"','knxcontrol.weather.current.irradiation.theoretical.irradiation.direct','Direct','Heat flux','W/m2','Theoretical direct solar irradiation'),"
+query = query+"('"+str(id)+"','knxcontrol.weather.current.irradiation.theoretical.direct','Direct','Heat flux','W/m2','Theoretical direct solar irradiation'),"
 id = id+1
 query = query+"('"+str(id)+"','knxcontrol.weather.current.irradiation.theoretical.diffuse','Diffuse','Heat flux','W/m2','Theoretical diffuse solar irradiation'),"
 id = id+1
@@ -315,7 +315,7 @@ for zone in sh.knxcontrol.building:
 # ventilation
 id = 38
 id = id+1
-query = query+"('"+str(id)+"','knxcontrol.ventilation.fan','Ventilation control','','-','Ventilation fan speed control signal'),"
+query = query+"('"+str(id)+"','knxcontrol.ventilation.fanspeed','Ventilation control','','-','Ventilation fan speed control signal'),"
 id = id+1
 query = query+"('"+str(id)+"','knxcontrol.ventilation.heatrecovery','Heat recovery control','','-','Ventilation heat recovery control signal'),"
 
