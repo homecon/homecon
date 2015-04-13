@@ -143,7 +143,7 @@ query = "CREATE INDEX time_signal_id ON measurements(time, signal_id)"
 try:
 	cur.execute( query )
 except:
-	logger.warning("Could not add index to measurements table")
+	logger.warning("Index on measurements allready exists")
 
 # quarterhour average measurements
 query = ("CREATE TABLE IF NOT EXISTS `measurements_average_quarterhour` ("
@@ -162,7 +162,7 @@ query = "CREATE INDEX time_signal_id ON measurements_average_quarterhour(time, s
 try:
 	cur.execute( query )
 except:
-	logger.warning("Could not add index to quarterhour measurements table")
+	logger.warning("Index on measurements_average_quarterhour allready exists")
 
 # week average measurements
 query = ("CREATE TABLE IF NOT EXISTS `measurements_average_week` ("
@@ -181,7 +181,7 @@ query = "CREATE INDEX time_signal_id ON measurements_average_week(time, signal_i
 try:
 	cur.execute( query )
 except:
-	logger.warning("Could not add index to week measurements table")
+	logger.warning("Index on measurements_average_week allready exists")
 
 # month average measurements
 query = ("CREATE TABLE IF NOT EXISTS `measurements_average_month` ("
@@ -200,7 +200,7 @@ query = "CREATE INDEX time_signal_id ON measurements_average_month(time, signal_
 try:
 	cur.execute( query )
 except:
-	logger.warning("Could not add index to month measurements table")
+	logger.warning("Index on measurements_average_month allready exists")
 
 
 # profile legend
@@ -254,7 +254,111 @@ try:
 except:
 	logger.warning("Could not add pagebuilder data to database")
 
-logger.warning("Database initialized")
+logger.info("Database initialized")
+
+
+
+########################################################################################
+# Create entries in measurements_legend for items that must be logged
+
+query = "REPLACE INTO measurements_legend (id,item,name,quantity,unit,description) VALUES "
+id = 0
+
+# current weather 15 components max
+id = id+1
+query = query+"('"+str(id)+"','knxcontrol.weather.current.temperature','Temperature','Temperature','degC','Ambient temperature'),"
+id = id+1
+query = query+"('"+str(id)+"','knxcontrol.weather.current.irradiation.theoretical.azimut','Azimut','Angle','deg','Solar azimut (0deg id South)'),"
+id = id+1
+query = query+"('"+str(id)+"','knxcontrol.weather.current.irradiation.theoretical.altitude','Altitude','Angle','deg','Solar altitude'),"
+id = id+1
+query = query+"('"+str(id)+"','knxcontrol.weather.current.irradiation.theoretical.irradiation.direct','Direct','Heat flux','W/m2','Theoretical direct solar irradiation'),"
+id = id+1
+query = query+"('"+str(id)+"','knxcontrol.weather.current.irradiation.theoretical.diffuse','Diffuse','Heat flux','W/m2','Theoretical diffuse solar irradiation'),"
+id = id+1
+query = query+"('"+str(id)+"','knxcontrol.weather.current.irradiation.estimate.direct','Direct','Heat flux','W/m2','Estimated direct solar irradiation'),"
+id = id+1
+query = query+"('"+str(id)+"','knxcontrol.weather.current.irradiation.estimate.diffuse','Diffuse','Heat flux','W/m2','Estimated diffuse solar irradiation'),"
+id = id+1
+query = query+"('"+str(id)+"','knxcontrol.weather.current.irradiation.estimate.clouds','Clouds','','-','Cloud factor'),"
+id = id+1
+query = query+"('"+str(id)+"','knxcontrol.weather.current.precipitation','Rain','','-','Rain or not'),"											
+id = id+1
+query = query+"('"+str(id)+"','knxcontrol.weather.current.wind.speed','Wind speed','Velocity','m/s','Wind speed'),"
+id = id+1
+query = query+"('"+str(id)+"','knxcontrol.weather.current.wind.direction','Wind direction','Angle','deg','Wind direction (0deg is North)'),"
+
+
+# leave some blanks
+id = 15
+# energy use 5 components max
+id = id+1
+query = query+"('"+str(id)+"','knxcontrol.energy.electricity','Electricity','Power','W','Electricity use'),"
+id = id+1
+query = query+"('"+str(id)+"','knxcontrol.energy.gas','Gas','Power','W','Natural gas use'),"
+id = id+1
+query = query+"('"+str(id)+"','knxcontrol.energy.fueloil','Fuel oil','Power','W','Fuel oil use'),"
+id = id+1
+query = query+"('"+str(id)+"','knxcontrol.energy.water','Water','Flow','l/min','Water use'),"
+
+
+# building zones 9 zones max
+id = 20
+for zone in sh.knxcontrol.building:
+	zone_name = zone.id().split(".")[-1]
+	id = id + 1
+	query = query+"('"+str(id)+"','"+zone.temperature.id()+"','Temperature','Temperature','degC','"+zone_name+" temperature'),"
+	id = id + 1
+	query = query+"('"+str(id)+"','"+zone.airquality.id()+"','Air quality','Concentration','g CO2/m3','"+zone_name+" CO2 concentration'),"
+	
+
+# ventilation
+id = 38
+id = id+1
+query = query+"('"+str(id)+"','knxcontrol.ventilation.fan','Ventilation control','','-','Ventilation fan speed control signal'),"
+id = id+1
+query = query+"('"+str(id)+"','knxcontrol.ventilation.heatrecovery','Heat recovery control','','-','Ventilation heat recovery control signal'),"
+
+
+# heat production 10 systems max
+id = 40
+for system in sh.knxcontrol.heat.production:
+	system_name = system.id().split(".")[-1]
+	id = id + 1
+	query = query+"('"+str(id)+"','"+system.power.id()+"','"+system_name+" Power','Power','W','"+system_name+" heat production'),"
+	id = id + 1
+	query = query+"('"+str(id)+"','"+system.control.id()+"','"+system_name+" Control','','-','"+system_name+" control signal'),"
+
+
+# heat emission 10 systems max
+id = 60
+for system in sh.knxcontrol.heat.emission:
+	system_name = system.id().split(".")[-1]
+	id = id + 1
+	query = query+"('"+str(id)+"','"+system.power.id()+"','"+system_name+" Power','Power','W','"+system_name+" heat emission'),"
+	id = id + 1
+	query = query+"('"+str(id)+"','"+system.control.id()+"','"+system_name+" Control','','-','"+system_name+" control signal'),"
+
+
+# electricity generation 10 systems max
+id = 80
+for system in sh.knxcontrol.electricity.production:
+	system_name = system.id().split(".")[-1]
+	id = id + 1
+	query = query+"('"+str(id)+"','"+system.power.id()+"','"+system_name+" Power','Power','W','"+system_name+" heat emission'),"
+	id = id + 1
+	query = query+"('"+str(id)+"','"+system.control.id()+"','"+system_name+" Control','','-','"+system_name+" control signal'),"
+
+
+# try to execute query
+query = query[:-1]
+try:
+	cur.execute( query )
+	logger.info("Measurements initialized")
+except:
+	logger.warning("could not add default measurements to database")
+	logger.warning(query)
+
 
 con.commit()	
 con.close()
