@@ -18,7 +18,9 @@
 #  You should have received a copy of the GNU General Public License
 #  along with SmartHome.py. If not, see <http://www.gnu.org/licenses/>.
 #########################################################################
-
+#
+# Changes made around line 280 to add some web security
+#
 import base64
 import datetime
 import hashlib
@@ -277,13 +279,17 @@ class WebSocketHandler(lib.connection.Stream):
         if command == 'item':
             path = data['id']
             value = data['val']
-            if path in self.items:
-                if not self.items[path]['acl'] == 'ro':
-                    self.items[path]['item'](value, 'Visu', self.addr)
+            token = data['token']
+            if token == self._sh.building.data.conf['password']: # some security, we will only write to an item if the sent token is correct
+                if path in self.items:
+                    if not self.items[path]['acl'] == 'ro':
+                        self.items[path]['item'](value, 'Visu', self.addr)
+                    else:
+                        logger.warning("Client {0} want to update read only item: {1}".format(self.addr, path))
                 else:
-                    logger.warning("Client {0} want to update read only item: {1}".format(self.addr, path))
+                    logger.warning("Client {0} want to update invalid item: {1}".format(self.addr, path))
             else:
-                logger.warning("Client {0} want to update invalid item: {1}".format(self.addr, path))
+                logger.warning("Invalid token")
         elif command == 'monitor':
             if data['items'] == [None]:
                 return

@@ -1,5 +1,4 @@
 <?php
-
 // define variables to access mysql
 define("HOST", "localhost");
 define("USER", "knxcontrol");

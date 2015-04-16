@@ -42,9 +42,9 @@ $(document).on('pagebeforecreate',function(){
 			}
 		});
 		
-		// change options depending on the chart type
+		// change options depending on the chart type	
 		if($(this).attr('data-chart')=='bar'){
-			options.chart.type = 'bar';
+			options.chart.type = 'column';
 			chart[j] = new Highcharts.Chart(options);
 		}
 		else{
@@ -53,6 +53,7 @@ $(document).on('pagebeforecreate',function(){
 			options.tooltip.xDateFormat='%Y-%m-%d %H:%M';
 			chart[j] = new Highcharts.StockChart(options);
 		}
+		
 		
 		
 		// Load data asynchronously using jQuery. On success, add the data to the options and initiate the chart.

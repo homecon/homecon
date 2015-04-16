@@ -15,23 +15,10 @@ cur = con.cursor()
 rain = sh.building.rain()
 wind = sh.building.wind_velocity() > 10
 
-
-# calculate 15 min averages of cloud_factor
+# get the last quarterhour average of cloud factor
 try:
-
-	# get signal number
-	#item = 'building.irradiation.cloud_factor'
-	#cur.execute("SELECT id FROM measurements_legend WHERE item='%s'" % ( item ))
-	#for temp in cur:
-	#	cloud_factor_id = temp[0]
-	#logger.warning(cloud_factor_id)
-
-	timestamp = int( (now - datetime.datetime(1970,1,1)).total_seconds() )
-
 	cloud_factor_id = 6
-	# get 15 min average from mysql
-	timestamp_new = timestamp-15*60
-	cur.execute("SELECT AVG(value) FROM measurements WHERE signal_id=%s  time>%s" %(cloud_factor_id,timestamp_new))
+	cur.execute("SELECT value FROM measurements_quarterhouraverage WHERE signal_id=%s ORDER BY time DESC LIMIT 1" %(cloud_factor_id))
 	for temp in cur:
 		cloud_factor_avg = temp[0]
 	

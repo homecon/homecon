@@ -1,3 +1,21 @@
+<!--
+    Copyright 2015 Brecht Baeten
+    This file is part of KNXControl.
+
+    KNXControl is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    KNXControl is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with KNXControl.  If not, see <http://www.gnu.org/licenses/>.
+-->
+
 <?php
 // connect to the database
 include('../data/mysql.php');
@@ -29,6 +47,10 @@ $res = mysql_query("CREATE TABLE IF NOT EXISTS `data` (	`id` int(11) NOT NULL AU
 														`port` varchar(255) NOT NULL,
 														`web_ip` varchar(255) NOT NULL,
 														`web_port` varchar(255) NOT NULL,
+														`token` varchar(255) NOT NULL,
+														`latitude` float NOT NULL,
+														`longitude` float NOT NULL,
+														`elevation` float NOT NULL,
 														PRIMARY KEY (`id`) ) ENGINE=InnoDB DEFAULT CHARSET=latin1 AUTO_INCREMENT=1");
 if($res){
 	echo "data table created<br>";
@@ -38,7 +60,7 @@ else{
 }
 
 // add default data
-$res = mysql_query("INSERT INTO `data` (id,ip,port,web_ip,web_port) VALUES (1,'192.168.1.2','2424','mydomain.ddns.net','9024')");												
+$res = mysql_query("INSERT INTO `data` (id,ip,port,web_ip,web_port,token,latitude,longitude,elevation) VALUES (1,'192.168.1.2','2424','mydomain.ddns.net','9024','admin',51,5,70)");												
 if($res){
 	echo "default data added<br>";
 }
@@ -135,6 +157,8 @@ if($res){
 else{
 	echo "measurements table creation failed <br>";
 }
+mysql_query("CREATE INDEX time_signal_id ON measurements(time, signal_id)");
+
 
 $res = mysql_query("CREATE TABLE IF NOT EXISTS `measurements_quarterhouraverage` (	`id` bigint(20) NOT NULL AUTO_INCREMENT,
 																					`signal_id` tinyint(4) NOT NULL,
@@ -147,6 +171,7 @@ if($res){
 else{
 	echo "quarterhour average measurements table creation failed <br>";
 }
+mysql_query("CREATE INDEX time_signal_id ON measurements_quarterhouraverage(time, signal_id)");
 
 $res = mysql_query("CREATE TABLE IF NOT EXISTS `measurements_weekaverage` (	`id` bigint(20) NOT NULL AUTO_INCREMENT,
 																			`signal_id` tinyint(4) NOT NULL,
@@ -159,6 +184,7 @@ if($res){
 else{
 	echo "week average measurements table creation failed <br>";
 }
+mysql_query("CREATE INDEX time_signal_id ON measurements_weekaverage(time, signal_id)");
 
 $res = mysql_query("CREATE TABLE IF NOT EXISTS `measurements_monthaverage` (`id` bigint(20) NOT NULL AUTO_INCREMENT,
 																			`signal_id` tinyint(4) NOT NULL,
@@ -171,6 +197,7 @@ if($res){
 else{
 	echo "month average measurements table creation failed <br>";
 }
+mysql_query("CREATE INDEX time_signal_id ON measurements_monthaverage(time, signal_id)");
 	
 
 		
@@ -188,6 +215,25 @@ if($res){
 else{
 	echo "setpoints table creation failed <br>";
 }
-															  
+				
+// Pagebuilder
+$res = mysql_query( "CREATE TABLE IF NOT EXISTS `pagebuilder` (	`id` int(11) NOT NULL AUTO_INCREMENT,
+																`model` MEDIUMTEXT DEFAULT NULL,
+																PRIMARY KEY (`id`)) ENGINE=InnoDB  DEFAULT CHARSET=latin1 AUTO_INCREMENT=1");													
+// add default data
+$res = mysql_query("INSERT INTO `pagebuilder` (id,model) VALUES (1,'[{\"id\":\"home\",\"name\":\"Home\",\"page\":[{\"id\":\"home\",\"name\":\"Home\",\"img\":\"\",\"temperature_item\":\"\",\"section\":[]}]}]'");
+$res = mysql_query("INSERT INTO `pagebuilder` (id,model) VALUES (2,'[{\"id\":\"home\",\"name\":\"Home\",\"page\":[{\"id\":\"home\",\"name\":\"Home\",\"img\":\"\",\"temperature_item\":\"\",\"section\":[]}]}]'");
+												
+if($res){
+	echo "default data added<br>";
+}
+if($res){
+	echo "pagebuilder table created<br>";
+}
+else{
+	echo "pagebuilder table creation failed <br>";
+}
+
+				
 echo "finished";
 ?>

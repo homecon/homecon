@@ -1,179 +1,223 @@
-/***************************************/
-/*           Layout                    */
-/***************************************/
+/*
+    Copyright 2015 Brecht Baeten
+    This file is part of KNXControl.
 
-body{
-	display: block;
-	margin: 0px;
-}
-/***************************************/
-/*           Header                    */
-/***************************************/
+    KNXControl is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
+    KNXControl is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with KNXControl.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
+
+
+/*****************************************************************************/
+/*                     Header                                                */
+/*****************************************************************************/
 #header{
 	height: 60px;
+	z-index: 1002;
 }
-#header nav{
+#header nav div{
+	display: inline-block;
 }
 #header nav img{
 	width: 50px;
 	height: 50px;
 }
+#pagebuilder_import{
+	display: none;
+}
 #menu_button{
-	float: right;
+	position: absolute;
+	right: 10px;
 }
 @media all and (min-width: 800px) {
 	#menu_button{
 		visibility: hidden;
 	}
 }
-
-/***************************************/
-/*           Content                   */
-/***************************************/
-#content{
-	position: relative;
-	padding: 0;
-}
-#content.main{
-	left: 40%;
-	width: 60%;
-}
-#content.home{
-	left: 0;
-	width: 40%;
-}
-
-.ui-body-a .ui-link:hover {
-	color: #FFFFFF !important;
-	cursor: pointer;
-}
-.ui-focus, .ui-btn:focus {
-	-moz-box-shadow: none !important;
-	-webkit-box-shadow: none !important;
-	box-shadow: none !important;
-}
-
-/* Small screen variation */
-@media all and (max-width: 800px) {
-	#content{
-		left: 0 !important;
-		width: 100% !important;
+@media all and (max-width: 500px) {
+	#header .hide img{
+		visibility: hidden;
+		width: 0;
 	}
 }
 
-/***************************************/
-/*           Main menu                 */
-/***************************************/
-#menu.ui-panel{
-	top: 60px;
+
+/*****************************************************************************/
+/*                     Menu panels                                           */
+/*****************************************************************************/
+.ui-panel{
+	width: 300px;
+	max-width: 100%;
 }
-#menu .ui-panel-inner {
-    padding:0px;
+.menupanel .ui-panel-inner {
+    padding-top: 60px;
 }
-#menu .ui-controlgroup {
+.menupanel nav{
     margin:0;
 }
+.menupanel a{
+	overflow: visible;
+	height: 20px;
+}
+.menupanel nav li a{
+	height: 60px;
+	padding-top: 0;
+	padding-bottom: 0;
+}
+.menupanel nav li a img{
+	height: 100%;
+}
+.menupanel nav li h1{
+	margin-top: 20px;
+}
+.menupanel section>div>a{
+	margin-top: 20px;
+}
 
-#menu.main.ui-panel {
-	left: 0;
-	width: 40%;
+@media all and (min-width: 800px){
+
+	.ui-panel{
+		position: fixed;
+		width: 38%;
+		visibility: visible;
+		overflow: visible;
+		-webkit-backface-visibility: visible;
+		-ms-transform: none !important;
+		-webkit-transform: none !important;
+		transform: none !important;
+	}
+	.ui-panel-closed{
+		clip: auto;
+	}
+}
+
+#rendermenu section{
+	margin-left: -16px;
+	margin-right: -16px;
+}
+#rendermenu section li.devider{
+	height: 40px;
+}
+#rendermenu section li.devider a{
+	height: 40px;
+}
+#rendermenu section li.devider h1{
+	margin-top: 8px;
+	margin-bottom: 8px;
+}
+#rendermenu a.add_page{
+	margin-left: 16px;
+	margin-right: 16px;
+}
+#renderpage section{
+	position: relative;
+}
+/*****************************************************************************/
+/*                     Popups                                                */
+/*****************************************************************************/
+#requestpopup{
+	bottom: 20px;
+}
+div.def div.options{
+	display: inline-block;
+	width: 84%;
+}
+div.def div.move{
+	display: inline-block;
+	width: 14%;
+	vertical-align: top;
+}
+
+
+/*****************************************************************************/
+/*                     Content                                               */
+/*****************************************************************************/
+div[data-role="page"]{
+	-webkit-overflow-scrolling: touch;
+}
+.ui-content header{
+	position: relative;
+}
+.ui-content header img{
+	position: relative;
+	height: 60px;
+	vertical-align: middle;
+}
+.ui-content header h1{
+	display: inline-block;
+	margin-top: 5px;
+	margin-bottom: 5px;
+}
+.ui-content header div.value{
+	position: absolute;
+	top: 10px;
+	right: 10px;
+	font-weight: 600;
+}
+.ui-content section{
+	text-align: center;
+	line-height: 1em;
+}
+section div.endofsection{
+	width: 100%;
+	height: 0;
+	display: inline-block;
+	position: relative;
 }
 
 @media all and (min-width: 800px) {
-	#menu.home.ui-panel {
-		left: 40%;
-		width: 60%;
-	}
-	#menu.ui-panel {
-		visibility: visible;
-		-ms-transform: none;
-		-webkit-transform: none;
-		transform: none;
+	div [data-role="content"]{
+		position: relative;
+		left: 38%;
+		width: 58%;
 	}
 }
-#menu nav {
+.ui-content header a.edit_page{
+	position: absolute;
+	top: -10px;
+	left: -10px;
+}
+
+.ui-block-a div.ui-input-text,.ui-block-b div.ui-input-text,.ui-block-c div.ui-input-text,.ui-block-d div.ui-input-text,.ui-block-e div.ui-input-text{
 	margin: 0;
+	border-radius: 0 !important;
 }
-#menu nav .ui-li-thumb{
-	width: 60px;
-	height: 60px;
-}
-
-.ui-link-inherit{
-	min-height: 10px !important;
-	padding-top: 20px !important;
-	padding-bottom: 20px !important;
-	padding-left: 5em !important;
-}
-.ui-body-a{
-	border: 0px !important;
+.ui-block-a div.ui-input-text input,.ui-block-b div.ui-input-text input,.ui-block-c div.ui-input-text input,.ui-block-d div.ui-input-text input,.ui-block-e div.ui-input-text input{
+	min-height: 1.2em;
+	padding-top: 0.1em;
+	padding-bottom: 0.1em;
 }
 
 
-/* Small screen variation */
-@media all and (max-width: 800px) {
-	#menu.ui-panel-open {
-		width: 100% !important;
-	}
-}
-
-
-/***************************************/
-/*           Article                   */
-/***************************************/
-article{
-	position: relative;
-	display: block;
+.labeledfield{
 	width: 100%;
 }
-
-
-
-article>header>img{
-	position: relative;
-	width: 60px;
-	height: 60px;
-	vertical-align: middle;
-	margin-left: 15px;
-	margin-top: 0px;
-}
-article>header>h1{
+.labeledfield div.label{
 	display: inline-block;
-	margin-top: 20px;
-	margin-bottom: 15px;
-	margin-left: 10px;
+	width: 20%;
+	min-width: 100px;
 }
-article>header>div{
-	position: relative;
-	float: right;
-	vertical-align: middle;
-	margin-right: 100px;
-	margin-top: 20px;
-	font-weight: bold;
-}
-article>section.ui-collapsible,article>section.ui-collapsible-set{
-	width: 90%;
-	margin-left: auto;
-	margin-right: auto;
-}
-article section div.twocols{
-	-moz-column-count:2; 
-	-webkit-column-count:2; 
-	column-count:2;
-
-	-moz-column-gap: 0px; 
-	-webkit-column-gap: 0px; 
-	column-gap: 0px;
-}
-article hr{
-	width: 90%;
+.labeledfield div.ui-input-text{
+	display: inline-block;
+	width: 70% !important;
+	margin: 0.1em 0;
 }
 
 
-/***************************************/
-/*           Popup                   */
-/***************************************/
-#requestpopup{
-	bottom: 20px;
+#widget_def_popup div.ui-input-text{
+	margin: 0.1em 0;
+}
+#widget_def_popup div.ui-input-text  input{
+	  padding: .2em .4em;
+	  min-height: 1.2em;
 }

@@ -1,50 +1,28 @@
+<!--
+    Copyright 2015 Brecht Baeten
+    This file is part of KNXControl.
+
+    KNXControl is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    KNXControl is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with KNXControl.  If not, see <http://www.gnu.org/licenses/>.
+-->
+
 <?php
 	session_start();
 	
-	// functions
-	include('data/mysql.php');
-	include('data/authentication.php');
-	include('modules/macros_structure.php');
-	include('modules/macros_basic.php');
-	include('modules/macros_charts.php');
-	include('modules/macros_weather.php');
-	include('modules/macros_alarms.php');
-	include('modules/macros_heating.php');
-	
-	
+	// error reporting for debugging
 	ini_set('display_startup_errors',1);
 	ini_set('display_errors',1);
 	error_reporting(-1);
-
-	if(array_key_exists('page',$_GET)){
-		$page = $_GET['page'];
-		$page_class = 'main';
-	}
-	else{
-		$page = 'modules/home';
-		$page_class = 'home';
-	}
-	
-	// check if the server is accessed over the internet
-	if(array_key_exists('web',$_GET)){
-		$web = $_GET['web'];
-	}
-	else{
-		$web = 0;
-	}
-	
-	if($_SESSION['userid']>0){
-		// get ip and port from mysql
-		$result = mysql_query("SELECT * FROM data WHERE id = 1");
-		$data = mysql_fetch_array($result);
-		if($web){
-			$smarthome_adress = $data['web_ip'];
-			$smarthome_port = $data['web_port'];
-		}
-		else{
-			$smarthome_adress = $data['ip'];
-			$smarthome_port = $data['port'];
-		}	
 ?>
 
 <!DOCTYPE html>
@@ -64,75 +42,44 @@
 		<link rel='icon' href='favicon.ico' type='image/x-icon' />
 
 		<!-- jquery mobile -->
-		<script src='jquery/jquery-1.8.3.js'></script>
-		<script src='jquery/jquery.mobile-1.3.2.js'></script>
-		<link rel='stylesheet' href='jquery/jquery.mobile-1.3.2.css'>
+		<script src='lib/jquery-1.11.0.min.js'></script>
+		<script src='lib/jquery.mobile-1.4.5.min.js'></script>
+		<link rel='stylesheet' href='lib/jquery.mobile-1.4.5.min.css'/>
+		<link rel='stylesheet' href='lib/jquery.mobile.icons-1.4.5.min.css'/>
 		
 		<!-- highcharts -->
-		<script type='text/javascript' src='js/highstock.js' ></script>
-		<script src='js/highchartstheme.js'></script>
-		
-		<!-- smarthome.py -->
-		<script type='text/javascript' src='js/io_smarthome.py.js'></script>
-		<script type='text/javascript' src='js/widget.js'></script>
+		<script type='text/javascript' src='lib/highstock.js' ></script>
+		<script src='lib/highchartstheme.js'></script>
 		
 		<!-- knxcontrol -->
-		<script type='text/javascript' src='js/menu.js'></script>
-		<script type='text/javascript' src='js/alarms.js'></script>
-		<script type='text/javascript' src='js/measurements.js'></script>
-		<script type='text/javascript' src='js/charts.js'></script>
-		<script type='text/javascript' src='js/weather.js'></script>
+		<script type='text/javascript' src='js/language_dutch.js'></script>
+		<script type='text/javascript' src='js/smarthome.js'></script>
+		<script type='text/javascript' src='js/knxcontrol.js'></script>
+		<script type='text/javascript' src='js/widgets.js'></script>
+		<script type='text/javascript' src='js/view.js'></script>
+		<script type='text/javascript' src='js/pagebuilder.js'></script>
+				
 		<link rel='stylesheet' type='text/css' href='css/layout.css'/>
 		<link rel='stylesheet' type='text/css' href='css/widget.css'/>
 	</head>
 	<body>
-		<script type='text/javascript'>
-			io.init('<?php echo $smarthome_adress; ?>', '<?php echo $smarthome_port; ?>');
-		
-			// Do some actions before page is shown
-			$(document).on('pagebeforeshow', function () {
-				//fx.init();
-				//repeater.init();
-				widget.prepare();
-				//repeater.list();
-			});
 
-			// Run the io and all widgets
-			$(document).on('pageshow', function () {
-				io.run(1);
-				// console.log('[io] run');       	
-				//notify.display();
-				// widget.list();
-			});
-
-			//$.mobile.page.prototype.options.domCache = true;
-		</script>
+<?php
+	include("data/authentication.php");
 	
+	if($_SESSION['user_id']>0){
 	
-		<div id='page' data-role='page' data-theme='a'>
-			<div data-role='header' id='header' data-position='fixed' data-tap-toggle='false'>
-				<?php include("modules/header.php"); ?>
-			</div>
-			<div data-role='panel' id='menu' class='<?php echo $page_class;?>' data-theme='a' data-display='overlay' data-position='left' data-position-fixed='true' data-dismissable='false'>
-				<?php include("pages/menu.php"); ?>
-			</div>
-			<div data-role='content' id='content' class='<?php echo $page_class;?>'>
-				<?php include("$page.php"); ?>
-			</div>
-		</div>
-
+		include("pages/pages.html");
+		include("pages/menu.html");
+		include("data/header.php");
+		include("data/modules.php");
+		include("data/templates.php");
 		
-	</body>
-</html>
-
-<?php 
-	}
-	elseif($page=='modules/set_cookie'){
-		include("modules/set_cookie.php");
 	}
 	else{
-		echo "No permission!";
-		echo "<meta http-equiv='refresh' content='0; URL=index.php?web=$web&page=modules/set_cookie'>";
+		include("data/login.php");
 	}
-?>
-	
+?>		
+
+	</body>
+</html>

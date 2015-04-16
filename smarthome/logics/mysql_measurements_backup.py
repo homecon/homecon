@@ -29,9 +29,9 @@ endtimestamp = int( (endddate - epoch).total_seconds() )
 
 DB_HOST = 'localhost'
 DB_USER = 'knxcontrol'
-DB_USER_PASSWORD = sh.building.mysql.conf['password']
+DB_USER_PASSWORD = sh.knxcontrol.mysql.conf['password']
 DB_NAME = 'knxcontrol'
-BACKUP_PATH = sh.building.mysql.conf['backupdir']
+BACKUP_PATH = sh.knxcontrol.mysql.conf['backupdir']
 
 if BACKUP_PATH:
 	# Getting current datetime to create separate backup folder like "12012013-071334".
@@ -39,7 +39,7 @@ if BACKUP_PATH:
 
 	# Starting actual database backup process.
 	logger.warning(BACKUP_PATH)
-	dumpcmd = "mysqldump -u " + DB_USER + " -p" + DB_USER_PASSWORD + " --skip-add-drop-table " + DB_NAME + " measurements measurements_weekaverage measurements_monthaverage" + " --where='time>="+str(starttimestamp)+" AND time <"+str(endtimestamp)+"' > " + BACKUP_PATH + "/" + DB_NAME + "_measurements_" + DATETIME  + ".sql"
+	dumpcmd = "mysqldump -u " + DB_USER + " -p" + DB_USER_PASSWORD + " --skip-add-drop-table " + DB_NAME + " measurement measurement_average_quarterhour measurement_average_week measurement_average_month" + " --where='time>="+str(starttimestamp)+" AND time <"+str(endtimestamp)+"' > " + BACKUP_PATH + "/" + DB_NAME + "_measurements_" + DATETIME  + ".sql"
 	os.system(dumpcmd)
 
-	logger.warning("Measurements backup created")
+	logger.info("Measurements backup created")

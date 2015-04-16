@@ -1,455 +1,581 @@
-/***************************************/
-/*          Widgets                    */
-/***************************************/
-/*----------------------------------------------------------------------------------*/
-/*   switch                                                                         */
-/*----------------------------------------------------------------------------------*/
-span.switch{
-	display: inline-block;
-	padding-top: 10px;
-	width: 100%;
-}
-.switch a>img{
-	width: 50px;
-	height: 50px;
-	vertical-align: middle;
-	margin-right: 10px;
-}
-.switch a>div{
-	margin-top: 15px;
-	margin-bottom: 15px;
-	margin-left: 70px;
-}
-.switch a{
-	color: #ffffff !important;
-	font-size: 100% !important;
-	font-weight: bold !important;
-}
-/* Small screen variation */
-@media all and (max-width: 800px) {
-	.switch a{
-		font-size: 80% !important;
-	}
-}
-
-/*----------------------------------------------------------------------------------*/
-/* dimmer                                                                           */
-/*----------------------------------------------------------------------------------*/
-span.dimmer{
-	display: inline-block;
-	padding-top: 10px;
-	width: 100%;
-}
-.dimmer>span.switch{
-	float: left;
-	width: 60px;
-	padding-top: 2px;
-}
-.dimmer>p{
-	margin-top: 2px;
-	margin-bottom: 4px;
-	font-weight: bold !important;
-}
-.dimmer .ui-slider{
-	margin-top: 2px;
-}
-.dimmer input.ui-slider-input {
-	display : none !important;
-}
-/* Small screen variation */
-@media all and (max-width: 800px) {
-	.dimmer p{
-		font-size: 80% !important;
-	}
-}
-
-/*----------------------------------------------------------------------------------*/
-/* shade-control                                                                    */
-/*----------------------------------------------------------------------------------*/
-span.shading{
-	display: inline-block;
-	position: relative;
-	padding-top: 10px;
-	width: 100%;
-}
-.shading p{
-	font-weight: bold !important;
-	text-align: center;
-	margin-left: auto;
-	margin-right: auto;
-	margin-top: 5px;
-	margin-bottom: 5px;
-}
-.shading>a>img {
-	width: 50px;
-	height: 50px;
-}
-.shading>a{
-	position: absolute;
-	top: 25px;
-}
-.shading>a.left{
-	left: 0px;
-}
-.shading>a.right{
-	right: 0px;
-}
-.shading .ui-slider{
-	margin-top: 2px;
-	margin-left: 60px;
-	margin-right: 60px;
-}
-.shading .ui-slider-track{
-	margin-left: 15px;
-}
-.shading input.ui-slider-input {
-	display: none !important;
-}
-/* Small screen variation */
-@media all and (max-width: 800px) {
-	.shading p{
-		font-size: 80% !important;
-	}
-}
-
-/*----------------------------------------------------------------------------------*/
-/* button                                                                           */
-/*----------------------------------------------------------------------------------*/
 /*
-a.ui-mini span{
-	width: 100px;
-}
+    Copyright 2015 Brecht Baeten
+    This file is part of KNXControl.
+
+    KNXControl is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    KNXControl is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with KNXControl.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-/*----------------------------------------------------------------------------------*/
-/* alarm                                                                            */
-/*----------------------------------------------------------------------------------*/
+/*****************************************************************************/
+/*                     General                                               */
+/*****************************************************************************/
+a.edit_widget{
+	position: absolute;
+	margin: 0;
+}
+a.edit_page_section{
+	position: absolute;
+	margin: 0;
+	top: -10px;
+	left: -10px;
+}
+a.edit_page{
+	position: absolute;
+	margin: 0;
+}
+div[data-role="fieldcontain"]{
+	padding: .1em 0;
+}
 
-a.delete img{
-	float: right;
-	margin-top: 20px;
-	height: 30px;
-}
-div.alarm{
+/*****************************************************************************/
+/*                     Separator line                                        */
+/*****************************************************************************/
+div[data-role="line"]{
+	display: block;
 	position: relative;
-	margin-bottom: 20px;
-	margin-top: 10px;
+	height: 0px;
+	margin-top: 5px;
+	margin-bottom: 5px;
+	width: 98%;
 }
-.alarm div.ui-input-text {
-	width: 170px;
+div[data-role="line"].line{
+	border-bottom: solid 1px #ddd;
+}
+#home_pagebuilder div[data-role="line"]{
+	height: 5px;
+	border-bottom: solid 1px #444;
+}
+#home_pagebuilder div[data-role="line"].line{
+	border-bottom: solid 1px #ddd;
+}
+#home_pagebuilder div[data-role="line"] a.edit_widget{
+    top: -15px;
+	right: -5px;
+}
+/*****************************************************************************/
+/*                     Light switch                                          */
+/*****************************************************************************/
+div[data-role="lightswitch"]{
+	display: inline-block;
+	position: relative;
+	height: 50px;
+	width: 49%;
+	min-width: 200px;
+	text-align: left;
 	float: left;
 }
-.alarm input[type="time"]{
-	font-size: 280%;
+div[data-role="lightswitch"] a{
+	text-decoration: none;
+	color: #FFF !important;
+}
+div[data-role="lightswitch"] img{
+	height: 50px;
+	vertical-align: middle;
+}
+
+div[data-role="lightswitch"] a:hover {
+	color: #FFF;
+}
+
+#home_pagebuilder div[data-role="lightswitch"]{
+	margin-bottom: 5px;
+	margin-right: 1%;
+	width: 48%;
+	border: solid 1px #222;
+}
+#home_pagebuilder div[data-role="lightswitch"] a.edit_widget{
+    top: -5px;
+	right: -5px;
+}
+
+/*****************************************************************************/
+/*                     Light dimmer                                          */
+/*****************************************************************************/
+div[data-role="lightdimmer"]{
+	display: inline-block;
+	position: relative;
+	height: 60px;
+	width: 98%;
+	text-align: left;
+}
+div[data-role="lightdimmer"] img{
+	height: 50px;
+	vertical-align: middle;
+	float: left;
+}
+div[data-role="lightdimmer"] p{
+	position: absolute;
+	margin-left: 54px;
+	margin-top: 5px;
+	font-weight: 700;
+}
+div[data-role="lightdimmer"] .ui-slider{
+	margin-left: 64px;
+	margin-right: 64px;
+	margin-top: 25px;
+	margin-bottom: 0;
+}
+div[data-role="lightdimmer"] .ui-slider-track{
+	margin-left: 0;
+	margin-right: 0;
+}
+div[data-role="lightdimmer"] .ui-slider input{
+	visibility: hidden;
+}
+
+#home_pagebuilder div[data-role="lightdimmer"]{
+	border: solid 1px #222;
+}
+#home_pagebuilder div[data-role="lightdimmer"] a.edit_widget{
+    top: -5px;
+	right: -5px;
+}
+
+
+/*****************************************************************************/
+/*                     Shading                                               */
+/*****************************************************************************/
+div[data-role="shading"]{
+	display: inline-block;
+	position: relative;
+	height: 70px;
+	width: 98%;
+	text-align: left;
+}
+div[data-role="shading"] img{
+	height: 50px;
+	margin-top: 10px;
+	vertical-align: middle;
+	float: left;
+}
+div[data-role="shading"] .close img{
+	float: right;
+}
+div[data-role="shading"] p{
+	position: absolute;
+	margin-left: 54px;
+	margin-top: 5px;
+	font-weight: 700;
+}
+div[data-role="shading"] .ui-slider{
+	margin-left: 64px;
+	margin-right: 64px;
+	margin-top: 25px;
+	margin-bottom: 0;
+}
+div[data-role="shading"] .ui-slider-track{
+	margin-left: 0;
+	margin-right: 0;
+}
+div[data-role="shading"] .ui-slider input{
+	visibility: hidden;
+	width: 0;
+}
+div[data-role="shading"] a.edit_widget{
+	position: absolute;
+    top: -10px;
+	right: 50px;
+}
+#home_pagebuilder div[data-role="shading"]{
+	border: solid 1px #222;
+}
+#home_pagebuilder div[data-role="shading"] a.edit_widget{
+    top: -5px;
+	right: -5px;
+}
+
+/*****************************************************************************/
+/*                     Alarm                                                 */
+/*****************************************************************************/
+div[data-role="alarm"]{
+	width: 98%;
+	text-align: left;
+}
+div[data-role="alarm"] div.alarm{
+	position: relative; 
+	margin-bottom: 5px;
+	padding: 5px;
+}
+div[data-role="alarm"] input[type="time"]{
+	font-size: 2.5em;
 	padding: 0 !important;
 }
-.alarm h1{
-	float: left;
-	margin-top: 15px;
-	margin-left: 5px;
+div[data-role="alarm"] div.ui-input-text{
+	width: 14.5em;
 }
-.alarm div.days{
-	clear: both;
+div[data-role="alarm"] div.ui-input-text input{
+	min-height: 0 !important;
 }
-@media all and (max-width: 600px) {
-	.alarm div.ui-input-text{
-		width: 150px;
-	}
-	.alarm input[type="time"]{
-		font-size: 200%;
-	}
-	.alarm h1{
-		margin-top: 5px;
-	}
-	.alarm  div.ui-controlgroup-controls{
-		width: 100% !important;
-	}
-	.alarm  div.ui-controlgroup div.ui-checkbox{
-		width:14% !important;
-	}
-	.alarm  div.ui-controlgroup span.ui-btn-inner{
-		padding-left: 1px !important;
-		padding-right: 1px !important;
-	} 
+div[data-role="alarm"] a.delete{
+	position: absolute; 
+	top: 0;
+	right: 0;
+	margin: 5px;
 }
-	float: right;
-	margin-top: 20px;
-	height: 30px;
+div[data-role="alarm"] label{
+	padding-left: 8px;
+	padding-right: 8px;
 }
-div.alarm{
+#home_pagebuilder div[data-role="alarm"]{
+	margin-bottom: 5px;
+	border: solid 1px #222;
+}
+
+
+
+/*****************************************************************************/
+/*                     Action list                                           */
+/*****************************************************************************/
+div[data-role="action_list"]{
+	width: 98%;
+	text-align: left;
+}
+div[data-role="action_list"] div.action{
 	position: relative;
-	margin-bottom: 20px;
-	margin-top: 10px;
+	margin: 0;
 }
-.alarm div.ui-input-text {
-	width: 170px;
-	float: left;
+div[data-role="action_list"] a.delete{
+	position: absolute; 
+	top: 0;
+	right: 0;
+	margin: 1px;
 }
-.alarm input[type="time"]{
-	font-size: 280%;
-	padding: 0 !important;
+div[data-role="action_list"] a.edit{
+	position: absolute; 
+	top: 0;
+	right: 50px;
+	margin: 1px;
 }
-.alarm h1{
-	float: left;
-	margin-top: 15px;
-	margin-left: 5px;
-}
-.alarm div.days{
-	clear: both;
-}
-@media all and (max-width: 600px) {
-	.alarm div.ui-input-text{
-		width: 150px;
-	}
-	.alarm input[type="time"]{
-		font-size: 200%;
-	}
-	.alarm h1{
-		margin-top: 5px;
-	}
-	.alarm  div.ui-controlgroup-controls{
-		width: 100% !important;
-	}
-	.alarm  div.ui-controlgroup div.ui-checkbox{
-		width:14% !important;
-	}
-	.alarm  div.ui-controlgroup span.ui-btn-inner{
-		padding-left: 1px !important;
-		padding-right: 1px !important;
-	} 
+div[data-role="action_list"] div.action div{
+	font-weight: 600;
+	padding: 6px;
+	width: 70%;
+	border-bottom: 1px solid #222;
 }
 
-/*----------------------------------------------------------------------------------*/
-/* alarm action                                                                     */
-/*----------------------------------------------------------------------------------*/
-
-
-
-div.alarm_action{
-	position: relative;
-	margin-bottom: 20px;
-	margin-top: 10px;
+/* action definition popup */
+#action_def_popup .ui-field-contain{
+	border: 0;
 }
-.alarm_action>div.ui-input-text{
-	display: inline-block;
-	width: 35%;
-}
-.alarm_action div.alarm_action_action div.ui-input-text{
-	display: inline-block;
-}
-.alarm_action div.alarm_action_action input[data-column*=delay]{
-	width: 3.5em;
-}
-.alarm_action div.alarm_action_action input[data-column*='item']{
-	width: 20em;
-}
-.alarm_action div.alarm_action_action input[data-column*='value']{
-	width: 5em;
-}
-
-/*----------------------------------------------------------------------------------*/
-/*     setpoint                                                                     */
-/*----------------------------------------------------------------------------------*/
-div.setpoint p{
-	display: inline-block;
-	font-size: 150%;
-	margin-top: 9px;
-	margin-bottom: 0px;
-	vertical-align: top;
-}
-div.setpoint a.delete img{
-	float: right;
-	margin-top: 10px;
-	height: 30px;
-}
-div.setpoint div.ui-select{
-	display: inline-block;
-	width: 100px;
-	height: 40px;
-}
-div.setpoint div.ui-select a{
-	margin-top: 0px;
-	margin-bottom: 0px;
-}
-div.setpoint div.ui-input-text{
-	display: inline-block;
-	height: 40px;
-	margin-top: 0px;
-	margin-bottom: 0px;
-	margin-left: 10px;
-	padding: 0px;
-	vertical-align: top;
-}
-.setpoint input[type="time"]{
-	font-size: 150%;
-	padding-left: 10px !important;
-	padding-top: 2px !important;
-}
-.setpoint input[type="number"]{
-	font-size: 150%;
-	width: 60px;
-	padding-left: 10px !important;
-	padding-top: 4px !important;
-}
-div.setpoint_chart{
+#action_def_popup .ui-grid-b{
 	width: 100%;
-	height: 150px;
-	margin-bottom: 10px;
 }
-@media all and (max-width: 600px) {
-	.setpoint input[type="time"]{
-		font-size: 100%;
-		padding-top: 8px !important;
-	}
-	.setpoint input[type="number"]{
-		font-size: 100%;
-		padding-top: 8px !important;
-	}
+#action_def_popup .ui-block-a{
+	width: 15%; 
 }
-@media all and (max-width: 400px) {
-	div.setpoint div.ui-input-text{
-		margin-left: 0px;
-	}
-	div.setpoint div.ui-select{
-		width: 80px;
-	}
+#action_def_popup .ui-block-b{
+	width: 69%
+}
+#action_def_popup .ui-block-c{
+	width: 15%
 }
 
-/*----------------------------------------------------------------------------------*/
-/*     Weather forecast                                                             */
-/*----------------------------------------------------------------------------------*/
-#weather_forecast_detailed{
-	width: 95%;
-	margin-left: auto;
-	margin-right: auto;
+/*****************************************************************************/
+/*                     Measurement list                                      */
+/*****************************************************************************/
+div[data-role="measurement_list"]{
+	width: 98%;
+	text-align: left;
 }
-#weather_forecast_detailed .forecast_details{
-	margin-top: 1em;
+div[data-role="measurement_list"] div.measurement{
+	position: relative;
+	margin: 0;
+}
+div[data-role="measurement_list"] a.delete{
+	position: absolute; 
+	top: 0;
+	right: 0;
+	margin: 1px;
+}
+div[data-role="measurement_list"] a.edit{
+	position: absolute; 
+	top: 0;
+	right: 50px;
+	margin: 1px;
+}
+div[data-role="measurement_list"] div.measurement div.id{
 	display: inline-block;
-	width: 19%;
-	text-align: center;
+	padding: 6px;
+	width: 5%;
 }
-#weather_forecast_detailed .forecast_details img{
-	width: 90%;
-	margin-left: auto;
-	margin-right: auto;
-}
-
-#weather_forecast_averaged{
-	width: 95%;
-	margin-left: auto;
-	margin-right: auto;
-}
-#weather_forecast_averaged .forecast_details{
-	margin-top: 1em;
+div[data-role="measurement_list"] div.measurement div.name{
 	display: inline-block;
-	width: 24%;
-	text-align: center;
+	font-weight: 600;
+	padding: 6px;
+	width: 60%;
+	border-bottom: 1px solid #222;
 }
-#weather_forecast_averaged .forecast_details img{
+
+/* action definition popup */
+#measurement_def_popup-popup{
+	width: 90%;
+}
+#measurement_def_popup .ui-field-contain{
+	border: 0;
+}
+
+/*****************************************************************************/
+/*                     Settings                                              */
+/*****************************************************************************/
+div[data-role="settings"]{
+	width: 98%;
+	text-align: left;
+}
+
+/*****************************************************************************/
+/*                     Clock                                                 */
+/*****************************************************************************/
+
+div[data-role="clock"] {
+	position: relative;
 	width: 90%;
 	margin-left: auto;
 	margin-right: auto;
-}
-
-#current_weather{
-	width: 95%;
-	margin-left: auto;
-	margin-right: auto;
 	text-align: center;
 }
-#current_weather img{
-	max-height: 180px;
-}
-
-/*        clock        */
-/*---------------------*/
-section.clock{
-	width: 90%;
-	margin-top: 20px;
-	margin-left: auto;
-	margin-right: auto;
-	text-align: center;
-}
-.clock  .hours, .clock  .minutes{
+div[data-role="clock"] .time>div{
 	position: relative;
 	display: inline-block;
 }
-.clock  .bg{
-	position: relative;
+div[data-role="clock"] img{
+	height: 100px;
 }
-.clock  .nr{
+div[data-role="clock"] img.hoursLeft, div[data-role="clock"] img.minutesLeft{
 	position: absolute;
 	top: 0px;
-	left: 8px;
+	left: 10px;
 }
-.clock  hr{
+div[data-role="clock"] img.hoursRight, div[data-role="clock"] img.minutesRight{
+	position: absolute;
+	top: 0px;
+	right: 10px;
+}
+div[data-role="clock"]  hr{
 	position: absolute;
 	top: 40px;
 	left: 6px;
 	width: 86px;
 }
-.clock img{
-	height: 100px;
-	z-index:-1;
-}
-.clock p{
+div[data-role="clock"] .date{
 	margin-top: 0;
 	margin-bottom: 0;
 }
+#home_pagebuilder div[data-role="clock"]{
+	margin-bottom: 5px;
+	border: solid 1px #222;
+}
+#home_pagebuilder div[data-role="clock"] a.edit_widget{
+    top: -5px;
+	right: -5px;
+}
 
-/*        weather        */
-/*---------------------*/
-section.lokaal_weer{
-	width: 90%;
-	margin-top: 20px;
+/*****************************************************************************/
+/*                     Weather block                                       */
+/*****************************************************************************/
+div[data-role="weather_block"]{
+	position: relative;
+	display: inline-block;
+	width: 98%;
 	margin-left: auto;
 	margin-right: auto;
 	text-align: center;
 }
-section.lokaal_weer div{
-
+div[data-role="weather_block"] img{
+	width: 90%;
+	max-width: 300px;
+	margin-top: -10px;
+	margin-bottom: -10px;
 }
-
-/*        charts       */
-/*---------------------*/
-div.chart{
+div[data-role="weather_block"] div{
+	height: 20px;
+}
+div[data-role="weather_block"] div[data-field="date"]{
+	height: 0;
+}
+div[data-role="weather_block"].mini{
+	width: 20%;
+	min-width: 75px;
+	max-width: 150px;
+	margin-left: 0;
+	margin-right: 0;
+	font-size: 0.9em;
+}
+div[data-role="weather_block"].mini img{
 	width: 100%;
-	height: 300px;
-	margin-bottom: 10px;
-
+	margin-bottom: -10px;
+}
+div[data-role="weather_block"].mini div{
+	height: 15px;
+}
+#home_pagebuilder div[data-role="weather_block"]{
+	margin-bottom: 5px;
+	border: solid 1px #222;
+}
+#home_pagebuilder div[data-role="weather_block"] a.edit_widget{
+    top: -5px;
+	right: -5px;
 }
 
-/*----------------------------------------------------------------------------------*/
-/*     setpoint                                                                     */
-/*----------------------------------------------------------------------------------*/
-div.measurements_define div.ui-input-text{
+/*****************************************************************************/
+/*                     Chart                                                 */
+/*****************************************************************************/
+div[data-role="chart"]{
+	width: 98%;
+	position: relative;
+	margin-bottom: 5px;
+}
+#home_pagebuilder div[data-role="chart"]{
+	border: solid 1px #222;
+}
+#home_pagebuilder div[data-role="chart"] a.edit_widget{
+	z-index: 1;
+    top: -5px;
+	right: -5px;
+}
+
+/*****************************************************************************/
+/*                     Button                                                */
+/*****************************************************************************/
+div[data-role="btn"]{
+    display: inline-block;
+    position: relative;
+    margin: 0;
+    width: 24.5%;
+    min-width: 120px;
+}
+div[data-role="btn"] a{
+    margin: 0;
+    margin-right: -5px;
+    margin-bottom: -5px;
+    padding-left: 5px;
+    padding-right: 5px;
+}
+div[data-role="btn"] img{
+    position: absolute;
+    width: 30px;
+    height: 30px;
+    top: 5px;
+    left: 5px;
+}
+#home_pagebuilder div[data-role="btn"] a.edit_widget{
+	z-index: 1;
+    top: -5px;
+	right: -5px;
+}
+/*****************************************************************************/
+/*                     Ventilation control                                   */
+/*****************************************************************************/
+div[data-role="ventilation_control"]{
 	display: inline-block;
-	height: 30px;
-	margin-top: 0px;
-	margin-bottom: 0px;
+	position: relative;
+	width: 98%;
+	text-align: left;
 }
-div.measurements_define input[data-column="id"]{
-	width: 20px;
-	padding-top: 4px;
+div[data-role="ventilation_control"] p{
+	position: relative;
+	margin-left: 5px;
+	margin-top: 5px;
+	margin-bottom: 0;
+	font-weight: 700;
 }
-div.measurements_define input[data-column="item"]{
-	width: 220px;
-	padding-top: 4px;
+div[data-role="ventilation_control"] div.speedcontrol{
+	display: inline-block;
 }
-div.measurements_define input[data-column="name"]{
-	width: 80px;
-	padding-top: 4px;
+div[data-role="ventilation_control"] img{
+	height: 50px;
+	vertical-align: middle;
+	float: left;
 }
-div.measurements_define input[data-column="quantity"]{
-	width: 60px;
-	padding-top: 4px;
+div[data-role="ventilation_control"] a.auto img{
+	margin-right: 50px;
 }
-div.measurements_define input[data-column="unit"]{
-	width: 30px;
-	padding-top: 4px;
+#home_pagebuilder div[data-role="ventilation_control"]{
+	border: solid 1px #222;
 }
-div.measurements_define input[data-column="description"]{
-	width: 140px;
-	padding-top: 4px;
+#home_pagebuilder div[data-role="ventilation_control"] a.edit_widget{
+    top: -5px;
+	right: -5px;
 }
+
+/*****************************************************************************/
+/*                     Smarthome log                                         */
+/*****************************************************************************/
+div[data-role="smarthome_log"]{
+	display: inline-block;
+	position: relative;
+	width: 98%;
+	text-align: left;
+}
+div[data-role="smarthome_log"]>div{
+	margin-bottom: 5px;
+}
+div[data-role="smarthome_log"] div.time{
+	font-size: 0.7em;
+	color: #bbb;
+}
+div[data-role="smarthome_log"] div.message{
+	font-size: 0.9em;
+	padding-left: 10px;
+}
+
+/*****************************************************************************/
+/*                     Profile list                                          */
+/*****************************************************************************/
+div[data-role="profile_list"]{
+	width: 98%;
+	text-align: left;
+}
+div[data-role="profile_list"] div.profile{
+	position: relative;
+	margin: 0;
+}
+div[data-role="profile_list"] div.profile div.chart_container{
+	display: inline-block;
+	width: 100%;
+	max-width: 300px;
+	height: 100px;
+	margin-right: 10px;
+}
+div[data-role="profile_list"] div.profile div.data{
+	display: inline-block;
+	width: 200px;
+	height: 100px;
+}
+div[data-role="profile_list"] div.profile div.id{
+	display: inline-block;
+	padding: 6px;
+	width: 100%;
+}
+div[data-role="profile_list"] div.measurement div.name{
+	display: inline-block;
+	font-weight: 600;
+	padding: 6px;
+	width: 100%;
+}
+div[data-role="profile_list"] div.profile a.edit{
+	display: inline-block;
+/*
+	position: absolute; 
+	top: 0;
+	right: 50px;
+	margin: 1px;*/
+}
+
+/* profile definition popup */
+#profile_def_popup-popup{
+	width: 90%;
+}
+#profile_def_popup .ui-field-contain{
+	border: 0;
+}
+

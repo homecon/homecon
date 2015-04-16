@@ -6,7 +6,7 @@ now.replace( second=0, microsecond=0)
 
 
 # connect to the mysql database
-con = pymysql.connect('localhost', 'knxcontrol', sh.building.mysql.conf['password'], 'knxcontrol')
+con = pymysql.connect('localhost', 'knxcontrol', sh.knxcontrol.mysql.conf['password'], 'knxcontrol')
 cur = con.cursor()
 
 
@@ -15,10 +15,10 @@ timestamp = int( (now - datetime.datetime(1970,1,1)).total_seconds() )
 
 
 legend = con.cursor()
-legend.execute("SELECT id,item FROM measurements_legend WHERE item <> ''")
+legend.execute("SELECT id,item FROM measurement_legend WHERE item <> ''")
 
 # create mysql querry
-query = "INSERT INTO measurements (signal_id,time,value) VALUES "
+query = "INSERT INTO measurement (signal_id,time,value) VALUES "
 
 
 # run through legend
@@ -27,7 +27,7 @@ for measurement in legend:
 		item = sh.return_item(measurement[1])
 		query = query + "(%s,%s,%f)," % (measurement[0],timestamp,item())
 	except:
-		logger.warning( "legend entry "+measurement[0]+": "+ measurement[1]+", is not an item")
+		logger.warning( "legend entry "+measurement[0]+": "+measurement[1]+", is not an item")
 	
 query = query[:-1]
 
