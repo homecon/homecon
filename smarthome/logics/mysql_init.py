@@ -112,7 +112,7 @@ except:
 
 # measurements legend
 query = ("CREATE TABLE IF NOT EXISTS `measurement_legend` ("
-         "`id` tinyint(4) NOT NULL AUTO_INCREMENT,"
+         "`id` int(11) NOT NULL AUTO_INCREMENT,"
          "`item` varchar(255) DEFAULT NULL,"
          "`name` varchar(255) DEFAULT NULL,"
          "`quantity` varchar(255) DEFAULT NULL,"
@@ -262,13 +262,13 @@ logger.info("Database initialized")
 # Create entries in measurements_legend for items that must be logged
 
 query = "REPLACE INTO measurement_legend (id,item,name,quantity,unit,description) VALUES "
-id = 0
+
 
 # current weather 15 components max
-id = id+1
+id = 0
 query = query+"('"+str(id)+"','knxcontrol.weather.current.temperature','Temperature','Temperature','degC','Ambient temperature'),"
 id = id+1
-query = query+"('"+str(id)+"','knxcontrol.weather.current.irradiation.theoretical.azimut','Azimut','Angle','deg','Solar azimut (0deg id South)'),"
+query = query+"('"+str(id)+"','knxcontrol.weather.current.irradiation.theoretical.azimut','Azimut','Angle','deg','Solar azimut (0deg is south)'),"
 id = id+1
 query = query+"('"+str(id)+"','knxcontrol.weather.current.irradiation.theoretical.altitude','Altitude','Angle','deg','Solar altitude'),"
 id = id+1
@@ -290,7 +290,7 @@ query = query+"('"+str(id)+"','knxcontrol.weather.current.wind.direction','Wind 
 
 
 # leave some blanks
-id = 15
+id = 20
 # energy use 5 components max
 id = id+1
 query = query+"('"+str(id)+"','knxcontrol.energy.electricity','Electricity','Power','W','Electricity use'),"
@@ -302,8 +302,9 @@ id = id+1
 query = query+"('"+str(id)+"','knxcontrol.energy.water','Water','Flow','l/min','Water use'),"
 
 
-# building zones 9 zones max
-id = 20
+
+# building zones 10 zones max
+id = 100
 for zone in sh.knxcontrol.building:
 	zone_name = zone.id().split(".")[-1]
 	id = id + 1
@@ -312,16 +313,16 @@ for zone in sh.knxcontrol.building:
 	query = query+"('"+str(id)+"','"+zone.airquality.id()+"','Air quality','Concentration','g CO2/m3','"+zone_name+" CO2 concentration'),"
 	
 
-# ventilation
-id = 38
-id = id+1
+# ventilation 10 systems max
+id = 120
+id = id + 1
 query = query+"('"+str(id)+"','knxcontrol.ventilation.fanspeed','Ventilation control','','-','Ventilation fan speed control signal'),"
-id = id+1
+id = id + 1
 query = query+"('"+str(id)+"','knxcontrol.ventilation.heatrecovery','Heat recovery control','','-','Ventilation heat recovery control signal'),"
 
 
 # heat production 10 systems max
-id = 40
+id = 140
 for system in sh.knxcontrol.heat.production:
 	system_name = system.id().split(".")[-1]
 	id = id + 1
@@ -331,7 +332,7 @@ for system in sh.knxcontrol.heat.production:
 
 
 # heat emission 10 systems max
-id = 60
+id = 160
 for system in sh.knxcontrol.heat.emission:
 	system_name = system.id().split(".")[-1]
 	id = id + 1
@@ -341,13 +342,15 @@ for system in sh.knxcontrol.heat.emission:
 
 
 # electricity generation 10 systems max
-id = 80
+id = 180
 for system in sh.knxcontrol.electricity.production:
 	system_name = system.id().split(".")[-1]
 	id = id + 1
-	query = query+"('"+str(id)+"','"+system.power.id()+"','"+system_name+" Power','Power','W','"+system_name+" heat emission'),"
+	query = query+"('"+str(id)+"','"+system.power.id()+"','"+system_name+" Power','Power','W','"+system_name+" electricity generation'),"
 	id = id + 1
 	query = query+"('"+str(id)+"','"+system.control.id()+"','"+system_name+" Control','','-','"+system_name+" control signal'),"
+
+
 
 
 # try to execute query
@@ -358,7 +361,6 @@ try:
 except:
 	logger.warning("could not add default measurements to database")
 	logger.warning(query)
-
 
 con.commit()	
 con.close()
