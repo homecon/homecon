@@ -1,23 +1,73 @@
 #!/usr/bin/python3
-###########################################################################
-# run system identification, execute every monday at 00:01
-###########################################################################
-
-# system equations:
-# C*dT/dt = UA*(T_amb-T) + n_ven*rc*V_flow_ven/3600*(T_amb-T_set) + n_int*W_flow_int + n_irr*Q_flow_irr + n_hp*W_flow_ahp + n_gas*Q_flow_gas
-# unknown parameters:
-# C, UA, n_ven, n_int, n_irr, n_ahp
 
 import pyipopt
-from numpy import *
+import numpy as np
 import pymysql
 import datetime
 
+con = pymysql.connect('localhost', 'knxcontrol', sh.knxcontrol.mysql.conf['password'], 'knxcontrol')
+cur = con.cursor()
 
+# get measurement data ids
+signal_id = {}
+
+signal_id['zone'] = []
+for child in sh.knxcontrol.building.children():
+	if child.conf['item'] != '':
+		cur.execute("SELECT id FROM  measurement_legend WHERE name=%s" %(child.temperature.id())
+		for data in cur:
+			signal_id['zone'].append(data['id'])
+		
+signal_id['fanspeed'] = []
+for child in sh.knxcontrol.ventilation.fanspeed
+	if child.conf['item'] != '':
+		cur.execute("SELECT id FROM  measurement_legend WHERE name=%s" %(child.id())
+		for data in cur:
+				signal_id['fanspeed'].append(data['id'])
+
+signal_id['heatrecovery'] = []
+for child in sh.knxcontrol.ventilation.heatrecovery
+	if child.conf['item'] != '':
+		cur.execute("SELECT id FROM  measurement_legend WHERE name=%s" %(child.id())
+		for data in cur:
+				signal_id['heatrecovery'].append(data['id'])
+
+signal_id['heat_production'] = []
+for child in sh.knxcontrol.heat.production.children():
+	if child.conf['item'] != '':
+		cur.execute("SELECT id FROM  measurement_legend WHERE name=%s" %(child.power.id())
+		for data in cur:
+			signal_id['heat_production'].append(data['id'])
+	
+signal_id['heat_emission'] = []
+for child in sh.knxcontrol.heat.emission.children():
+	if child.conf['item'] != '':
+		cur.execute("SELECT id FROM  measurement_legend WHERE name=%s" %(child.power.id())
+		for data in cur:
+			signal_id['heat_emission'].append(data['id'])
+	
+	
+	
+	
+	
+	
 # define time
 dt = 1800
-t = arange(0,7*24*3600,dt)
+t = np.arange(0,7*24*3600,dt)
 
+#######################################################################################
+# Model 1
+#######################################################################################
+if sh.knxcontrol.model==1:
+
+	# system equations:
+	# C*dT/dt = UA*(T_amb-T) + n_ven*fanspeed*(T_amb-T_set) + n_irr*P_irr + P_emi
+	# P_emi = sum( n_pro(i)*P_pro(i) )
+	# unknown parameters:
+	# C, UA, n_ven, n_irr, n_pro(i)
+	
+	
+		
 # define signals
 signal_id = {'T_amb': 1, 'T_zon': 15, 'V_flow_ven': 17, 'W_flow_tot': 9, 'W_flow_ahp': 10, 'Q_flow_gas': 11, 'Q_flow_irr': 19 }
 signal_val = {}
