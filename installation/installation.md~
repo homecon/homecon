@@ -305,9 +305,9 @@ $ sudo chmod 744 /usr/local/knxcontrol/smarthome/bin/smarthome.py
 $ sudo chmod 755 /usr/local/knxcontrol/smarthome/var/log/smarthome.log
 ```
 
-Copy the file "smarthome" from the installation folder to /etc/init.d
+Move the file "smarthome" from the installation folder to /etc/init.d
 ```
-$ sudo cp /usr/local/knxcontrol/installation/smarthome /etc/init.d/smarthome
+$ sudo mv /usr/local/knxcontrol/installation/smarthome /etc/init.d/smarthome
 ```
 
 Change the owner and group to root and set permissions
@@ -324,7 +324,7 @@ $ sudo update-rc.d smarthome defaults
 ### Test
 Start smarthome.py with
 ```
-$ sudo /etc/init.d/smarthome restart
+$ /etc/init.d/smarthome start
 ```
 
 And check the log file for errors
