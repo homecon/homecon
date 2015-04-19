@@ -65,6 +65,7 @@ for data in cur:
 # define time
 dt = 900
 t = np.arange(0,7*24*3600,dt)
+N = t.shape[0]-1
 
 now = datetime.datetime.utcnow();
 timestamp = int( (now - datetime.datetime(1970,1,1)).total_seconds() )
@@ -72,65 +73,89 @@ timestamp_start = timestamp - 3600 - t[-1]
 
 
 
+
 # load required measurements
-temp = np.zeros((t.shape[0],len(signal_id['zone'])))
+
+temp = np.zeros((N+1,len(signal_id['zone'])))
 for idx,val in enumerate(signal_id['zone']):
-	cur.execute("SELECT time,value FROM  measurement_average_quarterhour WHERE signal_id=%s AND time>%s" %(val,timestamp_start))
-	data = np.asarray(list(cur))
-	temp[:,idx] = np.interp(t+timestamp_start,data[:,0],data[:,1],left=data[0,1],right=data[-1,1])
+	try:
+		cur.execute("SELECT time,value FROM  measurement_average_quarterhour WHERE signal_id=%s AND time>%s" %(val,timestamp_start))
+		data = np.asarray(list(cur))
+		temp[:,idx] = np.interp(t+timestamp_start,data[:,0],data[:,1],left=data[0,1],right=data[-1,1])
+	except:
+		logger.warning('Not enough data in quarter hour measurements')
 
 T_zon_meas = temp
 
 
-temp = np.zeros((t.shape[0],len(signal_id['ambient_temperature'])))
+temp = np.zeros((N+1,len(signal_id['ambient_temperature'])))
 for idx,val in enumerate(signal_id['ambient_temperature']):
-	cur.execute("SELECT time,value FROM  measurement_average_quarterhour WHERE signal_id=%s AND time>%s" %(val,timestamp_start))
-	data = np.asarray(list(cur))
-	temp[:,idx] = np.interp(t+timestamp_start,data[:,0],data[:,1],left=data[0,1],right=data[-1,1])
+	try:
+		cur.execute("SELECT time,value FROM  measurement_average_quarterhour WHERE signal_id=%s AND time>%s" %(val,timestamp_start))
+		data = np.asarray(list(cur))
+		temp[:,idx] = np.interp(t+timestamp_start,data[:,0],data[:,1],left=data[0,1],right=data[-1,1])
+	except:
+		logger.warning('Not enough data in quarter hour measurements')
 
 T_amb_meas = np.mean(temp,axis=1)
 
 
-temp = np.zeros((t.shape[0],len(signal_id['fanspeed'])))
+temp = np.zeros((N+1,len(signal_id['fanspeed'])))
 for idx,val in enumerate(signal_id['fanspeed']):
-	cur.execute("SELECT time,value FROM  measurement_average_quarterhour WHERE signal_id=%s AND time>%s" %(val,timestamp_start))
-	data = np.asarray(list(cur))
-	temp[:,idx] = np.interp(t+timestamp_start,data[:,0],data[:,1],left=data[0,1],right=data[-1,1])
+	try:
+		cur.execute("SELECT time,value FROM  measurement_average_quarterhour WHERE signal_id=%s AND time>%s" %(val,timestamp_start))
+		data = np.asarray(list(cur))
+		temp[:,idx] = np.interp(t+timestamp_start,data[:,0],data[:,1],left=data[0,1],right=data[-1,1])
+	except:
+		logger.warning('Not enough data in quarter hour measurements')
 
 fanspeed_meas = temp
 
 
-temp = np.zeros((t.shape[0],len(signal_id['direct'])))
-for idx,val in enumerate(signal_id['fanspeed']):
-	cur.execute("SELECT time,value FROM  measurement_average_quarterhour WHERE signal_id=%s AND time>%s" %(val,timestamp_start))
-	data = np.asarray(list(cur))
-	temp[:,idx] = np.interp(t+timestamp_start,data[:,0],data[:,1],left=data[0,1],right=data[-1,1])
+temp = np.zeros((N+1,len(signal_id['direct'])))
+for idx,val in enumerate(signal_id['direct']):
+	try:
+		cur.execute("SELECT time,value FROM  measurement_average_quarterhour WHERE signal_id=%s AND time>%s" %(val,timestamp_start))
+		data = np.asarray(list(cur))
+		temp[:,idx] = np.interp(t+timestamp_start,data[:,0],data[:,1],left=data[0,1],right=data[-1,1])
+	except:
+		logger.warning('Not enough data in quarter hour measurements')
 
 direct_meas = np.mean(temp,axis=1)
 
 
-temp = np.zeros((t.shape[0],len(signal_id['diffuse'])))
-for idx,val in enumerate(signal_id['fanspeed']):
-	cur.execute("SELECT time,value FROM  measurement_average_quarterhour WHERE signal_id=%s AND time>%s" %(val,timestamp_start))
-	data = np.asarray(list(cur))
-	temp[:,idx] = np.interp(t+timestamp_start,data[:,0],data[:,1],left=data[0,1],right=data[-1,1])
+temp = np.zeros((N+1,len(signal_id['diffuse'])))
+for idx,val in enumerate(signal_id['diffuse']):
+	try:
+		cur.execute("SELECT time,value FROM  measurement_average_quarterhour WHERE signal_id=%s AND time>%s" %(val,timestamp_start))
+		data = np.asarray(list(cur))
+		temp[:,idx] = np.interp(t+timestamp_start,data[:,0],data[:,1],left=data[0,1],right=data[-1,1])
+	except:
+		logger.warning('Not enough data in quarter hour measurements')
 
 diffuse_meas = np.mean(temp,axis=1)
 
-temp = np.zeros((t.shape[0],len(signal_id['heat_emission'])))
-for idx,val in enumerate(signal_id['fanspeed']):
-	cur.execute("SELECT time,value FROM  measurement_average_quarterhour WHERE signal_id=%s AND time>%s" %(val,timestamp_start))
-	data = np.asarray(list(cur))
-	temp[:,idx] = np.interp(t+timestamp_start,data[:,0],data[:,1],left=data[0,1],right=data[-1,1])
+
+temp = np.zeros((N+1,len(signal_id['heat_emission'])))
+for idx,val in enumerate(signal_id['heat_emission']):
+	try:
+		cur.execute("SELECT time,value FROM  measurement_average_quarterhour WHERE signal_id=%s AND time>%s" %(val,timestamp_start))
+		data = np.asarray(list(cur))
+		temp[:,idx] = np.interp(t+timestamp_start,data[:,0],data[:,1],left=data[0,1],right=data[-1,1])
+	except:
+		logger.warning('Not enough data in quarter hour measurements')
 
 heat_emission = temp
 
 
-temp = np.zeros((t.shape[0],len(signal_id['heat_production'])))
-for idx,val in enumerate(signal_id['fanspeed']):
-	cur.execute("SELECT time,value FROM  measurement_average_quarterhour WHERE signal_id=%s AND time>%s" %(val,timestamp_start))
-	data = np.asarray(list(cur))
-	temp[:,idx] = np.interp(t+timestamp_start,data[:,0],data[:,1],left=data[0,1],right=data[-1,1])
+temp = np.zeros((N+1,len(signal_id['heat_production'])))
+for idx,val in enumerate(signal_id['heat_production']):
+	try:
+		cur.execute("SELECT time,value FROM  measurement_average_quarterhour WHERE signal_id=%s AND time>%s" %(val,timestamp_start))
+		data = np.asarray(list(cur))
+		temp[:,idx] = np.interp(t+timestamp_start,data[:,0],data[:,1],left=data[0,1],right=data[-1,1])
+	except:
+		logger.warning('Not enough data in quarter hour measurements')
 
 heat_production = temp
 
@@ -215,8 +240,33 @@ if sh.knxcontrol.model()==1:
 
 	#plt.show()
 
+	# define variable indices
+	a = 0
+	T_zon = np.arange(a,a+N+1)
+	a = a+N+1
+	T_abm = np.arange(a,a+N+1)
+	a = a+N+1
+	fanspeed = np.arange(a,a+N+1)
+	a = a+N+1
+	P_irr = np.arange(a,a+N+1)
+	a = a+N+1
+	P_emi = np.arange(a,a+N+1)
+
+	P_pro = np.zeros((N+1,len(signal_id['heat_production'])))
+	for idx,val in enumerate(signal_id['heat_production']):
+		a = a+N+1
+		P_pro[:,idx] = np.arange(a,a+N+1)
+
+	nvars = a+N
+
+	x = np.random.rand(nvars)
 
 
+
+	# define required functions for ipopt
+	def objective(x, user_data = None):
+		global T_zon,T_zon_meas
+		return sum(x[T_zon]**2 - 2*x[T_zon]*T_zon_meas + T_zon_meas**2)
 
 
 		
