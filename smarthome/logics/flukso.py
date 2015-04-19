@@ -1,3 +1,4 @@
+#!/usr/bin/python3
 ######################################################################################
 #    Copyright 2015 Brecht Baeten
 #    This file is part of KNXControl.
@@ -15,8 +16,6 @@
 #    You should have received a copy of the GNU General Public License
 #    along with KNXControl.  If not, see <http://www.gnu.org/licenses/>.
 ######################################################################################
-
-#!/usr/bin/python3
 
 # find flukso items and populate them from the flukso api
 from urllib.request import urlopen

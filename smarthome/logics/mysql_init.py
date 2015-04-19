@@ -263,24 +263,18 @@ logger.info("Database initialized")
 
 query = "REPLACE INTO measurement_legend (id,item,name,quantity,unit,description) VALUES "
 
-
-# current weather 15 components max
 id = 0
+# current weather 20 components max
+id = id+1
 query = query+"('"+str(id)+"','knxcontrol.weather.current.temperature','Temperature','Temperature','degC','Ambient temperature'),"
 id = id+1
-query = query+"('"+str(id)+"','knxcontrol.weather.current.irradiation.theoretical.azimut','Azimut','Angle','deg','Solar azimut (0deg is south)'),"
+query = query+"('"+str(id)+"','knxcontrol.weather.current.humidity','Humidity','Humidity','-','Relative ambient humidity'),"
 id = id+1
-query = query+"('"+str(id)+"','knxcontrol.weather.current.irradiation.theoretical.altitude','Altitude','Angle','deg','Solar altitude'),"
+query = query+"('"+str(id)+"','knxcontrol.weather.current.irradiation.direct','Direct','Heat flux','W/m2','Estimated direct solar irradiation'),"
 id = id+1
-query = query+"('"+str(id)+"','knxcontrol.weather.current.irradiation.theoretical.direct','Direct','Heat flux','W/m2','Theoretical direct solar irradiation'),"
+query = query+"('"+str(id)+"','knxcontrol.weather.current.irradiation.diffuse','Diffuse','Heat flux','W/m2','Estimated diffuse solar irradiation'),"
 id = id+1
-query = query+"('"+str(id)+"','knxcontrol.weather.current.irradiation.theoretical.diffuse','Diffuse','Heat flux','W/m2','Theoretical diffuse solar irradiation'),"
-id = id+1
-query = query+"('"+str(id)+"','knxcontrol.weather.current.irradiation.estimate.direct','Direct','Heat flux','W/m2','Estimated direct solar irradiation'),"
-id = id+1
-query = query+"('"+str(id)+"','knxcontrol.weather.current.irradiation.estimate.diffuse','Diffuse','Heat flux','W/m2','Estimated diffuse solar irradiation'),"
-id = id+1
-query = query+"('"+str(id)+"','knxcontrol.weather.current.irradiation.estimate.clouds','Clouds','','-','Cloud factor'),"
+query = query+"('"+str(id)+"','knxcontrol.weather.current.irradiation.clouds','Clouds','','-','Cloud factor'),"
 id = id+1
 query = query+"('"+str(id)+"','knxcontrol.weather.current.precipitation','Rain','','-','Rain or not'),"											
 id = id+1
@@ -289,22 +283,18 @@ id = id+1
 query = query+"('"+str(id)+"','knxcontrol.weather.current.wind.direction','Wind direction','Angle','deg','Wind direction (0deg is North)'),"
 
 
-# leave some blanks
+
 id = 20
 # energy use 5 components max
-id = id+1
-query = query+"('"+str(id)+"','knxcontrol.energy.electricity','Electricity','Power','W','Electricity use'),"
-id = id+1
-query = query+"('"+str(id)+"','knxcontrol.energy.gas','Gas','Power','W','Natural gas use'),"
-id = id+1
-query = query+"('"+str(id)+"','knxcontrol.energy.fueloil','Fuel oil','Power','W','Fuel oil use'),"
-id = id+1
-query = query+"('"+str(id)+"','knxcontrol.energy.water','Water','Flow','l/min','Water use'),"
+for source in sh.knxcontrol.energy:
+	source_name = source.id().split(".")[-1]
+	id = id+1
+	query = query+"('"+str(id)+"','"+source.id()+"','"+source_name+"','"+source.conf['quantity']+"','"+source.conf['unit']+"','"+source_name+" use'),"
+	
 
 
-
-# building zones 10 zones max
 id = 100
+# building zones 10 zones max
 for zone in sh.knxcontrol.building:
 	zone_name = zone.id().split(".")[-1]
 	id = id + 1
@@ -313,16 +303,20 @@ for zone in sh.knxcontrol.building:
 	query = query+"('"+str(id)+"','"+zone.airquality.id()+"','Air quality','Concentration','g CO2/m3','"+zone_name+" CO2 concentration'),"
 	
 
-# ventilation 10 systems max
+
 id = 120
-id = id + 1
-query = query+"('"+str(id)+"','knxcontrol.ventilation.fanspeed','Ventilation control','','-','Ventilation fan speed control signal'),"
-id = id + 1
-query = query+"('"+str(id)+"','knxcontrol.ventilation.heatrecovery','Heat recovery control','','-','Ventilation heat recovery control signal'),"
+# ventilation 10 systems max
+for system in sh.knxcontrol.ventilation:
+	system_name = system.id().split(".")[-1]
+	id = id + 1
+	query = query+"('"+str(id)+"','"+system.fanspeed.id()+"','"+system_name+" fanspeed','','-','"+system_name+" fan speed control signal'),"
+	id = id + 1
+	query = query+"('"+str(id)+"','"+system.heatrecovery.id()+"','"+system_name+" heatrecovery','','-','"+system_name+" heat recovery control signal'),"
 
 
-# heat production 10 systems max
+
 id = 140
+# heat production 10 systems max
 for system in sh.knxcontrol.heat.production:
 	system_name = system.id().split(".")[-1]
 	id = id + 1
@@ -331,8 +325,9 @@ for system in sh.knxcontrol.heat.production:
 	query = query+"('"+str(id)+"','"+system.control.id()+"','"+system_name+" Control','','-','"+system_name+" control signal'),"
 
 
-# heat emission 10 systems max
+
 id = 160
+# heat emission 10 systems max
 for system in sh.knxcontrol.heat.emission:
 	system_name = system.id().split(".")[-1]
 	id = id + 1
@@ -341,8 +336,9 @@ for system in sh.knxcontrol.heat.emission:
 	query = query+"('"+str(id)+"','"+system.control.id()+"','"+system_name+" Control','','-','"+system_name+" control signal'),"
 
 
-# electricity generation 10 systems max
+
 id = 180
+# electricity generation 10 systems max
 for system in sh.knxcontrol.electricity.production:
 	system_name = system.id().split(".")[-1]
 	id = id + 1
