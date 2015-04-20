@@ -1,0 +1,143 @@
+Init SmartHome.py 5a3d5eb+
+2015-04-20 23:29:45 WARNING  shading_set_override bedroom1.windows.right.shading
+2015-04-20 23:29:45 WARNING  shading_set_override trigger: bedroom1.windows.right.shading.pos
+2015-04-20 23:29:45 WARNING  shading_set_override changed by: KNX
+2015-04-20 23:29:50 ERROR    calculate_heatflows Logic: calculate_heatflows, File: /usr/local/knxcontrol/smarthome/logics/calculate_heatflows.py, Line: 16, Method: <module>, Exception: 'NoneType' object is not callable
+Traceback (most recent call last):
+  File "/usr/local/knxcontrol/smarthome/lib/scheduler.py", line 327, in _task
+    exec(obj.bytecode)
+  File "/usr/local/knxcontrol/smarthome/logics/calculate_heatflows.py", line 16, in <module>
+    T_op = T_op()
+TypeError: 'NoneType' object is not callable
+2015-04-20 23:29:50 ERROR    subfunctions Logic: subfunctions, File: /usr/local/knxcontrol/smarthome/logics/subfunctions.py, Line: 10, Method: <module>, Exception: No module named 'numpy'
+Traceback (most recent call last):
+  File "/usr/local/knxcontrol/smarthome/lib/scheduler.py", line 327, in _task
+    exec(obj.bytecode)
+  File "/usr/local/knxcontrol/smarthome/logics/subfunctions.py", line 10, in <module>
+    import numpy
+ImportError: No module named 'numpy'
+2015-04-20 23:29:50 ERROR    calculate_irradiation Logic: calculate_irradiation, File: /usr/local/knxcontrol/smarthome/logics/calculate_irradiation.py, Line: 3, Method: <module>, Exception: No module named 'numpy'
+Traceback (most recent call last):
+  File "/usr/local/knxcontrol/smarthome/lib/scheduler.py", line 327, in _task
+    exec(obj.bytecode)
+  File "/usr/local/knxcontrol/smarthome/logics/calculate_irradiation.py", line 3, in <module>
+    from numpy import interp
+ImportError: No module named 'numpy'
+2015-04-20 23:29:50 ERROR    load_weatherforecast Logic: load_weatherforecast, File: /usr/local/knxcontrol/smarthome/logics/load_weatherforecast.py, Line: 30, Method: <module>, Exception: 'Item' object has no attribute 'weatherforecast'
+Traceback (most recent call last):
+  File "/usr/local/knxcontrol/smarthome/lib/scheduler.py", line 327, in _task
+    exec(obj.bytecode)
+  File "/usr/local/knxcontrol/smarthome/logics/load_weatherforecast.py", line 30, in <module>
+    sh.building.weatherforecast(weatherforecast)
+AttributeError: 'Item' object has no attribute 'weatherforecast'
+2015-04-20 23:29:51 ERROR    flukso_knx   Logic: flukso_knx, File: /usr/lib/python3.4/urllib/request.py, Line: 579, Method: http_error_default, Exception: HTTP Error 404: Not Found
+Traceback (most recent call last):
+  File "/usr/local/knxcontrol/smarthome/lib/scheduler.py", line 327, in _task
+    exec(obj.bytecode)
+  File "/usr/local/knxcontrol/smarthome/logics/flukso_knx.py", line 8, in <module>
+    response = urlopen('http://192.168.1.8:8080/sensor/'+item.conf['sensor']+'?version=1.0&unit='+item.conf['unit']+'&interval=minute')
+  File "/usr/lib/python3.4/urllib/request.py", line 153, in urlopen
+    return opener.open(url, data, timeout)
+  File "/usr/lib/python3.4/urllib/request.py", line 461, in open
+    response = meth(req, response)
+  File "/usr/lib/python3.4/urllib/request.py", line 571, in http_response
+    'http', request, response, code, msg, hdrs)
+  File "/usr/lib/python3.4/urllib/request.py", line 499, in error
+    return self._call_chain(*args)
+  File "/usr/lib/python3.4/urllib/request.py", line 433, in _call_chain
+    result = func(*args)
+  File "/usr/lib/python3.4/urllib/request.py", line 579, in http_error_default
+    raise HTTPError(req.full_url, code, msg, hdrs, fp)
+urllib.error.HTTPError: HTTP Error 404: Not Found
+2015-04-20 23:29:51 WARNING  mysql_measurements_init could not add default measurements to database
+2015-04-20 23:29:51 WARNING  mysql_measurements_init REPLACE INTO measurements_legend (id,item,name,quantity,unit,description) VALUES ('1','building.ambient_temperature','Temperature','Temperature','degC','Outside temperature'),('2','building.irradiation.azimut','Azimut','Angle','deg','Solar azimut'),('3','building.irradiation.altitude','Altitude','Angle','deg','Solar altitude'),('4','building.irradiation.direct_theoretical','Direct','Heat flux','W/m2','Theoretical direct solar irradiation'),('5','building.irradiation.diffuse_theoretical','Diffuse','Heat flux','W/m2','Theoretical diffuse solar irradiation'),('6','building.irradiation.cloud_factor','Clouds','','-','Cloud factor'),('7','building.wind_velocity','Wind speed','Velocity','m/s','Wind speed'),('8','building.rain','Rain','','-','Rain or not'),('9','building.flukso.elektriciteit_totaal','elektriciteit_totaal','Power','W','flukso elektriciteit_totaal'),('10','building.flukso.elektriciteit_verwarming','elektriciteit_verwarming','Power','W','flukso elektriciteit_verwarming'),('11','building.flukso.gas','gas','Power','W','flukso gas'),('15','building.zones.livingzone.T_operational','Temperature','Temperature','degC','livingzone temperature'),('16','building.zones.livingzone.heat_flow_transmission','Transmission','Heat flow','W','livingzone transmission heat flow'),('17','building.zones.livingzone.heat_flow_ventilation','Ventilation','Heat flow','W','livingzone ventilation heat flow'),('18','building.zones.livingzone.heat_flow_internal','Internal','Heat flow','W','livingzone internal heat flow'),('19','building.zones.livingzone.heat_flow_irradiation','Irradiation','Heat flow','W','livingzone irradiation heat flow'),('20','building.zones.livingzone.heat_flow_heating_wanted','Heating','Heat flow','W','livingzone wanted heating heat flow'),('21','building.zones.livingzone.heat_flow_cooling_wanted','Cooling','Heat flow','W','livingzone wanted cooling heat flow'),('22','building.zones.bathrooms.T_operational','Temperature','Temperature','degC','bathrooms temperature'),('23','building.zones.bathrooms.heat_flow_transmission','Transmission','Heat flow','W','bathrooms transmission heat flow'),('24','building.zones.bathrooms.heat_flow_ventilation','Ventilation','Heat flow','W','bathrooms ventilation heat flow'),('25','building.zones.bathrooms.heat_flow_internal','Internal','Heat flow','W','bathrooms internal heat flow'),('26','building.zones.bathrooms.heat_flow_irradiation','Irradiation','Heat flow','W','bathrooms irradiation heat flow'),('27','building.zones.bathrooms.heat_flow_heating_wanted','Heating','Heat flow','W','bathrooms wanted heating heat flow'),('28','building.zones.bathrooms.heat_flow_cooling_wanted','Cooling','Heat flow','W','bathrooms wanted cooling heat flow'),('29','building.zones.sleepingzone.T_operational','Temperature','Temperature','degC','sleepingzone temperature'),('30','building.zones.sleepingzone.heat_flow_transmission','Transmission','Heat flow','W','sleepingzone transmission heat flow'),('31','building.zones.sleepingzone.heat_flow_ventilation','Ventilation','Heat flow','W','sleepingzone ventilation heat flow'),('32','building.zones.sleepingzone.heat_flow_internal','Internal','Heat flow','W','sleepingzone internal heat flow'),('33','building.zones.sleepingzone.heat_flow_irradiation','Irradiation','Heat flow','W','sleepingzone irradiation heat flow'),('34','building.zones.sleepingzone.heat_flow_heating_wanted','Heating','Heat flow','W','sleepingzone wanted heating heat flow'),('35','building.zones.sleepingzone.heat_flow_cooling_wanted','Cooling','Heat flow','W','sleepingzone wanted cooling heat flow')
+2015-04-20 23:29:51 WARNING  heating_control Could not get temperature setpoint for zone livingzone
+2015-04-20 23:29:51 WARNING  heating_control average calculation failed
+2015-04-20 23:29:51 WARNING  heating_control Could not get temperature setpoint for zone bathrooms
+2015-04-20 23:29:51 WARNING  heating_control average calculation failed
+2015-04-20 23:29:51 WARNING  heating_control Could not get temperature setpoint for zone sleepingzone
+2015-04-20 23:29:51 WARNING  heating_control average calculation failed
+2015-04-20 23:30:00 WARNING  ventilation_control average calculation failed
+2015-04-20 23:30:00 WARNING  shading_control average calculation failed
+2015-04-20 23:30:00 ERROR    mysql_average_measurements_quarterhour Logic: mysql_average_measurements_quarterhour, File: /usr/local/lib/python3.4/dist-packages/pymysql/err.py, Line: 112, Method: _check_mysql_exception, Exception: (1146, "Table 'knxcontrol.measurements_legend' doesn't exist")
+Traceback (most recent call last):
+  File "/usr/local/knxcontrol/smarthome/lib/scheduler.py", line 327, in _task
+    exec(obj.bytecode)
+  File "/usr/local/knxcontrol/smarthome/logics/mysql_average_measurements_quarterhour.py", line 25, in <module>
+    cur.execute("SELECT * FROM measurements_legend")
+  File "/usr/local/lib/python3.4/dist-packages/pymysql/cursors.py", line 134, in execute
+    result = self._query(query)
+  File "/usr/local/lib/python3.4/dist-packages/pymysql/cursors.py", line 282, in _query
+    conn.query(q)
+  File "/usr/local/lib/python3.4/dist-packages/pymysql/connections.py", line 768, in query
+    self._affected_rows = self._read_query_result(unbuffered=unbuffered)
+  File "/usr/local/lib/python3.4/dist-packages/pymysql/connections.py", line 929, in _read_query_result
+    result.read()
+  File "/usr/local/lib/python3.4/dist-packages/pymysql/connections.py", line 1125, in read
+    first_packet = self.connection._read_packet()
+  File "/usr/local/lib/python3.4/dist-packages/pymysql/connections.py", line 893, in _read_packet
+    packet.check_error()
+  File "/usr/local/lib/python3.4/dist-packages/pymysql/connections.py", line 369, in check_error
+    err.raise_mysql_exception(self._data)
+  File "/usr/local/lib/python3.4/dist-packages/pymysql/err.py", line 120, in raise_mysql_exception
+    _check_mysql_exception(errinfo)
+  File "/usr/local/lib/python3.4/dist-packages/pymysql/err.py", line 112, in _check_mysql_exception
+    raise errorclass(errno, errorvalue)
+pymysql.err.ProgrammingError: (1146, "Table 'knxcontrol.measurements_legend' doesn't exist")
+2015-04-20 23:30:00 ERROR    mysql_measurements Logic: mysql_measurements, File: /usr/local/lib/python3.4/dist-packages/pymysql/err.py, Line: 112, Method: _check_mysql_exception, Exception: (1146, "Table 'knxcontrol.measurements_legend' doesn't exist")
+Traceback (most recent call last):
+  File "/usr/local/knxcontrol/smarthome/lib/scheduler.py", line 327, in _task
+    exec(obj.bytecode)
+  File "/usr/local/knxcontrol/smarthome/logics/mysql_measurements.py", line 18, in <module>
+    legend.execute("SELECT id,item FROM measurements_legend WHERE item <> ''")
+  File "/usr/local/lib/python3.4/dist-packages/pymysql/cursors.py", line 134, in execute
+    result = self._query(query)
+  File "/usr/local/lib/python3.4/dist-packages/pymysql/cursors.py", line 282, in _query
+    conn.query(q)
+  File "/usr/local/lib/python3.4/dist-packages/pymysql/connections.py", line 768, in query
+    self._affected_rows = self._read_query_result(unbuffered=unbuffered)
+  File "/usr/local/lib/python3.4/dist-packages/pymysql/connections.py", line 929, in _read_query_result
+    result.read()
+  File "/usr/local/lib/python3.4/dist-packages/pymysql/connections.py", line 1125, in read
+    first_packet = self.connection._read_packet()
+  File "/usr/local/lib/python3.4/dist-packages/pymysql/connections.py", line 893, in _read_packet
+    packet.check_error()
+  File "/usr/local/lib/python3.4/dist-packages/pymysql/connections.py", line 369, in check_error
+    err.raise_mysql_exception(self._data)
+  File "/usr/local/lib/python3.4/dist-packages/pymysql/err.py", line 120, in raise_mysql_exception
+    _check_mysql_exception(errinfo)
+  File "/usr/local/lib/python3.4/dist-packages/pymysql/err.py", line 112, in _check_mysql_exception
+    raise errorclass(errno, errorvalue)
+pymysql.err.ProgrammingError: (1146, "Table 'knxcontrol.measurements_legend' doesn't exist")
+2015-04-20 23:30:00 ERROR    alarm_run    Logic: alarm_run, File: /usr/local/lib/python3.4/dist-packages/pymysql/err.py, Line: 112, Method: _check_mysql_exception, Exception: (1146, "Table 'knxcontrol.alarms' doesn't exist")
+Traceback (most recent call last):
+  File "/usr/local/knxcontrol/smarthome/lib/scheduler.py", line 327, in _task
+    exec(obj.bytecode)
+  File "/usr/local/knxcontrol/smarthome/logics/alarm_run.py", line 16, in <module>
+    cur.execute("SELECT * FROM alarms WHERE hour=%s AND minute=%s" % (now.hour,now.minute))
+  File "/usr/local/lib/python3.4/dist-packages/pymysql/cursors.py", line 134, in execute
+    result = self._query(query)
+  File "/usr/local/lib/python3.4/dist-packages/pymysql/cursors.py", line 282, in _query
+    conn.query(q)
+  File "/usr/local/lib/python3.4/dist-packages/pymysql/connections.py", line 768, in query
+    self._affected_rows = self._read_query_result(unbuffered=unbuffered)
+  File "/usr/local/lib/python3.4/dist-packages/pymysql/connections.py", line 929, in _read_query_result
+    result.read()
+  File "/usr/local/lib/python3.4/dist-packages/pymysql/connections.py", line 1125, in read
+    first_packet = self.connection._read_packet()
+  File "/usr/local/lib/python3.4/dist-packages/pymysql/connections.py", line 893, in _read_packet
+    packet.check_error()
+  File "/usr/local/lib/python3.4/dist-packages/pymysql/connections.py", line 369, in check_error
+    err.raise_mysql_exception(self._data)
+  File "/usr/local/lib/python3.4/dist-packages/pymysql/err.py", line 120, in raise_mysql_exception
+    _check_mysql_exception(errinfo)
+  File "/usr/local/lib/python3.4/dist-packages/pymysql/err.py", line 112, in _check_mysql_exception
+    raise errorclass(errno, errorvalue)
+pymysql.err.ProgrammingError: (1146, "Table 'knxcontrol.alarms' doesn't exist")
+2015-04-20 23:30:20 ERROR    calculate_irradiation Logic: calculate_irradiation, File: /usr/local/knxcontrol/smarthome/logics/calculate_irradiation.py, Line: 3, Method: <module>, Exception: No module named 'numpy'
+Traceback (most recent call last):
+  File "/usr/local/knxcontrol/smarthome/lib/scheduler.py", line 327, in _task
+    exec(obj.bytecode)
+  File "/usr/local/knxcontrol/smarthome/logics/calculate_irradiation.py", line 3, in <module>
+    from numpy import interp
+ImportError: No module named 'numpy'
