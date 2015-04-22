@@ -19,7 +19,7 @@
 
 import ephem
 import datetime
-import numpy
+import numpy as np
 
 class Energytools():
 	"""

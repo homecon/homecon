@@ -141,7 +141,7 @@ class Mysql:
 		# measurements
 		query = ("CREATE TABLE IF NOT EXISTS `measurement` ("
 				 "`id` bigint(20) NOT NULL AUTO_INCREMENT,"
-				 "`signal_id` tinyint(4) NOT NULL,"
+				 "`signal_id` int(11) NOT NULL,"
 				 "`time` bigint(20) NOT NULL,"
 				 "`value` float DEFAULT NULL,"
 				 "UNIQUE KEY `ID` (`id`)) ENGINE=InnoDB  DEFAULT CHARSET=latin1 AUTO_INCREMENT=1")
@@ -159,7 +159,7 @@ class Mysql:
 		# quarterhour average measurements
 		query = ("CREATE TABLE IF NOT EXISTS `measurement_average_quarterhour` ("
 				 "`id` bigint(20) NOT NULL AUTO_INCREMENT,"
-				 "`signal_id` tinyint(4) NOT NULL,"
+				 "`signal_id` int(11) NOT NULL,"
 				 "`time` int(11) NOT NULL,"
 				 "`value` float DEFAULT NULL,"
 				 "UNIQUE KEY `ID` (`id`)) ENGINE=InnoDB  DEFAULT CHARSET=latin1 AUTO_INCREMENT=1")												 						 
@@ -177,7 +177,7 @@ class Mysql:
 		# week average measurements
 		query = ("CREATE TABLE IF NOT EXISTS `measurement_average_week` ("
 				 "`id` bigint(20) NOT NULL AUTO_INCREMENT,"
-				 "`signal_id` tinyint(4) NOT NULL,"
+				 "`signal_id` int(11) NOT NULL,"
 				 "`time` int(11) NOT NULL,"
 				 "`value` float DEFAULT NULL,"
 				 "UNIQUE KEY `ID` (`id`)) ENGINE=InnoDB  DEFAULT CHARSET=latin1 AUTO_INCREMENT=1")												 						 
@@ -195,7 +195,7 @@ class Mysql:
 		# month average measurements
 		query = ("CREATE TABLE IF NOT EXISTS `measurement_average_month` ("
 				 "`id` bigint(20) NOT NULL AUTO_INCREMENT,"
-				 "`signal_id` tinyint(4) NOT NULL,"
+				 "`signal_id` int(11) NOT NULL,"
 				 "`time` int(11) NOT NULL,"
 				 "`value` float DEFAULT NULL,"
 				 "UNIQUE KEY `ID` (`id`)) ENGINE=InnoDB  DEFAULT CHARSET=latin1 AUTO_INCREMENT=1")												 						 
@@ -213,7 +213,7 @@ class Mysql:
 
 		# profile legend
 		query = ("CREATE TABLE IF NOT EXISTS `profile_legend` ("
-				 "`id` tinyint(4) NOT NULL AUTO_INCREMENT,"
+				 "`id` int(11) NOT NULL AUTO_INCREMENT,"
 				 "`name` varchar(255) DEFAULT NULL,"
 				 "`quantity` varchar(255) DEFAULT NULL,"
 				 "`unit` varchar(255) DEFAULT NULL,"
@@ -227,7 +227,7 @@ class Mysql:
 		# profile
 		query = ("CREATE TABLE IF NOT EXISTS `profile` ("
 				 "`id` bigint(20) NOT NULL AUTO_INCREMENT,"
-				 "`profile_id` tinyint(4) NOT NULL,"
+				 "`profile_id` int(11) NOT NULL,"
 				 "`time` bigint(20) NOT NULL,"
 				 "`value` float DEFAULT NULL,"
 				 "UNIQUE KEY `ID` (`id`)) ENGINE=InnoDB  DEFAULT CHARSET=latin1 AUTO_INCREMENT=1")

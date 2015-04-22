@@ -1,7 +1,23 @@
 #!/usr/bin/env python3
+######################################################################################
+#    Copyright 2015 Brecht Baeten
+#    This file is part of KNXControl.
+#
+#    KNXControl is free software: you can redistribute it and/or modify
+#    it under the terms of the GNU General Public License as published by
+#    the Free Software Foundation, either version 3 of the License, or
+#    (at your option) any later version.
+#
+#    KNXControl is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU General Public License for more details.
+#
+#    You should have received a copy of the GNU General Public License
+#    along with KNXControl.  If not, see <http://www.gnu.org/licenses/>.
+######################################################################################
 
 import logging
-
 import numpy as np
 import pymysql
 
@@ -9,7 +25,6 @@ from plugins.knxcontrol.measurements import *
 from plugins.knxcontrol.mysql import *
 
 logger = logging.getLogger('')
-
 
 class KNXControl:
 
@@ -28,21 +43,17 @@ class KNXControl:
 		
 		# create measurements object
 		self.measurements = Measurements(self._sh,self._mysql_pass)
-		logger.warning(dir(self.measurements))
-		
+
 		# initialize measurements
-		self._sh.scheduler.add('measurements', self.measurements.minute(), prio=2, cron='* * * *')
-		self._sh.scheduler.add('measurements average quarterhour', self.measurements.quarterhour(), prio=5, cron='0,15,30,45  * * *')
-		self._sh.scheduler.add('measurements average week', self.measurements.week(), prio=5, cron='1 0 * 0')
-		self._sh.scheduler.add('measurements average month', self.measurements.month(), prio=5, cron='0 0 1 *')
+		self._sh.scheduler.add('test', self.measurements.minute, prio=2, cron='* * * *')
+		#self._sh.scheduler.add('Measurements_average_quarterhour', self.measurements.quarterhour(), prio=5, cron='1,16,31,46 * * *')
+		#self._sh.scheduler.add('Measurements_average_week', self.measurements.week(), prio=5, cron='2 0 * 0')
+		#self._sh.scheduler.add('Measurements_average_month', self.measurements.month(), prio=5, cron='2 0 1 *')
 		
 	def stop(self):
 		self.alive = False
 
 	def parse_item(self, item):
 		# do nothing
-		0
-		
-	def _test(self):
-		logger.warning(self)
+		pass
 	

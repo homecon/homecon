@@ -3,6 +3,7 @@
 import logging
 import pymysql
 import datetime
+import numpy as np
 
 logger = logging.getLogger('')
 
@@ -20,11 +21,9 @@ class Measurements:
 		"""
 
 		self._sh = smarthome
-		self._mysql_pass = _mysql_pass;
+		self._mysql_pass = mysql_pass;
 		self.items = self._sh.return_item('knxcontrol')
 
-		
-		logger.warning('started')
 
 		con = pymysql.connect('localhost', 'knxcontrol', self._mysql_pass, 'knxcontrol')
 		cur = con.cursor()
@@ -36,42 +35,43 @@ class Measurements:
 		item = self._sh.return_item('knxcontrol.weather.current.temperature')
 		id = id+1
 		item.conf['mysql_id'] = id
-		query = query+"('"+str(id)+"',"+item.id()+",'Temperature','Temperature','degC','Ambient temperature'),"
+		query = query+"('"+str(id)+"','"+item.id()+"','Temperature','Temperature','degC','Ambient temperature'),"
 		
 		item = self._sh.return_item('knxcontrol.weather.current.humidity')
 		id = id+1
 		item.conf['mysql_id'] = id
-		query = query+"('"+str(id)+"',"+item.id()+",'Humidity','Humidity','-','Relative ambient humidity'),"
+		query = query+"('"+str(id)+"','"+item.id()+"','Humidity','Humidity','-','Relative ambient humidity'),"
 		
 		item = self._sh.return_item('knxcontrol.weather.current.irradiation.direct')
 		id = id+1
 		item.conf['mysql_id'] = id
-		query = query+"('"+str(id)+"',"+item.id()+",'Direct','Heat flux','W/m2','Estimated direct solar irradiation'),"
+		query = query+"('"+str(id)+"','"+item.id()+"','Direct','Heat flux','W/m2','Estimated direct solar irradiation'),"
 		
 		item = self._sh.return_item('knxcontrol.weather.current.irradiation.diffuse')
 		id = id+1
 		item.conf['mysql_id'] = id
-		query = query+"('"+str(id)+"',"+item.id()+",'Diffuse','Heat flux','W/m2','Estimated diffuse solar irradiation'),"
+		query = query+"('"+str(id)+"','"+item.id()+"','Diffuse','Heat flux','W/m2','Estimated diffuse solar irradiation'),"
 		
 		item = self._sh.return_item('knxcontrol.weather.current.irradiation.clouds')
 		id = id+1
 		item.conf['mysql_id'] = id
-		query = query+"('"+str(id)+"',"+item.id()+",'Clouds','','-','Cloud factor'),"
+		query = query+"('"+str(id)+"','"+item.id()+"','Clouds','','-','Cloud factor'),"
 		
 		item = self._sh.return_item('knxcontrol.weather.current.precipitation')
 		id = id+1
 		item.conf['mysql_id'] = id
-		query = query+"('"+str(id)+"',"+item.id()+",'Rain','','-','Rain or not'),"											
+		query = query+"('"+str(id)+"','"+item.id()+"','Rain','','-','Rain or not'),"											
 		
 		item = self._sh.return_item('knxcontrol.weather.current.wind.speed')
 		id = id+1
 		item.conf['mysql_id'] = id
-		query = query+"('"+str(id)+"',"+item.id()+",'Wind speed','Velocity','m/s','Wind speed'),"
+		query = query+"('"+str(id)+"','"+item.id()+"','Wind speed','Velocity','m/s','Wind speed'),"
 		
 		item = self._sh.return_item('knxcontrol.weather.current.wind.direction')
 		id = id+1
 		item.conf['mysql_id'] = id
-		query = query+"('"+str(id)+"',"+item.id()+",'Wind direction','Angle','deg','Wind direction (0deg is North)'),"
+		query = query+"('"+str(id)+"','"+item.id()+"','Wind direction','Angle','deg','Wind direction (0deg is North)'),"
+
 
 
 		id = 20
@@ -150,12 +150,12 @@ class Measurements:
 
 		# try to execute query
 		query = query[:-1]
-		logger.warning('query built')
+
 		try:
 			cur.execute( query )
-			logger.info("Measurements initialized")
+			logger.warning("Measurements initialized")
 		except:
-			logger.warning("could not add default measurements to database")
+			logger.warning("Could not add default measurements to database")
 			logger.warning(query)
 
 		con.commit()	
@@ -166,18 +166,15 @@ class Measurements:
 		"""
 		store all measurements in MySQL
 		"""
-
-		now = datetime.datetime.utcnow();
-		# remove seconds from time and add :00
-		now.replace( second=0, microsecond=0)
-
-		# connect to the mysql database
-		con = pymysql.connect('localhost', 'knxcontrol', self.mysql_pass, 'knxcontrol')
-		cur = con.cursor()
-
-		# convert time to seconds from epoch
+		logger.warning('minute')
+		# remove seconds from utctime and add :00
+		now = datetime.datetime.utcnow().replace( second=0, microsecond=0)
 		timestamp = int( (now - datetime.datetime(1970,1,1)).total_seconds() )
 
+		# connect to the mysql database
+		con = pymysql.connect('localhost', 'knxcontrol', self._mysql_pass, 'knxcontrol')
+		cur = con.cursor()
+		
 		legend = con.cursor()
 		legend.execute("SELECT id,item FROM measurement_legend WHERE item <> ''")
 
@@ -203,23 +200,83 @@ class Measurements:
 		con.commit()	
 		con.close()
 
+	def _set_average_values(self,table,starttimestamp,endtimestamp):
+		con = pymysql.connect('localhost', 'knxcontrol', self._mysql_pass, 'knxcontrol')
+		cur = con.cursor()
+
+		# connect to database
+		con = pymysql.connect('localhost', 'knxcontrol', self._mysql_pass, 'knxcontrol')
+		cur = con.cursor()
+
+		query = "INSERT INTO %s(signal_id,time,value) VALUES " % (table)
+
+		cur.execute("SELECT * FROM measurement_legend")
+
+		for measurement in cur:
+
+			signalcur = con.cursor()
 	
+			signalcur.execute("SELECT AVG(value) FROM measurement WHERE signal_id=%s AND time >= '%s' AND time < '%s'" % (measurement[0],starttimestamp,endtimestamp))
+			row = signalcur.fetchall()
+			if (row[0][0] is None):
+				avg = 0
+			else:
+				avg = row[0][0]
+		
+			query = query + "(%s,%s,%f),"  % (measurement[0],starttimestamp,avg)	
 	
+		query = query[:-1]	
+		cur.execute(query)
+	
+		con.commit()
+		con.close()
+
+
 	def quarterhour(self):
 		"""
 		calculate 15 minute average of the past 15 minutes and store in MySQL
 		"""
-		pass
+		logger.warning('quarterhour')
+		# get the last 15 minutes date
+		now = datetime.datetime.utcnow();
+		minute = int(np.floor(int(now.strftime('%M'))/15)*15)
+		now = now.replace(minute=minute,second=0, microsecond=0)
+		epoch = datetime.datetime(1970,1,1)
+
+		startdate = now - datetime.timedelta(minutes=15)
+		endddate  = now
+
+		starttimestamp = int( (startdate - epoch).total_seconds() )
+		endtimestamp = int( (endddate - epoch).total_seconds() )
+
+		self._set_average_values('measurement_average_quarterhour',starttimestamp,endtimestamp)
 		
 	def week(self):
 		"""
 		calculate week average of the past week and store in MySQL
 		"""
-		pass
-		
+		logger.warning('week')
+		# get the last monday's date
+		now = datetime.datetime.now(self._sh.tzinfo())
+		now = now.replace( hour=0 ,minute=0, second=0, microsecond=0)
+		epoch = datetime.datetime(1970,1,1).replace(tzinfo=self._sh.utcinfo())
+
+		monday = now + datetime.timedelta(days=-now.weekday())
+		monday = monday.astimezone( self._sh.utcinfo() )
+
+		startdate = monday - datetime.timedelta(weeks=1)
+		endddate  = monday
+
+		starttimestamp = int( (startdate - epoch).total_seconds() )
+		endtimestamp = int( (endddate - epoch).total_seconds() )
+
+		self._set_average_values('measurement_average_week',starttimestamp,endtimestamp)
+		logger.warning('Average week measurements added')
+
 	def month(self):	
 		"""
 		calculate month average of the past month and store in MySQL
 		"""
+		logger.warning('month')
 		pass
 
