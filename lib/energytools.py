@@ -49,7 +49,7 @@ class Energytools():
 		return (sun.az,sun.alt)
 		
 		
-    def clearskyirrradiation(self,utcdate)
+	def clearskyirrradiation(self,utcdate):
 		"""
 		Method returns the clear sky theoretical direct and diffuse solar irradiation
 		according to ASHRAE
@@ -84,3 +84,4 @@ class Energytools():
 			E_b = 0
 		
 		return (E_b,E_d)
+

@@ -5,8 +5,8 @@ import logging
 import numpy as np
 import pymysql
 
-from measurements import *
-from mysql import *
+from plugins.knxcontrol.measurements import *
+from plugins.knxcontrol.mysql import *
 
 logger = logging.getLogger('')
 
@@ -22,9 +22,6 @@ class KNXControl:
 		# initialize mysql
 		self.mysql = Mysql(self._sh,self._mysql_pass)
 
-
-		logger.warning(self)
-		logger.warning(dir(self.mysql))
 
 	def run(self):
 		self.alive = True

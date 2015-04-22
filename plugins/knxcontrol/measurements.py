@@ -8,7 +8,7 @@ logger = logging.getLogger('')
 
 class Measurements:
 
-	def __init__(self,smarthome,mysql_pass)
+	def __init__(self,smarthome,mysql_pass):
 		"""
 		A measurements object is created
 		and mysql measurement_legend is filled with items required for knxcontrol
@@ -20,13 +20,13 @@ class Measurements:
 		"""
 
 		self._sh = smarthome
-		self.mysql_pass = mysql_pass;
+		self._mysql_pass = _mysql_pass;
 		self.items = self._sh.return_item('knxcontrol')
 
 		
 		logger.warning('started')
 
-		con = pymysql.connect('localhost', 'knxcontrol', self.mysql_pass, 'knxcontrol')
+		con = pymysql.connect('localhost', 'knxcontrol', self._mysql_pass, 'knxcontrol')
 		cur = con.cursor()
 
 		query = "REPLACE INTO measurement_legend (id,item,name,quantity,unit,description) VALUES "
@@ -209,16 +209,17 @@ class Measurements:
 		"""
 		calculate 15 minute average of the past 15 minutes and store in MySQL
 		"""
-		0
+		pass
 		
 	def week(self):
 		"""
 		calculate week average of the past week and store in MySQL
 		"""
-		0
+		pass
 		
 	def month(self):	
 		"""
 		calculate month average of the past month and store in MySQL
 		"""
-		0
+		pass
+

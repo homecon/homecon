@@ -17,7 +17,10 @@ class Mysql:
 		smarthome:   smarthome object
 		mysql_pass:  mysql password 
 		"""
-		
+
+		self._sh = smarthome		
+		self._mysql_pass = mysql_pass
+
 		con = pymysql.connect('localhost', 'knxcontrol', self._mysql_pass, 'knxcontrol')
 		cur = con.cursor()
 
@@ -266,4 +269,5 @@ class Mysql:
 		"""
 		backup mysql data without measurements to backupdir
 		"""
-		0
+		pass
+
