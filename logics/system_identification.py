@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 
-import pyipopt
+#import pyipopt
 import numpy as np
 import pymysql
 import datetime
