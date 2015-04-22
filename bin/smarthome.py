@@ -70,6 +70,7 @@ import lib.plugin
 import lib.scene
 import lib.scheduler
 import lib.tools
+import lib.energytools
 import lib.orb
 
 #####################################################################
@@ -235,6 +236,11 @@ class SmartHome():
         # Link Tools
         #############################################################
         self.tools = lib.tools.Tools()
+
+        #############################################################
+        # Link Energytools
+        #############################################################
+        self.energytools = lib.energytools.Energytools(self)
 
         #############################################################
         # Link Sun and Moon
