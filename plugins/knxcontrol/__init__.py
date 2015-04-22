@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 
 import logging
-import threading
 
 import numpy as np
 import pymysql
@@ -17,7 +16,6 @@ class KNXControl:
 		logger.info('KNXControl started')
 		
 		self._sh = smarthome
-		self._lock = threading.Lock()
 
 		
 		self._sh.scheduler.add('MysqlMeasurements', self._test, prio=5, cron='* * * *')
