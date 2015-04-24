@@ -60,7 +60,7 @@ class KNXControl:
 		self._sh.scheduler.add('Daily_weater_forecast', self.weather.load_daily_predictions, prio=5, cron='1 * * *')
 		
 		# create mpc object
-		#self.mpc = MPC(self._sh)
+		self.mpc = MPC(self._sh)
 		
 
 	def stop(self):

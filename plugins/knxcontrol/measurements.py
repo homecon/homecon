@@ -89,22 +89,22 @@ class Measurements:
 		for item in self._sh.return_item('knxcontrol.building'):
 			item_name = item.id().split(".")[-1]
 			id = id + 1
-			item.conf['mysql_id'] = id
+			item.temperature.conf['mysql_id'] = id
 			query = query+"('"+str(id)+"','"+item.temperature.id()+"','Temperature','Temperature','degC','"+item_name+" temperature'),"
 			id = id + 1
-			item.conf['mysql_id'] = id
+			item.airquality.conf['mysql_id'] = id
 			query = query+"('"+str(id)+"','"+item.airquality.id()+"','Air quality','Concentration','g CO2/m3','"+item_name+" CO2 concentration'),"
 			id = id + 1
-			item.conf['mysql_id'] = id
+			item.irradiation.power.conf['mysql_id'] = id
 			query = query+"('"+str(id)+"','"+item.irradiation.power.id()+"','Solar gains','Power','W','"+item_name+" irradiation power'),"
 			id = id + 1
-			item.conf['mysql_id'] = id
+			item.irradiation.setpoint.conf['mysql_id'] = id
 			query = query+"('"+str(id)+"','"+item.irradiation.setpoint.id()+"','Solar gains setpoint','Power','W','"+item_name+" irradiation power setpoint'),"
 			id = id + 1
-			item.conf['mysql_id'] = id
+			item.emission.power.conf['mysql_id'] = id
 			query = query+"('"+str(id)+"','"+item.emission.power.id()+"','Emission','Power','W','"+item_name+" emission power'),"
 			id = id + 1
-			item.conf['mysql_id'] = id
+			item.emission.setpoint.conf['mysql_id'] = id
 			query = query+"('"+str(id)+"','"+item.emission.setpoint.id()+"','Emission setpoint','Power','W','"+item_name+" emission power setpoint'),"
 		
 
@@ -114,10 +114,10 @@ class Measurements:
 		for item in self._sh.return_item('knxcontrol.ventilation'):
 			item_name = item.id().split(".")[-1]
 			id = id + 1
-			item.conf['mysql_id'] = id
+			item.fanspeed.conf['mysql_id'] = id
 			query = query+"('"+str(id)+"','"+item.fanspeed.id()+"','"+item_name+" fanspeed','','-','"+item_name+" fan speed control signal'),"
 			id = id + 1
-			item.conf['mysql_id'] = id
+			item.heatrecovery.conf['mysql_id'] = id
 			query = query+"('"+str(id)+"','"+item.heatrecovery.id()+"','"+item_name+" heatrecovery','','-','"+item_name+" heat recovery control signal'),"
 
 		
@@ -126,10 +126,10 @@ class Measurements:
 		for item in self._sh.return_item('knxcontrol.heat_production'):
 			item_name = item.id().split(".")[-1]
 			id = id + 1
-			item.conf['mysql_id'] = id
+			item.power.conf['mysql_id'] = id
 			query = query+"('"+str(id)+"','"+item.power.id()+"','"+item_name+" Power','Power','W','"+item_name+" heat production'),"
 			id = id + 1
-			item.conf['mysql_id'] = id
+			item.setpoint.conf['mysql_id'] = id
 			query = query+"('"+str(id)+"','"+item.setpoint.id()+"','"+item_name+" Power setpoint','Power','W','"+item_name+" heat production setpoint'),"
 
 		
@@ -138,10 +138,10 @@ class Measurements:
 		for item in self._sh.return_item('knxcontrol.electricity_production'):
 			item_name = item.id().split(".")[-1]
 			id = id + 1
-			item.conf['mysql_id'] = id
+			item.power.conf['mysql_id'] = id
 			query = query+"('"+str(id)+"','"+item.power.id()+"','"+item_name+" Power','Power','W','"+item_name+" electricity generation'),"
 			id = id + 1
-			item.conf['mysql_id'] = id
+			item.setpoint.conf['mysql_id'] = id
 			query = query+"('"+str(id)+"','"+item.setpoint.id()+"','"+item_name+" Power setpoint','Power','W','"+item_name+" electricity generation setpoint'),"
 
 		
