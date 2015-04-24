@@ -20,9 +20,12 @@
 import logging
 import numpy as np
 import pymysql
+import re
 
 from plugins.knxcontrol.measurements import *
 from plugins.knxcontrol.mysql import *
+from plugins.knxcontrol.weather import *
+from plugins.knxcontrol.mpc import *
 
 logger = logging.getLogger('')
 
@@ -39,21 +42,52 @@ class KNXControl:
 
 
 	def run(self):
+		# called once after the items have been parsed
 		self.alive = True
-		
+
 		# create measurements object
 		self.measurements = Measurements(self._sh,self._mysql_pass)
-
-		# initialize measurements
+		# schedule measurements
 		self._sh.scheduler.add('test', self.measurements.minute, prio=2, cron='* * * *')
-		#self._sh.scheduler.add('Measurements_average_quarterhour', self.measurements.quarterhour(), prio=5, cron='1,16,31,46 * * *')
-		#self._sh.scheduler.add('Measurements_average_week', self.measurements.week(), prio=5, cron='2 0 * 0')
-		#self._sh.scheduler.add('Measurements_average_month', self.measurements.month(), prio=5, cron='2 0 1 *')
+		#self._sh.scheduler.add('Measurements_average_quarterhour', self.measurements.quarterhour, prio=5, cron='1,16,31,46 * * *')
+		#self._sh.scheduler.add('Measurements_average_week', self.measurements.week, prio=5, cron='2 0 * 0')
+		#self._sh.scheduler.add('Measurements_average_month', self.measurements.month, prio=5, cron='2 0 1 *')
+		
+		# create weather object
+		self.weather = Weather(self._sh)
+		# schedule forecast loading
+		self._sh.scheduler.add('test', self.weather.load_detailed_predictions, prio=5, cron='1 * * *')
+		self._sh.scheduler.add('test', self.weather.load_daily_predictions, prio=5, cron='1 * * *')
+		
+		# create mpc object
+		self.mpc = MPC(self._sh)
 		
 	def stop(self):
 		self.alive = False
 
+		
 	def parse_item(self, item):
-		# do nothing
-		pass
+		# called once while parsing the items
+		
+		self.sh_listen[item] = []
+		# create a list of items with a sh_listen attribute
+		if 'sh_listen' in item.conf:
+			# find all items in item.conf['sh_listen']
+			
+			self.sh_listen[item].append(dest_item)
+			self.sh_listen.append({'source': item.conf['sh_listen'],'dest': item.id()}
+		
+		
+		# remove all empty values
+		for key, value in self.sh_listen.iteritems():
+			if not value:
+				del self.sh_listen[key]
 	
+	
+	def update_item(self, item, caller=None, source=None, dest=None):
+		# called each time an item changes
+		
+		# brute force solution, evaluate all expressions each time any item changes
+		for dest_item in self._sh.match_items('*:sh_listen'):
+			if dest_item.conf['sh_listen']:
+				dest_item( eval( dest_item.conf['sh_listen'] ) )
