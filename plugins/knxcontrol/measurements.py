@@ -178,7 +178,7 @@ class Measurements:
 		legend = con.cursor()
 		legend.execute("SELECT id,item FROM measurement_legend WHERE item <> ''")
 
-		# create mysql querry
+		# create mysql query
 		query = "INSERT INTO measurement (signal_id,time,value) VALUES "
 
 		# run through legend
