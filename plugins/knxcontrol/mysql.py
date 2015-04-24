@@ -153,6 +153,8 @@ class Mysql:
 		query = "CREATE INDEX time_signal_id ON measurement(time, signal_id)"
 		try:
 			cur.execute( query )
+		except:
+			pass
 
 		# quarterhour average measurements
 		query = ("CREATE TABLE IF NOT EXISTS `measurement_average_quarterhour` ("
@@ -169,6 +171,8 @@ class Mysql:
 		query = "CREATE INDEX time_signal_id ON measurement_average_quarterhour(time, signal_id)"
 		try:
 			cur.execute( query )
+		except:
+			pass
 
 		# week average measurements
 		query = ("CREATE TABLE IF NOT EXISTS `measurement_average_week` ("
@@ -185,6 +189,8 @@ class Mysql:
 		query = "CREATE INDEX time_signal_id ON measurement_average_week(time, signal_id)"
 		try:
 			cur.execute( query )
+		except:
+			pass
 
 		# month average measurements
 		query = ("CREATE TABLE IF NOT EXISTS `measurement_average_month` ("
@@ -201,7 +207,8 @@ class Mysql:
 		query = "CREATE INDEX time_signal_id ON measurement_average_month(time, signal_id)"
 		try:
 			cur.execute( query )
-
+		except:
+			pass
 
 		# profile legend
 		query = ("CREATE TABLE IF NOT EXISTS `profile_legend` ("
