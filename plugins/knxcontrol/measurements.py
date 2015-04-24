@@ -75,18 +75,18 @@ class Measurements:
 
 
 		id = 20
-		# energy use 5 components max
-		for item in self.items.energy:
+		# energy use 10 components max
+		for item in self._sh.return_item('knxcontrol.energy'):
 			item_name = item.id().split(".")[-1]
 			id = id+1 
 			item.conf['mysql_id'] = id
 			query = query+"('"+str(id)+"','"+item.id()+"','"+item_name+"','"+item.conf['quantity']+"','"+item.conf['unit']+"','"+item_name+" use'),"
 
-
+		
 
 		id = 100
-		# building zones 10 zones max
-		for item in self.items.building:
+		# building zones 16 zones max
+		for item in self._sh.return_item('knxcontrol.building'):
 			item_name = item.id().split(".")[-1]
 			id = id + 1
 			item.conf['mysql_id'] = id
@@ -94,12 +94,24 @@ class Measurements:
 			id = id + 1
 			item.conf['mysql_id'] = id
 			query = query+"('"+str(id)+"','"+item.airquality.id()+"','Air quality','Concentration','g CO2/m3','"+item_name+" CO2 concentration'),"
+			id = id + 1
+			item.conf['mysql_id'] = id
+			query = query+"('"+str(id)+"','"+item.irradiation.power.id()+"','Solar gains','Power','W','"+item_name+" irradiation power'),"
+			id = id + 1
+			item.conf['mysql_id'] = id
+			query = query+"('"+str(id)+"','"+item.irradiation.setpoint.id()+"','Solar gains setpoint','Power','W','"+item_name+" irradiation power setpoint'),"
+			id = id + 1
+			item.conf['mysql_id'] = id
+			query = query+"('"+str(id)+"','"+item.emission.power.id()+"','Emission','Power','W','"+item_name+" emission power'),"
+			id = id + 1
+			item.conf['mysql_id'] = id
+			query = query+"('"+str(id)+"','"+item.emission.setpoint.id()+"','Emission setpoint','Power','W','"+item_name+" emission power setpoint'),"
+		
 
 
-
-		id = 120
+		id = 200
 		# ventilation 10 systems max
-		for item in self.items.ventilation:
+		for item in self._sh.return_item('knxcontrol.ventilation'):
 			item_name = item.id().split(".")[-1]
 			id = id + 1
 			item.conf['mysql_id'] = id
@@ -108,49 +120,33 @@ class Measurements:
 			item.conf['mysql_id'] = id
 			query = query+"('"+str(id)+"','"+item.heatrecovery.id()+"','"+item_name+" heatrecovery','','-','"+item_name+" heat recovery control signal'),"
 
-
-
-		id = 140
+		
+		id = 220
 		# heat production 10 systems max
-		for item in self.items.heat.production:
+		for item in self._sh.return_item('knxcontrol.heat_production'):
 			item_name = item.id().split(".")[-1]
 			id = id + 1
 			item.conf['mysql_id'] = id
 			query = query+"('"+str(id)+"','"+item.power.id()+"','"+item_name+" Power','Power','W','"+item_name+" heat production'),"
 			id = id + 1
 			item.conf['mysql_id'] = id
-			query = query+"('"+str(id)+"','"+item.control.id()+"','"+item_name+" Control','','-','"+item_name+" control signal'),"
+			query = query+"('"+str(id)+"','"+item.setpoint.id()+"','"+item_name+" Power setpoint','Power','W','"+item_name+" heat production setpoint'),"
 
-
-
-		id = 160
-		# heat emission 10 systems max
-		for item in self.items.heat.emission:
-			item_name = item.id().split(".")[-1]
-			id = id + 1
-			item.conf['mysql_id'] = id
-			query = query+"('"+str(id)+"','"+item.power.id()+"','"+item_name+" Power','Power','W','"+item_name+" heat emission'),"
-			id = id + 1
-			item.conf['mysql_id'] = id
-			query = query+"('"+str(id)+"','"+item.control.id()+"','"+item_name+" Control','','-','"+item_name+" control signal'),"
-
-
-
-		id = 180
+		
+		id = 240
 		# electricity generation 10 systems max
-		for item in self.items.electricity.production:
+		for item in self._sh.return_item('knxcontrol.electricity_production'):
 			item_name = item.id().split(".")[-1]
 			id = id + 1
 			item.conf['mysql_id'] = id
 			query = query+"('"+str(id)+"','"+item.power.id()+"','"+item_name+" Power','Power','W','"+item_name+" electricity generation'),"
 			id = id + 1
 			item.conf['mysql_id'] = id
-			query = query+"('"+str(id)+"','"+item.control.id()+"','"+item_name+" Control','','-','"+item_name+" control signal'),"
+			query = query+"('"+str(id)+"','"+item.setpoint.id()+"','"+item_name+" Power setpoint','Power','W','"+item_name+" electricity generation setpoint'),"
 
-
+		
 		# try to execute query
 		query = query[:-1]
-
 		try:
 			cur.execute( query )
 			logger.warning("Measurements initialized")
