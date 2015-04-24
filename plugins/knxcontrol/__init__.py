@@ -68,21 +68,7 @@ class KNXControl:
 		
 	def parse_item(self, item):
 		# called once while parsing the items
-		
-		self.sh_listen[item] = []
-		# create a list of items with a sh_listen attribute
-		if 'sh_listen' in item.conf:
-			# find all items in item.conf['sh_listen']
-			
-			self.sh_listen[item].append(dest_item)
-			self.sh_listen.append({'source': item.conf['sh_listen'],'dest': item.id()}
-		
-		
-		# remove all empty values
-		for key, value in self.sh_listen.iteritems():
-			if not value:
-				del self.sh_listen[key]
-	
+		pass
 	
 	def update_item(self, item, caller=None, source=None, dest=None):
 		# called each time an item changes

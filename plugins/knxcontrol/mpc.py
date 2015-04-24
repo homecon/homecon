@@ -14,7 +14,7 @@ class MPC:
 	def __init__(self,smarthome):
 		self._sh = smarthome
 		
-	def _load_measurement(self,mysqlcur,ids,time)
+	def _load_measurement(self,mysqlcur,ids,time):
 	
 		temp = np.zeros((N+1,len(ids)))
 		for idx,val in enumerate(ids):

@@ -72,7 +72,7 @@ class Weather:
 		method to load a daily weather forecast from openweathermap.org and set write it to the appropriate item
 		"""
 		
-		try;
+		try:
 			weatherforecast = []
 			response = urllib.request.urlopen('http://api.openweathermap.org/data/2.5/forecast/daily?lat=%s&lon=%s' % (self._sh._lat,self._sh._lon))
 			response = json.loads(response.read().decode('utf-8'))
@@ -100,8 +100,8 @@ class Weather:
 			item = self._sh.return_item('knxcontrol.weather.prediction.daily')
 			item(weatherforecast)
 			
-			logger.warning('Detailed weatherforecast loaded')
+			logger.warning('Daily weatherforecast loaded')
 		except:
-			logger.warning('Error loading detailed weatherforecast')
+			logger.warning('Error loading daily weatherforecast')
 	
 	

@@ -85,21 +85,21 @@ class Energytools():
 		
 		return (I_b,I_d)
 
-	def incidentradiation(self,I_b,I_d,solar_azimuth,solar_altitude,surface_azimuth,surface_tilt)
+	def incidentradiation(self,I_b,I_d,solar_azimuth,solar_altitude,surface_azimuth,surface_tilt):
 		"""
 		Method returns irradiation on a surface 
 		according to ASHRAE
 		
 		input:
-		I_b: local beam irradiation (W/m²)
-		I_d: local diffuse irradiation (W/m²)
+		I_b: local beam irradiation (W/m2)
+		I_d: local diffuse irradiation (W/m2)
 		solar_azimuth:   sun azimuth angle from N in E direction (0=N, pi/2=E, pi=S, -pi/2 = W) (radians)
 		solar_altitude:  sun altitude angle (radians)
 		surface_azimuth: surface normal azimuth angle from N in E direction (0=N, pi/2=E, pi=S, -pi/2 = W) (radians)
 		surface_tilt:    surface tilt angle (0: facing up, pi/2: vertical, pi: facing down) (radians)
 		
 		output:
-		I: irradiation (W/m²)
+		I: irradiation (W/m2)
 		"""
 		
 		# surface solar azimuth (-pi/2< gamma < pi/2, else surface is in shade)
@@ -115,7 +115,7 @@ class Energytools():
 			I_tb = 0
 		
 		# diffuse radiation
-		Y = max(0.45, 0.55 + 0.437*cos_theta+ 0.313*cos_theta.^2)
+		Y = max(0.45, 0.55 + 0.437*cos_theta+ 0.313*cos_theta**2)
 		if surf_tilt < np.pi/2:
 			I_td = I_d*(Y*np.sin(surface_tilt) + cos(surface_tilt))
 		else:
