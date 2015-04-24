@@ -74,14 +74,59 @@ class Energytools():
 		ad = 0.202 + 0.852*tau_b - 0.007*tau_d -0.357*tau_b*tau_d;
 		
 		if np.degrees(alt) > 0:
-			E_b = E0*np.exp(-tau_b*m**ab);
+			I_b = E0*np.exp(-tau_b*m**ab);
 		else:
-			E_b = 0
+			I_b = 0
 			
 		if np.degrees(alt) > -2:	
-			E_d = E0*np.exp(-tau_d*m**ad);
+			I_d = E0*np.exp(-tau_d*m**ad);
 		else:
-			E_b = 0
+			I_b = 0
 		
-		return (E_b,E_d)
+		return (I_b,I_d)
 
+	def incidentradiation(self,I_b,I_d,solar_azimuth,solar_altitude,surface_azimuth,surface_tilt)
+		"""
+		Method returns irradiation on a surface 
+		according to ASHRAE
+		
+		input:
+		I_b: local beam irradiation (W/m²)
+		I_d: local diffuse irradiation (W/m²)
+		solar_azimuth:   sun azimuth angle from N in E direction (0=N, pi/2=E, pi=S, -pi/2 = W) (radians)
+		solar_altitude:  sun altitude angle (radians)
+		surface_azimuth: surface normal azimuth angle from N in E direction (0=N, pi/2=E, pi=S, -pi/2 = W) (radians)
+		surface_tilt:    surface tilt angle (0: facing up, pi/2: vertical, pi: facing down) (radians)
+		
+		output:
+		I: irradiation (W/m²)
+		"""
+		
+		# surface solar azimuth (-pi/2< gamma < pi/2, else surface is in shade)
+		gamma = solar_azimuth-surface_azimut;
+		
+		# incidence
+		cos_theta = np.cos(solar_altitude)*np.cos(gamma)*np.sin(surface_tilt) + np.sin(solar_altitude)*np.cos(surface_tilt)
+    
+		# beam radiation
+		if cos_theta > 0:
+			I_tb = I_b*cos_theta
+		else:
+			I_tb = 0
+		
+		# diffuse radiation
+		Y = max(0.45, 0.55 + 0.437*cos_theta+ 0.313*cos_theta.^2)
+		if surf_tilt < np.pi/2:
+			I_td = I_d*(Y*np.sin(surface_tilt) + cos(surface_tilt))
+		else:
+			I_td = I_d*Y*np.sin(surface_tilt)
+			
+		# ground reflected radiation
+		rho_g = 0.2;
+		I_gr = (I_b*np.sin(solar_altitude) +I_d)*rho_g*(1-np.cos(surface_tilt))/2
+		
+		# total irradiation
+		I_t = I_tb + I_td + I_gr
+		
+		return I_t
+		
