@@ -9,84 +9,147 @@ import pyipopt
 
 logger = logging.getLogger('')
 
-class MPC:
+class OCmodel:
 
 	def __init__(self,smarthome):
 
 		self._sh = smarthome
 
-		# load the required measurment ids
-		self.measurement_id = {}
-		self.measurement_id['ambient_temperature'] = self._load_ids('knxcontrol.weather.current.temperature')
-		self.measurement_id['direct_irradiation']  = self._load_ids('knxcontrol.weather.current.irradiation.direct')
-		self.measurement_id['diffuse_irradiation'] = self._load_ids('knxcontrol.weather.current.irradiation.diffuse')
-		self.measurement_id['clouds']              = self._load_ids('knxcontrol.weather.current.irradiation.clouds')
-		self.measurement_id['zone_temperature']    = self._load_ids('knxcontrol.building',value='temperature')
-		self.measurement_id['zone_emission']       = self._load_ids('knxcontrol.building',value='emission.power')
-		self.measurement_id['zone_irradiation']    = self._load_ids('knxcontrol.building',value='irradiation.power')
-		self.measurement_id['heat_production']     = self._load_ids('knxcontrol.heat_production',value='power')
-		self.measurement_id['fanspeed']            = self._load_ids('knxcontrol.ventilation',value='fanspeed')
-
-		logger.warning(self.measurement_id)
-		
-		system_identification(self)
-
-
-
-	def system_identification(self):
-		con = pymysql.connect('localhost', 'knxcontrol', sh.knxcontrol.mysql.conf['password'], 'knxcontrol')
-		cur = con.cursor()
-
 		# define time
-		dt = 900
-		t = np.arange(0,7*24*3600,dt)
-		N = t.shape[0]-1
+		self.dt = 900
+		self.t = np.arange(0,0.5*24*3600,self.dt)
+		self.N = self.t.shape[0]-1
 
 		now = datetime.datetime.utcnow();
-		timestamp = int( (now - datetime.datetime(1970,1,1)).total_seconds() )
-		timestamp_start = timestamp - 3600 - t[-1]
+		minute = int(np.floor(int(now.strftime('%M'))/15)*15)
+		enddate = now.replace(minute=minute,second=0, microsecond=0)
+		epoch = datetime.datetime(1970,1,1)
 
-		# load required measurements
-		T_amb_meas   = np.mean(self._load_measurement(self,cur,self.measurement_id['ambient_temperature'],timestamp_start+t),axis=1)
-		direct_meas  = np.mean(self._load_measurement(self,cur,self.measurement_id['direct_irradiation'],timestamp_start+t),axis=1)
-		diffuse_meas = np.mean(self._load_measurement(self,cur,self.measurement_id['diffuse_irradiation'],timestamp_start+t),axis=1)
-		clouds_meas  = self._load_measurement(self,cur,self.measurement_id['clouds'],timestamp_start+t)
+		self.starttimestamp = int( (enddate - datetime.datetime(1970,1,1)).total_seconds() ) -self.t[-1]
+
+
+
+		# create variables
+		self.nvars = 0
+		self.vars = {}
+		self.vars['T_zon'] = _op_variable(self._sh,self,False,items=['knxcontrol.building.living_zone.temperature'],operation='avg')
+		self.vars['T_amb'] = _op_variable(self._sh,self,False,items=['knxcontrol.weather.current.temperature'],operation='avg')
+		self.vars['P_emi'] = _op_variable(self._sh,self,False,items=['knxcontrol.building.*.emission.power'],operation='sum')
+		self.vars['P_sol'] = _op_variable(self._sh,self,False,items=['knxcontrol.building.*.irradiation.power'],operation='sum')
+		self.vars['P_pro'] = _op_variable(self._sh,self,False,items=['knxcontrol.heat_production.*.power'],operation='sum')
+		self.vars['V_ven'] = _op_variable(self._sh,self,False,items=['knxcontrol.ventilation.*.fanspeed'],operation='sum')
+		self.vars['C_zon'] = _op_variable(self._sh,self,True)		
+		self.vars['UA_zon_amb'] = _op_variable(self._sh,self,True)
+		self.vars['n_emi'] = _op_variable(self._sh,self,True)
+		self.vars['n_sol'] = _op_variable(self._sh,self,True)
+		self.vars['n_pro'] = _op_variable(self._sh,self,True)
+		self.vars['n_ven'] = _op_variable(self._sh,self,True)
 		
-		T_zon_meas    = np.mean(self._load_measurement(self,cur,self.measurement_id['zone_temperature'],timestamp_start+t),axis=1)
-		Q_emi_meas    = self._load_measurement(self,cur,self.measurement_id['zone_emission'],timestamp_start+t)
-		Q_sol_meas    = self._load_measurement(self,cur,self.measurement_id['zone_irradiation'],timestamp_start+t)
-		fanspeed_meas = np.sum(self._load_measurement(self,cur,self.measurement_id['fanspeed'],timestamp_start+t))
-		Q_pro_meas    = self._load_measurement(self,cur,self.measurement_id['heat_production'],timestamp_start+t)
 
-		logger.warning(T_zon_meas)
+		logger.warning(self.vars['T_zon'].measurement)
+		
+
+		#self.identify()
 
 
-	def _load_ids(self,parent,value=None):
+
+	def identify(self):
+		pass
+
+
+	
+class _op_variable:
+
+	def __init__(self,smarthome,ocmodel,parameter,items=None,operation=None):
 		"""
+		Defines a variable in the optimization problems
+		Inputs:
+		smarthome:  the smarthome object
+		ocmodel:    the parent optimal control model
+		parameter:  true/false if it is a parameter (fixed over time)
+		items:      list of itemstrings for the measurement item and
+        avg:        a boolean if an average or total is to be taken
 		"""
-		signal_id= []
-		if value:
-			for child in self._sh.return_item(parent):
-				item = self._sh.return_item(child.id()+'.'+value)
-				signal_id.append(item.conf['mysql_id'])
+		self._sh = smarthome
+		self._ocmodel = ocmodel
+
+		if parameter:
+			self.ind = self._ocmodel.nvars
+			self._ocmodel.nvars = self._ocmodel.nvars + 1
 		else:
-			item = self._sh.return_item(parent)
-			signal_id.append(item.conf['mysql_id'])
-
-		return signal_id
-
-
-	def _load_measurement(self,mysqlcur,ids,time):
-	
-		temp = np.zeros((N+1,len(ids)))
-		for idx,val in enumerate(ids):
-			try:
-				mysqlcur.execute("SELECT time,value FROM  measurement_average_quarterhour WHERE signal_id=%s AND time>%s" %(val,time[0]))
-				data = np.asarray(list(mysqlcur))
-				temp[:,idx] = np.interp(time,data[:,0],data[:,1],left=data[0,1],right=data[-1,1])
-			except:
-				logger.warning('Not enough data in quarter hour measurements')
-	
-		return temp
-	
+			self.ind = self._ocmodel.nvars + np.arange(len(self._ocmodel.t))
+			self._ocmodel.nvars = self._ocmodel.nvars + np.arange(len(self._ocmodel.t))
 		
+		values = np.empty((self._ocmodel.N+1,0))
+
+		if items:
+			for itemstr in items:
+				# load the data
+				value = self._load_measurement(itemstr)
+				if np.any(value):
+					values = np.concatenate((values,value),axis=1)
+
+		# average or total the data if required
+		if operation == 'avg':
+			self.measurement = np.mean(values,axis=1)
+		elif operation == 'sum':
+			self.measurement = np.sum(values,axis=1)
+		else:
+			self.measurement = values
+
+		self.value = None
+		
+		
+	def _load_measurement(self,itemstr):
+		"""
+		Loads measurement data from mysql
+		Inputs:
+		itemstr:     item string
+		"""
+		time = self._ocmodel.t + self._ocmodel.starttimestamp
+
+		ids = []
+		try:
+			for item in self._sh.match_items(itemstr):
+				ids.append(item.conf['mysql_id'])
+		except:
+			logger.warning('Could not find mysql_id for %s' % (itemstr))
+			return None
+
+		value = np.empty((self._ocmodel.N+1,0))
+
+		con = pymysql.connect('localhost', 'knxcontrol', self._sh.knxcontrol.mysql.conf['password'], 'knxcontrol')
+		cur = con.cursor()
+
+		for ind,id in enumerate(ids):
+			try:
+				# get the data from mysql
+				cur.execute("SELECT time,value FROM  measurement_average_quarterhour WHERE signal_id=%s AND time>%s" % (id,time[0]))		
+				data = np.asarray(list(cur))
+				temp = np.expand_dims(np.interp(time,data[:,0],data[:,1],left=data[0,1],right=data[-1,1]),axis=1)			
+				value = np.concatenate((value,temp),axis=1)
+			except:
+				logger.warning('Not enough data for id:%s in quarter hour measurements' % (id) )
+
+
+		con.commit()
+		con.close()
+		return value
+			
+
+class _op_constraint:
+	def __init__(self,smarthome,ocmodel,parameter,items=None,operation=None):
+	"""
+	Defines a constraint in the optimization problems
+	Inputs:
+	smarthome:  the smarthome object
+	ocmodel:    the parent optimal control model
+	parameter:  true/false if it is a parameter (fixed over time)
+	items:      list of itemstrings for the measurement item and
+    avg:        a boolean if an average or total is to be taken
+	"""
+	self._sh = smarthome
+	self._ocmodel = ocmodel
+
+
+
