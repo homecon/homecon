@@ -162,7 +162,6 @@ class Measurements:
 		"""
 		store all measurements in MySQL
 		"""
-		logger.warning('minute')
 		# remove seconds from utctime and add :00
 		now = datetime.datetime.utcnow().replace( second=0, microsecond=0)
 		timestamp = int( (now - datetime.datetime(1970,1,1)).total_seconds() )
@@ -232,7 +231,6 @@ class Measurements:
 		"""
 		calculate 15 minute average of the past 15 minutes and store in MySQL
 		"""
-		logger.warning('quarterhour')
 		# get the last 15 minutes date
 		now = datetime.datetime.utcnow();
 		minute = int(np.floor(int(now.strftime('%M'))/15)*15)
@@ -251,7 +249,6 @@ class Measurements:
 		"""
 		calculate week average of the past week and store in MySQL
 		"""
-		logger.warning('week')
 		# get the last monday's date
 		now = datetime.datetime.now(self._sh.tzinfo())
 		now = now.replace( hour=0 ,minute=0, second=0, microsecond=0)
@@ -273,6 +270,5 @@ class Measurements:
 		"""
 		calculate month average of the past month and store in MySQL
 		"""
-		logger.warning('month')
 		pass
 

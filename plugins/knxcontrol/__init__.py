@@ -59,8 +59,8 @@ class KNXControl:
 		self._sh.scheduler.add('Detailed_weater_forecast', self.weather.load_detailed_predictions, prio=5, cron='1 * * *')
 		self._sh.scheduler.add('Daily_weater_forecast', self.weather.load_daily_predictions, prio=5, cron='1 * * *')
 		
-		# create mpc object
-		self.model = OCmodel(self._sh)
+		# create a parameter estimation object
+		self.optimization_model = Optimization_model(self._sh)
 		
 
 	def stop(self):

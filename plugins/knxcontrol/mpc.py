@@ -5,15 +5,17 @@ import pymysql
 import datetime
 import numpy as np
 import pyipopt
-
+import sympy
 
 logger = logging.getLogger('')
 
-class OCmodel:
+class Optimization_model:
 
 	def __init__(self,smarthome):
 
 		self._sh = smarthome
+
+		logger.warning('Start defining optimization model')
 
 		# define time
 		self.dt = 900
@@ -46,20 +48,24 @@ class OCmodel:
 		self.vars['n_ven'] = _op_variable(self,True)
 		
 
-		logger.warning(self.vars['P_sol'].measurement)
-		logger.warning(self.vars['P_sol'].ind)
-
 		# create constraints
-		self.cons['T_zon_state'] = _op_constraint(self,'C_zon*(T_zon[i+1]-T_zon[i])/dt - UA_zon_amb*(T_amb[i]-T_zon[i]) - n_emi*P_emi[i] - n_sol*P_sol[i]',0,0,
-                                                      {'C_zon':'(T_zon[i+1]-T_zon[i])/dt','T_zon[i+1]':'C_zon/dt','T_zon[i]':'-C_zon/dt+UA_zon_amb','UA_zon,amb':'-(T_amb[i]-T_zon[i])','T_amb[i]':'-UA_zon_amb','n_emi':'-P_emi[i]','P_emi[i]':'-n_emi','n_sol':'-P_sol[i]','P_sol[i]':'-n_sol'},
- 													  {'C_zon*T_zon[i+1]':'1/dt','C_zon*T_zon[i]':'-1/dt','UA_zon_amb*T_amb[i]':'-1','UA_zon_amb*T_zon[i]':'-1','n_emi*P_emi[i]':'-1','n_sol*P_sol[i]':'-1'},i=np.arange(self.N))
-
-		logger.warning(self.cons['T_zon_state'].c)
-		#self.identify()
+		self.ncons = 0
+		self.cons = {}
+		self.cons['T_zon_state'] = _op_constraint(self,'C_zon*(T_zon[i+1]-T_zon[i])/dt - UA_zon_amb*(T_amb[i]-T_zon[i]) - n_emi*P_emi[i] - n_sol*P_sol[i]',0,0,i=np.arange(self.N))
+		self.cons['T_amb']       = _op_constraint(self,'T_amb[i]-T_amb.value[i]',0,0,i=np.arange(self.N+1))
 
 
+		x = np.random.rand(self.nvars)
 
-	def identify(self):
+		logger.warning( self.cons['T_zon_state'].c(x) )
+		logger.warning( self.cons['T_zon_state'].J(x,True) )
+		logger.warning( self.cons['T_zon_state'].J(x,False) )
+
+		#self.solve()
+
+		logger.warning('Optimization model ready')
+
+	def solve(self):
 		pass
 
 
@@ -145,7 +151,7 @@ class _op_variable:
 
 class _op_constraint:
 
-	def __init__(self,ocmodel,constraint,constraint_min,constraint_max,jacobian,hessian,i=0):
+	def __init__(self,ocmodel,constraint,constraint_min,constraint_max,i=0):
 		"""
 		Defines a constraint in the optimization problems of the form c_min <= c <= c_max
 	
@@ -164,32 +170,53 @@ class _op_constraint:
 		self.c_min = constraint_min
 		self.c_max = constraint_max
 	
-		self.c = []
-		self.J = []
+		# create symbolic variables
+		x = sympy.MatrixSymbol('x', self._ocmodel.nvars, 1)
+
+
+		temp_c_str = []
+		temp_J_str = []
+		self.J_row = []
+		self.J_col = []
 		for ind in i:
+
 			# parse the constraint string
-			temp = constraint
 			for v in self._ocmodel.vars:
 				if ind   >= 0 and ind   < len(self._ocmodel.vars[v].ind):
-					temp = temp.replace(v+'[i]', 'x[%s]' % (self._ocmodel.vars[v].ind[ind]))
+					constraint = constraint.replace(v+'[i]', 'x[%s]' % (self._ocmodel.vars[v].ind[ind]))
 				if ind+1 >= 0 and ind+1 < len(self._ocmodel.vars[v].ind):
-					temp = temp.replace(v+'[i+1]', 'x[%s]' % (self._ocmodel.vars[v].ind[ind+1]))
+					constraint = constraint.replace(v+'[i+1]', 'x[%s]' % (self._ocmodel.vars[v].ind[ind+1]))
 				if ind-1 >= 0 and ind-1 < len(self._ocmodel.vars[v].ind):
-					temp = temp.replace(v+'[i-1]', 'x[%s]' % (self._ocmodel.vars[v].ind[ind-1]))
+					constraint = constraint.replace(v+'[i-1]', 'x[%s]' % (self._ocmodel.vars[v].ind[ind-1]))
 
-				temp = temp.replace(v, 'x[%s]' % (self._ocmodel.vars[v].ind[0]))
-
-				temp = temp.replace('dt', '%s' % (self._ocmodel.dt))
-			self.c.append(temp)
-
-
-			# parse jacobian string
-			#self.J.append( '[0' + ',0'*(self._ocmodel.nvars-1) + ']' )
+				constraint = constraint.replace(v, 'x[%s]' % (self._ocmodel.vars[v].ind[0]))
+				constraint = constraint.replace('dt', '%s' % (self._ocmodel.dt))
+			
+			temp_c_str.append(constraint)
+			logger.warning(ind)
+			# create a jacobian strings,rows and cols
+			for k in np.arange(self._ocmodel.nvars):
+				if constraint.find('x[%s]' % k) >= 0:
+					self.J_row.append(ind)
+					self.J_col.append(k)
+					temp_J_str.append( str(sympy.diff( eval(constraint),eval('x[%s]' % k) )).replace(', 0]',']') )
 			
 
-		logger.warning(self.c)
+		# combine the arrays into a single string
+		temp_c_str = ' , '.join(temp_c_str)
+		self.c_str = '['+temp_c_str+']'
+
+		temp_J_str = ' , '.join(temp_J_str)
+		self.J_str = '['+temp_J_str+']'
+
+	def c(self,x):
+		return np.array(eval(self.c_str))
 
 
-
+	def J(self,x,flag):
+		if flag:
+			return (np.array(self.J_row),np.array(self.J_col))
+		else:
+			return np.array(eval(self.J_str))
 
 
