@@ -49,24 +49,78 @@ class Optimization_model:
 		
 
 		# create constraints
-		self.ncons = 0
 		self.cons = {}
+		self.ncons = 0
 		self.cons['T_zon_state'] = _op_constraint(self,'C_zon*(T_zon[i+1]-T_zon[i])/dt - UA_zon_amb*(T_amb[i]-T_zon[i]) - n_emi*P_emi[i] - n_sol*P_sol[i]',0,0,i=np.arange(self.N))
+		self.cons['P_emi_P_pro'] = _op_constraint(self,'P_emi[i]-n_pro*P_pro[i]',0,0,i=np.arange(self.N+1))
+		
 		self.cons['T_amb']       = _op_constraint(self,'T_amb[i]-T_amb.value[i]',0,0,i=np.arange(self.N+1))
-
-
+		self.cons['P_emi']       = _op_constraint(self,'P_emi[i]-P_emi.value[i]',0,0,i=np.arange(self.N+1))
+		self.cons['P_sol']       = _op_constraint(self,'P_sol[i]-P_sol.value[i]',0,0,i=np.arange(self.N+1))
+		self.cons['P_pro']       = _op_constraint(self,'P_pro[i]-P_pro.value[i]',0,0,i=np.arange(self.N+1))
+		self.cons['V_ven']       = _op_constraint(self,'V_ven[i]-V_ven.value[i]',0,0,i=np.arange(self.N+1))
+		self.cons['n_emi']       = _op_constraint(self,'n_emi[i]-1',0,0,i=np.arange(self.N+1))
+		
+		
+		# create objective
+		self.obj = {}
+		self.obj['T_zon'] = _op_objective(self,'(T_zon[i]-T_zon.value[i])**2',i=np.arange(self.N))
+		
+		
+		# test
 		x = np.random.rand(self.nvars)
 
 		logger.warning( self.cons['T_zon_state'].c(x) )
 		logger.warning( self.cons['T_zon_state'].J(x,True) )
 		logger.warning( self.cons['T_zon_state'].J(x,False) )
 
+		
+		# # prepare ipopt
+	
 		#self.solve()
 
 		logger.warning('Optimization model ready')
-
+		
+	def objective(self,x):
+		total = 0
+		for key in self.obj
+			total = total + self.obj[key].f(x)
+		
+		return total
+		
+	def gradient(self):
+		total = np.zeros(self.nvars)
+		for key in self.obj
+			total = total + self.obj[key].g(x)
+		
+		return total
+		
+	def constraint(self):
+		total = np.zeros(self.ncons,self.nvars)
+		#for key in self.cons
+			
+		#	total() = self.obj[key].g(x)
+		
+		return total
+		
+		
+	def jacobien(self):
+		pass
+	
+	
 	def solve(self):
 		pass
+		
+		# prepare ipopt
+		# nlp = pyipopt.create(self.nvars, x_L, x_U, ncons, c_L, c_U, nnzj, nnzh, objective, gradient, constraint, jacobian)
+		# 
+		# 
+		# x, zl, zu, constraint_multipliers, obj, status = nlp.solve(x0)
+		# print()
+		# print( 'solution: ' + str(x) )
+		# print()
+		# print()
+		# print()
 
 
 	
@@ -160,9 +214,7 @@ class _op_constraint:
 		constraint:       an expression for the value of the constraint function 
 		constraint_min:   a minimum value or array of minimum values for the constraint
 		constraint_max:   a maximum value or array of maximum values for the constraint
-		jacobian:         a dict defining the nonzero 1st derivatives of the constraint with expressions e.g. {'x':'dc/dx'}
-		hessian:          a dict defining the nonzero 2nd derivatives of the constraint with expressions e.g. {'x*y':'d2c/dx/dy'}
-		i                 an array of indices len(i) constriants will be created,'[i-1]','[i]' and '[i+1]' will be replaced by its value
+		i:                an array of indices len(i) constraints will be created, '[i-1]', '[i]' and '[i+1]' will be replaced by its value
 		"""
 
 		self._ocmodel = ocmodel
@@ -179,21 +231,25 @@ class _op_constraint:
 		self.J_row = []
 		self.J_col = []
 		for ind in i:
-
+			self._ocmodel.ncons = self._ocmodel.ncons+1
 			# parse the constraint string
 			for v in self._ocmodel.vars:
 				if ind   >= 0 and ind   < len(self._ocmodel.vars[v].ind):
+					constraint = constraint.replace(v+'.value[i]', '%s' % (self._ocmodel.vars[v].value[ind]))
 					constraint = constraint.replace(v+'[i]', 'x[%s]' % (self._ocmodel.vars[v].ind[ind]))
 				if ind+1 >= 0 and ind+1 < len(self._ocmodel.vars[v].ind):
+					constraint = constraint.replace(v+'.value[i+1]', '%s' % (self._ocmodel.vars[v].value[ind+1]))
 					constraint = constraint.replace(v+'[i+1]', 'x[%s]' % (self._ocmodel.vars[v].ind[ind+1]))
 				if ind-1 >= 0 and ind-1 < len(self._ocmodel.vars[v].ind):
+					constraint = constraint.replace(v+'.value[i-1]', '%s' % (self._ocmodel.vars[v].value[ind-1]))
 					constraint = constraint.replace(v+'[i-1]', 'x[%s]' % (self._ocmodel.vars[v].ind[ind-1]))
+						
 
 				constraint = constraint.replace(v, 'x[%s]' % (self._ocmodel.vars[v].ind[0]))
 				constraint = constraint.replace('dt', '%s' % (self._ocmodel.dt))
 			
 			temp_c_str.append(constraint)
-			logger.warning(ind)
+
 			# create a jacobian strings,rows and cols
 			for k in np.arange(self._ocmodel.nvars):
 				if constraint.find('x[%s]' % k) >= 0:
@@ -220,3 +276,68 @@ class _op_constraint:
 			return np.array(eval(self.J_str))
 
 
+class _op_objective:
+
+	def __init__(self,ocmodel,objective,i=0):
+		"""
+		Defines an objective. All objectives are added in the end
+		Inputs:
+		ocmodel:          the parent optimal control model
+		objective:        an expression for the value of the objective function 
+		i:                an array of indices len(i) objectives will be created, '[i-1]', '[i]' and '[i+1]' will be replaced by its value
+		"""
+
+		self._ocmodel = ocmodel
+		
+		# create symbolic variables
+		x = sympy.MatrixSymbol('x', self._ocmodel.nvars, 1)
+
+		temp_f_str = []
+		temp_g_str = []
+		
+		for ind in i:
+
+			# parse the constraint string
+			for v in self._ocmodel.vars:
+				if ind   >= 0 and ind   < len(self._ocmodel.vars[v].ind):
+					objective = objective.replace(v+'.value[i]', '%s' % (self._ocmodel.vars[v].value[ind]))
+					objective = objective.replace(v+'[i]', 'x[%s]' % (self._ocmodel.vars[v].ind[ind]))
+				if ind+1 >= 0 and ind+1 < len(self._ocmodel.vars[v].ind):
+					objective = objective.replace(v+'.value[i+1]', '%s' % (self._ocmodel.vars[v].value[ind+1]))
+					objective = objective.replace(v+'[i+1]', 'x[%s]' % (self._ocmodel.vars[v].ind[ind+1]))
+				if ind-1 >= 0 and ind-1 < len(self._ocmodel.vars[v].ind):
+					objective = objective.replace(v+'.value[i-1]', '%s' % (self._ocmodel.vars[v].value[ind-1]))
+					objective = objective.replace(v+'[i-1]', 'x[%s]' % (self._ocmodel.vars[v].ind[ind-1]))
+						
+
+				objective = objective.replace(v, 'x[%s]' % (self._ocmodel.vars[v].ind[0]))
+				objective = objective.replace('dt', '%s' % (self._ocmodel.dt))
+			
+			temp_f_str.append(objective)
+			
+			
+			# create gradient strings
+			temp_temp_g_str = []
+			for k in np.arange(self._ocmodel.nvars):
+				temp_temp_g_str.append( str(sympy.diff( eval(constraint),eval('x[%s]' % k) )).replace(', 0]',']') )
+			
+			
+			temp_temp_g_str = ' , '.join(temp_temp_g_str)
+			temp_temp_g_str = '['+temp_temp_g_str+']'
+			temp_g_str.append(temp_temp_g_str)
+			
+		# combine the arrays into a single string
+		temp_f_str = ' , '.join(temp_f_str)
+		self.f_str = '['+temp_f_str+']'
+
+		temp_g_str = ' , '.join(temp_g_str)
+		self.g_str = '['+temp_g_str+']'
+		
+		
+		
+
+	def f(self,x):
+		return eval(self.f_str)
+
+	def g(self,x):
+		return np.array(eval(self.g_str))
