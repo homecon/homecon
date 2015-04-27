@@ -19,7 +19,7 @@ class Optimization_model:
 
 		# define time
 		self.dt = 900
-		self.t = np.arange(0,0.5*24*3600,self.dt)
+		self.t = np.arange(0,7*24*3600,self.dt)
 		self.N = self.t.shape[0]-1
 
 		now = datetime.datetime.utcnow();
@@ -28,7 +28,6 @@ class Optimization_model:
 		epoch = datetime.datetime(1970,1,1)
 
 		self.starttimestamp = int( (enddate - datetime.datetime(1970,1,1)).total_seconds() ) -self.t[-1]
-
 
 
 		# create variables
@@ -47,7 +46,7 @@ class Optimization_model:
 		self.vars['n_pro'] = _op_variable(self,True)
 		self.vars['n_ven'] = _op_variable(self,True)
 		
-
+		logger.warning('Adding constraints')
 		# create constraints
 		self.cons = {}
 		self.ncons = 0
@@ -62,18 +61,21 @@ class Optimization_model:
 		self.cons['n_emi']       = _op_constraint(self,'n_emi[i]-1',0,0,i=np.arange(self.N+1))
 		
 		
+		logger.warning('Creating objective')
 		# create objective
 		self.obj = {}
 		self.obj['T_zon'] = _op_objective(self,'(T_zon[i]-T_zon.value[i])**2',i=np.arange(self.N))
-		
-		
+
 		# test
 		x = np.random.rand(self.nvars)
 
-		logger.warning( self.cons['T_zon_state'].c(x) )
-		logger.warning( self.cons['T_zon_state'].J(x,True) )
-		logger.warning( self.cons['T_zon_state'].J(x,False) )
-
+		logger.warning('Start evaluation')
+		logger.warning( self.objective(x) )
+		logger.warning( self.gradient(x) )
+		logger.warning( self.constraint(x) )
+		logger.warning( self.jacobian(x,True) )
+		logger.warning( self.jacobian(x,False) )
+		logger.warning('End evaluation')
 		
 		# # prepare ipopt
 	
@@ -83,29 +85,41 @@ class Optimization_model:
 		
 	def objective(self,x):
 		total = 0
-		for key in self.obj
-			total = total + self.obj[key].f(x)
+		for key in self.obj:
+			total = total + np.array(self.obj[key].f(x))
 		
 		return total
 		
-	def gradient(self):
+	def gradient(self,x):
 		total = np.zeros(self.nvars)
-		for key in self.obj
-			total = total + self.obj[key].g(x)
+		for key in self.obj:
+			total = total + np.array(self.obj[key].g(x))
 		
 		return total
 		
-	def constraint(self):
-		total = np.zeros(self.ncons,self.nvars)
-		#for key in self.cons
-			
-		#	total() = self.obj[key].g(x)
+	def constraint(self,x):
+		total = np.zeros(self.ncons)
+		for key in self.cons:
+			total[self.cons[key].ind] = self.cons[key].c(x)
 		
 		return total
+
+	def jacobian(self,x,flag):
 		
-		
-	def jacobien(self):
-		pass
+		if flag:
+			row = np.empty((1,0))
+			col = np.empty((1,0))
+			for key in self.cons:
+				(row_temp,col_temp) = self.cons[key].J(x,True)
+				row = np.append(row,row_temp)
+				col = np.append(col,col_temp)
+			return (row,col)
+
+		else:
+			total = np.empty((1,0))
+			for key in self.cons:
+				total = np.append(total,self.cons[key].J(x,False))
+			return total
 	
 	
 	def solve(self):
@@ -150,20 +164,19 @@ class _op_variable:
 			for itemstr in items:
 				# load the data
 				value = self._load_measurement(itemstr)
-				if np.any(value):
+				if value.size:
 					values = np.concatenate((values,value),axis=1)
 
 			# average or total the data if required
 			if operation == 'avg':
-				self.measurement = np.mean(values,axis=1)
+				self.value = np.mean(values,axis=1)
 			elif operation == 'sum':
-				self.measurement = np.sum(values,axis=1)
+				self.value = np.sum(values,axis=1)
 			else:
-				self.measurement = values
+				self.value = values
 		else:
-			self.measurement = None
+			self.value = []
 
-		self.value = None
 		
 		
 	def _load_measurement(self,itemstr):
@@ -195,8 +208,7 @@ class _op_variable:
 				temp = np.expand_dims(np.interp(time,data[:,0],data[:,1],left=data[0,1],right=data[-1,1]),axis=1)			
 				value = np.concatenate((value,temp),axis=1)
 			except:
-				logger.warning('Not enough data for id:%s in quarter hour measurements' % (id) )
-
+				logger.warning('Not enough data for id:%s in quarterhour measurements' % (id) )
 
 		con.commit()
 		con.close()
@@ -230,21 +242,28 @@ class _op_constraint:
 		temp_J_str = []
 		self.J_row = []
 		self.J_col = []
+		self.ind = []
 		for ind in i:
+			self.ind.append(self._ocmodel.ncons)
 			self._ocmodel.ncons = self._ocmodel.ncons+1
 			# parse the constraint string
 			for v in self._ocmodel.vars:
 				if ind   >= 0 and ind   < len(self._ocmodel.vars[v].ind):
-					constraint = constraint.replace(v+'.value[i]', '%s' % (self._ocmodel.vars[v].value[ind]))
+					if len(self._ocmodel.vars[v].value) > ind:
+						constraint = constraint.replace(v+'.value[i]', '%s' % (self._ocmodel.vars[v].value[ind]))
 					constraint = constraint.replace(v+'[i]', 'x[%s]' % (self._ocmodel.vars[v].ind[ind]))
+
 				if ind+1 >= 0 and ind+1 < len(self._ocmodel.vars[v].ind):
-					constraint = constraint.replace(v+'.value[i+1]', '%s' % (self._ocmodel.vars[v].value[ind+1]))
+					if len(self._ocmodel.vars[v].value) > ind+1:
+						constraint = constraint.replace(v+'.value[i+1]', '%s' % (self._ocmodel.vars[v].value[ind+1]))
 					constraint = constraint.replace(v+'[i+1]', 'x[%s]' % (self._ocmodel.vars[v].ind[ind+1]))
 				if ind-1 >= 0 and ind-1 < len(self._ocmodel.vars[v].ind):
-					constraint = constraint.replace(v+'.value[i-1]', '%s' % (self._ocmodel.vars[v].value[ind-1]))
+					if len(self._ocmodel.vars[v].value) > ind-1:
+						constraint = constraint.replace(v+'.value[i-1]', '%s' % (self._ocmodel.vars[v].value[ind-1]))
 					constraint = constraint.replace(v+'[i-1]', 'x[%s]' % (self._ocmodel.vars[v].ind[ind-1]))
 						
-
+				if len(self._ocmodel.vars[v].value) > 0:
+					constraint = constraint.replace(v+'.value', '%s' % (self._ocmodel.vars[v].value[0]))
 				constraint = constraint.replace(v, 'x[%s]' % (self._ocmodel.vars[v].ind[0]))
 				constraint = constraint.replace('dt', '%s' % (self._ocmodel.dt))
 			
@@ -255,8 +274,9 @@ class _op_constraint:
 				if constraint.find('x[%s]' % k) >= 0:
 					self.J_row.append(ind)
 					self.J_col.append(k)
-					temp_J_str.append( str(sympy.diff( eval(constraint),eval('x[%s]' % k) )).replace(', 0]',']') )
-			
+					# added '+0.01' because of bug in sympy, doesn't make a difference anyway 
+					temp_J_str.append( str(sympy.diff( eval(constraint+'+0.01'),eval('x[%s]' % k) )).replace(', 0]',']') )
+					
 
 		# combine the arrays into a single string
 		temp_c_str = ' , '.join(temp_c_str)
@@ -296,20 +316,23 @@ class _op_objective:
 		temp_g_str = []
 		
 		for ind in i:
-
-			# parse the constraint string
+			# parse the objective string
 			for v in self._ocmodel.vars:
 				if ind   >= 0 and ind   < len(self._ocmodel.vars[v].ind):
-					objective = objective.replace(v+'.value[i]', '%s' % (self._ocmodel.vars[v].value[ind]))
+					if len(self._ocmodel.vars[v].value) > ind:
+						objective = objective.replace(v+'.value[i]', '%s' % (self._ocmodel.vars[v].value[ind]))
 					objective = objective.replace(v+'[i]', 'x[%s]' % (self._ocmodel.vars[v].ind[ind]))
 				if ind+1 >= 0 and ind+1 < len(self._ocmodel.vars[v].ind):
-					objective = objective.replace(v+'.value[i+1]', '%s' % (self._ocmodel.vars[v].value[ind+1]))
+					if len(self._ocmodel.vars[v].value) > ind:
+						objective = objective.replace(v+'.value[i+1]', '%s' % (self._ocmodel.vars[v].value[ind+1]))
 					objective = objective.replace(v+'[i+1]', 'x[%s]' % (self._ocmodel.vars[v].ind[ind+1]))
 				if ind-1 >= 0 and ind-1 < len(self._ocmodel.vars[v].ind):
-					objective = objective.replace(v+'.value[i-1]', '%s' % (self._ocmodel.vars[v].value[ind-1]))
+					if len(self._ocmodel.vars[v].value) > ind:
+						objective = objective.replace(v+'.value[i-1]', '%s' % (self._ocmodel.vars[v].value[ind-1]))
 					objective = objective.replace(v+'[i-1]', 'x[%s]' % (self._ocmodel.vars[v].ind[ind-1]))
 						
-
+				if len(self._ocmodel.vars[v].value) > 0:
+					objective = objective.replace(v+'.value', '%s' % (self._ocmodel.vars[v].value[0]))
 				objective = objective.replace(v, 'x[%s]' % (self._ocmodel.vars[v].ind[0]))
 				objective = objective.replace('dt', '%s' % (self._ocmodel.dt))
 			
@@ -319,8 +342,10 @@ class _op_objective:
 			# create gradient strings
 			temp_temp_g_str = []
 			for k in np.arange(self._ocmodel.nvars):
-				temp_temp_g_str.append( str(sympy.diff( eval(constraint),eval('x[%s]' % k) )).replace(', 0]',']') )
-			
+				if objective.find('x[%s]' % k) >= 0:
+					temp_temp_g_str.append( str(sympy.diff( eval(objective),eval('x[%s]' % k) )).replace(', 0]',']') )
+				else:
+					temp_temp_g_str.append('0')
 			
 			temp_temp_g_str = ' , '.join(temp_temp_g_str)
 			temp_temp_g_str = '['+temp_temp_g_str+']'
@@ -333,11 +358,11 @@ class _op_objective:
 		temp_g_str = ' , '.join(temp_g_str)
 		self.g_str = '['+temp_g_str+']'
 		
-		
-		
 
 	def f(self,x):
 		return eval(self.f_str)
 
 	def g(self,x):
 		return np.array(eval(self.g_str))
+
+
