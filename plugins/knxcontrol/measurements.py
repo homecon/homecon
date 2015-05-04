@@ -21,7 +21,7 @@ class Measurements:
 		"""
 
 		self._sh = smarthome
-		self._mysql_pass = mysql_pass;
+		self._mysql_pass = mysql_pass
 		self.items = self._sh.return_item('knxcontrol')
 
 
@@ -42,15 +42,10 @@ class Measurements:
 		item.conf['mysql_id'] = id
 		query = query+"('"+str(id)+"','"+item.id()+"','Humidity','Humidity','-','Relative ambient humidity'),"
 		
-		item = self._sh.return_item('knxcontrol.weather.current.irradiation.direct')
+		item = self._sh.return_item('knxcontrol.weather.current.irradiation.horizontal')
 		id = id+1
 		item.conf['mysql_id'] = id
-		query = query+"('"+str(id)+"','"+item.id()+"','Direct','Heat flux','W/m2','Estimated direct solar irradiation'),"
-		
-		item = self._sh.return_item('knxcontrol.weather.current.irradiation.diffuse')
-		id = id+1
-		item.conf['mysql_id'] = id
-		query = query+"('"+str(id)+"','"+item.id()+"','Diffuse','Heat flux','W/m2','Estimated diffuse solar irradiation'),"
+		query = query+"('"+str(id)+"','"+item.id()+"','Horizontal irradiation','Heat flux','W/m2','Estimated global horizontal solar irradiation'),"
 		
 		item = self._sh.return_item('knxcontrol.weather.current.irradiation.clouds')
 		id = id+1

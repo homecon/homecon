@@ -69,13 +69,13 @@ class Optimization_model:
 		# test
 		x = np.random.rand(self.nvars)
 
-		logger.warning('Start evaluation')
-		logger.warning( self.objective(x) )
-		logger.warning( self.gradient(x) )
-		logger.warning( self.constraint(x) )
-		logger.warning( self.jacobian(x,True) )
-		logger.warning( self.jacobian(x,False) )
-		logger.warning('End evaluation')
+		#logger.warning('Start evaluation')
+		#logger.warning( self.objective(x) )
+		#logger.warning( self.gradient(x) )
+		#logger.warning( self.constraint(x) )
+		#logger.warning( self.jacobian(x,True) )
+		#logger.warning( self.jacobian(x,False) )
+		#logger.warning('End evaluation')
 		
 		# # prepare ipopt
 	

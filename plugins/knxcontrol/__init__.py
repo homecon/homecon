@@ -24,8 +24,10 @@ import re
 
 from plugins.knxcontrol.measurements import *
 from plugins.knxcontrol.mysql import *
+from plugins.knxcontrol.alarms import *
 from plugins.knxcontrol.weather import *
 from plugins.knxcontrol.mpc import *
+
 
 logger = logging.getLogger('')
 
@@ -40,6 +42,8 @@ class KNXControl:
 		# initialize mysql
 		self.mysql = Mysql(self._sh,self._mysql_pass)
 
+		# initialize alarms		
+		self.alarms = Alarms(self._sh,self._mysql_pass)
 
 	def run(self):
 		# called once after the items have been parsed
@@ -47,6 +51,7 @@ class KNXControl:
 
 		# create measurements object
 		self.measurements = Measurements(self._sh,self._mysql_pass)
+
 		# schedule measurements
 		self._sh.scheduler.add('Measurments_minute', self.measurements.minute, prio=2, cron='* * * *')
 		self._sh.scheduler.add('Measurements_average_quarterhour', self.measurements.quarterhour, prio=5, cron='1,16,31,46 * * *')
@@ -59,6 +64,10 @@ class KNXControl:
 		self._sh.scheduler.add('Detailed_weater_forecast', self.weather.load_detailed_predictions, prio=5, cron='1 * * *')
 		self._sh.scheduler.add('Daily_weater_forecast', self.weather.load_daily_predictions, prio=5, cron='1 * * *')
 		
+		# schedule alarms
+		self._sh.scheduler.add('Alarm_run', self.alarms.run, prio=1, cron='* * * *')
+		
+
 		# create a parameter estimation object
 		self.optimization_model = Optimization_model(self._sh)
 		
