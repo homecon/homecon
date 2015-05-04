@@ -69,7 +69,7 @@ class KNXControl:
 		
 
 		# create a parameter estimation object
-		self.optimization_model = Optimization_model(self._sh)
+		#self.optimization_model = Optimization_model(self._sh)
 		
 
 	def stop(self):
@@ -84,14 +84,13 @@ class KNXControl:
 		# called each time an item changes
 
 		# brute force solution, evaluate all expressions each time any item changes
-		sh = self._sh
-		for dest_item in self._sh.match_items('*:sh_listen'):
-			if dest_item.conf['sh_listen']:
-				try:
-					dest_item( eval( dest_item.conf['sh_listen'] ) )
-				except:
-					logger.warning('Could not parse \'%s\' to %s' % (dest_item.conf['sh_listen'],dest_item.id()))
-
+		#for dest_item in self._sh.match_items('*:sh_listen'):
+		#	if dest_item.conf['sh_listen']:
+		#		try:
+		#			dest_item( eval( dest_item.conf['sh_listen'] ) )
+		#		except:
+		#			logger.warning('Could not parse \'%s\' to %s' % (dest_item.conf['sh_listen'],dest_item.id()))
+		pass
 
 	def parse_logic(self, logic):
 		pass
