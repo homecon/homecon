@@ -110,7 +110,7 @@ class Weather:
 
 	def update_irradiation(self):
 		"""
-		Function calculates the total horizontal irradiation and the cloud coverage
+		Function calculates the total horizontal irradiation, cloud coverage and zone irradiation
 		based on the sensor measurement, predictions or theoretical depending on which data is available
 		"""
 		
@@ -142,4 +142,37 @@ class Weather:
 		self._sh.knxcontrol.weather.current.irradiation.clouds(clouds)
 		self._sh.knxcontrol.weather.current.irradiation.horizontal((1-clouds)*self._sh.energytools.incidentradiation(I_b_clearsky,I_d_clearsky,solar_azimuth,solar_altitude,0,0))
 		
+
+		# calculate the zone irradiation
+		for zone in self._sh.knxcontrol.building:
+			zone_str  = zone.id().split('.')
+			zone_str = zone_str[-1]
+
+			irradiation = 0.0
+
+			for room in self._sh.find_items('zone'):
+				if room.conf['zone'] == zone_str:
+
+					if hasattr(room,'windows'):
+						for window in room.windows.return_children():
+							window_orientation = float(window.conf['orientation'])*np.pi/180
+							window_tilt = float(window.conf['tilt'])*np.pi/180
+							window_area = float(window.conf['area'])
+							window_transmittance = float(window.conf['transmittance'])
+							I_window_clearsky = window_transmittance*self._sh.energytools.incidentradiation(I_b_clearsky,I_d_clearsky,solar_azimuth,solar_altitude,window_orientation,window_tilt)
+							
+							
+							if hasattr(window,'shading'):
+								shading = window.shading
+								shading_open_value = 0.0
+								shading_closed_value = 255.0
+								shading_pos = (shading.value()-shading_open_value)/(shading_closed_value-shading_open_value)
+								shading_trans = float(shading.conf['transmittance'])
+								shading = shading_pos - shading_pos*shading_trans
+							else:
+								shading = 0.0
+							irradiation += window_area*(1-clouds)*(1-shading)*I_window_clearsky
+
+			zone.irradiation.power(irradiation)
+
 

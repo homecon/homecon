@@ -64,7 +64,7 @@ class KNXControl:
 		# schedule forecast loading
 		self._sh.scheduler.add('Detailed_weater_forecast', self.weather.load_detailed_predictions, prio=5, cron='1 * * *')
 		self._sh.scheduler.add('Daily_weater_forecast', self.weather.load_daily_predictions, prio=5, cron='1 * * *')
-		self._sh.scheduler.add('Irradiation update', self.weather.update_irradiation, prio=2, cron='init | * * * *')
+		self._sh.scheduler.add('Irradiation update', self.weather.update_irradiation, prio=2, cron='* * * *')
 		
 
 		# schedule alarms
