@@ -157,9 +157,9 @@ class Measurements:
 		"""
 		store all measurements in MySQL
 		"""
-		# remove seconds from utctime and add :00
+		# remove seconds from utctime and add :00 and subtract 60 seconds as it is data of the past minute
 		now = datetime.datetime.utcnow().replace( second=0, microsecond=0)
-		timestamp = int( (now - datetime.datetime(1970,1,1)).total_seconds() )
+		timestamp = int( (now - datetime.datetime(1970,1,1)).total_seconds() )-60
 
 		# connect to the mysql database
 		con = pymysql.connect('localhost', 'knxcontrol', self._mysql_pass, 'knxcontrol')
