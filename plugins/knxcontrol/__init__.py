@@ -38,6 +38,7 @@ class KNXControl:
 		
 		self._sh = smarthome
 		self._mysql_pass = mysql_pass
+		self.sh_listen_items = {}
 
 		# initialize mysql
 		self.mysql = Mysql(self._sh,self._mysql_pass)
@@ -48,12 +49,12 @@ class KNXControl:
 	def run(self):
 		# called once after the items have been parsed
 		self.alive = True
-
+		logger.warning(self.sh_listen_items)
 		# create measurements object
 		self.measurements = Measurements(self._sh,self._mysql_pass)
 
 		# schedule measurements
-		self._sh.scheduler.add('Measurments_minute', self.measurements.minute, prio=2, cron='* * * *')
+		self._sh.scheduler.add('Measurements_minute', self.measurements.minute, prio=2, cron='* * * *')
 		self._sh.scheduler.add('Measurements_average_quarterhour', self.measurements.quarterhour, prio=5, cron='1,16,31,46 * * *')
 		self._sh.scheduler.add('Measurements_average_week', self.measurements.week, prio=5, cron='2 0 * 0')
 		self._sh.scheduler.add('Measurements_average_month', self.measurements.month, prio=5, cron='2 0 1 *')
@@ -75,23 +76,53 @@ class KNXControl:
 	def stop(self):
 		self.alive = False
 
-		
+	def find_items(self,searchstr):
+		"""
+		function to find all items in a string. It looks for instances starting with "sh." and ending with "()"
+		"""
+		items = []
+		tempstr = searchstr
+		while len(tempstr)>0:
+			try:
+				start = tempstr.index('sh.')+3
+				tempstr = tempstr[start:]
+				try:
+					end  = tempstr.index('()')
+					items.append(tempstr[:end])
+					tempstr = tempstr[end:]
+				except:
+					tempstr = ''
+			except:
+				tempstr = ''
+	
+		return items
+	
 	def parse_item(self, item):
 		# called once while parsing the items
+
+		# find the items in sh_listen and
+		if 'sh_listen' in item.conf:
+			listenitems = self.find_items(item.conf['sh_listen'])
+			for listenitem in listenitems:
+				if listenitem in self.sh_listen_items:
+					self.sh_listen_items[listenitem].append(item)
+				else:
+					self.sh_listen_items[listenitem] = [item]
+		
 		return self.update_item
 	
 	def update_item(self, item, caller=None, source=None, dest=None):
 		# called each time an item changes
 
-		# brute force solution, evaluate all expressions each time any item changes
-		#for dest_item in self._sh.match_items('*:sh_listen'):
-		#	if dest_item.conf['sh_listen']:
-		#		try:
-		#			dest_item( eval( dest_item.conf['sh_listen'] ) )
-		#		except:
-		#			logger.warning('Could not parse \'%s\' to %s' % (dest_item.conf['sh_listen'],dest_item.id()))
-		pass
+		# evaluate expressions in sh_listen
+		if item.id() in self.sh_listen_items:
+			for dest_item in self.sh_listen_items[item.id()]:
+				try:
+					dest_item( eval( dest_item.conf['sh_listen'].replace('sh.','self._sh.') ) )
+				except:
+					logger.warning('Could not parse \'%s\' to %s' % (dest_item.conf['sh_listen'],dest_item.id()))
 
+	
 	def parse_logic(self, logic):
 		pass
 

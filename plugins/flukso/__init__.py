@@ -54,7 +54,11 @@ class Flukso:
 					values = [row[1] for row in data]
 
 					# calculate the average of all values and set item to this value
-					item(np.nanmean(values))
+					mean = np.nanmean(values)
+					if np.isnan(mean):
+						item(0)
+					else:
+						item(mean)
 
 			except:
 				logger.warning('Could not read flukso api for sensor %s' % (item.conf['flukso_sensor']) )
