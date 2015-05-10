@@ -49,7 +49,7 @@ class KNXControl:
 	def run(self):
 		# called once after the items have been parsed
 		self.alive = True
-		logger.warning(self.sh_listen_items)
+
 		# create measurements object
 		self.measurements = Measurements(self._sh,self._mysql_pass)
 
@@ -64,7 +64,9 @@ class KNXControl:
 		# schedule forecast loading
 		self._sh.scheduler.add('Detailed_weater_forecast', self.weather.load_detailed_predictions, prio=5, cron='1 * * *')
 		self._sh.scheduler.add('Daily_weater_forecast', self.weather.load_daily_predictions, prio=5, cron='1 * * *')
+		self._sh.scheduler.add('Irradiation update', self.weather.update_irradiation, prio=2, cron='init | * * * *')
 		
+
 		# schedule alarms
 		self._sh.scheduler.add('Alarm_run', self.alarms.run, prio=1, cron='* * * *')
 		

@@ -39,9 +39,9 @@ class Energytools():
 		
 		# http://rhodesmill.org/pyephem/quick.html
 		obs = ephem.Observer()
-		obs.lat = float(self._sh._lat())     #N+
-		obs.lon = float(self._sh._lon())     #E+
-		obs.elevation = float(self._sh._elev())
+		obs.lat = float(self._sh._lat)     #N+
+		obs.lon = float(self._sh._lon)     #E+
+		obs.elevation = float(self._sh._elev)
 		obs.date = utcdate
 		sun = ephem.Sun(obs)
 		sun.compute(obs)
@@ -62,10 +62,15 @@ class Energytools():
 			m = 1/(np.sin(alt) + 0.50572*(6.07995 + alt)**-1.6364);
 		else:
 			m = 0
+		
 
 		# day of the year
-		n = strftime(utcdate,'%j');
-		
+		n = float(utcdate.strftime('%j'))
+
+		# extraterrestrial solar radiation
+		Esc = 1367 # solar constant
+		E0 = Esc*(1 + 0.033*np.cos(2*np.pi*(n-3)/365))
+
 		# optical depths
 		tau_b = np.interp(n,np.cumsum([-10,31,31,28,31,30,31,30,31,31,30,31,30,31]),[0.320,0.325,0.349,0.383,0.395,0.448,0.505,0.556,0.593,0.431,0.373,0.339,0.320,0.325]);
 		tau_d = np.interp(n,np.cumsum([-10,31,31,28,31,30,31,30,31,31,30,31,30,31]),[2.514,2.461,2.316,2.176,2.175,2.028,1.892,1.779,1.679,2.151,2.317,2.422,2.514,2.461]);
@@ -103,21 +108,21 @@ class Energytools():
 		"""
 		
 		# surface solar azimuth (-pi/2< gamma < pi/2, else surface is in shade)
-		gamma = solar_azimuth-surface_azimut;
+		gamma = solar_azimuth-surface_azimuth;
 		
 		# incidence
 		cos_theta = np.cos(solar_altitude)*np.cos(gamma)*np.sin(surface_tilt) + np.sin(solar_altitude)*np.cos(surface_tilt)
     
-		# beam radiation
+		# beam irradiation
 		if cos_theta > 0:
 			I_tb = I_b*cos_theta
 		else:
 			I_tb = 0
 		
-		# diffuse radiation
+		# diffuse irradiation
 		Y = max(0.45, 0.55 + 0.437*cos_theta+ 0.313*cos_theta**2)
-		if surf_tilt < np.pi/2:
-			I_td = I_d*(Y*np.sin(surface_tilt) + cos(surface_tilt))
+		if surface_tilt < np.pi/2:
+			I_td = I_d*(Y*np.sin(surface_tilt) + np.cos(surface_tilt))
 		else:
 			I_td = I_d*Y*np.sin(surface_tilt)
 			

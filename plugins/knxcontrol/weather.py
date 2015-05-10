@@ -20,6 +20,8 @@
 import logging
 import urllib.request
 import json
+import datetime
+import numpy as np
 
 logger = logging.getLogger('')
 
@@ -46,7 +48,7 @@ class Weather:
 				currentforecast['pressure'] = forecast['main']['pressure']
 				currentforecast['humidity'] = forecast['main']['humidity']
 				currentforecast['icon'] = forecast['weather'][0]['icon']
-				currentforecast['cloudfactor'] = forecast['clouds']['all']
+				currentforecast['clouds'] = forecast['clouds']['all']
 				currentforecast['wind_speed'] = forecast['wind']['speed']
 				currentforecast['wind_directions'] = forecast['wind']['deg']
 				if 'rain' in forecast:
@@ -84,7 +86,7 @@ class Weather:
 				currentforecast['pressure'] = forecast['pressure']
 				currentforecast['humidity'] = forecast['humidity']
 				currentforecast['icon'] = forecast['weather'][0]['icon']
-				currentforecast['cloudfactor'] = forecast['clouds']
+				currentforecast['clouds'] = forecast['clouds']
 				currentforecast['wind_speed'] = forecast['speed']
 				currentforecast['wind_directions'] = forecast['deg']
 				if 'rain' in forecast:
@@ -104,4 +106,40 @@ class Weather:
 		except:
 			logger.warning('Error loading daily weatherforecast')
 	
-	
+
+
+	def update_irradiation(self):
+		"""
+		Function calculates the total horizontal irradiation and the cloud coverage
+		based on the sensor measurement, predictions or theoretical depending on which data is available
+		"""
+		
+		utcdate = datetime.datetime.utcnow()
+		(solar_azimuth,solar_altitude) = self._sh.energytools.sunposition(utcdate)
+		(I_b_clearsky,I_d_clearsky) = self._sh.energytools.clearskyirrradiation(utcdate)
+
+		if hasattr(self._sh.knxcontrol.weather.current.irradiation, 'sensor'):
+			# use the sensor to determine the cloud coverage
+			sensor_orientation = float(self._sh.knxcontrol.weather.current.irradiation.sensor.conf['orientation'])*np.pi/180
+			sensor_tilt = float(self._sh.knxcontrol.weather.current.irradiation.sensor.conf['tilt'])*np.pi/180
+
+
+			I_sensor_clearsky = self._sh.energytools.incidentradiation(I_b_clearsky,I_d_clearsky,solar_azimuth,solar_altitude,sensor_orientation,sensor_tilt)
+
+			if I_sensor_clearsky > 0:
+				clouds = 1-min(1, self._sh.knxcontrol.weather.current.irradiation.sensor() / I_sensor_clearsky )
+			else:
+				clouds = 0
+		else:
+			try:
+				# use the predictions to determine the cloud coverage
+				prediction = self._sh.knxcontrol.weather.prediction.detailed()
+				clouds = prediction[0]['clouds']
+			except:
+				# assume no cloud coverage
+				clouds = 0
+
+		self._sh.knxcontrol.weather.current.irradiation.clouds(clouds)
+		self._sh.knxcontrol.weather.current.irradiation.horizontal((1-clouds)*self._sh.energytools.incidentradiation(I_b_clearsky,I_d_clearsky,solar_azimuth,solar_altitude,0,0))
+		
+
