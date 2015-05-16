@@ -26,6 +26,7 @@ from plugins.knxcontrol.measurements import *
 from plugins.knxcontrol.mysql import *
 from plugins.knxcontrol.alarms import *
 from plugins.knxcontrol.weather import *
+from plugins.knxcontrol.building import *
 from plugins.knxcontrol.mpc import *
 
 
@@ -40,18 +41,18 @@ class KNXControl:
 		self._mysql_pass = mysql_pass
 		self.sh_listen_items = {}
 
-		# initialize mysql
-		self.mysql = Mysql(self._sh,self._mysql_pass)
-
-		# initialize alarms		
-		self.alarms = Alarms(self._sh,self._mysql_pass)
 
 	def run(self):
 		# called once after the items have been parsed
 		self.alive = True
+		
+		# create objects
+		self.mysql = Mysql(self)
+		self.alarms = Alarms(self)
+		self.measurements = Measurements(self)
+		self.weather = Weather(self)
+		self.building = Building(self)
 
-		# create measurements object
-		self.measurements = Measurements(self._sh,self._mysql_pass)
 
 		# schedule measurements
 		self._sh.scheduler.add('Measurements_minute', self.measurements.minute, prio=2, cron='* * * *')
@@ -59,13 +60,10 @@ class KNXControl:
 		self._sh.scheduler.add('Measurements_average_week', self.measurements.week, prio=5, cron='2 0 * 0')
 		self._sh.scheduler.add('Measurements_average_month', self.measurements.month, prio=5, cron='2 0 1 *')
 		
-		# create weather object
-		self.weather = Weather(self._sh)
 		# schedule forecast loading
 		self._sh.scheduler.add('Detailed_weater_forecast', self.weather.load_detailed_predictions, prio=5, cron='1 * * *')
 		self._sh.scheduler.add('Daily_weater_forecast', self.weather.load_daily_predictions, prio=5, cron='1 * * *')
-		self._sh.scheduler.add('Irradiation update', self.weather.update_irradiation, prio=2, cron='* * * *')
-		
+		self._sh.scheduler.add('Irradiation update', self.weather.update_irradiation, prio=4, cron='* * * *')
 
 		# schedule alarms
 		self._sh.scheduler.add('Alarm_run', self.alarms.run, prio=1, cron='* * * *')

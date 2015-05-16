@@ -9,7 +9,7 @@ logger = logging.getLogger('')
 
 class Measurements:
 
-	def __init__(self,smarthome,mysql_pass):
+	def __init__(self,knxcontrol):
 		"""
 		A measurements object is created
 		and mysql measurement_legend is filled with items required for knxcontrol
@@ -18,136 +18,117 @@ class Measurements:
 		arguments:
 		smarthome:   smarthome object
 		mysql_pass:  mysql password 
+
+
+		there are 2 kinds of measurements: defined by knxcontrol, required for functioning and defined by the user, for reference
+		both kinds should have the same capabilities
+		the string in item determines the value which is stored.
 		"""
 
-		self._sh = smarthome
-		self._mysql_pass = mysql_pass
-		self.items = self._sh.return_item('knxcontrol')
-
+		self._sh = knxcontrol._sh
+		self._mysql_pass = knxcontrol._mysql_pass
+		self.legend = {}
 
 		con = pymysql.connect('localhost', 'knxcontrol', self._mysql_pass, 'knxcontrol')
 		cur = con.cursor()
-
-		query = "REPLACE INTO measurement_legend (id,item,name,quantity,unit,description) VALUES "
-
+		
 		id = 0
 		# current weather 20 components max
 		item = self._sh.return_item('knxcontrol.weather.current.temperature')
 		id = id+1
-		item.conf['mysql_id'] = id
-		query = query+"('"+str(id)+"','"+item.id()+"','Temperature','Temperature','degC','Ambient temperature'),"
+		self.add_legend_item(id,item,name='Temperature',quantity='Temperature',unit='degC',description='Ambient temperature')
 		
 		item = self._sh.return_item('knxcontrol.weather.current.humidity')
 		id = id+1
-		item.conf['mysql_id'] = id
-		query = query+"('"+str(id)+"','"+item.id()+"','Humidity','Humidity','-','Relative ambient humidity'),"
-		
+		self.add_legend_item(id,item,name='Humidity',quantity='Humidity',unit='-',description='Relative ambient humidity')
+
 		item = self._sh.return_item('knxcontrol.weather.current.irradiation.horizontal')
 		id = id+1
-		item.conf['mysql_id'] = id
-		query = query+"('"+str(id)+"','"+item.id()+"','Horizontal irradiation','Heat flux','W/m2','Estimated global horizontal solar irradiation'),"
-		
+		self.add_legend_item(id,item,name='Horizontal irradiation',quantity='Heat flux',unit='W/m2',description='Estimated global horizontal solar irradiation')
+
 		item = self._sh.return_item('knxcontrol.weather.current.irradiation.clouds')
 		id = id+1
-		item.conf['mysql_id'] = id
-		query = query+"('"+str(id)+"','"+item.id()+"','Clouds','','-','Cloud factor'),"
+		self.add_legend_item(id,item,name='Clouds',quantity='',unit='-',description='Estimated cloud cover')
 		
 		item = self._sh.return_item('knxcontrol.weather.current.precipitation')
 		id = id+1
-		item.conf['mysql_id'] = id
-		query = query+"('"+str(id)+"','"+item.id()+"','Rain','','-','Rain or not'),"											
-		
+		self.add_legend_item(id,item,name='Rain',quantity='Boolean',unit='-',description='Rain or not')
+										
 		item = self._sh.return_item('knxcontrol.weather.current.wind.speed')
 		id = id+1
-		item.conf['mysql_id'] = id
-		query = query+"('"+str(id)+"','"+item.id()+"','Wind speed','Velocity','m/s','Wind speed'),"
-		
+		self.add_legend_item(id,item,name='Wind speed',quantity='Velocity',unit='m/s',description='Wind speed')
+
 		item = self._sh.return_item('knxcontrol.weather.current.wind.direction')
 		id = id+1
-		item.conf['mysql_id'] = id
-		query = query+"('"+str(id)+"','"+item.id()+"','Wind direction','Angle','deg','Wind direction (0deg is North)'),"
-
-
+		self.add_legend_item(id,item,name='Wind direction',quantity='Angle',unit='deg',description='Wind direction (0deg is North, 90deg is East)')
 
 		id = 20
 		# energy use 10 components max
 		for item in self._sh.return_item('knxcontrol.energy'):
 			item_name = item.id().split(".")[-1]
 			id = id+1 
-			item.conf['mysql_id'] = id
-			query = query+"('"+str(id)+"','"+item.id()+"','"+item_name+"','"+item.conf['quantity']+"','"+item.conf['unit']+"','"+item_name+" use'),"
-
-		
+			self.add_legend_item(id,item,name=item_name,quantity=item.conf['quantity'],unit=item.conf['unit'],description=item_name+' use')
 
 		id = 100
-		# building zones 16 zones max
+		# building zones 10 zones max
 		for item in self._sh.return_item('knxcontrol.building'):
 			item_name = item.id().split(".")[-1]
 			id = id + 1
-			item.temperature.conf['mysql_id'] = id
-			query = query+"('"+str(id)+"','"+item.temperature.id()+"','Temperature','Temperature','degC','"+item_name+" temperature'),"
-			id = id + 1
-			item.airquality.conf['mysql_id'] = id
-			query = query+"('"+str(id)+"','"+item.airquality.id()+"','Air quality','Concentration','g CO2/m3','"+item_name+" CO2 concentration'),"
-			id = id + 1
-			item.irradiation.power.conf['mysql_id'] = id
-			query = query+"('"+str(id)+"','"+item.irradiation.power.id()+"','Solar gains','Power','W','"+item_name+" irradiation power'),"
-			id = id + 1
-			item.irradiation.setpoint.conf['mysql_id'] = id
-			query = query+"('"+str(id)+"','"+item.irradiation.setpoint.id()+"','Solar gains setpoint','Power','W','"+item_name+" irradiation power setpoint'),"
-			id = id + 1
-			item.emission.power.conf['mysql_id'] = id
-			query = query+"('"+str(id)+"','"+item.emission.power.id()+"','Emission','Power','W','"+item_name+" emission power'),"
-			id = id + 1
-			item.emission.setpoint.conf['mysql_id'] = id
-			query = query+"('"+str(id)+"','"+item.emission.setpoint.id()+"','Emission setpoint','Power','W','"+item_name+" emission power setpoint'),"
-		
+			self.add_legend_item(id,item.temperature,name='Temperature',quantity='Temperature',unit='degC',description=item_name+' temperature')
 
+			id = id + 1
+			self.add_legend_item(id,item.airquality,name='Air quality',quantity='Concentration',unit='g CO2/m3',description=item_name+' CO2 concentration')
 
-		id = 200
+			id = id + 1
+			self.add_legend_item(id,item.irradiation.power,name='Solar gains',quantity='Power',unit='W',description=item_name+' irradiation power')
+
+			id = id + 1
+			self.add_legend_item(id,item.emission.power,name='Emission',quantity='Power',unit='W',description=item_name+' emission power')
+
+		id = 250
 		# ventilation 10 systems max
 		for item in self._sh.return_item('knxcontrol.ventilation'):
 			item_name = item.id().split(".")[-1]
 			id = id + 1
-			item.fanspeed.conf['mysql_id'] = id
-			query = query+"('"+str(id)+"','"+item.fanspeed.id()+"','"+item_name+" fanspeed','','-','"+item_name+" fan speed control signal'),"
-			id = id + 1
-			item.heatrecovery.conf['mysql_id'] = id
-			query = query+"('"+str(id)+"','"+item.heatrecovery.id()+"','"+item_name+" heatrecovery','','-','"+item_name+" heat recovery control signal'),"
+			self.add_legend_item(id,item.fanspeed,name=item_name+' fanspeed',quantity='',unit='-',description=item_name+' fan speed control signal')
 
-		
-		id = 220
+			id = id + 1
+			self.add_legend_item(id,item.heatrecovery,name=item_name+' heatrecovery',quantity='',unit='-',description=item_name+' heat recovery control signal')
+
+		id = 270
 		# heat production 10 systems max
 		for item in self._sh.return_item('knxcontrol.heat_production'):
 			item_name = item.id().split(".")[-1]
 			id = id + 1
-			item.power.conf['mysql_id'] = id
-			query = query+"('"+str(id)+"','"+item.power.id()+"','"+item_name+" Power','Power','W','"+item_name+" heat production'),"
-			id = id + 1
-			item.setpoint.conf['mysql_id'] = id
-			query = query+"('"+str(id)+"','"+item.setpoint.id()+"','"+item_name+" Power setpoint','Power','W','"+item_name+" heat production setpoint'),"
+			self.add_legend_item(id,item.power,name=item_name+' power',quantity='Power',unit='W',description=item_name+' heat production')
 
-		
-		id = 240
+		id = 290
 		# electricity generation 10 systems max
 		for item in self._sh.return_item('knxcontrol.electricity_production'):
 			item_name = item.id().split(".")[-1]
 			id = id + 1
-			item.power.conf['mysql_id'] = id
-			query = query+"('"+str(id)+"','"+item.power.id()+"','"+item_name+" Power','Power','W','"+item_name+" electricity generation'),"
-			id = id + 1
-			item.setpoint.conf['mysql_id'] = id
-			query = query+"('"+str(id)+"','"+item.setpoint.id()+"','"+item_name+" Power setpoint','Power','W','"+item_name+" electricity generation setpoint'),"
+			self.add_legend_item(id,item.power,name=item_name+' power',quantity='Power',unit='W',description=item_name+' electricity generation')
 
+
+
+		logger.warning('Measurements initialized')
+
+
+
+	def add_legend_item(self,id,item,name,quantity,unit,description):
+		"""
+		Adds an object to the local legend dict.
+		obj must be a SmartHome.py item
+		"""
+		item.conf['mysql_id'] = id
 		
-		# try to execute query
-		query = query[:-1]
+		con = pymysql.connect('localhost', 'knxcontrol', self._mysql_pass, 'knxcontrol')
+		cur = con.cursor()
 		try:
+			query = "REPLACE INTO measurement_legend (id,item,name,quantity,unit,description) VALUES ('"+str(id)+"','"+item.id()+"','"+name+"','"+quantity+"','"+unit+"','"+description+"')"
 			cur.execute( query )
-			logger.warning("Measurements initialized")
 		except:
-			logger.warning("Could not add default measurements to database")
-			logger.warning(query)
+			logger.warning('could not add legend item: '+name)
 
 		con.commit()	
 		con.close()
@@ -164,9 +145,10 @@ class Measurements:
 		# connect to the mysql database
 		con = pymysql.connect('localhost', 'knxcontrol', self._mysql_pass, 'knxcontrol')
 		cur = con.cursor()
-		
+
 		legend = con.cursor()
 		legend.execute("SELECT id,item FROM measurement_legend WHERE item <> ''")
+
 
 		# create mysql query
 		query = "INSERT INTO measurement (signal_id,time,value) VALUES "
@@ -175,6 +157,7 @@ class Measurements:
 		for measurement in legend:
 			try:
 				item = self._sh.return_item(measurement[1])
+				
 				query = query + "(%s,%s,%f)," % (measurement[0],timestamp,item())
 			except:
 				logger.warning( "legend entry "+measurement[0]+": "+measurement[1]+", is not an item")
@@ -189,6 +172,7 @@ class Measurements:
 			
 		con.commit()	
 		con.close()
+
 
 	def _set_average_values(self,table,starttimestamp,endtimestamp):
 		con = pymysql.connect('localhost', 'knxcontrol', self._mysql_pass, 'knxcontrol')

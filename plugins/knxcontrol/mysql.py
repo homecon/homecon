@@ -8,7 +8,7 @@ logger = logging.getLogger('')
 
 class Mysql:
 
-	def __init__(self,smarthome,mysql_pass):
+	def __init__(self,knxcontrol):
 		"""
 		A mysql object is created
 		and mysql tables required for knxcontrol are created
@@ -18,8 +18,9 @@ class Mysql:
 		mysql_pass:  mysql password 
 		"""
 
-		self._sh = smarthome		
-		self._mysql_pass = mysql_pass
+		self.knxcontrol = knxcontrol
+		self._sh = knxcontrol._sh
+		self._mysql_pass = knxcontrol._mysql_pass
 
 		con = pymysql.connect('localhost', 'knxcontrol', self._mysql_pass, 'knxcontrol')
 		cur = con.cursor()

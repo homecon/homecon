@@ -8,13 +8,14 @@ import datetime
 logger = logging.getLogger('')
 
 class Alarms:
-	def __init__(self,smarthome,mysql_pass):
+	def __init__(self,knxcontrol):
 		"""
 		Create an Alarms object
 		"""
 
-		self._sh = smarthome
-		self._mysql_pass = mysql_pass
+		self.knxcontrol = knxcontrol
+		self._sh = knxcontrol._sh
+		self._mysql_pass = knxcontrol._mysql_pass
 
 		logger.warning("Alarms initialized")
 
