@@ -54,6 +54,9 @@ class KNXControl:
 		self.building = Building(self)
 
 
+		# schedule alarms
+		self._sh.scheduler.add('Alarm_run', self.alarms.run, prio=1, cron='* * * *')
+		
 		# schedule measurements
 		self._sh.scheduler.add('Measurements_minute', self.measurements.minute, prio=2, cron='* * * *')
 		self._sh.scheduler.add('Measurements_average_quarterhour', self.measurements.quarterhour, prio=5, cron='1,16,31,46 * * *')
@@ -63,11 +66,12 @@ class KNXControl:
 		# schedule forecast loading
 		self._sh.scheduler.add('Detailed_weater_forecast', self.weather.load_detailed_predictions, prio=5, cron='1 * * *')
 		self._sh.scheduler.add('Daily_weater_forecast', self.weather.load_daily_predictions, prio=5, cron='1 * * *')
-		self._sh.scheduler.add('Irradiation update', self.weather.update_irradiation, prio=4, cron='* * * *')
+		self._sh.scheduler.add('Irradiation_update', self.weather.update_irradiation, prio=4, cron='* * * *')
 
-		# schedule alarms
-		self._sh.scheduler.add('Alarm_run', self.alarms.run, prio=1, cron='* * * *')
-		
+		# schedule control actions
+		self._sh.scheduler.add('Shading_control', self.building.control, prio=3, cron='* * * *') # execute every minute for debugging
+
+
 
 		# create a parameter estimation object
 		#self.optimization_model = Optimization_model(self._sh)

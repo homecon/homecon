@@ -41,6 +41,7 @@ class Weather:
 		self.clouds = 0
 		self.clouds_array = []
 
+		self.set_irradiation()
 
 		logger.warning('Weather initialized')
 		self.load_detailed_predictions()
@@ -119,6 +120,11 @@ class Weather:
 		except:
 			logger.warning('Error loading daily weatherforecast')
 
+	def set_irradiation(self):
+		utcdate = datetime.datetime.utcnow()
+		(self.solar_azimuth,self.solar_altitude) = self._sh.energytools.sunposition(utcdate)
+		(self.I_b_clearsky,self.I_d_clearsky) = self._sh.energytools.clearskyirrradiation(utcdate)
+
 
 	def update_irradiation(self):
 		"""
@@ -127,10 +133,7 @@ class Weather:
 		is called every minute
 		"""
 		
-		utcdate = datetime.datetime.utcnow()
-		(self.solar_azimuth,self.solar_altitude) = self._sh.energytools.sunposition(utcdate)
-		(self.I_b_clearsky,self.I_d_clearsky) = self._sh.energytools.clearskyirrradiation(utcdate)
-
+		self.set_irradiation()
 
 		if hasattr(self._sh.knxcontrol.weather.current.irradiation, 'sensor'):
 			# use the sensor to determine the cloud coverage
@@ -153,8 +156,9 @@ class Weather:
 				# assume no cloud coverage
 				self.clouds = 0
 
-			
-		if len(self.clouds_array) >= 60:
+
+		cloudsarraylen = 30
+		if len(self.clouds_array) >= cloudsarraylen:
 			self.clouds_array.pop(0)
 		self.clouds_array.append(self.clouds)	
 			
@@ -167,8 +171,8 @@ class Weather:
 
 
 	def incidentradiation(self,orientation,tilt,average=False):
-		if average and len(clouds_array)>0: 
-			clouds = sum(self.clouds_array)/len(clouds_array)	
+		if average and len(self.clouds_array)>0: 
+			clouds = sum(self.clouds_array)/len(self.clouds_array)	
 		else:
 			clouds = self.clouds
 

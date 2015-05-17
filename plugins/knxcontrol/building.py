@@ -36,9 +36,21 @@ class Building:
 		
 		logger.warning('Building initialized')
 
+
 	def update_irradiation(self):
+		"""
+		Update all values depentand on the solar irradiation
+		"""
 		for zone in self.zone:
 			zone.irradiation()
+
+
+	def control(self):
+		"""
+		Execute control actions
+		"""
+		for zone in self.zone:
+			zone.control_shading()
 
 class Zone:
 	def __init__(self,knxcontrol,item):
@@ -62,25 +74,101 @@ class Zone:
 
 
 
-	def irradiation_max(self):
+	def irradiation_max(self,average=False):
 		"""
 		calculates the maximum zone irradiation
 		"""
-		return sum([window.irradiation_max() for window in self.window])
+		return sum([window.irradiation_max(average=average) for window in self.window])
 
-	def irradiation_min(self):
+	def irradiation_min(self,average=False):
 		"""
 		calculates the minimum zone irradiation
 		"""
-		return sum([window.irradiation_min() for window in self.window])		
+		return sum([window.irradiation_min(average=average) for window in self.window])		
 
-	def irradiation(self):
+	def irradiation(self,average=False):
 		"""
 		calculates the estimated zone irradiation and sets it to the appropriate item
 		"""
-		value = sum([window.irradiation() for window in self.window])
+		value = sum([window.irradiation(average=average) for window in self.window])
 		self.item.irradiation.power( value )
-		return value	
+		return value
+
+
+
+	def control_shading(self):
+		"""
+		Function tries to control the shading so the actual solar gains to the zone match the setpoint
+		"""
+		logger.warning('automatic shading control for zone: '+ self.name)
+		irradiation_set = self.item.irradiation.setpoint()
+		
+		# calculate the maximum and minimum irradiation for the zone using a hour average cloud cover
+		irradiation_max = self.irradiation_max(average=True)
+		irradiation_min = self.irradiation_min(average=True)
+
+		logger.warning('setpoint: %s' %(irradiation_set))
+		logger.warning('max: %s' %(irradiation_max))
+		logger.warning('min: %s' %(irradiation_min))
+
+		# close shadings until the setpoint is reached
+		# try to keep as many shadings completely open, to maintain view through the windows
+		# so start with the windows with the highest difference between max and min
+		# create an array of irradiation for all windows
+
+		differ = [w.irradiation_max(average=True)-w.irradiation_min(average=True) for w in self.window]
+		windowlist = sorted(self.window, key=lambda x: x.irradiation_max(average=True)-x.irradiation_min(average=True), reverse=True)
+		positionlist = []
+ 
+		# get old shading positions
+		for window in windowlist:
+			if window.has_shading:
+				positionlist.append(window.shading_open_value)
+			else:
+				positionlist.append(-1)
+
+
+		logger.warning('position list:')
+		logger.warning(positionlist)
+
+		logger.warning('calculate positions')
+		# calculate new shading positions
+		for idx,window in enumerate(windowlist):
+			irradiation_temp = sum( [w.irradiation_max(average=True)*(1-p)+w.irradiation_min(average=True)*p for w,p in zip(windowlist,positionlist)] )
+			
+			#if irradiation_temp <= irradiation_set:
+			#	break
+
+			if window.has_shading:
+				if window.shading.closed():
+					positionlist[idx] = window.shading_closed_value
+					logger.warning('shading closed')
+				elif window.shading.override():
+					positionlist[idx] = window.shading.value()
+					logger.warning('shading override')
+				else:
+					positionlist[idx] = window.shading_closed_value
+					irradiation_current_closed = sum([w.irradiation_max(average=True)*(w.shading_closed_value-p)/(w.shading_closed_value-w.shading_open_value)+w.irradiation_min(average=True)*p/(w.shading_closed_value-w.shading_open_value) for w,p in zip(windowlist,positionlist)])
+					logger.warning('value: %s'%irradiation_temp )
+					logger.warning('current closed value: %s' % irradiation_current_closed )
+
+					positionlist[idx] = min(1,max(0,(irradiation_set - irradiation_temp)/(irradiation_current_closed - irradiation_temp)))
+
+		logger.warning('position list:')
+		logger.warning(positionlist)
+
+
+		# set all shading positions
+		for idx,window in enumerate(windowlist):
+			if window.has_shading:
+				if not window.shading.override():
+					if abs( (window.shading.value() - positionlist[idx])/(window.shading_closed_value - window.shading_open_value) ) > 0.1 or positionlist[idx]==window.shading_closed_value or positionlist[idx]==window.shading_open_value: 
+						# only actually set the shading position if the change is larger than 10% or it is closed or open
+						#window.shading.value(positionlist[idx])
+						logger.warning(window.item.id())						
+						logger.warning(positionlist[idx])
+
+
 
 
 
@@ -132,22 +220,52 @@ class Window:
 			self.has_shading = False
 
 
-	def irradiation_max(self,average=False):
+	def irradiation_open(self,average=False):
 		"""
-		Returns the maximum amount of irradiation through the window (shading open)
+		Returns the irradiation through a window when the shading is open
 		"""
 		return self.area*self.transmittance*self.weather.incidentradiation(self.orientation,self.tilt,average=average)
-		
-	def irradiation_min(self,average=False):
+
+	def irradiation_closed(self,average=False):
 		"""
-		Returns the minimum amount of irradiation through the window (shading closed)
+		Returns the irradiation through a window when the shading is closed if there is shading
 		"""
 		if self.has_shading:
 			shading = self.shading_transmittance
 		else:
 			shading = 1.0
 
-		return self.irradiation_max(average=average)*shading
+		return self.irradiation_open(average=average)*shading
+
+	def irradiation_max(self,average=False):
+		"""
+		Returns the maximum amount of irradiation through the window
+		It checks the closed flag indicating the shading must be closed
+		And the override flag indicating the shading position is fixed
+		"""
+		if self.has_shading:
+			if self.shading.closed():
+				return self.irradiation_closed(average=average)
+			elif self.shading.override():
+				return self.irradiation(average=average)
+			else:
+				return self.irradiation_open(average=average)
+		else:
+			return self.irradiation_open(average=average)
+
+	def irradiation_min(self,average=False):
+		"""
+		Returns the minimum amount of irradiation through the window
+		It checks the closed flag indicating the shading must be closed
+		And the override flag indicating the shading position is fixed
+		"""
+		if self.has_shading:
+			if self.shading.override():
+				return self.irradiation(average=average)
+			else:
+				return self.irradiation_closed(average=average)
+		else:
+			return self.irradiation_open(average=average)
 
 	def irradiation(self,average=False):
 		"""
