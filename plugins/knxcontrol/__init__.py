@@ -126,8 +126,8 @@ class KNXControl:
 				except:
 					logger.warning('Could not parse \'%s\' to %s' % (dest_item.conf['sh_listen'],dest_item.id()))
 
+
 		# check if override values need to be set
-		
 		if item in self._sh.match_items('*.shading.value'):
 			override = False
 			lock_override = False
@@ -140,8 +140,13 @@ class KNXControl:
 					override = True
 					
 			if override:
-				logger.warning('Override %s control'%shading)
+				logger.warning('Overriding %s control'%shading)
 				shading.override(True)
+				# release override after 3h
+				def release():
+					shading.override(False)
+					logger.warning('Override of %s control released'%shading)
+				threading.Timer(4*3600,release).start()
 
 			# lock override
 			if 'lock_override' in shading.conf:
