@@ -137,7 +137,7 @@ class Zone:
 					newpos[idx] = min(1,max(0,(irradiation_set - oldirradiation)/(newirradiation - oldirradiation)))
 
 		# set all shading positions
-		logger.warning('Shading control for %s results in:' % self.name)
+		logger.warning(newpos)
 		for idx,window in enumerate(windows):
 			if window.has_shading:
 				if not window.shading.override():
@@ -249,9 +249,9 @@ class Window:
 		"""
 		if self.has_shading:
 			shading = (self.shading.value()-self.shading_open_value)/(self.shading_closed_value-self.shading_open_value)
-			return self.irradiation_max(average=average)*(1-shading) + self.irradiation_min(average=average)*shading
+			return self.irradiation_open(average=average)*(1-shading) + self.irradiation_closed(average=average)*shading
 		else:
-			return self.irradiation_max(average=average)
+			return self.irradiation_open(average=average)
 
 
 class Measurement:

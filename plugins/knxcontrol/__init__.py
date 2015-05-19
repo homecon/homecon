@@ -20,7 +20,7 @@
 import logging
 import numpy as np
 import pymysql
-import re
+import threading
 
 from plugins.knxcontrol.measurements import *
 from plugins.knxcontrol.mysql import *
@@ -126,7 +126,40 @@ class KNXControl:
 				except:
 					logger.warning('Could not parse \'%s\' to %s' % (dest_item.conf['sh_listen'],dest_item.id()))
 
-	
+		# check if override values need to be set
+		
+		if item in self._sh.match_items('*.shading.value'):
+			override = False
+			lock_override = False
+			shading = item.return_parent()
+			if caller=='KNX':
+				if 'lock_override' in shading.conf:
+					if not shading.conf['lock_override']:
+						override = True
+				else:
+					override = True
+					
+			if override:
+				logger.warning('Override %s control'%shading)
+				shading.override(True)
+
+			# lock override
+			if 'lock_override' in shading.conf:
+				if not shading.conf['lock_override']:
+					lock_override = True
+			else:
+				lock_override = True
+
+			if lock_override:
+				shading.conf['lock_override'] = True
+				# unlock after 15s
+				def unlock():
+					shading.conf['lock_override'] = False
+				threading.Timer(15,unlock).start()
+
+
+
+
 	def parse_logic(self, logic):
 		pass
 
