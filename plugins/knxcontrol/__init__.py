@@ -69,7 +69,7 @@ class KNXControl:
 		self._sh.scheduler.add('Irradiation_update', self.weather.update_irradiation, prio=4, cron='* * * *')
 
 		# schedule control actions
-		self._sh.scheduler.add('Shading_control', self.building.control, prio=3, cron='* * * *') # execute every minute for debugging
+		self._sh.scheduler.add('Shading_control', self.building.control, prio=3, cron='0,30 * * *')
 
 
 

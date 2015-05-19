@@ -50,7 +50,7 @@ class Building:
 		Execute control actions
 		"""
 		for zone in self.zone:
-			zone.control_shading()
+			zone.shading_control()
 
 class Zone:
 	def __init__(self,knxcontrol,item):
@@ -71,8 +71,6 @@ class Zone:
 					for item in room.windows.return_children():
 						# create window objects
 						self.window.append(Window(self.knxcontrol,item))
-
-
 
 	def irradiation_max(self,average=False):
 		"""
@@ -95,79 +93,57 @@ class Zone:
 		return value
 
 
-
-	def control_shading(self):
+	def shading_control(self):
 		"""
 		Function tries to control the shading so the actual solar gains to the zone match the setpoint
 		"""
 		logger.warning('automatic shading control for zone: '+ self.name)
 		irradiation_set = self.item.irradiation.setpoint()
-		
-		# calculate the maximum and minimum irradiation for the zone using a hour average cloud cover
-		irradiation_max = self.irradiation_max(average=True)
-		irradiation_min = self.irradiation_min(average=True)
-
-		logger.warning('setpoint: %s' %(irradiation_set))
-		logger.warning('max: %s' %(irradiation_max))
-		logger.warning('min: %s' %(irradiation_min))
 
 		# close shadings until the setpoint is reached
 		# try to keep as many shadings completely open, to maintain view through the windows
 		# so start with the windows with the highest difference between max and min
-		# create an array of irradiation for all windows
+		# create an array of irradiation difference for all windows
 
 		differ = [w.irradiation_max(average=True)-w.irradiation_min(average=True) for w in self.window]
-		windowlist = sorted(self.window, key=lambda x: x.irradiation_max(average=True)-x.irradiation_min(average=True), reverse=True)
-		positionlist = []
- 
+		windows = sorted(self.window, key=lambda x: x.irradiation_max(average=True)-x.irradiation_min(average=True), reverse=True)
+		newpos = []
+		oldpos = []
+
 		# get old shading positions
-		for window in windowlist:
+		for window in windows:
 			if window.has_shading:
-				positionlist.append(window.shading_open_value)
+				newpos.append(0)
+				oldpos.append((window.shading.value()-window.shading_open_value)/(window.shading_closed_value-window.shading_open_value))
 			else:
-				positionlist.append(-1)
+				newpos.append(-1)
+				oldpos.append(-1)
 
-
-		logger.warning('position list:')
-		logger.warning(positionlist)
-
-		logger.warning('calculate positions')
 		# calculate new shading positions
-		for idx,window in enumerate(windowlist):
-			irradiation_temp = sum( [w.irradiation_max(average=True)*(1-p)+w.irradiation_min(average=True)*p for w,p in zip(windowlist,positionlist)] )
+		for idx,window in enumerate(windows):
+			oldirradiation = sum( [w.irradiation_max(average=True)*(1-p)+w.irradiation_min(average=True)*p for w,p in zip(windows,newpos)] )
 			
-			#if irradiation_temp <= irradiation_set:
-			#	break
+			if oldirradiation <= irradiation_set:
+				break
 
 			if window.has_shading:
 				if window.shading.closed():
-					positionlist[idx] = window.shading_closed_value
-					logger.warning('shading closed')
+					newpos[idx] = 1 
 				elif window.shading.override():
-					positionlist[idx] = window.shading.value()
-					logger.warning('shading override')
+					newpos[idx] = (window.shading.value()-window.shading_open_value)/(window.shading_closed_value-window.shading_open_value)
 				else:
-					positionlist[idx] = window.shading_closed_value
-					irradiation_current_closed = sum([w.irradiation_max(average=True)*(w.shading_closed_value-p)/(w.shading_closed_value-w.shading_open_value)+w.irradiation_min(average=True)*p/(w.shading_closed_value-w.shading_open_value) for w,p in zip(windowlist,positionlist)])
-					logger.warning('value: %s'%irradiation_temp )
-					logger.warning('current closed value: %s' % irradiation_current_closed )
-
-					positionlist[idx] = min(1,max(0,(irradiation_set - irradiation_temp)/(irradiation_current_closed - irradiation_temp)))
-
-		logger.warning('position list:')
-		logger.warning(positionlist)
-
+					newpos[idx] = 1
+					newirradiation = sum([w.irradiation_max(average=True)*(1-p)+w.irradiation_min(average=True)*(p) for w,p in zip(windows,newpos)])
+					newpos[idx] = min(1,max(0,(irradiation_set - oldirradiation)/(newirradiation - oldirradiation)))
 
 		# set all shading positions
-		for idx,window in enumerate(windowlist):
+		logger.warning('Shading control for %s results in:' % self.name)
+		for idx,window in enumerate(windows):
 			if window.has_shading:
 				if not window.shading.override():
-					if abs( (window.shading.value() - positionlist[idx])/(window.shading_closed_value - window.shading_open_value) ) > 0.1 or positionlist[idx]==window.shading_closed_value or positionlist[idx]==window.shading_open_value: 
+					if abs( newpos[idx]-oldpos[idx]) > 0.1 or newpos[idx]==window.shading_closed_value or newpos[idx]==window.shading_open_value:
 						# only actually set the shading position if the change is larger than 10% or it is closed or open
-						#window.shading.value(positionlist[idx])
-						logger.warning(window.item.id())						
-						logger.warning(positionlist[idx])
-
+						window.shading.value( window.shading_open_value+newpos[idx]*(window.shading_closed_value-window.shading_open_value) )
 
 
 
