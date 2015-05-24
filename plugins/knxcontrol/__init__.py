@@ -21,6 +21,7 @@ import logging
 import numpy as np
 import pymysql
 import threading
+import types
 
 from plugins.knxcontrol.measurements import *
 from plugins.knxcontrol.mysql import *
@@ -50,10 +51,41 @@ class KNXControl:
 		self.mysql = Mysql(self)
 		self.alarms = Alarms(self)
 		self.measurements = Measurements(self)
-		self.weather = Weather(self)
-		self.building = Building(self)
 
 
+
+
+		# bind new methods to items
+		weather = self._sh.knxcontrol.weather
+		weather.set_irradiation = types.MethodType( weather_set_irradiation, weather )
+		weather.update_irradiation = types.MethodType( weather_update_irradiation, weather )
+		weather.incidentradiation = types.MethodType( weather_incidentradiation, weather )
+		weather.prediction.detailed.load = types.MethodType( prediction_detailed_load, weather.prediction.detailed )
+		weather.prediction.daily.load = types.MethodType( prediction_daily_load, weather.prediction.daily )
+		weather.update_irradiation()
+
+		for zone in self._sh.find_items('zonetype'):
+			zone.find_windows = types.MethodType( zone_find_windows, zone )
+			zone.irradiation_max = types.MethodType( zone_irradiation_max, zone )
+			zone.irradiation_min = types.MethodType( zone_irradiation_min, zone )
+			zone.irradiation_est = types.MethodType( zone_irradiation_est, zone )
+			zone.shading_control = types.MethodType( zone_shading_control, zone )
+
+			for room in zone.return_children():
+				if hasattr(room,'windows'):
+					for window in room.windows.return_children():
+						window.irradiation_open   = types.MethodType( window_irradiation_open, window )
+						window.irradiation_closed = types.MethodType( window_irradiation_closed, window )
+						window.irradiation_min    = types.MethodType( window_irradiation_min, window )
+						window.irradiation_max    = types.MethodType( window_irradiation_max, window )
+						window.irradiation_est    = types.MethodType( window_irradiation_est, window )
+
+		
+		logger.warning('New methods bound to items')
+
+		for zone in self._sh.find_items('zonetype'):
+			pass
+			
 		# schedule alarms
 		self._sh.scheduler.add('Alarm_run', self.alarms.run, prio=1, cron='* * * *')
 		
@@ -64,18 +96,19 @@ class KNXControl:
 		self._sh.scheduler.add('Measurements_average_month', self.measurements.month, prio=5, cron='2 0 1 *')
 		
 		# schedule forecast loading
-		self._sh.scheduler.add('Detailed_weater_forecast', self.weather.load_detailed_predictions, prio=5, cron='1 * * *')
-		self._sh.scheduler.add('Daily_weater_forecast', self.weather.load_daily_predictions, prio=5, cron='1 * * *')
-		self._sh.scheduler.add('Irradiation_update', self.weather.update_irradiation, prio=4, cron='* * * *')
+		self._sh.scheduler.add('Detailed_weater_forecast', self._sh.knxcontrol.weather.prediction.detailed.load, prio=5, cron='1 * * *')
+		self._sh.scheduler.add('Daily_weater_forecast', self._sh.knxcontrol.weather.prediction.daily.load, prio=5, cron='1 * * *')
+		self._sh.scheduler.add('Irradiation_update', self._sh.knxcontrol.weather.update_irradiation, prio=4, cron='* * * *')
 
 		# schedule control actions
-		self._sh.scheduler.add('Shading_control', self.building.control, prio=3, cron='0,30 * * *')
+		#self._sh.scheduler.add('Shading_control', self.building.control, prio=3, cron='0,30 * * *')
 
 
 
 		# create a parameter estimation object
 		#self.optimization_model = Optimization_model(self._sh)
 		
+		logger.warning('Initialization Complete')
 
 	def stop(self):
 		self.alive = False
@@ -162,8 +195,15 @@ class KNXControl:
 					shading.conf['lock_override'] = False
 				threading.Timer(15,unlock).start()
 
-
-
+		# check if a shading closed value changed
+		#if item in self._sh.match_items('*.shading.closed'):
+		#	shading = item.return_parent()
+		#	
+		#	if item:
+		#		shading.value()
+		#	else:
+		#		window = shading.return_parent()
+		#		zone.irradiation() < zone.item.irradiation.setpoint()
 
 	def parse_logic(self, logic):
 		pass

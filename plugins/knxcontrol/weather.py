@@ -26,156 +26,143 @@ import numpy as np
 
 logger = logging.getLogger('')
 
-class Weather:
 
-	def __init__(self,knxcontrol):
-		self.knxcontrol = knxcontrol 
-		self._sh = knxcontrol._sh
 
-		self.prediction_detailed = None
-		self.prediction_daily = None
-		self.olar_azimuth = None
-		self.solar_altitude = None
-		self.I_b_clearsky = 0
-		self.I_d_clearsky = 0
-		self.clouds = 0
-		self.clouds_array = []
+def weather_update_irradiation(self):
+	"""
+	Function calculates the total horizontal irradiation, cloud coverage and zone irradiation
+	based on the sensor measurement, predictions or theoretical depending on which data is available
+	is called every minute
+	"""
 
-		self.set_irradiation()
+	self.set_irradiation()
 
-		logger.warning('Weather initialized')
-		self.load_detailed_predictions()
-		self.load_daily_predictions()
-	
-	
-	def load_detailed_predictions(self):
-		"""
-		method to load a detailed weather forecast from openweathermap.org and set write it to the appropriate item
-		"""
+	if hasattr(self.current.irradiation, 'sensor'):
+		# use the sensor to determine the cloud coverage
+		sensor_orientation = float(self.current.irradiation.sensor.conf['orientation'])*np.pi/180
+		sensor_tilt = float(self.current.irradiation.sensor.conf['tilt'])*np.pi/180
+
+
+		I_sensor_clearsky = self._sh.energytools.incidentradiation(self.I_b_clearsky,self.I_d_clearsky,self.solar_azimuth,self.solar_altitude,sensor_orientation,sensor_tilt)
+
+		if I_sensor_clearsky > 0:
+			clouds = 1-min(1, self.current.irradiation.sensor() / I_sensor_clearsky )
+		else:
+			clouds = 0
+	else:
 		try:
-			weatherforecast = []
-
-			response = urllib.request.urlopen('http://api.openweathermap.org/data/2.5/forecast?lat=%s&lon=%s' % (self._sh._lat,self._sh._lon))
-			response = json.loads(response.read().decode('utf-8'))
-
-			for forecast in response['list']:
-				currentforecast = {'datetime': forecast['dt']}
-				currentforecast['temperature'] = forecast['main']['temp']-273.15
-				currentforecast['pressure'] = forecast['main']['pressure']
-				currentforecast['humidity'] = forecast['main']['humidity']
-				currentforecast['icon'] = forecast['weather'][0]['icon']
-				currentforecast['clouds'] = forecast['clouds']['all']
-				currentforecast['wind_speed'] = forecast['wind']['speed']
-				currentforecast['wind_directions'] = forecast['wind']['deg']
-				if 'rain' in forecast:
-					currentforecast['rain'] = forecast['rain']['3h']
-				else:
-					currentforecast['rain'] = 0
-					
-				weatherforecast.append(currentforecast)
-			
-			self.prediction_detailed = weatherforecast;
-
-			# set the smarthome item
-			self._sh.knxcontrol.weather.prediction.detailed(weatherforecast)
-			
-			logger.warning('Detailed weatherforecast loaded')
+			# use the predictions to determine the cloud coverage
+			prediction = self.prediction.detailed()
+			clouds = prediction[0]['clouds']
 		except:
-			logger.warning('Error loading detailed weatherforecast')
+			# assume no cloud coverage
+			clouds = 0
+
+	# set items
+	self.current.irradiation.clouds(clouds)
+	self.current.irradiation.horizontal((1-clouds)*self._sh.energytools.incidentradiation(self.I_b_clearsky,self.I_d_clearsky,self.solar_azimuth,self.solar_altitude,0,0))
+	
+	# set cloudsarray
+	cloudsarraylen = 30
+	if not hasattr(self.current.irradiation.clouds,'arr'):
+		self.current.irradiation.clouds.arr = []
+
+	if len(self.current.irradiation.clouds.arr) >= cloudsarraylen:
+		self.current.irradiation.clouds.arr.pop(0)
+	self.current.irradiation.clouds.arr.append(clouds)	
+		
+	# update dependant objects
+	#self._sh.knxcontrol.building.update_irradiation()
+
+
+def weather_set_irradiation(self):
+	utcdate = datetime.datetime.utcnow()
+	(self.solar_azimuth,self.solar_altitude) = self._sh.energytools.sunposition(utcdate)
+	(self.I_b_clearsky,self.I_d_clearsky) = self._sh.energytools.clearskyirrradiation(utcdate)
+
+
+def weather_incidentradiation(self,orientation,tilt,average=False):
+
+	if average and len(self.current.irradiation.clouds.arr)>0: 
+		clouds = sum(self.current.irradiation.clouds.arr)/len(self.current.irradiation.clouds.arr)	
+	else:
+		clouds = self.current.irradiation.clouds()
+
+	return (1-clouds)*self._sh.energytools.incidentradiation(self.I_b_clearsky,self.I_d_clearsky,self.solar_azimuth,self.solar_altitude,orientation*np.pi/180,tilt*np.pi/180)
 	
 
-	def load_daily_predictions(self):
-		"""
-		method to load a daily weather forecast from openweathermap.org and set write it to the appropriate item
-		"""
-		
-		try:
-			weatherforecast = []
-			response = urllib.request.urlopen('http://api.openweathermap.org/data/2.5/forecast/daily?lat=%s&lon=%s' % (self._sh._lat,self._sh._lon))
-			response = json.loads(response.read().decode('utf-8'))
-
-			for forecast in response['list']:
-				currentforecast = {'datetime': forecast['dt']}
-				currentforecast['temperature_day'] = forecast['temp']['day']-273.15
-				currentforecast['temperature_night'] = forecast['temp']['night']-273.15
-				currentforecast['pressure'] = forecast['pressure']
-				currentforecast['humidity'] = forecast['humidity']
-				currentforecast['icon'] = forecast['weather'][0]['icon']
-				currentforecast['clouds'] = forecast['clouds']
-				currentforecast['wind_speed'] = forecast['speed']
-				currentforecast['wind_directions'] = forecast['deg']
-				if 'rain' in forecast:
-					currentforecast['rain'] = forecast['rain']
-				else:
-					currentforecast['rain'] = 0
-					
-				weatherforecast.append(currentforecast)
-
-			self.prediction_daily = weatherforecast;
-			
-			# set the smarthome item
-			self._sh.knxcontrol.weather.prediction.daily(weatherforecast)
-			
-			logger.warning('Daily weatherforecast loaded')
-		except:
-			logger.warning('Error loading daily weatherforecast')
-
-	def set_irradiation(self):
-		utcdate = datetime.datetime.utcnow()
-		(self.solar_azimuth,self.solar_altitude) = self._sh.energytools.sunposition(utcdate)
-		(self.I_b_clearsky,self.I_d_clearsky) = self._sh.energytools.clearskyirrradiation(utcdate)
 
 
-	def update_irradiation(self):
-		"""
-		Function calculates the total horizontal irradiation, cloud coverage and zone irradiation
-		based on the sensor measurement, predictions or theoretical depending on which data is available
-		is called every minute
-		"""
-		
-		self.set_irradiation()
 
-		if hasattr(self._sh.knxcontrol.weather.current.irradiation, 'sensor'):
-			# use the sensor to determine the cloud coverage
-			sensor_orientation = float(self._sh.knxcontrol.weather.current.irradiation.sensor.conf['orientation'])*np.pi/180
-			sensor_tilt = float(self._sh.knxcontrol.weather.current.irradiation.sensor.conf['tilt'])*np.pi/180
+#########################################################################
+# forecast item methods
+#########################################################################
+def prediction_detailed_load(self):
+	"""
+	method to load a detailed weather forecast from openweathermap.org and set write it to the appropriate item
+	"""
+	try:
+		weatherforecast = []
 
+		response = urllib.request.urlopen('http://api.openweathermap.org/data/2.5/forecast?lat=%s&lon=%s' % (self._sh._lat,self._sh._lon))
+		response = json.loads(response.read().decode('utf-8'))
 
-			I_sensor_clearsky = self._sh.energytools.incidentradiation(self.I_b_clearsky,self.I_d_clearsky,self.solar_azimuth,self.solar_altitude,sensor_orientation,sensor_tilt)
-
-			if I_sensor_clearsky > 0:
-				self.clouds = 1-min(1, self._sh.knxcontrol.weather.current.irradiation.sensor() / I_sensor_clearsky )
+		for forecast in response['list']:
+			currentforecast = {'datetime': forecast['dt']}
+			currentforecast['temperature'] = forecast['main']['temp']-273.15
+			currentforecast['pressure'] = forecast['main']['pressure']
+			currentforecast['humidity'] = forecast['main']['humidity']
+			currentforecast['icon'] = forecast['weather'][0]['icon']
+			currentforecast['clouds'] = forecast['clouds']['all']
+			currentforecast['wind_speed'] = forecast['wind']['speed']
+			currentforecast['wind_directions'] = forecast['wind']['deg']
+			if 'rain' in forecast:
+				currentforecast['rain'] = forecast['rain']['3h']
 			else:
-				self.clouds = 0
-		else:
-			try:
-				# use the predictions to determine the cloud coverage
-				prediction = self._sh.knxcontrol.weather.prediction.detailed()
-				self.clouds = prediction[0]['clouds']
-			except:
-				# assume no cloud coverage
-				self.clouds = 0
-
-
-		cloudsarraylen = 30
-		if len(self.clouds_array) >= cloudsarraylen:
-			self.clouds_array.pop(0)
-		self.clouds_array.append(self.clouds)	
-			
-		# set items
-		self._sh.knxcontrol.weather.current.irradiation.clouds(self.clouds)
-		self._sh.knxcontrol.weather.current.irradiation.horizontal((1-self.clouds)*self._sh.energytools.incidentradiation(self.I_b_clearsky,self.I_d_clearsky,self.solar_azimuth,self.solar_altitude,0,0))
+				currentforecast['rain'] = 0
+				
+			weatherforecast.append(currentforecast)
 		
-		# update dependant objects
-		self.knxcontrol.building.update_irradiation()
-
-
-	def incidentradiation(self,orientation,tilt,average=False):
-		if average and len(self.clouds_array)>0: 
-			clouds = sum(self.clouds_array)/len(self.clouds_array)	
-		else:
-			clouds = self.clouds
-
-		return (1-clouds)*self._sh.energytools.incidentradiation(self.I_b_clearsky,self.I_d_clearsky,self.solar_azimuth,self.solar_altitude,orientation,tilt)
+		# set the smarthome item
+		self(weatherforecast)
 		
+		logger.warning('Detailed weatherforecast loaded')
+	except:
+		logger.warning('Error loading detailed weatherforecast')
+
+
+def prediction_daily_load(self):
+	"""
+	method to load a daily weather forecast from openweathermap.org and set write it to the appropriate item
+	"""
+	
+	try:
+		weatherforecast = []
+		response = urllib.request.urlopen('http://api.openweathermap.org/data/2.5/forecast/daily?lat=%s&lon=%s' % (self._sh._lat,self._sh._lon))
+		response = json.loads(response.read().decode('utf-8'))
+
+		for forecast in response['list']:
+			currentforecast = {'datetime': forecast['dt']}
+			currentforecast['temperature_day'] = forecast['temp']['day']-273.15
+			currentforecast['temperature_night'] = forecast['temp']['night']-273.15
+			currentforecast['pressure'] = forecast['pressure']
+			currentforecast['humidity'] = forecast['humidity']
+			currentforecast['icon'] = forecast['weather'][0]['icon']
+			currentforecast['clouds'] = forecast['clouds']
+			currentforecast['wind_speed'] = forecast['speed']
+			currentforecast['wind_directions'] = forecast['deg']
+			if 'rain' in forecast:
+				currentforecast['rain'] = forecast['rain']
+			else:
+				currentforecast['rain'] = 0
+				
+			weatherforecast.append(currentforecast)
+	
+		# set the smarthome item
+		self(weatherforecast)
+		
+		logger.warning('Daily weatherforecast loaded')
+	except:
+		logger.warning('Error loading daily weatherforecast')
+
 
