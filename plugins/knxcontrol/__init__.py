@@ -56,6 +56,7 @@ class KNXControl:
 		# bind new methods to items
 		knxcontrol = self._sh.knxcontrol
 		knxcontrol.update_irradiation = types.MethodType( knxcontrol_update_irradiation, knxcontrol )
+		knxcontrol.shading_control = types.MethodType( knxcontrol_shading_control, knxcontrol )
 		knxcontrol.control = types.MethodType( knxcontrol_control, knxcontrol )
 
 		weather = self._sh.knxcontrol.weather
@@ -226,6 +227,10 @@ class KNXControl:
 				#if zone.irradiation() < zone.irradiation.setpoint():
 				#	shading.value(shading.conf['open_value'])
 
+		# check for rain
+		if item.id() == 'knxcontrol.weather.current.precipitation':
+			self._sh.knxcontrol.shading_control()
+			
 	def parse_logic(self, logic):
 		pass
 

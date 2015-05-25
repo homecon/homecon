@@ -167,6 +167,8 @@ def zone_shading_control(self):
 				newpos[idx] = 1 
 			elif window.shading.override() or not self.shading.auto():
 				newpos[idx] = (window.shading.value()-float(window.shading.conf['open_value']))/(float(window.shading.conf['closed_value'])-float(window.shading.conf['open_value']))
+			elif self._sh.knxcontrol.weather.current.precipitation() and ('open_when_raining' in window.shading.conf):
+				newpos[idx] = 0
 			else:
 				newpos[idx] = 1
 				newirradiation = sum([w.irradiation_max(average=True)*(1-p)+w.irradiation_min(average=True)*(p) for w,p in zip(windows,newpos)])
@@ -193,6 +195,13 @@ def knxcontrol_update_irradiation(self):
 	for zone in self._sh.find_items('zonetype'):
 		zone.irradiation_est()
 
+
+def knxcontrol_shading_control(self):
+	for zone in self._sh.find_items('zonetype'):
+		zone.irradiation.setpoint(5000)
+		zone.emission.setpoint(5000)
+		zone.shading_control()
+
 def knxcontrol_control(self):
 	"""
 	Execute control actions
@@ -202,10 +211,7 @@ def knxcontrol_control(self):
 
 
 	# set controls
-	for zone in self._sh.find_items('zonetype'):
-		zone.irradiation.setpoint(5000)
-		zone.emission.setpoint(5000)
-		zone.shading_control()
+	self.shading_control()
 
 
 
