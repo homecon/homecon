@@ -55,7 +55,7 @@ def window_irradiation_max(self,average=False):
 	if hasattr(self,'shading'):
 		if self.shading.closed():
 			return self.irradiation_closed(average=average)
-		elif self.shading.override():
+		elif self.shading.override() or not self.shading.auto():
 			return self.irradiation_est(average=average)
 		else:
 			return self.irradiation_open(average=average)
@@ -69,7 +69,7 @@ def window_irradiation_min(self,average=False):
 	And the override flag indicating the shading position is fixed
 	"""
 	if hasattr(self,'shading'):
-		if self.shading.override():
+		if self.shading.override() or not self.shading.auto():
 			return self.irradiation_est(average=average)
 		else:
 			return self.irradiation_closed(average=average)
@@ -165,7 +165,7 @@ def zone_shading_control(self):
 		if hasattr(window,'shading'):
 			if window.shading.closed():
 				newpos[idx] = 1 
-			elif window.shading.override():
+			elif window.shading.override() or not self.shading.auto():
 				newpos[idx] = (window.shading.value()-float(window.shading.conf['open_value']))/(float(window.shading.conf['closed_value'])-float(window.shading.conf['open_value']))
 			else:
 				newpos[idx] = 1
@@ -176,7 +176,7 @@ def zone_shading_control(self):
 	logger.warning(newpos)
 	for idx,window in enumerate(windows):
 		if hasattr(window,'shading'):
-			if not window.shading.override():
+			if not window.shading.override() and self.shading.auto():
 				if abs( newpos[idx]-oldpos[idx]) > 0.1 or newpos[idx]==float(window.shading.conf['closed_value']) or newpos[idx]==float(window.shading.conf['open_value']):
 					# only actually set the shading position if the change is larger than 10% or it is closed or open
 					window.shading.value( float(window.shading.conf['open_value'])+newpos[idx]*(float(window.shading.conf['closed_value'])-float(window.shading.conf['open_value'])) )
@@ -197,7 +197,14 @@ def knxcontrol_control(self):
 	"""
 	Execute control actions
 	"""
+
+	# optimization	
+
+
+	# set controls
 	for zone in self._sh.find_items('zonetype'):
+		zone.irradiation.setpoint(5000)
+		zone.emission.setpoint(5000)
 		zone.shading_control()
 
 

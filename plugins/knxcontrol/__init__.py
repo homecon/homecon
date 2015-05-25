@@ -164,6 +164,17 @@ class KNXControl:
 
 
 		# check if override values need to be set
+		if item in self._sh.match_items('*.shading.move'):
+			logger.warning('Overriding %s control'%shading)
+			shading.override(True)
+
+			# release override after 4h
+			def release():
+				shading.override(False)
+				logger.warning('Override of %s control released'%shading)
+			threading.Timer(4*3600,release).start()
+
+
 		if item in self._sh.match_items('*.shading.value'):
 			override = False
 			lock_override = False
@@ -178,7 +189,7 @@ class KNXControl:
 			if override:
 				logger.warning('Overriding %s control'%shading)
 				shading.override(True)
-				# release override after 3h
+				# release override after 4h
 				def release():
 					shading.override(False)
 					logger.warning('Override of %s control released'%shading)
@@ -199,14 +210,21 @@ class KNXControl:
 				threading.Timer(15,unlock).start()
 
 		# check if a shading closed value changed
-		#if item in self._sh.match_items('*.shading.closed'):
-		#	shading = item.return_parent()
-		#	
-		#	if item:
-		#		shading.value()
-		#	else:
-		#		window = shading.return_parent()
-		#		zone.irradiation() < zone.item.irradiation.setpoint()
+		if item in self._sh.match_items('*.shading.closed'):
+			shading = item.return_parent()
+			
+			if item:
+				shading.value(shading.conf['closed_value'])
+			else:
+				window = shading.return_parent()
+				room = window.return_parent()
+				zone = room.return_parent()
+				logger.warning(zone)
+
+				zone.shading_control()
+
+				#if zone.irradiation() < zone.irradiation.setpoint():
+				#	shading.value(shading.conf['open_value'])
 
 	def parse_logic(self, logic):
 		pass
