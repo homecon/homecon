@@ -27,12 +27,14 @@ class Measurements:
 
 		self._sh = knxcontrol._sh
 		self._mysql_pass = knxcontrol._mysql_pass
-		self.legend = {}
+
+
+		self.old_legend = {}
 
 		con = pymysql.connect('localhost', 'knxcontrol', self._mysql_pass, 'knxcontrol')
 		cur = con.cursor()
 		
-
+		# create tables
 		# measurements legend
 		query = ("CREATE TABLE IF NOT EXISTS `measurements_legend` ("
 				 "`id` int(11) NOT NULL AUTO_INCREMENT,"
@@ -121,6 +123,18 @@ class Measurements:
 			pass
 
 
+		# create measurements legend
+		# get the old legend
+		cur.execute("SELECT id,item FROM measurements_legend WHERE item <> ''")
+
+		# run through legend
+		for measurement in cur:
+			self.old_legend[measurement[1]] = measurement[0]
+
+		# clear the old legend and rebuild the table
+		cur.execute("TRUNCATE TABLE measurements_legend")
+		
+
 		id = 0
 		# current weather 20 components max
 		item = self._sh.return_item('knxcontrol.weather.current.temperature')
@@ -151,12 +165,14 @@ class Measurements:
 		id = id+1
 		self.add_legend_item(id,item,name='Wind direction',quantity='Angle',unit='deg',description='Wind direction (0deg is North, 90deg is East)')
 
+
 		id = 20
 		# energy use 10 components max
 		for item in self._sh.return_item('knxcontrol.energy'):
 			item_name = item.id().split(".")[-1]
 			id = id+1 
 			self.add_legend_item(id,item,name=item_name,quantity=item.conf['quantity'],unit=item.conf['unit'],description=item_name+' use')
+
 
 		id = 100
 		# building zones 10 zones max
@@ -173,6 +189,7 @@ class Measurements:
 
 			id = id + 1
 			self.add_legend_item(id,item.emission,name='Emission',quantity='Power',unit='W',description=item_name+' emission power')
+
 
 		id = 250
 		# ventilation 10 systems max
@@ -209,13 +226,31 @@ class Measurements:
 		Adds an object to the local legend dict.
 		obj must be a SmartHome.py item
 		"""
-		item.conf['mysql_id'] = id
-		
+
 		con = pymysql.connect('localhost', 'knxcontrol', self._mysql_pass, 'knxcontrol')
 		cur = con.cursor()
 		try:
 			query = "REPLACE INTO measurements_legend (id,item,name,quantity,unit,description) VALUES ('"+str(id)+"','"+item.id()+"','"+name+"','"+quantity+"','"+unit+"','"+description+"')"
 			cur.execute( query )
+
+			item.conf['mysql_id'] = id
+
+			# check if the item was allready logged and copy the data if required
+			if item.id() in self.old_legend.keys():
+				if id != self.old_legend[item.id()]:
+					# delete measurements with the current id
+					cur.execute( "DELETE FROM measurements WHERE signal_id=%s" %(id) )
+					cur.execute( "DELETE FROM measurements_average_quarterhour WHERE signal_id=%s" %(id) )
+					cur.execute( "DELETE FROM measurements_average_week WHERE signal_id=%s" %(id) )
+					cur.execute( "DELETE FROM measurements_average_month WHERE signal_id=%s" %(id) )
+
+					# copy measurement with the oldid to the current id
+					cur.execute( "UPDATE measurements set signal_id=%s WHERE signal_id=%s" %(id,self.old_legend[item.id()]) )
+					cur.execute( "UPDATE measurements_average_quarterhour set signal_id=%s WHERE signal_id=%s" %(id,self.old_legend[item.id()]) )
+					cur.execute( "UPDATE measurements_average_week set signal_id=%s WHERE signal_id=%s" %(id,self.old_legend[item.id()]) )
+					cur.execute( "UPDATE measurements_average_month set signal_id=%s WHERE signal_id=%s" %(id,self.old_legend[item.id()]) )
+
+					logger.warning(item.id()+'data copied from id %s to id %s'%(self.old_legend[item.id()],id))
 		except:
 			logger.warning('could not add legend item: '+name)
 

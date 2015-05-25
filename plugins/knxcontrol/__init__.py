@@ -73,14 +73,12 @@ class KNXControl:
 			zone.irradiation_est = types.MethodType( zone_irradiation_est, zone )
 			zone.shading_control = types.MethodType( zone_shading_control, zone )
 
-			for room in zone.return_children():
-				if hasattr(room,'windows'):
-					for window in room.windows.return_children():
-						window.irradiation_open   = types.MethodType( window_irradiation_open, window )
-						window.irradiation_closed = types.MethodType( window_irradiation_closed, window )
-						window.irradiation_min    = types.MethodType( window_irradiation_min, window )
-						window.irradiation_max    = types.MethodType( window_irradiation_max, window )
-						window.irradiation_est    = types.MethodType( window_irradiation_est, window )
+			for window in zone.find_windows():
+				window.irradiation_open   = types.MethodType( window_irradiation_open, window )
+				window.irradiation_closed = types.MethodType( window_irradiation_closed, window )
+				window.irradiation_min    = types.MethodType( window_irradiation_min, window )
+				window.irradiation_max    = types.MethodType( window_irradiation_max, window )
+				window.irradiation_est    = types.MethodType( window_irradiation_est, window )
 
 		self._sh.knxcontrol.weather.update_irradiation()
 
