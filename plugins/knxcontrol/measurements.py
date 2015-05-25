@@ -33,7 +33,7 @@ class Measurements:
 
 		con = pymysql.connect('localhost', 'knxcontrol', self._mysql_pass, 'knxcontrol')
 		cur = con.cursor()
-		
+
 		# create tables
 		# measurements legend
 		query = ("CREATE TABLE IF NOT EXISTS `measurements_legend` ("
@@ -218,7 +218,7 @@ class Measurements:
 
 
 		logger.warning('Measurements initialized')
-
+		self.tmp_counter = 999
 
 
 	def add_legend_item(self,id,item,name,quantity,unit,description):
@@ -238,11 +238,17 @@ class Measurements:
 			# check if the item was allready logged and copy the data if required
 			if item.id() in self.old_legend.keys():
 				if id != self.old_legend[item.id()]:
-					# delete measurements with the current id
-					cur.execute( "DELETE FROM measurements WHERE signal_id=%s" %(id) )
-					cur.execute( "DELETE FROM measurements_average_quarterhour WHERE signal_id=%s" %(id) )
-					cur.execute( "DELETE FROM measurements_average_week WHERE signal_id=%s" %(id) )
-					cur.execute( "DELETE FROM measurements_average_month WHERE signal_id=%s" %(id) )
+					
+					for key,val in self.old_legend.iteritems():
+						if id==val:
+							# move measurements with the current id to a tmp id so data can be recovered
+							self.tmp_counter+=1
+							self.old_legend[key] = self.tmp_counter
+							cur.execute( "UPDATE measurements set signal_id=%s WHERE signal_id=%s" %(self.tmp_counter,id) )
+							cur.execute( "UPDATE measurements_average_quarterhour set signal_id=%s WHERE signal_id=%s" %(self.tmp_counter,id) )
+							cur.execute( "UPDATE measurements_average_week set signal_id=%s WHERE signal_id=%s" %(self.tmp_counter,id) )
+							cur.execute( "UPDATE measurements_average_month set signal_id=%s WHERE signal_id=%s" %(self.tmp_counter,id) )
+					
 
 					# copy measurement with the oldid to the current id
 					cur.execute( "UPDATE measurements set signal_id=%s WHERE signal_id=%s" %(id,self.old_legend[item.id()]) )
