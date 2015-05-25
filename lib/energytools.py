@@ -17,9 +17,12 @@
 #    along with KNXControl.  If not, see <http://www.gnu.org/licenses/>.
 ######################################################################################
 
+import logging
 import ephem
 import datetime
 import numpy as np
+
+logger = logging.getLogger('')
 
 class Energytools():
 	"""
@@ -39,10 +42,11 @@ class Energytools():
 		
 		# http://rhodesmill.org/pyephem/quick.html
 		obs = ephem.Observer()
-		obs.lat = float(self._sh._lat)     #N+
-		obs.lon = float(self._sh._lon)     #E+
+		obs.lat = float(self._sh._lat)*np.pi/180     #N+
+		obs.lon = float(self._sh._lon)*np.pi/180     #E+
 		obs.elevation = float(self._sh._elev)
 		obs.date = utcdate
+
 		sun = ephem.Sun(obs)
 		sun.compute(obs)
 		
@@ -56,7 +60,7 @@ class Energytools():
 		"""
 		
 		(azi,alt) = self.sunposition(utcdate)
-		
+
 		# air mass between the observer and the sun
 		if 6.07995 + alt > 0:
 			m = 1/(np.sin(alt) + 0.50572*(6.07995 + alt)**-1.6364);
@@ -77,7 +81,7 @@ class Energytools():
 	   
 		ab = 1.219 - 0.043*tau_b - 0.151*tau_d - 0.204*tau_b*tau_d; 
 		ad = 0.202 + 0.852*tau_b - 0.007*tau_d -0.357*tau_b*tau_d;
-		
+
 		if np.degrees(alt) > 0:
 			I_b = E0*np.exp(-tau_b*m**ab);
 		else:
@@ -86,8 +90,8 @@ class Energytools():
 		if np.degrees(alt) > -2:	
 			I_d = E0*np.exp(-tau_d*m**ad);
 		else:
-			I_b = 0
-		
+			I_d = 0
+
 		return (I_b,I_d)
 
 	def incidentradiation(self,I_b,I_d,solar_azimuth,solar_altitude,surface_azimuth,surface_tilt):

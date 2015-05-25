@@ -124,95 +124,9 @@ class Mysql:
 		except:
 			logger.warning("Could not add actions table to database")
 
-		# measurements legend
-		query = ("CREATE TABLE IF NOT EXISTS `measurement_legend` ("
-				 "`id` int(11) NOT NULL AUTO_INCREMENT,"
-				 "`item` varchar(255) DEFAULT NULL,"
-				 "`name` varchar(255) DEFAULT NULL,"
-				 "`quantity` varchar(255) DEFAULT NULL,"
-				 "`unit` varchar(255) DEFAULT NULL,"
-				 "`description` text DEFAULT NULL,"
-				 "UNIQUE KEY `ID` (`id`)) ENGINE=InnoDB  DEFAULT CHARSET=latin1 AUTO_INCREMENT=1")
-		try:
-			cur.execute( query )
-		except:
-			logger.warning("Could not add measurement_legend table to database")
-
-
-		# measurements
-		query = ("CREATE TABLE IF NOT EXISTS `measurement` ("
-				 "`id` bigint(20) NOT NULL AUTO_INCREMENT,"
-				 "`signal_id` int(11) NOT NULL,"
-				 "`time` bigint(20) NOT NULL,"
-				 "`value` float DEFAULT NULL,"
-				 "UNIQUE KEY `ID` (`id`)) ENGINE=InnoDB  DEFAULT CHARSET=latin1 AUTO_INCREMENT=1")
-		try:
-			cur.execute( query )
-		except:
-			logger.warning("Could not add measurement table to database")
-
-		query = "CREATE INDEX time_signal_id ON measurement(time, signal_id)"
-		try:
-			cur.execute( query )
-		except:
-			pass
-
-		# quarterhour average measurements
-		query = ("CREATE TABLE IF NOT EXISTS `measurement_average_quarterhour` ("
-				 "`id` bigint(20) NOT NULL AUTO_INCREMENT,"
-				 "`signal_id` int(11) NOT NULL,"
-				 "`time` int(11) NOT NULL,"
-				 "`value` float DEFAULT NULL,"
-				 "UNIQUE KEY `ID` (`id`)) ENGINE=InnoDB  DEFAULT CHARSET=latin1 AUTO_INCREMENT=1")												 						 
-		try:
-			cur.execute( query )
-		except:
-			logger.warning("Could not add quarterhour measurement_average_quarterhour table to database")
-
-		query = "CREATE INDEX time_signal_id ON measurement_average_quarterhour(time, signal_id)"
-		try:
-			cur.execute( query )
-		except:
-			pass
-
-		# week average measurements
-		query = ("CREATE TABLE IF NOT EXISTS `measurement_average_week` ("
-				 "`id` bigint(20) NOT NULL AUTO_INCREMENT,"
-				 "`signal_id` int(11) NOT NULL,"
-				 "`time` int(11) NOT NULL,"
-				 "`value` float DEFAULT NULL,"
-				 "UNIQUE KEY `ID` (`id`)) ENGINE=InnoDB  DEFAULT CHARSET=latin1 AUTO_INCREMENT=1")												 						 
-		try:
-			cur.execute( query )
-		except:
-			logger.warning("Could not add measurement_average_week table to database")
-
-		query = "CREATE INDEX time_signal_id ON measurement_average_week(time, signal_id)"
-		try:
-			cur.execute( query )
-		except:
-			pass
-
-		# month average measurements
-		query = ("CREATE TABLE IF NOT EXISTS `measurement_average_month` ("
-				 "`id` bigint(20) NOT NULL AUTO_INCREMENT,"
-				 "`signal_id` int(11) NOT NULL,"
-				 "`time` int(11) NOT NULL,"
-				 "`value` float DEFAULT NULL,"
-				 "UNIQUE KEY `ID` (`id`)) ENGINE=InnoDB  DEFAULT CHARSET=latin1 AUTO_INCREMENT=1")												 						 
-		try:
-			cur.execute( query )
-		except:
-			logger.warning("Could not add measurement_average_month table to database")
-
-		query = "CREATE INDEX time_signal_id ON measurement_average_month(time, signal_id)"
-		try:
-			cur.execute( query )
-		except:
-			pass
 
 		# profile legend
-		query = ("CREATE TABLE IF NOT EXISTS `profile_legend` ("
+		query = ("CREATE TABLE IF NOT EXISTS `profiles_legend` ("
 				 "`id` int(11) NOT NULL AUTO_INCREMENT,"
 				 "`name` varchar(255) DEFAULT NULL,"
 				 "`quantity` varchar(255) DEFAULT NULL,"
@@ -222,10 +136,10 @@ class Mysql:
 		try:
 			cur.execute( query )
 		except:
-			logger.warning("Could not add profile_legend table to database")
+			logger.warning("Could not add profiles_legend table to database")
 
 		# profile
-		query = ("CREATE TABLE IF NOT EXISTS `profile` ("
+		query = ("CREATE TABLE IF NOT EXISTS `profiles` ("
 				 "`id` bigint(20) NOT NULL AUTO_INCREMENT,"
 				 "`profile_id` int(11) NOT NULL,"
 				 "`time` bigint(20) NOT NULL,"
@@ -234,7 +148,7 @@ class Mysql:
 		try:
 			cur.execute( query )
 		except:
-			logger.warning("Could not add profile table to database")
+			logger.warning("Could not add profiles table to database")
 
 
 		# pagebuilder

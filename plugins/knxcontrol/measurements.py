@@ -32,6 +32,95 @@ class Measurements:
 		con = pymysql.connect('localhost', 'knxcontrol', self._mysql_pass, 'knxcontrol')
 		cur = con.cursor()
 		
+
+		# measurements legend
+		query = ("CREATE TABLE IF NOT EXISTS `measurements_legend` ("
+				 "`id` int(11) NOT NULL AUTO_INCREMENT,"
+				 "`item` varchar(255) DEFAULT NULL,"
+				 "`name` varchar(255) DEFAULT NULL,"
+				 "`quantity` varchar(255) DEFAULT NULL,"
+				 "`unit` varchar(255) DEFAULT NULL,"
+				 "`description` text DEFAULT NULL,"
+				 "UNIQUE KEY `ID` (`id`)) ENGINE=InnoDB  DEFAULT CHARSET=latin1 AUTO_INCREMENT=1")
+		try:
+			cur.execute( query )
+		except:
+			logger.warning("Could not add measurements_legend table to database")
+
+
+		# measurements
+		query = ("CREATE TABLE IF NOT EXISTS `measurements` ("
+				 "`id` bigint(20) NOT NULL AUTO_INCREMENT,"
+				 "`signal_id` int(11) NOT NULL,"
+				 "`time` bigint(20) NOT NULL,"
+				 "`value` float DEFAULT NULL,"
+				 "UNIQUE KEY `ID` (`id`)) ENGINE=InnoDB  DEFAULT CHARSET=latin1 AUTO_INCREMENT=1")
+		try:
+			cur.execute( query )
+		except:
+			logger.warning("Could not add measurements table to database")
+
+		query = "CREATE INDEX time_signal_id ON measurements(time, signal_id)"
+		try:
+			cur.execute( query )
+		except:
+			pass
+
+		# quarterhour average measurements
+		query = ("CREATE TABLE IF NOT EXISTS `measurements_average_quarterhour` ("
+				 "`id` bigint(20) NOT NULL AUTO_INCREMENT,"
+				 "`signal_id` int(11) NOT NULL,"
+				 "`time` int(11) NOT NULL,"
+				 "`value` float DEFAULT NULL,"
+				 "UNIQUE KEY `ID` (`id`)) ENGINE=InnoDB  DEFAULT CHARSET=latin1 AUTO_INCREMENT=1")												 						 
+		try:
+			cur.execute( query )
+		except:
+			logger.warning("Could not add quarterhour measurements_average_quarterhour table to database")
+
+		query = "CREATE INDEX time_signal_id ON measurements_average_quarterhour(time, signal_id)"
+		try:
+			cur.execute( query )
+		except:
+			pass
+
+		# week average measurements
+		query = ("CREATE TABLE IF NOT EXISTS `measurements_average_week` ("
+				 "`id` bigint(20) NOT NULL AUTO_INCREMENT,"
+				 "`signal_id` int(11) NOT NULL,"
+				 "`time` int(11) NOT NULL,"
+				 "`value` float DEFAULT NULL,"
+				 "UNIQUE KEY `ID` (`id`)) ENGINE=InnoDB  DEFAULT CHARSET=latin1 AUTO_INCREMENT=1")												 						 
+		try:
+			cur.execute( query )
+		except:
+			logger.warning("Could not add measurements_average_week table to database")
+
+		query = "CREATE INDEX time_signal_id ON measurements_average_week(time, signal_id)"
+		try:
+			cur.execute( query )
+		except:
+			pass
+
+		# month average measurements
+		query = ("CREATE TABLE IF NOT EXISTS `measurements_average_month` ("
+				 "`id` bigint(20) NOT NULL AUTO_INCREMENT,"
+				 "`signal_id` int(11) NOT NULL,"
+				 "`time` int(11) NOT NULL,"
+				 "`value` float DEFAULT NULL,"
+				 "UNIQUE KEY `ID` (`id`)) ENGINE=InnoDB  DEFAULT CHARSET=latin1 AUTO_INCREMENT=1")												 						 
+		try:
+			cur.execute( query )
+		except:
+			logger.warning("Could not add measurements_average_month table to database")
+
+		query = "CREATE INDEX time_signal_id ON measurements_average_month(time, signal_id)"
+		try:
+			cur.execute( query )
+		except:
+			pass
+
+
 		id = 0
 		# current weather 20 components max
 		item = self._sh.return_item('knxcontrol.weather.current.temperature')
@@ -71,7 +160,7 @@ class Measurements:
 
 		id = 100
 		# building zones 10 zones max
-		for item in self._sh.return_item('knxcontrol.building'):
+		for item in self._sh.find_items('zonetype'):
 			item_name = item.id().split(".")[-1]
 			id = id + 1
 			self.add_legend_item(id,item.temperature,name='Temperature',quantity='Temperature',unit='degC',description=item_name+' temperature')
@@ -80,10 +169,10 @@ class Measurements:
 			self.add_legend_item(id,item.airquality,name='Air quality',quantity='Concentration',unit='g CO2/m3',description=item_name+' CO2 concentration')
 
 			id = id + 1
-			self.add_legend_item(id,item.irradiation.power,name='Solar gains',quantity='Power',unit='W',description=item_name+' irradiation power')
+			self.add_legend_item(id,item.irradiation,name='Solar gains',quantity='Power',unit='W',description=item_name+' irradiation power')
 
 			id = id + 1
-			self.add_legend_item(id,item.emission.power,name='Emission',quantity='Power',unit='W',description=item_name+' emission power')
+			self.add_legend_item(id,item.emission,name='Emission',quantity='Power',unit='W',description=item_name+' emission power')
 
 		id = 250
 		# ventilation 10 systems max
@@ -125,7 +214,7 @@ class Measurements:
 		con = pymysql.connect('localhost', 'knxcontrol', self._mysql_pass, 'knxcontrol')
 		cur = con.cursor()
 		try:
-			query = "REPLACE INTO measurement_legend (id,item,name,quantity,unit,description) VALUES ('"+str(id)+"','"+item.id()+"','"+name+"','"+quantity+"','"+unit+"','"+description+"')"
+			query = "REPLACE INTO measurements_legend (id,item,name,quantity,unit,description) VALUES ('"+str(id)+"','"+item.id()+"','"+name+"','"+quantity+"','"+unit+"','"+description+"')"
 			cur.execute( query )
 		except:
 			logger.warning('could not add legend item: '+name)
@@ -147,11 +236,11 @@ class Measurements:
 		cur = con.cursor()
 
 		legend = con.cursor()
-		legend.execute("SELECT id,item FROM measurement_legend WHERE item <> ''")
+		legend.execute("SELECT id,item FROM measurements_legend WHERE item <> ''")
 
 
 		# create mysql query
-		query = "INSERT INTO measurement (signal_id,time,value) VALUES "
+		query = "INSERT INTO measurements (signal_id,time,value) VALUES "
 
 		# run through legend
 		for measurement in legend:
@@ -184,13 +273,13 @@ class Measurements:
 
 		query = "INSERT INTO %s(signal_id,time,value) VALUES " % (table)
 
-		cur.execute("SELECT * FROM measurement_legend")
+		cur.execute("SELECT * FROM measurements_legend")
 
 		for measurement in cur:
 
 			signalcur = con.cursor()
 	
-			signalcur.execute("SELECT AVG(value) FROM measurement WHERE signal_id=%s AND time >= '%s' AND time < '%s'" % (measurement[0],starttimestamp,endtimestamp))
+			signalcur.execute("SELECT AVG(value) FROM measurements WHERE signal_id=%s AND time >= '%s' AND time < '%s'" % (measurement[0],starttimestamp,endtimestamp))
 			row = signalcur.fetchall()
 			if (row[0][0] is None):
 				avg = 0
@@ -222,7 +311,7 @@ class Measurements:
 		starttimestamp = int( (startdate - epoch).total_seconds() )
 		endtimestamp = int( (endddate - epoch).total_seconds() )
 
-		self._set_average_values('measurement_average_quarterhour',starttimestamp,endtimestamp)
+		self._set_average_values('measurements_average_quarterhour',starttimestamp,endtimestamp)
 		
 	def week(self):
 		"""
@@ -242,7 +331,7 @@ class Measurements:
 		starttimestamp = int( (startdate - epoch).total_seconds() )
 		endtimestamp = int( (endddate - epoch).total_seconds() )
 
-		self._set_average_values('measurement_average_week',starttimestamp,endtimestamp)
+		self._set_average_values('measurements_average_week',starttimestamp,endtimestamp)
 		logger.warning('Average week measurements added')
 
 	def month(self):	

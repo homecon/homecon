@@ -53,8 +53,6 @@ class KNXControl:
 		self.measurements = Measurements(self)
 
 
-
-
 		# bind new methods to items
 		weather = self._sh.knxcontrol.weather
 		weather.set_irradiation = types.MethodType( weather_set_irradiation, weather )

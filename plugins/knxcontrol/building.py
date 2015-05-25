@@ -209,7 +209,7 @@ class Building:
 			zone.irradiation_est()
 
 
-	def building.control(self):
+	def building_control(self):
 		"""
 		Execute control actions
 		"""

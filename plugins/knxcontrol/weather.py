@@ -80,7 +80,6 @@ def weather_set_irradiation(self):
 	(self.solar_azimuth,self.solar_altitude) = self._sh.energytools.sunposition(utcdate)
 	(self.I_b_clearsky,self.I_d_clearsky) = self._sh.energytools.clearskyirrradiation(utcdate)
 
-
 def weather_incidentradiation(self,orientation,tilt,average=False):
 
 	if average and len(self.current.irradiation.clouds.arr)>0: 
