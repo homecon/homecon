@@ -54,13 +54,16 @@ class KNXControl:
 
 
 		# bind new methods to items
+		knxcontrol = self._sh.knxcontrol
+		knxcontrol.update_irradiation = types.MethodType( knxcontrol_update_irradiation, knxcontrol )
+		knxcontrol.control = types.MethodType( knxcontrol_control, knxcontrol )
+
 		weather = self._sh.knxcontrol.weather
 		weather.set_irradiation = types.MethodType( weather_set_irradiation, weather )
 		weather.update_irradiation = types.MethodType( weather_update_irradiation, weather )
 		weather.incidentradiation = types.MethodType( weather_incidentradiation, weather )
 		weather.prediction.detailed.load = types.MethodType( prediction_detailed_load, weather.prediction.detailed )
 		weather.prediction.daily.load = types.MethodType( prediction_daily_load, weather.prediction.daily )
-		weather.update_irradiation()
 
 		for zone in self._sh.find_items('zonetype'):
 			zone.find_windows = types.MethodType( zone_find_windows, zone )
@@ -78,7 +81,8 @@ class KNXControl:
 						window.irradiation_max    = types.MethodType( window_irradiation_max, window )
 						window.irradiation_est    = types.MethodType( window_irradiation_est, window )
 
-		
+		self._sh.knxcontrol.weather.update_irradiation()
+
 		logger.warning('New methods bound to items')
 
 		for zone in self._sh.find_items('zonetype'):
@@ -148,6 +152,7 @@ class KNXControl:
 	
 	def update_item(self, item, caller=None, source=None, dest=None):
 		# called each time an item changes
+
 
 		# evaluate expressions in sh_listen
 		if item.id() in self.sh_listen_items:

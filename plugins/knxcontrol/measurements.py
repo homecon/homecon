@@ -246,7 +246,7 @@ class Measurements:
 		for measurement in legend:
 			try:
 				item = self._sh.return_item(measurement[1])
-				
+	
 				query = query + "(%s,%s,%f)," % (measurement[0],timestamp,item())
 			except:
 				logger.warning( "legend entry "+measurement[0]+": "+measurement[1]+", is not an item")

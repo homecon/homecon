@@ -124,7 +124,7 @@ def zone_irradiation_est(self,average=False):
 	value = sum([window.irradiation_est(average=average) for window in self.find_windows()])
 
 	 # set the irradiation item
-	self.irradiation.value( value )
+	self.irradiation( value )
 	return value
 
 
@@ -183,38 +183,22 @@ def zone_shading_control(self):
 
 
 
-
-
-
-
 #########################################################################
-# building methods
+# knxcontrol methods
 #########################################################################
+def knxcontrol_update_irradiation(self):
+	"""
+	Update all values depentand on the solar irradiation
+	"""
+	for zone in self._sh.find_items('zonetype'):
+		zone.irradiation_est()
 
-
-
-class Building:
-	def __init__(self,smarthome):
-
-		self._sh = smarthome
-		
-		logger.warning('Building initialized')
-
-
-	def building_update_irradiation(self):
-		"""
-		Update all values depentand on the solar irradiation
-		"""
-		for zone in self._sh.find_items('zonetype'):
-			zone.irradiation_est()
-
-
-	def building_control(self):
-		"""
-		Execute control actions
-		"""
-		for zone in self._sh.find_items('zonetype'):
-			zone.shading_control()
+def knxcontrol_control(self):
+	"""
+	Execute control actions
+	"""
+	for zone in self._sh.find_items('zonetype'):
+		zone.shading_control()
 
 
 

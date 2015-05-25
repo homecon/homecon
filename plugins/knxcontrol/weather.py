@@ -70,9 +70,9 @@ def weather_update_irradiation(self):
 	if len(self.current.irradiation.clouds.arr) >= cloudsarraylen:
 		self.current.irradiation.clouds.arr.pop(0)
 	self.current.irradiation.clouds.arr.append(clouds)	
-		
+
 	# update dependant objects
-	#self._sh.knxcontrol.building.update_irradiation()
+	self._sh.knxcontrol.update_irradiation()
 
 
 def weather_set_irradiation(self):
