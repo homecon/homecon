@@ -1,15 +1,15 @@
 [flukso]
 	[[electricity_total]]
 		type = num
-		flukso_sensor = 'ce8ab098fc7479dcb3699f307c8e88a7'
+		flukso_sensor = '56f28789f52236df4647d06111faaaaa'
 		unit = 'watt'
 			
 	[[electricity_heating]]
 		type = num
-		flukso_sensor = '56f28789f52236df4647d06111ff515a'
+		flukso_sensor = '56f28789f52236df4647d06111faaaaa'
 		unit = 'watt'
 		
 	[[gas]]
 		type = num
-		flukso_sensor = 'd5a747b86224834f745f4c9775d70241'
+		flukso_sensor = '56f28789f52236df4647d06111faaaaa'
 		unit = 'watt'
