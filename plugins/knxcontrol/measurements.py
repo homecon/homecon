@@ -33,6 +33,13 @@ class Measurements:
 
 		con = pymysql.connect('localhost', 'knxcontrol', self._mysql_pass, 'knxcontrol')
 		cur = con.cursor()
+<<<<<<< HEAD
+=======
+		#DROP TABLE IF EXISTS measurements_average_quarterhour_tmp
+		#CREATE TABLE measurements_average_quarterhour_tmp LIKE measurements_average_quarterhour
+        #INSERT INTO measurements_average_quarterhour_tmp SELECT * FROM measurements_average_quarterhour
+
+>>>>>>> 7e3fd3aa0b87d1ee941a367db6c4ec0d9ab2d28b
 
 		# create tables
 		# measurements legend
