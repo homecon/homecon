@@ -197,13 +197,13 @@ class Measurements:
 
 		con = pymysql.connect('localhost', 'knxcontrol', self._mysql_pass, 'knxcontrol')
 		cur = con.cursor()
-		
+
 		# check if the item was allready logged and copy the data if required
 		succes = True
 		if item.id() in self.legend.keys():
 			try:
 				id = self.legend[item.id()]
-				cur.execute( "UPDATE INTO measurements_legend (id,item,name,quantity,unit,description) VALUES ('%s','%s','%s','%s','%s','%s')"%(id,item.id(),name,quantity,unit,description) )	
+				cur.execute( "REPLACE INTO measurements_legend (id,item,name,quantity,unit,description) VALUES ('%s','%s','%s','%s','%s','%s')"%(id,item.id(),name,quantity,unit,description) )	
 			except:
 				succes = False
 		else:
@@ -274,8 +274,7 @@ class Measurements:
 		startdate = now - datetime.timedelta(minutes=15)
 		endddate  = now
 
-		self._set_average_values('measurements_average_quarterhour',startdate,endtimestamp)
-		logger.warning('Average quarterhour measurements added')
+		self._set_average_values('measurements_average_quarterhour',startdate,endddate)
 		
 		
 	def week(self):
@@ -292,8 +291,7 @@ class Measurements:
 		startdate = monday - datetime.timedelta(weeks=1)
 		endddate  = monday
 
-		self._set_average_values('measurements_average_week',startdate,endtimestamp)
-		logger.warning('Average week measurements added')
+		self._set_average_values('measurements_average_week',startdate,endddate)
 
 		
 	def month(self):	
@@ -306,10 +304,9 @@ class Measurements:
 		startdate = now.replace( month=(now.month-1) % 12 + 1,day=1, hour=0 ,minute=0, second=0, microsecond=0).astimezone( self._sh.utcinfo() )
 		enddate   = now.replace( day=1, hour=0 ,minute=0, second=0, microsecond=0).astimezone( self._sh.utcinfo() )
 
-		self._set_average_values('measurements_average_week',startdate,enddate)
-		logger.warning('Average week measurements added')
+		self._set_average_values('measurements_average_week',startdate,enddate)	
 		
-		
+
 	def _set_average_values(self,table,startdate,endddate):
 		"""
 		Set some average values in MySQL
@@ -346,8 +343,13 @@ class Measurements:
 			query = query + "(%s,%s,%f),"  % (measurement[0],starttimestamp,avg)	
 	
 		# execute query
-		query = query[:-1]	
-		cur.execute(query)
-	
+		query = query[:-1]
+		try:
+			cur.execute(query)
+		except:
+			logger.warning("could not add average measurements to database")
+
 		con.commit()
 		con.close()
+
+
