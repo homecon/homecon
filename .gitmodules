@@ -1,3 +1,4 @@
 [submodule "smarthome"]
 	path = smarthome
 	url = https://github.com/BrechtBa/smarthome.git
+	branch = knxcontrol
