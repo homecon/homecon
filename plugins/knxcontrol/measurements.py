@@ -28,243 +28,194 @@ class Measurements:
 		self._sh = knxcontrol._sh
 		self._mysql_pass = knxcontrol._mysql_pass
 
-
-		self.old_legend = {}
-
 		con = pymysql.connect('localhost', 'knxcontrol', self._mysql_pass, 'knxcontrol')
 		cur = con.cursor()
-<<<<<<< HEAD
-=======
-		#DROP TABLE IF EXISTS measurements_average_quarterhour_tmp
-		#CREATE TABLE measurements_average_quarterhour_tmp LIKE measurements_average_quarterhour
-        #INSERT INTO measurements_average_quarterhour_tmp SELECT * FROM measurements_average_quarterhour
 
->>>>>>> 7e3fd3aa0b87d1ee941a367db6c4ec0d9ab2d28b
 
 		# create tables
 		# measurements legend
-		query = ("CREATE TABLE IF NOT EXISTS `measurements_legend` ("
-				 "`id` int(11) NOT NULL AUTO_INCREMENT,"
-				 "`item` varchar(255) DEFAULT NULL,"
-				 "`name` varchar(255) DEFAULT NULL,"
-				 "`quantity` varchar(255) DEFAULT NULL,"
-				 "`unit` varchar(255) DEFAULT NULL,"
-				 "`description` text DEFAULT NULL,"
-				 "UNIQUE KEY `ID` (`id`)) ENGINE=InnoDB  DEFAULT CHARSET=latin1 AUTO_INCREMENT=1")
 		try:
-			cur.execute( query )
+			cur.execute( "CREATE TABLE IF NOT EXISTS `measurements_legend` ("
+						 "`id` int(11) NOT NULL AUTO_INCREMENT,"
+						 "`item` varchar(255) DEFAULT NULL,"
+						 "`name` varchar(255) DEFAULT NULL,"
+						 "`quantity` varchar(255) DEFAULT NULL,"
+						 "`unit` varchar(255) DEFAULT NULL,"
+						 "`description` text DEFAULT NULL,"
+						 "UNIQUE KEY `ID` (`id`)) ENGINE=InnoDB  DEFAULT CHARSET=latin1 AUTO_INCREMENT=1" )
 		except:
 			logger.warning("Could not add measurements_legend table to database")
 
-
 		# measurements
-		query = ("CREATE TABLE IF NOT EXISTS `measurements` ("
-				 "`id` bigint(20) NOT NULL AUTO_INCREMENT,"
-				 "`signal_id` int(11) NOT NULL,"
-				 "`time` bigint(20) NOT NULL,"
-				 "`value` float DEFAULT NULL,"
-				 "UNIQUE KEY `ID` (`id`)) ENGINE=InnoDB  DEFAULT CHARSET=latin1 AUTO_INCREMENT=1")
 		try:
-			cur.execute( query )
+			cur.execute( "CREATE TABLE IF NOT EXISTS `measurements` ("
+						 "`id` bigint(20) NOT NULL AUTO_INCREMENT,"
+						 "`signal_id` int(11) NOT NULL,"
+						 "`time` bigint(20) NOT NULL,"
+						 "`value` float DEFAULT NULL,"
+						 "UNIQUE KEY `ID` (`id`)) ENGINE=InnoDB  DEFAULT CHARSET=latin1 AUTO_INCREMENT=1" )
 		except:
 			logger.warning("Could not add measurements table to database")
-
-		query = "CREATE INDEX time_signal_id ON measurements(time, signal_id)"
 		try:
-			cur.execute( query )
+			cur.execute( "CREATE INDEX time_signal_id ON measurements(time, signal_id)" )
 		except:
 			pass
 
-		# quarterhour average measurements
-		query = ("CREATE TABLE IF NOT EXISTS `measurements_average_quarterhour` ("
-				 "`id` bigint(20) NOT NULL AUTO_INCREMENT,"
-				 "`signal_id` int(11) NOT NULL,"
-				 "`time` int(11) NOT NULL,"
-				 "`value` float DEFAULT NULL,"
-				 "UNIQUE KEY `ID` (`id`)) ENGINE=InnoDB  DEFAULT CHARSET=latin1 AUTO_INCREMENT=1")												 						 
+		# quarterhour average measurements												 						 
 		try:
-			cur.execute( query )
+			cur.execute( "CREATE TABLE IF NOT EXISTS `measurements_average_quarterhour` ("
+						 "`id` bigint(20) NOT NULL AUTO_INCREMENT,"
+						 "`signal_id` int(11) NOT NULL,"
+						 "`time` int(11) NOT NULL,"
+						 "`value` float DEFAULT NULL,"
+						 "UNIQUE KEY `ID` (`id`)) ENGINE=InnoDB  DEFAULT CHARSET=latin1 AUTO_INCREMENT=1" )
 		except:
 			logger.warning("Could not add quarterhour measurements_average_quarterhour table to database")
-
-		query = "CREATE INDEX time_signal_id ON measurements_average_quarterhour(time, signal_id)"
 		try:
-			cur.execute( query )
+			cur.execute( "CREATE INDEX time_signal_id ON measurements_average_quarterhour(time, signal_id)" )
 		except:
 			pass
 
-		# week average measurements
-		query = ("CREATE TABLE IF NOT EXISTS `measurements_average_week` ("
-				 "`id` bigint(20) NOT NULL AUTO_INCREMENT,"
-				 "`signal_id` int(11) NOT NULL,"
-				 "`time` int(11) NOT NULL,"
-				 "`value` float DEFAULT NULL,"
-				 "UNIQUE KEY `ID` (`id`)) ENGINE=InnoDB  DEFAULT CHARSET=latin1 AUTO_INCREMENT=1")												 						 
+		# week average measurements											 						 
 		try:
-			cur.execute( query )
+			cur.execute( "CREATE TABLE IF NOT EXISTS `measurements_average_week` ("
+						 "`id` bigint(20) NOT NULL AUTO_INCREMENT,"
+						 "`signal_id` int(11) NOT NULL,"
+						 "`time` int(11) NOT NULL,"
+						 "`value` float DEFAULT NULL,"
+						 "UNIQUE KEY `ID` (`id`)) ENGINE=InnoDB  DEFAULT CHARSET=latin1 AUTO_INCREMENT=1" )
 		except:
 			logger.warning("Could not add measurements_average_week table to database")
-
-		query = "CREATE INDEX time_signal_id ON measurements_average_week(time, signal_id)"
 		try:
-			cur.execute( query )
+			cur.execute( "CREATE INDEX time_signal_id ON measurements_average_week(time, signal_id)" )
 		except:
 			pass
 
-		# month average measurements
-		query = ("CREATE TABLE IF NOT EXISTS `measurements_average_month` ("
-				 "`id` bigint(20) NOT NULL AUTO_INCREMENT,"
-				 "`signal_id` int(11) NOT NULL,"
-				 "`time` int(11) NOT NULL,"
-				 "`value` float DEFAULT NULL,"
-				 "UNIQUE KEY `ID` (`id`)) ENGINE=InnoDB  DEFAULT CHARSET=latin1 AUTO_INCREMENT=1")												 						 
+		# month average measurements											 						 
 		try:
-			cur.execute( query )
+			cur.execute( "CREATE TABLE IF NOT EXISTS `measurements_average_month` ("
+						 "`id` bigint(20) NOT NULL AUTO_INCREMENT,"
+						 "`signal_id` int(11) NOT NULL,"
+						 "`time` int(11) NOT NULL,"
+						 "`value` float DEFAULT NULL,"
+						 "UNIQUE KEY `ID` (`id`)) ENGINE=InnoDB  DEFAULT CHARSET=latin1 AUTO_INCREMENT=1" )
 		except:
 			logger.warning("Could not add measurements_average_month table to database")
-
-		query = "CREATE INDEX time_signal_id ON measurements_average_month(time, signal_id)"
 		try:
-			cur.execute( query )
+			cur.execute( "CREATE INDEX time_signal_id ON measurements_average_month(time, signal_id)" )
 		except:
 			pass
 
 
+			
 		# create measurements legend
 		# get the old legend
+		self.get_legend()
+		
+		# current weather
+		item = self._sh.return_item('knxcontrol.weather.current.temperature')
+		self.add_legend_item(item,name='Temperature',quantity='Temperature',unit='degC',description='Ambient temperature')
+		item = self._sh.return_item('knxcontrol.weather.current.humidity')
+		self.add_legend_item(item,name='Humidity',quantity='Humidity',unit='-',description='Relative ambient humidity')
+		item = self._sh.return_item('knxcontrol.weather.current.irradiation.horizontal')
+		self.add_legend_item(item,name='Horizontal irradiation',quantity='Heat flux',unit='W/m2',description='Estimated global horizontal solar irradiation')
+		item = self._sh.return_item('knxcontrol.weather.current.irradiation.clouds')
+		self.add_legend_item(item,name='Clouds',quantity='',unit='-',description='Estimated cloud cover')
+		item = self._sh.return_item('knxcontrol.weather.current.precipitation')
+		self.add_legend_item(item,name='Rain',quantity='Boolean',unit='-',description='Rain or not')							
+		item = self._sh.return_item('knxcontrol.weather.current.wind.speed')
+		self.add_legend_item(item,name='Wind speed',quantity='Velocity',unit='m/s',description='Wind speed')
+		item = self._sh.return_item('knxcontrol.weather.current.wind.direction')
+		self.add_legend_item(item,name='Wind direction',quantity='Angle',unit='deg',description='Wind direction (0deg is North, 90deg is East)')
+
+		# energy use
+		for item in self._sh.return_item('knxcontrol.energy'):
+			item_name = item.id().split(".")[-1]
+			self.add_legend_item(item,name=item_name,quantity=item.conf['quantity'],unit=item.conf['unit'],description=item_name+' use')
+
+		# building zones
+		for item in self._sh.find_items('zonetype'):
+			item_name = item.id().split(".")[-1]
+			self.add_legend_item(item.temperature,name='Temperature',quantity='Temperature',unit='degC',description=item_name+' temperature')
+			self.add_legend_item(item.airquality,name='Air quality',quantity='Concentration',unit='g CO2/m3',description=item_name+' CO2 concentration')
+			self.add_legend_item(item.irradiation,name='Solar gains',quantity='Power',unit='W',description=item_name+' irradiation power')
+			self.add_legend_item(item.emission,name='Emission',quantity='Power',unit='W',description=item_name+' emission power')
+
+		# ventilation
+		for item in self._sh.return_item('knxcontrol.ventilation'):
+			item_name = item.id().split(".")[-1]
+			self.add_legend_item(item.fanspeed,name=item_name+' fanspeed',quantity='',unit='-',description=item_name+' fan speed control signal')
+			self.add_legend_item(item.heatrecovery,name=item_name+' heatrecovery',quantity='',unit='-',description=item_name+' heat recovery control signal')
+
+		# heat production 10 systems max
+		for item in self._sh.return_item('knxcontrol.heat_production'):
+			item_name = item.id().split(".")[-1]
+			self.add_legend_item(item.power,name=item_name+' power',quantity='Power',unit='W',description=item_name+' heat production')
+
+		# electricity generation 10 systems max
+		for item in self._sh.return_item('knxcontrol.electricity_production'):
+			item_name = item.id().split(".")[-1]
+			self.add_legend_item(item.power,name=item_name+' power',quantity='Power',unit='W',description=item_name+' electricity generation')
+
+		# update the legend, this is unused for now but at least up to date
+		self.get_legend()
+
+		
+		logger.warning('Measurements initialized')
+
+		
+		
+	def get_legend(self):
+		"""
+		Loads the current legend from mysql, if there are duplicate items in the database the 1st is kept
+		"""
+		self.legend = {}
+		
+		con = pymysql.connect('localhost', 'knxcontrol', self._mysql_pass, 'knxcontrol')
+		cur = con.cursor()
 		cur.execute("SELECT id,item FROM measurements_legend WHERE item <> ''")
 
 		# run through legend
 		for measurement in cur:
-			self.old_legend[measurement[1]] = measurement[0]
-
-		# clear the old legend and rebuild the table
-		cur.execute("TRUNCATE TABLE measurements_legend")
-		
-
-		id = 0
-		# current weather 20 components max
-		item = self._sh.return_item('knxcontrol.weather.current.temperature')
-		id = id+1
-		self.add_legend_item(id,item,name='Temperature',quantity='Temperature',unit='degC',description='Ambient temperature')
-		
-		item = self._sh.return_item('knxcontrol.weather.current.humidity')
-		id = id+1
-		self.add_legend_item(id,item,name='Humidity',quantity='Humidity',unit='-',description='Relative ambient humidity')
-
-		item = self._sh.return_item('knxcontrol.weather.current.irradiation.horizontal')
-		id = id+1
-		self.add_legend_item(id,item,name='Horizontal irradiation',quantity='Heat flux',unit='W/m2',description='Estimated global horizontal solar irradiation')
-
-		item = self._sh.return_item('knxcontrol.weather.current.irradiation.clouds')
-		id = id+1
-		self.add_legend_item(id,item,name='Clouds',quantity='',unit='-',description='Estimated cloud cover')
-		
-		item = self._sh.return_item('knxcontrol.weather.current.precipitation')
-		id = id+1
-		self.add_legend_item(id,item,name='Rain',quantity='Boolean',unit='-',description='Rain or not')
-										
-		item = self._sh.return_item('knxcontrol.weather.current.wind.speed')
-		id = id+1
-		self.add_legend_item(id,item,name='Wind speed',quantity='Velocity',unit='m/s',description='Wind speed')
-
-		item = self._sh.return_item('knxcontrol.weather.current.wind.direction')
-		id = id+1
-		self.add_legend_item(id,item,name='Wind direction',quantity='Angle',unit='deg',description='Wind direction (0deg is North, 90deg is East)')
-
-
-		id = 20
-		# energy use 10 components max
-		for item in self._sh.return_item('knxcontrol.energy'):
-			item_name = item.id().split(".")[-1]
-			id = id+1 
-			self.add_legend_item(id,item,name=item_name,quantity=item.conf['quantity'],unit=item.conf['unit'],description=item_name+' use')
-
-
-		id = 100
-		# building zones 10 zones max
-		for item in self._sh.find_items('zonetype'):
-			item_name = item.id().split(".")[-1]
-			id = id + 1
-			self.add_legend_item(id,item.temperature,name='Temperature',quantity='Temperature',unit='degC',description=item_name+' temperature')
-
-			id = id + 1
-			self.add_legend_item(id,item.airquality,name='Air quality',quantity='Concentration',unit='g CO2/m3',description=item_name+' CO2 concentration')
-
-			id = id + 1
-			self.add_legend_item(id,item.irradiation,name='Solar gains',quantity='Power',unit='W',description=item_name+' irradiation power')
-
-			id = id + 1
-			self.add_legend_item(id,item.emission,name='Emission',quantity='Power',unit='W',description=item_name+' emission power')
-
-
-		id = 250
-		# ventilation 10 systems max
-		for item in self._sh.return_item('knxcontrol.ventilation'):
-			item_name = item.id().split(".")[-1]
-			id = id + 1
-			self.add_legend_item(id,item.fanspeed,name=item_name+' fanspeed',quantity='',unit='-',description=item_name+' fan speed control signal')
-
-			id = id + 1
-			self.add_legend_item(id,item.heatrecovery,name=item_name+' heatrecovery',quantity='',unit='-',description=item_name+' heat recovery control signal')
-
-		id = 270
-		# heat production 10 systems max
-		for item in self._sh.return_item('knxcontrol.heat_production'):
-			item_name = item.id().split(".")[-1]
-			id = id + 1
-			self.add_legend_item(id,item.power,name=item_name+' power',quantity='Power',unit='W',description=item_name+' heat production')
-
-		id = 290
-		# electricity generation 10 systems max
-		for item in self._sh.return_item('knxcontrol.electricity_production'):
-			item_name = item.id().split(".")[-1]
-			id = id + 1
-			self.add_legend_item(id,item.power,name=item_name+' power',quantity='Power',unit='W',description=item_name+' electricity generation')
-
-
-
-		logger.warning('Measurements initialized')
-		self.tmp_counter = 999
-
-
-	def add_legend_item(self,id,item,name,quantity,unit,description):
+			if not measurement[1] in self.legend.keys():
+				self.legend[measurement[1]] = measurement[0]
+			
+			
+	def add_legend_item(self,item,name,quantity,unit,description):
 		"""
-		Adds an object to the local legend dict.
-		obj must be a SmartHome.py item
+		Adds an object to the mysql legend table and the local legend dict.
+		If the item is already in the database the id is maintained
+		Otherwise the item is inserted and a new id is generated
+		
+		Arguments:
+		item: 			SmartHome.py item
+		name: 			name string
+		quantity: 		quantity string
+		unit: 			unit string
+		description: 	description string
 		"""
 
 		con = pymysql.connect('localhost', 'knxcontrol', self._mysql_pass, 'knxcontrol')
 		cur = con.cursor()
-		try:
-			query = "REPLACE INTO measurements_legend (id,item,name,quantity,unit,description) VALUES ('"+str(id)+"','"+item.id()+"','"+name+"','"+quantity+"','"+unit+"','"+description+"')"
-			cur.execute( query )
-
+		
+		# check if the item was allready logged and copy the data if required
+		succes = True
+		if item.id() in self.legend.keys():
+			try:
+				id = self.legend[item.id()]
+				cur.execute( "UPDATE INTO measurements_legend (id,item,name,quantity,unit,description) VALUES ('%s','%s','%s','%s','%s','%s')"%(id,item.id(),name,quantity,unit,description) )	
+			except:
+				succes = False
+		else:
+			try:
+				cur.execute( "INSERT INTO measurements_legend (item,name,quantity,unit,description) VALUES ('%s','%s','%s','%s','%s')"%(item.id(),name,quantity,unit,description) )	
+				id = cur.lastrowid
+			except:
+				succes = False
+				
+		if succes:
 			item.conf['mysql_id'] = id
-
-			# check if the item was allready logged and copy the data if required
-			if item.id() in self.old_legend.keys():
-				if id != self.old_legend[item.id()]:
-					
-					for key,val in self.old_legend.iteritems():
-						if id==val:
-							# move measurements with the current id to a tmp id so data can be recovered
-							self.tmp_counter+=1
-							self.old_legend[key] = self.tmp_counter
-							cur.execute( "UPDATE measurements set signal_id=%s WHERE signal_id=%s" %(self.tmp_counter,id) )
-							cur.execute( "UPDATE measurements_average_quarterhour set signal_id=%s WHERE signal_id=%s" %(self.tmp_counter,id) )
-							cur.execute( "UPDATE measurements_average_week set signal_id=%s WHERE signal_id=%s" %(self.tmp_counter,id) )
-							cur.execute( "UPDATE measurements_average_month set signal_id=%s WHERE signal_id=%s" %(self.tmp_counter,id) )
-					
-
-					# copy measurement with the oldid to the current id
-					cur.execute( "UPDATE measurements set signal_id=%s WHERE signal_id=%s" %(id,self.old_legend[item.id()]) )
-					cur.execute( "UPDATE measurements_average_quarterhour set signal_id=%s WHERE signal_id=%s" %(id,self.old_legend[item.id()]) )
-					cur.execute( "UPDATE measurements_average_week set signal_id=%s WHERE signal_id=%s" %(id,self.old_legend[item.id()]) )
-					cur.execute( "UPDATE measurements_average_month set signal_id=%s WHERE signal_id=%s" %(id,self.old_legend[item.id()]) )
-
-					logger.warning(item.id()+'data copied from id %s to id %s'%(self.old_legend[item.id()],id))
-		except:
+		else:
 			logger.warning('could not add legend item: '+name)
 
 		con.commit()	
@@ -311,22 +262,80 @@ class Measurements:
 		con.close()
 
 
-	def _set_average_values(self,table,starttimestamp,endtimestamp):
-		con = pymysql.connect('localhost', 'knxcontrol', self._mysql_pass, 'knxcontrol')
-		cur = con.cursor()
+	def quarterhour(self):
+		"""
+		Calculate 15 minute average of the past 15 minutes and store in MySQL
+		"""
+		# get the last 15 minutes date
+		now = datetime.datetime.now(self._sh.tzinfo())
+		minute = int(np.floor(int(now.strftime('%M'))/15)*15)
+		now = now.replace(minute=minute,second=0, microsecond=0).astimezone( self._sh.utcinfo() )
+
+		startdate = now - datetime.timedelta(minutes=15)
+		endddate  = now
+
+		self._set_average_values('measurements_average_quarterhour',startdate,endtimestamp)
+		logger.warning('Average quarterhour measurements added')
+		
+		
+	def week(self):
+		"""
+		Calculate week average of the past week and store in MySQL
+		"""
+		# get the last monday's date
+		now = datetime.datetime.now(self._sh.tzinfo())
+		now = now.replace( hour=0 ,minute=0, second=0, microsecond=0)
+
+		monday = now + datetime.timedelta(days=-now.weekday())
+		monday = monday.astimezone( self._sh.utcinfo() )
+
+		startdate = monday - datetime.timedelta(weeks=1)
+		endddate  = monday
+
+		self._set_average_values('measurements_average_week',startdate,endtimestamp)
+		logger.warning('Average week measurements added')
+
+		
+	def month(self):	
+		"""
+		calculate month average of the past month and store in MySQL
+		"""
+		# get the last 1st of month date
+		now = datetime.datetime.now(self._sh.tzinfo())
+
+		startdate = now.replace( month=(now.month-1) % 12 + 1,day=1, hour=0 ,minute=0, second=0, microsecond=0).astimezone( self._sh.utcinfo() )
+		enddate   = now.replace( day=1, hour=0 ,minute=0, second=0, microsecond=0).astimezone( self._sh.utcinfo() )
+
+		self._set_average_values('measurements_average_week',startdate,enddate)
+		logger.warning('Average week measurements added')
+		
+		
+	def _set_average_values(self,table,startdate,endddate):
+		"""
+		Set some average values in MySQL
+		
+		Arguments:
+		table:  			string, name of a MySQL table to set result in
+		startdate:  		datetime with local timezone to start averaging
+		endddate:  			datetime with local timezone to end averaging
+		"""
+		
+		# convert datetimes to timestamps
+		epoch = datetime.datetime(1970,1,1).replace(tzinfo=self._sh.utcinfo())
+		
+		starttimestamp = int( (startdate - epoch).total_seconds() )
+		endtimestamp = int( (endddate - epoch).total_seconds() )
 
 		# connect to database
 		con = pymysql.connect('localhost', 'knxcontrol', self._mysql_pass, 'knxcontrol')
 		cur = con.cursor()
 
+		# build query
 		query = "INSERT INTO %s(signal_id,time,value) VALUES " % (table)
 
 		cur.execute("SELECT * FROM measurements_legend")
-
 		for measurement in cur:
-
 			signalcur = con.cursor()
-	
 			signalcur.execute("SELECT AVG(value) FROM measurements WHERE signal_id=%s AND time >= '%s' AND time < '%s'" % (measurement[0],starttimestamp,endtimestamp))
 			row = signalcur.fetchall()
 			if (row[0][0] is None):
@@ -336,55 +345,9 @@ class Measurements:
 		
 			query = query + "(%s,%s,%f),"  % (measurement[0],starttimestamp,avg)	
 	
+		# execute query
 		query = query[:-1]	
 		cur.execute(query)
 	
 		con.commit()
 		con.close()
-
-
-	def quarterhour(self):
-		"""
-		calculate 15 minute average of the past 15 minutes and store in MySQL
-		"""
-		# get the last 15 minutes date
-		now = datetime.datetime.utcnow();
-		minute = int(np.floor(int(now.strftime('%M'))/15)*15)
-		now = now.replace(minute=minute,second=0, microsecond=0)
-		epoch = datetime.datetime(1970,1,1)
-
-		startdate = now - datetime.timedelta(minutes=15)
-		endddate  = now
-
-		starttimestamp = int( (startdate - epoch).total_seconds() )
-		endtimestamp = int( (endddate - epoch).total_seconds() )
-
-		self._set_average_values('measurements_average_quarterhour',starttimestamp,endtimestamp)
-		
-	def week(self):
-		"""
-		calculate week average of the past week and store in MySQL
-		"""
-		# get the last monday's date
-		now = datetime.datetime.now(self._sh.tzinfo())
-		now = now.replace( hour=0 ,minute=0, second=0, microsecond=0)
-		epoch = datetime.datetime(1970,1,1).replace(tzinfo=self._sh.utcinfo())
-
-		monday = now + datetime.timedelta(days=-now.weekday())
-		monday = monday.astimezone( self._sh.utcinfo() )
-
-		startdate = monday - datetime.timedelta(weeks=1)
-		endddate  = monday
-
-		starttimestamp = int( (startdate - epoch).total_seconds() )
-		endtimestamp = int( (endddate - epoch).total_seconds() )
-
-		self._set_average_values('measurements_average_week',starttimestamp,endtimestamp)
-		logger.warning('Average week measurements added')
-
-	def month(self):	
-		"""
-		calculate month average of the past month and store in MySQL
-		"""
-		pass
-
