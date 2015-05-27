@@ -216,7 +216,7 @@ class Measurements:
 		if succes:
 			item.conf['mysql_id'] = id
 		else:
-			logger.warning('could not add legend item: '+name)
+			logger.warning( 'could not add legend item: %s: %s'%(name,item.id()) )
 
 		con.commit()	
 		con.close()
