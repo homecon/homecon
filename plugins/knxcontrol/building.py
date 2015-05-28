@@ -165,7 +165,7 @@ def zone_shading_control(self):
 		if hasattr(window,'shading'):
 			if window.shading.closed():
 				newpos[idx] = 1 
-			elif window.shading.override() or not self.shading.auto():
+			elif window.shading.override() or not window.shading.auto():
 				newpos[idx] = (window.shading.value()-float(window.shading.conf['open_value']))/(float(window.shading.conf['closed_value'])-float(window.shading.conf['open_value']))
 			elif self._sh.knxcontrol.weather.current.precipitation() and ('open_when_raining' in window.shading.conf):
 				newpos[idx] = 0
@@ -178,7 +178,7 @@ def zone_shading_control(self):
 	logger.warning(newpos)
 	for idx,window in enumerate(windows):
 		if hasattr(window,'shading'):
-			if not window.shading.override() and self.shading.auto():
+			if not window.shading.override():
 				if abs( newpos[idx]-oldpos[idx]) > 0.1 or newpos[idx]==float(window.shading.conf['closed_value']) or newpos[idx]==float(window.shading.conf['open_value']):
 					# only actually set the shading position if the change is larger than 10% or it is closed or open
 					window.shading.value( float(window.shading.conf['open_value'])+newpos[idx]*(float(window.shading.conf['closed_value'])-float(window.shading.conf['open_value'])) )
