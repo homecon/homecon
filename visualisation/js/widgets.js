@@ -353,7 +353,7 @@ $.widget("knxcontrol.clock",{
 /*****************************************************************************/ 
 $.widget("knxcontrol.weather_block",{
 	options: {
-		item: 'building.weatherforecast',
+		item: 'knxcontrol.weather.prediction.detailed',
 		item_temperature: '',
 		item_windspeed: '',
 		item_winddirection: '',
@@ -386,8 +386,8 @@ $.widget("knxcontrol.weather_block",{
 		if(knxcontrol.item['building.weatherforecast']){
 			if(this.options.daysahead>=0){
 				// find noon of the correct day
-				for(var index = 0+Math.max(0,(this.options.daysahead-1)*8);index<knxcontrol.item['building.weatherforecast'].length;index++){
-					date = new Date(knxcontrol.item['building.weatherforecast'][index].datetime*1000);
+				for(var index = 0+Math.max(0,(this.options.daysahead-1)*8);index<knxcontrol.item[item].length;index++){
+					date = new Date(knxcontrol.item[item][index].datetime*1000);
 					if((date.getHours()>11 && date.getHours()<15)) break;
 				}
 			}
@@ -395,9 +395,9 @@ $.widget("knxcontrol.weather_block",{
 				index = 0;
 			}
 			
-			if(index < knxcontrol.item['building.weatherforecast'].length){
+			if(index < knxcontrol.item[item].length){
 				
-				this.element.find('img').attr('src','icons/weather/'+this.icons[knxcontrol.item['building.weatherforecast'][index].icon]);
+				this.element.find('img').attr('src','icons/weather/'+this.icons[knxcontrol.item['knxcontrol.weather.prediction.detailed'][index].icon]);
 				
 				var temperature = 0;
 				var windspeed = 0;
@@ -405,7 +405,7 @@ $.widget("knxcontrol.weather_block",{
 				var irradiation = 0;
 				
 				
-				date = new Date(knxcontrol.item['building.weatherforecast'][index].datetime*1000);
+				date = new Date(knxcontrol.item['knxcontrol.weather.prediction.detailed'][index].datetime*1000);
 				var weekday = (date.getDay()+6)%7;
 				var day = date.getDate();
 				var month = date.getMonth();
@@ -422,25 +422,25 @@ $.widget("knxcontrol.weather_block",{
 				var date_string = language.weekday_short[weekday];
 				
 				if(this.options.item_temperature == ''){
-					temperature = knxcontrol.item['building.weatherforecast'][index].temperature;
+					temperature = knxcontrol.item['knxcontrol.weather.prediction.detailed'][index].temperature;
 				}
 				else{
 					temperature = knxcontrol.item[this.options.item_temperature];
 				}
 				if(this.options.item_windspeed == ''){
-					windspeed = knxcontrol.item['building.weatherforecast'][index].wind_speed;
+					windspeed = knxcontrol.item['knxcontrol.weather.prediction.detailed'][index].wind_speed;
 				}
 				else{
 					windspeed = knxcontrol.item[this.options.item_windspeed];
 				}
 				if(this.options.item_winddirection == ''){
-					winddirection = language.winddirection(knxcontrol.item['building.weatherforecast'][index].wind_direction)
+					winddirection = language.winddirection(knxcontrol.item['knxcontrol.weather.prediction.detailed'][index].wind_direction)
 				}
 				else{
 					winddirection = language.winddirection(knxcontrol.item[this.options.item_winddirection]);
 				}
 				if(this.options.item_irradiation == ''){
-					irradiation = knxcontrol.item['building.weatherforecast'][index].cloudfactor;
+					irradiation = knxcontrol.item['knxcontrol.weather.prediction.detailed'][index].cloudfactor;
 				}
 				else{
 					irradiation = knxcontrol.item[this.options.item_irradiation];
