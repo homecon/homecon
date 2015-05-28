@@ -649,7 +649,7 @@ render_page = function(section_id,page_id){
 						option = option+'.value';
 					}
 					else if(widget.type=='shading'){
-						option = option+'.shading.pos';
+						option = option+'.shading.value';
 					}
 				}
 				$('#renderpage section[data-id="'+section_index+'"] div[data-id="'+widget_index+'"]').attr('data-'+index,option);
@@ -761,7 +761,7 @@ publish_page = function(section_id,page_id){
 							option = option+'.value';
 						}
 						else if(widget.type=='shading'){
-							option = option+'.shading.pos';
+							option = option+'.shading.value';
 						}
 					}
 					publish += ' data-'+index+'="'+option+'"';
