@@ -31,24 +31,17 @@ class Flukso:
 		if ip:
 			self.ip = ip
 		
-		self.sensors = self._sh.find_items('flukso_sensor')
-
 	def run(self):
 
 		# schedule measurements
 		self._sh.scheduler.add('Flukso', self.read_api, prio=2, cron='* * * *')
 		logger.warning('Flukso initialized')
 
-
 	def read_api(self):
-		logger.warning('flukso working')
-		logger.warning(self.sensors)
-		for item in self.sensors:
+		for item in self._sh.find_items('flukso_sensor'):
 			try:
 				# get data from the flukso api
-				logger.warning( 'http://%s:8080/sensor/%s?version=1.0&unit=%s&interval=minute' % (self.ip,item.conf['flukso_sensor'],item.conf['unit']) )
 				response = urlopen( 'http://%s:8080/sensor/%s?version=1.0&unit=%s&interval=minute' % (self.ip,item.conf['flukso_sensor'],item.conf['unit']) )
-				logger.warning(response)
 				line = response.read().decode("utf-8")
 				
 				# split line into array and take the mean value

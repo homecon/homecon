@@ -53,10 +53,16 @@ class Alarms:
 								if int(action['delay'+ind]) < 1:
 									item = self._sh.return_item(item_str)
 									logger.warning( item_str )
+									logger.warning(item)
+									for tmp in self._sh.return_items():
+										logger.warning( tmp )
+
 									# check if the item exists
-									#if item:
-									item(action['value'+ind])
-									logger.info( action['item'+ind]+' set to '+str(action['value'+ind]))
+									if item:
+										item(action['value'+ind])
+										logger.info( action['item'+ind]+' set to '+str(action['value'+ind]))
+									else:
+										logger.warning( 'item %s does not exist' % item_str )
 								else:
 									triggertime = now + datetime.timedelta(seconds=int(action['delay'+ind]))
 									self._sh.trigger(name='set_item',by='alarm'+str(alarm['id']),source=item_str,value=action['value'+ind],prio=2,dt=triggertime)
