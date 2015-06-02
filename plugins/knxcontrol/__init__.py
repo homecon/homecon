@@ -42,7 +42,6 @@ class KNXControl:
 		self._mysql_pass = mysql_pass
 		self.sh_listen_items = {}
 
-
 	def run(self):
 		# called once after the items have been parsed
 		self.alive = True
@@ -55,30 +54,30 @@ class KNXControl:
 
 		# bind new methods to items
 		knxcontrol = self._sh.knxcontrol
-		knxcontrol.update_irradiation = types.MethodType( knxcontrol_update_irradiation, knxcontrol )
-		knxcontrol.shading_control = types.MethodType( knxcontrol_shading_control, knxcontrol )
-		knxcontrol.control = types.MethodType( knxcontrol_control, knxcontrol )
+		knxcontrol.update_irradiation = types.MethodType( KNXControlItem.update_irradiation, knxcontrol )
+		knxcontrol.shading_control    = types.MethodType( KNXControlItem.shading_control, knxcontrol )
+		knxcontrol.control            = types.MethodType( KNXControlItem.control, knxcontrol )
 
 		weather = self._sh.knxcontrol.weather
-		weather.set_irradiation = types.MethodType( weather_set_irradiation, weather )
-		weather.update_irradiation = types.MethodType( weather_update_irradiation, weather )
-		weather.incidentradiation = types.MethodType( weather_incidentradiation, weather )
-		weather.prediction.detailed.load = types.MethodType( prediction_detailed_load, weather.prediction.detailed )
-		weather.prediction.daily.load = types.MethodType( prediction_daily_load, weather.prediction.daily )
+		weather.update_irradiation       = types.MethodType( WeatherItem.update_irradiation, weather )
+		weather.set_solarproperties      = types.MethodType( WeatherItem.set_solarproperties, weather )
+		weather.incidentradiation        = types.MethodType( WeatherItem.incidentradiation, weather )
+		weather.prediction.detailed.load = types.MethodType( WeatherItem.prediction_detailed_load, weather.prediction.detailed )
+		weather.prediction.daily.load    = types.MethodType( WeatherItem.prediction_daily_load, weather.prediction.daily )
 
 		for zone in self._sh.find_items('zonetype'):
-			zone.find_windows = types.MethodType( zone_find_windows, zone )
-			zone.irradiation_max = types.MethodType( zone_irradiation_max, zone )
-			zone.irradiation_min = types.MethodType( zone_irradiation_min, zone )
-			zone.irradiation_est = types.MethodType( zone_irradiation_est, zone )
-			zone.shading_control = types.MethodType( zone_shading_control, zone )
+			zone.find_windows    = types.MethodType( ZoneItem.find_windows, zone )
+			zone.irradiation_max = types.MethodType( ZoneItem.irradiation_max, zone )
+			zone.irradiation_min = types.MethodType( ZoneItem.irradiation_min, zone )
+			zone.irradiation_est = types.MethodType( ZoneItem.irradiation_est, zone )
+			zone.shading_control = types.MethodType( ZoneItem.shading_control, zone )
 
 			for window in zone.find_windows():
-				window.irradiation_open   = types.MethodType( window_irradiation_open, window )
-				window.irradiation_closed = types.MethodType( window_irradiation_closed, window )
-				window.irradiation_min    = types.MethodType( window_irradiation_min, window )
-				window.irradiation_max    = types.MethodType( window_irradiation_max, window )
-				window.irradiation_est    = types.MethodType( window_irradiation_est, window )
+				window.irradiation_open   = types.MethodType( WindowItem.irradiation_open, window )
+				window.irradiation_closed = types.MethodType( WindowItem.irradiation_closed, window )
+				window.irradiation_min    = types.MethodType( WindowItem.irradiation_min, window )
+				window.irradiation_max    = types.MethodType( WindowItem.irradiation_max, window )
+				window.irradiation_est    = types.MethodType( WindowItem.irradiation_est, window )
 
 		self._sh.knxcontrol.weather.update_irradiation()
 
