@@ -23,11 +23,11 @@ import pymysql
 import threading
 import types
 
-from plugins.knxcontrol.measurements import *
+
 from plugins.knxcontrol.mysql import *
 from plugins.knxcontrol.alarms import *
-from plugins.knxcontrol.weather import *
-from plugins.knxcontrol.building import *
+from plugins.knxcontrol.measurements import *
+from plugins.knxcontrol.item_methods import *
 from plugins.knxcontrol.mpc import *
 
 
