@@ -33,7 +33,7 @@ class Alarms:
 			# check if the alarm has to be executed today
 			if (now.weekday() == 0 and alarm['mon']) or (now.weekday() == 1 and alarm['tue']) or (now.weekday() == 2 and alarm['wed']) or (now.weekday() == 3 and alarm['thu']) or (now.weekday() == 4 and alarm['fri']) or (now.weekday() == 5 and alarm['sat']) or (now.weekday() == 6 and alarm['sun']): 
 
-				logger.warning( 'alarm id: '+ str(alarm['id']) )
+				logger.info( 'alarm id: '+ str(alarm['id']) )
 
 				# get the action of this alarm
 				actioncur = con.cursor(pymysql.cursors.DictCursor)
@@ -52,13 +52,9 @@ class Alarms:
 								# find the time delay
 								if int(action['delay'+ind]) < 1:
 									item = self._sh.return_item(item_str)
-									logger.warning( item_str )
-									logger.warning(item)
-									for tmp in self._sh.return_items():
-										logger.warning( tmp )
 
 									# check if the item exists
-									if item:
+									if item != None:
 										item(action['value'+ind])
 										logger.info( action['item'+ind]+' set to '+str(action['value'+ind]))
 									else:
