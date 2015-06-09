@@ -48,14 +48,12 @@ class KNXControlItem(lib.item.Item):
 
 		# set controls
 		self.shading_control()
-
+	
 	def shading_control(self):
 		for zone in self._sh.find_items('zonetype'):
 			zone.irradiation.setpoint(5000)
 			zone.emission.setpoint(5000)
 			zone.shading_control()
-
-
 
 
 #########################################################################
@@ -279,23 +277,24 @@ class ZoneItem(lib.item.Item):
 
 			if hasattr(window,'shading'):
 				if window.shading.closed():
-					newpos[idx] = 1 
-				elif window.shading.override() or not window.shading.auto():
-					newpos[idx] = (window.shading.value()-float(window.shading.conf['open_value']))/(float(window.shading.conf['closed_value'])-float(window.shading.conf['open_value']))
+					newpos[idx] = 1
+				elif not window.shading.auto():
+					newpos[idx] = 0
 				elif self._sh.knxcontrol.weather.current.precipitation() and ('open_when_raining' in window.shading.conf):
 					newpos[idx] = 0
+				elif window.shading.override():
+					newpos[idx] = (window.shading.value()-float(window.shading.conf['open_value']))/(float(window.shading.conf['closed_value'])-float(window.shading.conf['open_value']))
 				else:
 					newpos[idx] = 1
 					newirradiation = sum([w.irradiation_max(average=True)*(1-p)+w.irradiation_min(average=True)*(p) for w,p in zip(windows,newpos)])
 					newpos[idx] = min(1,max(0,(irradiation_set - oldirradiation)/(newirradiation - oldirradiation)))
 
 		# set all shading positions
-		logger.warning(newpos)
 		for idx,window in enumerate(windows):
 			if hasattr(window,'shading'):
 				if not window.shading.override():
-					if abs( newpos[idx]-oldpos[idx]) > 0.1 or newpos[idx]==float(window.shading.conf['closed_value']) or newpos[idx]==float(window.shading.conf['open_value']):
-						# only actually set the shading position if the change is larger than 10% or it is closed or open
+					if abs( newpos[idx]-oldpos[idx]) > 0.2 or newpos[idx]==0.0 or newpos[idx]==1.0:
+						# only actually set the shading position if the change is larger than 20% or it is closed or open
 						window.shading.value( float(window.shading.conf['open_value'])+newpos[idx]*(float(window.shading.conf['closed_value'])-float(window.shading.conf['open_value'])) )
 
 #########################################################################

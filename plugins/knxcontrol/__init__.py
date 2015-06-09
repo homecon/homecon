@@ -215,7 +215,7 @@ class KNXControl:
 				shading.value(shading.conf['closed_value'])
 			else:
 				window = shading.return_parent()
-				room = window.return_parent()
+				room = window.return_parent().return_parent()
 				zone = room.return_parent()
 				logger.warning(zone)
 
