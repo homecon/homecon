@@ -27,110 +27,228 @@ import lib.item
 
 logger = logging.getLogger('')
 
-#########################################################################
-# WeatherItem
-#########################################################################
-class KNXControlItem(lib.item.Item):
-	def update_irradiation(self):
-		"""
-		Update all values dependent on the solar irradiation
-		"""
-		for zone in self._sh.find_items('zonetype'):
-			zone.irradiation_est()
-
-	def control(self):
-		"""
-		Execute control actions
-		"""
-
-		# optimization	
-
-
-		# set controls
-		self.shading_control()
-	
-	def shading_control(self):
-		for zone in self._sh.find_items('zonetype'):
-			zone.irradiation.setpoint(5000)
-			zone.emission.setpoint(5000)
-			zone.shading_control()
-
 
 #########################################################################
-# WeatherItem
+# Weather
 #########################################################################
-class WeatherItem(lib.item.Item):
+class Weather():
+	def __init__(self,knxcontrol):
+		self.knxcontrol = knxcontrol
+		
+		# find weather item
+		items = self.knxcontrol.find_item('weather')
+		if len(items) == 0:
+			self.item = None
+			logger.warning('No weather item found')
+		else:
+			self.item = items[0]
 
-	def update_irradiation(self):
+
+		# find a irradiationsensor item
+		items = self.knxcontrol.find_item('irradiationsensor')
+		if len(items) == 0:
+			self.irradiationsensor = None
+		else:
+			self.irradiationsensor = items[0]
+
+
+		# find a clouds item
+		items = self.knxcontrol.find_item('clouds')
+		if len(items) == 0:
+			self.clouds = None
+		else:
+			self.clouds = items[0]
+
+		self.cloudsarraylength = 30
+		self.cloudsarray = []
+
+
+		# find a horizontal_irradiation item
+		items = self.knxcontrol.find_item('horizontal_irradiation')
+		if len(items) == 0:
+			self.horizontal_irradiation = None
+		else:
+			self.horizontal_irradiation = items[0]
+
+		
+		# find prediction items
+		items = self.knxcontrol.find_item('weatherforecast_detailed')
+		if len(items) == 0:
+			self.prediction_detailed = None
+		else:
+			self.prediction_detailed = items[0]
+
+		items = self.knxcontrol.find_item('weatherforecast_daily')
+		if len(items) == 0:
+			self.prediction_daily = None
+		else:
+			self.prediction_daily = items[0]
+
+		
+
+		# create an ephem observer
+		# http://rhodesmill.org/pyephem/quick.html
+		self.obs = ephem.Observer()
+		self.obs.lat = self.knxcontrol.lat*np.pi/180     #N+
+		self.obs.lon = self.knxcontrol.lon*np.pi/180     #E+
+		self.obs.elev = self.knxcontrol.elev
+
+		# update the parent
+		self.knxcontrol.weather = self
+
+		logger.warning('Weather initialized')
+
+	def update(self):
 		"""
 		Function calculates the total horizontal irradiation, cloud coverage and zone irradiation
 		based on the sensor measurement, predictions or theoretical depending on which data is available
 		is called every minute
 		"""
 
-		self.set_solarproperties()
-
-		if hasattr(self.current.irradiation, 'sensor'):
+		if self.irradiationsensor != None:
 			# use the sensor to determine the cloud coverage
-			sensor_orientation = float(self.current.irradiation.sensor.conf['orientation'])*np.pi/180
-			sensor_tilt = float(self.current.irradiation.sensor.conf['tilt'])*np.pi/180
+			sensor_orientation = float(self.irradiationsensor.conf['orientation'])*np.pi/180
+			sensor_tilt = float(self.irradiationsensor.conf['tilt'])*np.pi/180
 
-
-			I_sensor_clearsky = self._sh.energytools.incidentradiation(self.I_b_clearsky,self.I_d_clearsky,self.solar_azimuth,self.solar_altitude,sensor_orientation,sensor_tilt)
+			I_sensor_clearsky = self.incidentradiation(clouds=0,surface_azimuth=sensor_orientation,surface_tilt=sensor_tilt)
 
 			if I_sensor_clearsky > 0:
-				clouds = 1-min(1, self.current.irradiation.sensor() / I_sensor_clearsky )
+				clouds = 1-min(1, self.irradiationsensor() / I_sensor_clearsky )
 			else:
 				clouds = 0
 		else:
 			try:
 				# use the predictions to determine the cloud coverage
-				prediction = self.prediction.detailed()
+				prediction = self.prediction_detailed()
 				clouds = prediction[0]['clouds']
 			except:
 				# assume no cloud coverage
 				clouds = 0
 
+
 		# set items
-		self.current.irradiation.clouds(clouds)
-		self.current.irradiation.horizontal((1-clouds)*self._sh.energytools.incidentradiation(self.I_b_clearsky,self.I_d_clearsky,self.solar_azimuth,self.solar_altitude,0,0))
+		self.clouds(clouds)
+		self.horizontal_irradiation(self.incidentradiation(clouds=clouds,surface_azimuth=0,surface_tilt=0))
 	
 		# set cloudsarray
-		cloudsarraylen = 30
-		if not hasattr(self.current.irradiation.clouds,'arr'):
-			self.current.irradiation.clouds.arr = []
-
-		if len(self.current.irradiation.clouds.arr) >= cloudsarraylen:
-			self.current.irradiation.clouds.arr.pop(0)
-		self.current.irradiation.clouds.arr.append(clouds)	
-
-		# update dependent objects
-		self._sh.knxcontrol.update_irradiation()
+		if len(self.cloudsarray) >= self.cloudsarraylength:
+			self.cloudsarray.pop(0)
+		self.cloudsarray.append(clouds)
 
 
-	def set_solarproperties(self):
+	def clearskyirrradiation(self,utcdate=datetime.datetime.utcnow()):
 		"""
-		Sets the solar azimuth and altitude and beam and diffuse clearsky irradiation as object properties
+		Method returns the clear sky theoretical direct and diffuse solar irradiation
+		according to ASHRAE
 		"""
-		utcdate = datetime.datetime.utcnow()
-		(self.solar_azimuth,self.solar_altitude) = self._sh.energytools.sunposition(utcdate)
-		(self.I_b_clearsky,self.I_d_clearsky) = self._sh.energytools.clearskyirrradiation(utcdate)
+		
+		(azi,alt) = self.sunposition(utcdate)
 
-	def incidentradiation(self,orientation,tilt,average=False):
-		"""
-		Calculates the current or averaged incident solar irradiation on a surface
-		Arguments:		
-		orientation: surface orientation in degrees
-		tilt: surface tilt in degrees 
-		"""
-
-		if average and len(self.current.irradiation.clouds.arr)>0: 
-			clouds = sum(self.current.irradiation.clouds.arr)/len(self.current.irradiation.clouds.arr)	
+		# air mass between the observer and the sun
+		if 6.07995 + alt > 0:
+			m = 1/(np.sin(alt) + 0.50572*(6.07995 + alt)**-1.6364);
 		else:
-			clouds = self.current.irradiation.clouds()
+			m = 0
+		
+		# day of the year
+		n = float(utcdate.strftime('%j'))
 
-		return (1-clouds)*self._sh.energytools.incidentradiation(self.I_b_clearsky,self.I_d_clearsky,self.solar_azimuth,self.solar_altitude,orientation*np.pi/180,tilt*np.pi/180)
-	
+		# extraterrestrial solar radiation
+		Esc = 1367 # solar constant
+		E0 = Esc*(1 + 0.033*np.cos(2*np.pi*(n-3)/365))
+
+		# optical depths
+		tau_b = np.interp(n,np.cumsum([-10,31,31,28,31,30,31,30,31,31,30,31,30,31]),[0.320,0.325,0.349,0.383,0.395,0.448,0.505,0.556,0.593,0.431,0.373,0.339,0.320,0.325]);
+		tau_d = np.interp(n,np.cumsum([-10,31,31,28,31,30,31,30,31,31,30,31,30,31]),[2.514,2.461,2.316,2.176,2.175,2.028,1.892,1.779,1.679,2.151,2.317,2.422,2.514,2.461]);
+	   
+		ab = 1.219 - 0.043*tau_b - 0.151*tau_d - 0.204*tau_b*tau_d; 
+		ad = 0.202 + 0.852*tau_b - 0.007*tau_d -0.357*tau_b*tau_d;
+
+		if np.degrees(alt) > 0:
+			I_b = E0*np.exp(-tau_b*m**ab);
+		else:
+			I_b = 0
+			
+		if np.degrees(alt) > -2:	
+			I_d = E0*np.exp(-tau_d*m**ad);
+		else:
+			I_d = 0
+
+		return (I_b,I_d)
+
+	def sunposition(self,utcdate=datetime.datetime.utcnow()):
+		"""
+		Method returns the sun azimuth and altitude at a certain utcdate
+		at the location specified in smarthome.conf
+		Output is in radians
+		"""
+		
+		obs = self.obs
+		obs.date = utcdate
+
+		sun = ephem.Sun(obs)
+		sun.compute(obs)
+		
+		return (sun.az,sun.alt)
+
+	def incidentradiation(self,utcdate=None,clouds=None,average=False,surface_azimuth=0,surface_tilt=np.pi/2):
+		"""
+		Method returns irradiation on a surface 
+		according to ASHRAE
+		
+		input:
+		I_b: local beam irradiation (W/m2)
+		I_d: local diffuse irradiation (W/m2)
+		solar_azimuth:   sun azimuth angle from N in E direction (0=N, pi/2=E, pi=S, -pi/2 = W) (radians)
+		solar_altitude:  sun altitude angle (radians)
+		surface_azimuth: surface normal azimuth angle from N in E direction (0=N, pi/2=E, pi=S, -pi/2 = W) (radians)
+		surface_tilt:    surface tilt angle (0: facing up, pi/2: vertical, pi: facing down) (radians)
+		
+		output:
+		I: irradiation (W/m2)
+		"""
+		if utcdate==None:
+			utcdate = datetime.datetime.now()
+
+		if clouds==None:
+			if average:
+				clouds = mean(self.cloudsarray)
+			else:
+				clouds = self.clouds()
+
+		
+		(solar_azimuth,solar_altitude) = self.sunposition(utcdate)
+		(I_b,I_d) = self.clearskyirrradiation(utcdate)
+
+		# surface solar azimuth (-pi/2< gamma < pi/2, else surface is in shade)
+		gamma = solar_azimuth-surface_azimuth;
+		
+		# incidence
+		cos_theta = np.cos(solar_altitude)*np.cos(gamma)*np.sin(surface_tilt) + np.sin(solar_altitude)*np.cos(surface_tilt)
+    
+		# beam irradiation
+		if cos_theta > 0:
+			I_tb = I_b*cos_theta
+		else:
+			I_tb = 0
+		
+		# diffuse irradiation
+		Y = max(0.45, 0.55 + 0.437*cos_theta+ 0.313*cos_theta**2)
+		if surface_tilt < np.pi/2:
+			I_td = I_d*(Y*np.sin(surface_tilt) + np.cos(surface_tilt))
+		else:
+			I_td = I_d*Y*np.sin(surface_tilt)
+			
+		# ground reflected radiation
+		rho_g = 0.2;
+		I_gr = (I_b*np.sin(solar_altitude) +I_d)*rho_g*(1-np.cos(surface_tilt))/2
+		
+		# total irradiation
+		I_t = (I_tb + I_td + I_gr)*(1-clouds)
+		
+		return I_t
+
+
 
 	def prediction_detailed_load(self):
 		"""
@@ -159,7 +277,7 @@ class WeatherItem(lib.item.Item):
 				weatherforecast.append(currentforecast)
 		
 			# set the smarthome item
-			self(weatherforecast)
+			self.prediction_detailed(weatherforecast)
 		
 			logger.warning('Detailed weatherforecast loaded')
 		except:
@@ -194,32 +312,40 @@ class WeatherItem(lib.item.Item):
 				weatherforecast.append(currentforecast)
 	
 			# set the smarthome item
-			self(weatherforecast)
+			self.prediction_daily(weatherforecast)
 		
 			logger.warning('Daily weatherforecast loaded')
 		except:
 			logger.warning('Error loading daily weatherforecast')
 
 
-#########################################################################
-# ZoneItem
-#########################################################################
-class ZoneItem(lib.item.Item):
-	def find_windows(self):
-		windows = []
-		for room in self.return_children():
-			if hasattr(room,'windows'):
-				for window in room.windows.return_children():
-					windows.append(window)
 
-		return windows
+#########################################################################
+# Zone
+#########################################################################
+class Zone():
+	def __init__(self,knxcontrol,item):
+		self.knxcontrol = knxcontrol
+		self.item = item
+
+
+		self.windows = []
+		self.emission = []
+
+		for item in self.knxcontrol._sh.find_children(self.item, 'knxcontrolitem'):
+			if item.conf['knxcontrolitem']== 'window':
+				self.windows.append( Window(knxcontrol,self,item) )
+
+		
+		self.irradiation = self.item.irradiation
+		self.emission = self.item.emission
 
 	def irradiation_max(self,average=False):
 		"""
 		calculates the maximum zone irradiation
 		will be bound to all zone items
 		"""
-		return sum([window.irradiation_max(average=average) for window in self.find_windows()])
+		return sum([window.irradiation_max(average=average) for window in self.windows])
 
 
 	def irradiation_min(self,average=False):
@@ -227,16 +353,16 @@ class ZoneItem(lib.item.Item):
 		calculates the minimum zone irradiation
 		will be bound to all zone items
 		"""
-		return sum([window.irradiation_min(average=average) for window in self.find_windows()])	
+		return sum([window.irradiation_min(average=average) for window in self.windows])	
 
 	def irradiation_est(self,average=False):
 		"""
 		calculates the estimated zone irradiation and sets it to the appropriate item
 		will be bound to all zone items
 		"""
-		value = sum([window.irradiation_est(average=average) for window in self.find_windows()])
+		value = sum([window.irradiation_est(average=average) for window in self.windows])
 
-		 # set the irradiation item
+		# set the irradiation item
 		self.irradiation( value )
 		return value
 
@@ -254,7 +380,7 @@ class ZoneItem(lib.item.Item):
 		# create an array of irradiation difference for all windows
 
 
-		differ = [w.irradiation_max(average=True)-w.irradiation_min(average=True) for w in self.find_windows()]
+		differ = [w.irradiation_max(average=True)-w.irradiation_min(average=True) for w in self.windows()]
 		windows = sorted(self.find_windows(), key=lambda w: w.irradiation_max(average=True)-w.irradiation_min(average=True), reverse=True)
 
 		# get old shading positions
@@ -298,22 +424,33 @@ class ZoneItem(lib.item.Item):
 						window.shading.value( float(window.shading.conf['open_value'])+newpos[idx]*(float(window.shading.conf['closed_value'])-float(window.shading.conf['open_value'])) )
 
 #########################################################################
-# window item methods
+# Window
 #########################################################################
-class WindowItem(lib.item.Item):
+class Window():
+	def __init__(self,knxcontrol,zone,item):
+		self.knxcontrol = knxcontrol
+		self.zone = zone
+		self.item = item
+
+		self.shading = None
+		for item in self.knxcontrol._sh.find_children(self.item, 'knxcontrolitem'):
+			if item.conf['knxcontrolitem']== 'shading':
+				self.shading = item
+
+
 	def irradiation_open(self,average=False):
 		"""
 		Returns the irradiation through a window when the shading is open
 		"""
 
-		return float(self.conf['area'])*float(self.conf['transmittance'])*self._sh.knxcontrol.weather.incidentradiation(float(self.conf['orientation'])*np.pi/180,float(self.conf['tilt'])*np.pi/180,average=average)
+		return float(self.item.conf['area'])*float(self.item.conf['transmittance'])*self.knxcontrol.weather.incidentradiation(surface_azimuth=float(self.item.conf['orientation'])*np.pi/180,surface_tilt=float(self.item.conf['tilt'])*np.pi/180,average=average)
 
 
 	def irradiation_closed(self,average=False):
 		"""
 		Returns the irradiation through a window when the shading is closed if there is shading
 		"""
-		if hasattr(self,'shading'):
+		if self.shading != None:
 			shading = float(self.shading.conf['transmittance'])
 		else:
 			shading = 1.0
@@ -326,7 +463,7 @@ class WindowItem(lib.item.Item):
 		And the override flag indicating the shading position is fixed
 		"""
 
-		if hasattr(self,'shading'):
+		if self.shading != None:
 			if self.shading.closed():
 				return self.irradiation_closed(average=average)
 			elif self.shading.override() or not self.shading.auto():
@@ -342,7 +479,7 @@ class WindowItem(lib.item.Item):
 		It checks the closed flag indicating the shading must be closed
 		And the override flag indicating the shading position is fixed
 		"""
-		if hasattr(self,'shading'):
+		if self.shading != None:
 			if self.shading.override() or not self.shading.auto():
 				return self.irradiation_est(average=average)
 			else:
@@ -354,7 +491,7 @@ class WindowItem(lib.item.Item):
 		"""
 		Returns the estimated actual irradiation through the window
 		"""
-		if hasattr(self,'shading'):
+		if self.shading != None:
 			shading = (self.shading.value()-float(self.shading.conf['open_value']))/(float(self.shading.conf['closed_value'])-float(self.shading.conf['open_value']))
 			return self.irradiation_open(average=average)*(1-shading) + self.irradiation_closed(average=average)*shading
 		else:

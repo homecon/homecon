@@ -40,55 +40,50 @@ class KNXControl:
 		
 		self._sh = smarthome
 		self._mysql_pass = mysql_pass
+
 		self.sh_listen_items = {}
+
+		self.zones = []
+		self.weather = None
+
+		self.lat  = float(self._sh._lat)
+		self.lon  = float(self._sh._lon)
+		self.elev = float(self._sh._elev)
+
+		self.knxcontrolitems = []
+
 
 	def run(self):
 		# called once after the items have been parsed
 		self.alive = True
-		
+			
+
+		# find all items with a knxcontrolitem attribute
+		for item in self._sh.find_items('knxcontrolitem'):
+			self.knxcontrolitems.append(item)
+
+
 		# create objects
 		self.mysql = Mysql(self)
 		self.alarms = Alarms(self)
 		self.measurements = Measurements(self)
+		self.weather = Weather(self)
 
+		# Zone objects
+		for item in self.find_item('zone'):
+			self.zones.append( Zone(self,item) )
 
-		# bind new methods to items
-		knxcontrol = self._sh.knxcontrol
-		knxcontrol.update_irradiation = types.MethodType( KNXControlItem.update_irradiation, knxcontrol )
-		knxcontrol.shading_control    = types.MethodType( KNXControlItem.shading_control, knxcontrol )
-		knxcontrol.control            = types.MethodType( KNXControlItem.control, knxcontrol )
+		logger.warning('New objects created')
 
-		weather = self._sh.knxcontrol.weather
-		weather.update_irradiation       = types.MethodType( WeatherItem.update_irradiation, weather )
-		weather.set_solarproperties      = types.MethodType( WeatherItem.set_solarproperties, weather )
-		weather.incidentradiation        = types.MethodType( WeatherItem.incidentradiation, weather )
-		weather.prediction.detailed.load = types.MethodType( WeatherItem.prediction_detailed_load, weather.prediction.detailed )
-		weather.prediction.daily.load    = types.MethodType( WeatherItem.prediction_daily_load, weather.prediction.daily )
+		self.update()
 
-		for zone in self._sh.find_items('zonetype'):
-			zone.find_windows    = types.MethodType( ZoneItem.find_windows, zone )
-			zone.irradiation_max = types.MethodType( ZoneItem.irradiation_max, zone )
-			zone.irradiation_min = types.MethodType( ZoneItem.irradiation_min, zone )
-			zone.irradiation_est = types.MethodType( ZoneItem.irradiation_est, zone )
-			zone.shading_control = types.MethodType( ZoneItem.shading_control, zone )
-
-			for window in zone.find_windows():
-				window.irradiation_open   = types.MethodType( WindowItem.irradiation_open, window )
-				window.irradiation_closed = types.MethodType( WindowItem.irradiation_closed, window )
-				window.irradiation_min    = types.MethodType( WindowItem.irradiation_min, window )
-				window.irradiation_max    = types.MethodType( WindowItem.irradiation_max, window )
-				window.irradiation_est    = types.MethodType( WindowItem.irradiation_est, window )
-
-		self._sh.knxcontrol.weather.update_irradiation()
-
-		logger.warning('New methods bound to items')
-
-		for zone in self._sh.find_items('zonetype'):
-			pass
 			
 		# schedule alarms
 		self._sh.scheduler.add('Alarm_run', self.alarms.run, prio=1, cron='* * * *')
 		
+ 		# schedule update
+		self._sh.scheduler.add('KNXControl_update', self.update, prio=2, cron='* * * *')
+
 		# schedule measurements
 		self._sh.scheduler.add('Measurements_minute', self.measurements.minute, prio=2, cron='* * * *')
 		self._sh.scheduler.add('Measurements_average_quarterhour', self.measurements.quarterhour, prio=5, cron='1,16,31,46 * * *')
@@ -96,9 +91,8 @@ class KNXControl:
 		self._sh.scheduler.add('Measurements_average_month', self.measurements.month, prio=5, cron='2 0 1 *')
 		
 		# schedule forecast loading
-		self._sh.scheduler.add('Detailed_weater_forecast', self._sh.knxcontrol.weather.prediction.detailed.load, prio=5, cron='1 * * *')
-		self._sh.scheduler.add('Daily_weater_forecast', self._sh.knxcontrol.weather.prediction.daily.load, prio=5, cron='1 * * *')
-		self._sh.scheduler.add('Irradiation_update', self._sh.knxcontrol.weather.update_irradiation, prio=4, cron='* * * *')
+		self._sh.scheduler.add('Detailed_weater_forecast', self.weather.prediction_detailed_load, prio=5, cron='1 * * *')
+		self._sh.scheduler.add('Daily_weater_forecast', self.weather.prediction_daily_load, prio=5, cron='1 * * *')
 
 		# schedule control actions
 		#self._sh.scheduler.add('Shading_control', self.building.control, prio=3, cron='0,30 * * *')
@@ -110,10 +104,28 @@ class KNXControl:
 		
 		logger.warning('Initialization Complete')
 
+
+
+
+
+
 	def stop(self):
 		self.alive = False
 
-	def find_items(self,searchstr):
+
+	def find_item(self,knxcontrolitem):
+		"""
+		function to find items with a certain knxcontrol attribute
+		"""
+		items = []
+		for item in self.knxcontrolitems:
+			if item.conf['knxcontrolitem'] == knxcontrolitem:
+				items.append(item)
+
+		return items
+		
+
+	def find_items_in_str(self,searchstr):
 		"""
 		function to find all items in a string. It looks for instances starting with "sh." and ending with "()"
 		"""
@@ -134,12 +146,18 @@ class KNXControl:
 	
 		return items
 	
+
+
+
+
+
+
 	def parse_item(self, item):
 		# called once while parsing the items
 
 		# find the items in sh_listen and
 		if 'sh_listen' in item.conf:
-			listenitems = self.find_items(item.conf['sh_listen'])
+			listenitems = self.find_items_in_str(item.conf['sh_listen'])
 			for listenitem in listenitems:
 				if listenitem in self.sh_listen_items:
 					self.sh_listen_items[listenitem].append(item)
@@ -159,6 +177,7 @@ class KNXControl:
 					dest_item( eval( dest_item.conf['sh_listen'].replace('sh.','self._sh.') ) )
 				except:
 					logger.warning('Could not parse \'%s\' to %s' % (dest_item.conf['sh_listen'],dest_item.id()))
+
 
 
 		# check if override values need to be set
@@ -230,4 +249,32 @@ class KNXControl:
 			
 	def parse_logic(self, logic):
 		pass
+
+
+	def update(self):
+		"""
+		Update all values dependent on time
+		"""
+		self.weather.update()
+
+		for zone in self.zones:
+			zone.irradiation_est()
+			
+
+	def control(self):
+		"""
+		Execute control actions
+		"""
+
+		# optimization	
+
+
+		# set controls
+		self.shading_control()
+	
+	def shading_control(self):
+		for zone in self._sh.find_items('zonetype'):
+			zone.irradiation.setpoint(5000)
+			zone.emission.setpoint(5000)
+			zone.shading_control()
 
