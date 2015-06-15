@@ -27,7 +27,8 @@ import types
 from plugins.knxcontrol.mysql import *
 from plugins.knxcontrol.alarms import *
 from plugins.knxcontrol.measurements import *
-from plugins.knxcontrol.item_methods import *
+from plugins.knxcontrol.weather import *
+from plugins.knxcontrol.zone import *
 from plugins.knxcontrol.mpc import *
 
 
@@ -50,39 +51,32 @@ class KNXControl:
 		self.lon  = float(self._sh._lon)
 		self.elev = float(self._sh._elev)
 
-		self.knxcontrolitems = []
-
 
 	def run(self):
 		# called once after the items have been parsed
 		self.alive = True
 			
-
-		# find all items with a knxcontrolitem attribute
-		for item in self._sh.find_items('knxcontrolitem'):
-			self.knxcontrolitems.append(item)
-
-
 		# create objects
 		self.mysql = Mysql(self)
 		self.alarms = Alarms(self)
 		self.measurements = Measurements(self)
 		self.weather = Weather(self)
 
+
 		# Zone objects
 		for item in self.find_item('zone'):
+			logger.warning(item)
 			self.zones.append( Zone(self,item) )
 
 		logger.warning('New objects created')
 
-		self.update()
+		self.low_level_control()
 
-			
+ 		# schedule low_level_control
+		self._sh.scheduler.add('KNXControl_update', self.low_level_control, prio=2, cron='* * * *')
+
 		# schedule alarms
 		self._sh.scheduler.add('Alarm_run', self.alarms.run, prio=1, cron='* * * *')
-		
- 		# schedule update
-		self._sh.scheduler.add('KNXControl_update', self.update, prio=2, cron='* * * *')
 
 		# schedule measurements
 		self._sh.scheduler.add('Measurements_minute', self.measurements.minute, prio=2, cron='* * * *')
@@ -94,9 +88,6 @@ class KNXControl:
 		self._sh.scheduler.add('Detailed_weater_forecast', self.weather.prediction_detailed_load, prio=5, cron='1 * * *')
 		self._sh.scheduler.add('Daily_weater_forecast', self.weather.prediction_daily_load, prio=5, cron='1 * * *')
 
-		# schedule control actions
-		#self._sh.scheduler.add('Shading_control', self.building.control, prio=3, cron='0,30 * * *')
-
 
 
 		# create a parameter estimation object
@@ -105,12 +96,85 @@ class KNXControl:
 		logger.warning('Initialization Complete')
 
 
-
-
-
-
 	def stop(self):
 		self.alive = False
+
+
+	def parse_item(self, item):
+		# called once while parsing the items
+		# find the items in sh_listen and
+		if 'sh_listen' in item.conf:
+			listenitems = self.find_items_in_str(item.conf['sh_listen'])
+			for listenitem in listenitems:
+				if listenitem in self.sh_listen_items:
+					self.sh_listen_items[listenitem].append(item)
+				else:
+					self.sh_listen_items[listenitem] = [item]
+		
+		return self.update_item
+	
+
+
+	def update_item(self, item, caller=None, source=None, dest=None):
+		# called each time an item changes
+
+		########################################################################
+		# evaluate expressions in sh_listen
+		if item.id() in self.sh_listen_items:
+			for dest_item in self.sh_listen_items[item.id()]:
+				try:
+					dest_item( eval( dest_item.conf['sh_listen'].replace('sh.','self._sh.') ) )
+				except:
+					logger.warning('Could not parse \'%s\' to %s' % (dest_item.conf['sh_listen'],dest_item.id()))
+
+		########################################################################
+		# check if shading override values need to be set
+		if item in self._sh.match_items('*.shading.move'):
+			window = item.return_parent().conf['knxcontrolobject']
+			window.shading_override()
+
+		if item in self._sh.match_items('*.shading.stop'):
+			window = item.return_parent().conf['knxcontrolobject']
+			window.shading_override()
+
+		if item in self._sh.match_items('*.shading.value'):
+			logger.warning(caller)
+			if caller!='KNX':
+				window = item.return_parent().conf['knxcontrolobject']
+				window.shading_override()
+
+		########################################################################
+		# check for rain
+		if item.id() == 'knxcontrol.weather.current.precipitation':
+			self._sh.knxcontrol.shading_control()
+			
+
+
+	def parse_logic(self, logic):
+		pass
+
+
+	def low_level_control(self):
+		"""
+		Update all values dependent on time
+		Run every minute
+		"""
+		self.weather.update()
+
+		for zone in self.zones:
+			zone.irradiation_est()
+		
+		# set controls
+		for zone in self.zones:
+			zone.item.irradiation.setpoint(5000)
+			zone.item.emission.setpoint(0)
+
+			zone.shading_control()
+
+
+
+
+
 
 
 	def find_item(self,knxcontrolitem):
@@ -118,7 +182,7 @@ class KNXControl:
 		function to find items with a certain knxcontrol attribute
 		"""
 		items = []
-		for item in self.knxcontrolitems:
+		for item in self._sh.find_items('knxcontrolitem'):
 			if item.conf['knxcontrolitem'] == knxcontrolitem:
 				items.append(item)
 
@@ -145,136 +209,7 @@ class KNXControl:
 				tempstr = ''
 	
 		return items
-	
 
 
-
-
-
-
-	def parse_item(self, item):
-		# called once while parsing the items
-
-		# find the items in sh_listen and
-		if 'sh_listen' in item.conf:
-			listenitems = self.find_items_in_str(item.conf['sh_listen'])
-			for listenitem in listenitems:
-				if listenitem in self.sh_listen_items:
-					self.sh_listen_items[listenitem].append(item)
-				else:
-					self.sh_listen_items[listenitem] = [item]
-		
-		return self.update_item
-	
-	def update_item(self, item, caller=None, source=None, dest=None):
-		# called each time an item changes
-
-
-		# evaluate expressions in sh_listen
-		if item.id() in self.sh_listen_items:
-			for dest_item in self.sh_listen_items[item.id()]:
-				try:
-					dest_item( eval( dest_item.conf['sh_listen'].replace('sh.','self._sh.') ) )
-				except:
-					logger.warning('Could not parse \'%s\' to %s' % (dest_item.conf['sh_listen'],dest_item.id()))
-
-
-
-		# check if override values need to be set
-		if item in self._sh.match_items('*.shading.move'):
-			logger.warning('Overriding %s control'%shading)
-			shading.override(True)
-
-			# release override after 4h
-			def release():
-				shading.override(False)
-				logger.warning('Override of %s control released'%shading)
-			threading.Timer(4*3600,release).start()
-
-
-		if item in self._sh.match_items('*.shading.value'):
-			override = False
-			lock_override = False
-			shading = item.return_parent()
-			if caller=='KNX':
-				if 'lock_override' in shading.conf:
-					if not shading.conf['lock_override']:
-						override = True
-				else:
-					override = True
-					
-			if override:
-				logger.warning('Overriding %s control'%shading)
-				shading.override(True)
-				# release override after 4h
-				def release():
-					shading.override(False)
-					logger.warning('Override of %s control released'%shading)
-				threading.Timer(4*3600,release).start()
-
-			# lock override
-			if 'lock_override' in shading.conf:
-				if not shading.conf['lock_override']:
-					lock_override = True
-			else:
-				lock_override = True
-
-			if lock_override:
-				shading.conf['lock_override'] = True
-				# unlock after 15s
-				def unlock():
-					shading.conf['lock_override'] = False
-				threading.Timer(15,unlock).start()
-
-		# check if a shading closed value changed
-		if item in self._sh.match_items('*.shading.closed'):
-			shading = item.return_parent()
 			
-			if item:
-				shading.value(shading.conf['closed_value'])
-			else:
-				window = shading.return_parent()
-				room = window.return_parent().return_parent()
-				zone = room.return_parent()
-				logger.warning(zone)
-
-				zone.shading_control()
-
-				#if zone.irradiation() < zone.irradiation.setpoint():
-				#	shading.value(shading.conf['open_value'])
-
-		# check for rain
-		if item.id() == 'knxcontrol.weather.current.precipitation':
-			self._sh.knxcontrol.shading_control()
-			
-	def parse_logic(self, logic):
-		pass
-
-
-	def update(self):
-		"""
-		Update all values dependent on time
-		"""
-		self.weather.update()
-
-		for zone in self.zones:
-			zone.irradiation_est()
-			
-
-	def control(self):
-		"""
-		Execute control actions
-		"""
-
-		# optimization	
-
-
-		# set controls
-		self.shading_control()
-	
-	def shading_control(self):
-		for zone in self._sh.find_items('zonetype'):
-			zone.irradiation.setpoint(5000)
-			zone.emission.setpoint(5000)
-			zone.shading_control()
 

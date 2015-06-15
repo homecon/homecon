@@ -23,19 +23,14 @@ import json
 import datetime
 import ephem
 import numpy as np
-import lib.item
-import threading
 
 logger = logging.getLogger('')
 
 
-#########################################################################
-# Weather
-#########################################################################
 class Weather():
 	def __init__(self,knxcontrol):
 		self.knxcontrol = knxcontrol
-		
+
 		# find weather item
 		items = self.knxcontrol.find_item('weather')
 		if len(items) == 0:
@@ -44,6 +39,7 @@ class Weather():
 		else:
 			self.item = items[0]
 
+		self.item.conf['knxcontrolobject'] = self
 
 		# find a irradiationsensor item
 		items = self.knxcontrol.find_item('irradiationsensor')
@@ -320,191 +316,3 @@ class Weather():
 		except:
 			logger.warning('Error loading daily weatherforecast')
 
-
-
-#########################################################################
-# Zone
-#########################################################################
-class Zone():
-	def __init__(self,knxcontrol,item):
-		self.knxcontrol = knxcontrol
-		self.item = item
-
-
-		self.windows = []
-		self.emission = []
-
-		for item in self.knxcontrol._sh.find_children(self.item, 'knxcontrolitem'):
-			if item.conf['knxcontrolitem']== 'window':
-				self.windows.append( Window(knxcontrol,self,item) )
-
-		
-		self.irradiation = self.item.irradiation
-		self.emission = self.item.emission
-
-	def irradiation_max(self,average=False):
-		"""
-		calculates the maximum zone irradiation
-		will be bound to all zone items
-		"""
-		return sum([window.irradiation_max(average=average) for window in self.windows])
-
-
-	def irradiation_min(self,average=False):
-		"""
-		calculates the minimum zone irradiation
-		will be bound to all zone items
-		"""
-		return sum([window.irradiation_min(average=average) for window in self.windows])	
-
-	def irradiation_est(self,average=False):
-		"""
-		calculates the estimated zone irradiation and sets it to the appropriate item
-		will be bound to all zone items
-		"""
-		value = sum([window.irradiation_est(average=average) for window in self.windows])
-
-		# set the irradiation item
-		self.irradiation( value )
-		return value
-
-
-	def shading_control(self):
-		"""
-		Function tries to control the shading so the actual solar gains to the zone match the setpoint
-		"""
-		logger.warning('automatic shading control for zone: '+ self.item.id())
-		irradiation_set = self.item.irradiation.setpoint()
-
-		# close shadings until the setpoint is reached
-		# try to keep as many shadings completely open, to maintain view through the windows
-		# so start with the windows with the highest difference between max and min
-		
-		# create an array of irradiation difference for all windows
-		differ = [w.irradiation_max(average=True)-w.irradiation_min(average=True) for w in self.windows]
-		windows = sorted(self.windows, key=lambda w: w.irradiation_max(average=True)-w.irradiation_min(average=True), reverse=True)
-
-		# get old shading positions
-		newpos = []
-		oldpos = []
-		for window in windows:
-			if window.shading != None:
-				newpos.append(0)
-				oldpos.append( (window.shading.value()-float(window.shading.conf['open_value']))/(float(window.shading.conf['closed_value'])-float(window.shading.conf['open_value'])) )
-			else:
-				newpos.append(-1)
-				oldpos.append(-1)
-
-		# calculate new shading positions
-		for idx,window in enumerate(windows):
-			oldirradiation = sum( [w.irradiation_max(average=True)*(1-p)+w.irradiation_min(average=True)*p for w,p in zip(windows,newpos)] )
-		
-			if oldirradiation <= irradiation_set:
-				break
-
-			if window.shading != None:
-				if window.shading.closed():
-					newpos[idx] = 1
-				elif not window.shading.auto():
-					newpos[idx] = 0
-				elif self.knxcontrol.weather.current.precipitation() and ('open_when_raining' in window.shading.conf):
-					newpos[idx] = 0
-				elif window.shading.override():
-					newpos[idx] = (window.shading.value()-float(window.shading.conf['open_value']))/(float(window.shading.conf['closed_value'])-float(window.shading.conf['open_value']))
-				else:
-					newpos[idx] = 1
-					newirradiation = sum([w.irradiation_max(average=True)*(1-p)+w.irradiation_min(average=True)*(p) for w,p in zip(windows,newpos)])
-					newpos[idx] = min(1,max(0,(irradiation_set - oldirradiation)/(newirradiation - oldirradiation)))
-
-		# set all shading positions
-		for idx,window in enumerate(windows):
-			if window.shading != None:
-				if not window.shading.override():
-					if abs( newpos[idx]-oldpos[idx]) > 0.2 or newpos[idx]==0.0 or newpos[idx]==1.0:
-						# only actually set the shading position if the change is larger than 20% or it is closed or open
-						window.shading.value( float(window.shading.conf['open_value'])+newpos[idx]*(float(window.shading.conf['closed_value'])-float(window.shading.conf['open_value'])) )
-
-#########################################################################
-# Window
-#########################################################################
-class Window():
-	def __init__(self,knxcontrol,zone,item):
-		self.knxcontrol = knxcontrol
-		self.zone = zone
-		self.item = item
-
-		self.shading = None
-		for item in self.knxcontrol._sh.find_children(self.item, 'knxcontrolitem'):
-			if item.conf['knxcontrolitem']== 'shading':
-				self.shading = item
-
-		self.item.conf['knxcontrolobject'] = self
-
-	def irradiation_open(self,average=False):
-		"""
-		Returns the irradiation through a window when the shading is open
-		"""
-		return float(self.item.conf['area'])*float(self.item.conf['transmittance'])*self.knxcontrol.weather.incidentradiation(surface_azimuth=float(self.item.conf['orientation'])*np.pi/180,surface_tilt=float(self.item.conf['tilt'])*np.pi/180,average=average)
-
-
-	def irradiation_closed(self,average=False):
-		"""
-		Returns the irradiation through a window when the shading is closed if there is shading
-		"""
-		if self.shading != None:
-			shading = float(self.shading.conf['transmittance'])
-		else:
-			shading = 1.0
-		return self.irradiation_open(average=average)*shading
-
-	def irradiation_max(self,average=False):
-		"""
-		Returns the maximum amount of irradiation through the window
-		It checks the closed flag indicating the shading must be closed
-		And the override flag indicating the shading position is fixed
-		"""
-
-		if self.shading != None:
-			if self.shading.closed():
-				return self.irradiation_closed(average=average)
-			elif self.shading.override() or not self.shading.auto():
-				return self.irradiation_est(average=average)
-			else:
-				return self.irradiation_open(average=average)
-		else:
-			return self.irradiation_open(average=average)
-
-	def irradiation_min(self,average=False):
-		"""
-		Returns the minimum amount of irradiation through the window
-		It checks the closed flag indicating the shading must be closed
-		And the override flag indicating the shading position is fixed
-		"""
-		if self.shading != None:
-			if self.shading.override() or not self.shading.auto():
-				return self.irradiation_est(average=average)
-			else:
-				return self.irradiation_closed(average=average)
-		else:
-			return self.irradiation_open(average=average)
-
-	def irradiation_est(self,average=False):
-		"""
-		Returns the estimated actual irradiation through the window
-		"""
-		if self.shading != None:
-			shading = (self.shading.value()-float(self.shading.conf['open_value']))/(float(self.shading.conf['closed_value'])-float(self.shading.conf['open_value']))
-			return self.irradiation_open(average=average)*(1-shading) + self.irradiation_closed(average=average)*shading
-		else:
-			return self.irradiation_open(average=average)
-
-	def shading_override(self):
-		self.shading.override(True)
-		logger.warning('Overriding %s control'%self.shading)
-
-		# release override after 4h
-		def release():
-			self.shading.override(False)
-			logger.warning('Override of %s control released'%self.shading)
-		
-		threading.Timer(4*3600,release).start()
