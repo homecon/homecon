@@ -383,7 +383,7 @@ $.widget("knxcontrol.weather_block",{
 		});
 	},
 	update: function(){
-		if(knxcontrol.item['building.weatherforecast']){
+		if(knxcontrol.item['knxcontrol.weather.prediction.detailed']){
 			if(this.options.daysahead>=0){
 				// find noon of the correct day
 				for(var index = 0+Math.max(0,(this.options.daysahead-1)*8);index<knxcontrol.item[item].length;index++){
