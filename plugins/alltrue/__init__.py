@@ -35,33 +35,50 @@ class AllTrue:
 
 	def parse_item(self, item):
 		# called once while parsing the items
-		if 'alltrue_master' in item.conf:
+		if 'alltrue_item' in item.conf or 'anytrue_item' in item.conf:
 			return self.check
-			
+
 	def check(self, item, caller=None, source=None, dest=None):
 		"""
 		finds all items with the same alltrue_master attribute,
 		checks if the alltrue_condition is true for all items
 		and sets the item with the alltrue_id to true or false accordingly
 		"""
-		master_str = item.conf['alltrue_master']
-		master_item = None
-		for item in self._sh.find_items('alltrue_id'):
-			if item.conf['alltrue_id'] == master_str:
-				master_item = item
-				break
 
-		condition = True
-		if master_item != None:
-			for item in self._sh.find_items('alltrue_master'):
-				if item.conf['alltrue_master'] == master_str:
-					val = float(item())
-					# evaluate the condition
-					if not eval(str(val) + master_item.conf['alltrue_condition']):
-						condition = False
-						break
+		# alltrue
+		if 'alltrue_item' in item.conf:
+			master_str = item.conf['alltrue_item']
+			master_item = self._sh.return_item(item.conf['master_str'])
+
+			condition = True
+			if master_item != None:
+				for item in self._sh.find_items('alltrue_item'):
+					if item.conf['alltrue_master'] == master_str:
+						val = float(item())
+						# evaluate the condition
+						if not eval(str(val) + master_item.conf['alltrue_condition']):
+							condition = False
+							break
 			
-			master_item(condition)
+				master_item(condition)
+
+		# anytrue
+		if 'anytrue_item' in item.conf:
+			master_str = item.conf['anytrue_item']
+			master_item = self._sh.return_item(master_str)
+
+			condition = False
+			if master_item != None:
+				for item in self._sh.find_items('alltrue_item'):
+					if item.conf['anytrue_item'] == master_str:
+						val = float(item())
+						# evaluate the condition
+						if eval(str(val) + master_item.conf['anytrue_condition']):
+							condition = True
+							break
+			
+				master_item(condition)
+
 
 	def parse_logic(self, logic):
 		pass
