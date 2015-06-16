@@ -386,10 +386,15 @@ $.widget("knxcontrol.weather_block",{
 		var item = this.options.item;
 		if(knxcontrol.item[item]){
 			if(this.options.daysahead>=0){
-				// find noon of the correct day
-				for(var index = 0+Math.max(0,(this.options.daysahead-1)*8);index<knxcontrol.item[item].length;index++){
-					date = new Date(knxcontrol.item[item][index].datetime*1000);
-					if((date.getHours()>11 && date.getHours()<15)) break;
+				if(item =='knxcontrol.weather.prediction.detailed'){
+					// find noon of the correct day
+					for(var index = 0+Math.max(0,(this.options.daysahead-1)*8);index<knxcontrol.item[item].length;index++){
+						date = new Date(knxcontrol.item[item][index].datetime*1000);
+						if((date.getHours()>11 && date.getHours()<15)) break;
+					}
+				}
+				else{
+					index = this.options.daysahead
 				}
 			}
 			else{
@@ -422,7 +427,12 @@ $.widget("knxcontrol.weather_block",{
 				var date_string = language.weekday_short[weekday];
 				
 				if(this.options.item_temperature == ''){
-					temperature = knxcontrol.item[item][index].temperature;
+					if(item =='knxcontrol.weather.prediction.detailed'){
+						temperature = knxcontrol.item[item][index].temperature;
+					}
+					else{
+						temperature = knxcontrol.item[item][index].temperature_day;
+					}
 				}
 				else{
 					temperature = knxcontrol.item[this.options.item_temperature];
@@ -448,12 +458,12 @@ $.widget("knxcontrol.weather_block",{
 				
 				if(this.options.mini){
 					this.element.find('[data-field="date"]').html(date_string);
-					this.element.find('[data-field="temperature"]').html(Math.round(temperature)/10+'&deg;C');
+					this.element.find('[data-field="temperature"]').html(Math.round(temperature*10)/10+'&deg;C');
 					this.element.find('[data-field="wind"]').html(Math.round(windspeed*1)/1+' m/s '+ winddirection);
 					this.element.find('[data-field="clouds"]').html(Math.round(clouds*1)/1+'%');
 				}
 				else{
-					this.element.find('[data-field="temperature"]').html(language.capitalize(language.temperature)+': '+Math.round(temperature)/10+'&deg;C');
+					this.element.find('[data-field="temperature"]').html(language.capitalize(language.temperature)+': '+Math.round(temperature*10)/10+'&deg;C');
 					this.element.find('[data-field="wind"]').html(language.capitalize(language.wind)+': '+Math.round(windspeed*1)/1+' m/s '+ winddirection);
 					this.element.find('[data-field="clouds"]').html(language.capitalize(language.clouds)+': '+Math.round(clouds*1)/1+'%');
 				}
