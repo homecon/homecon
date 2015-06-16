@@ -138,8 +138,7 @@ class KNXControl:
 			window.shading_override()
 
 		if item in self._sh.match_items('*.shading.value'):
-			logger.warning(caller)
-			if caller!='KNX':
+			if caller!='KNX' and caller != 'Logic':
 				window = item.return_parent().conf['knxcontrolobject']
 				window.shading_override()
 
