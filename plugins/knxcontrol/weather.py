@@ -81,7 +81,6 @@ class Weather():
 		else:
 			self.prediction_daily = items[0]
 
-		
 
 		# create an ephem observer
 		# http://rhodesmill.org/pyephem/quick.html
@@ -93,7 +92,13 @@ class Weather():
 		# update the parent
 		self.knxcontrol.weather = self
 
+		# load predictions
+		self.prediction_detailed_load()
+		self.prediction_daily_load()
+
 		logger.warning('Weather initialized')
+
+
 
 	def update(self):
 		"""
@@ -255,7 +260,7 @@ class Weather():
 		try:
 			weatherforecast = []
 
-			response = urllib.request.urlopen('http://api.openweathermap.org/data/2.5/forecast?lat=%s&lon=%s' % (self._sh._lat,self._sh._lon))
+			response = urllib.request.urlopen('http://api.openweathermap.org/data/2.5/forecast?lat=%s&lon=%s' % (self.knxcontrol.lat,self.knxcontrol.lon))
 			response = json.loads(response.read().decode('utf-8'))
 
 			for forecast in response['list']:
@@ -289,7 +294,7 @@ class Weather():
 	
 		try:
 			weatherforecast = []
-			response = urllib.request.urlopen('http://api.openweathermap.org/data/2.5/forecast/daily?lat=%s&lon=%s' % (self._sh._lat,self._sh._lon))
+			response = urllib.request.urlopen('http://api.openweathermap.org/data/2.5/forecast/daily?lat=%s&lon=%s' % (self.knxcontrol.lat,self.knxcontrol.lon))
 			response = json.loads(response.read().decode('utf-8'))
 
 			for forecast in response['list']:
