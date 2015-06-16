@@ -146,8 +146,8 @@ class KNXControl:
 		########################################################################
 		# check for rain
 		if item.id() == 'knxcontrol.weather.current.precipitation':
-			self._sh.knxcontrol.shading_control()
-			
+			for zone in self.zones:
+				zone.shading_control()
 
 
 	def parse_logic(self, logic):
@@ -165,8 +165,6 @@ class KNXControl:
 
 		# set controls
 		for zone in self.zones:
-			logger.warning(zone)
-
 			zone.irradiation.setpoint(500)
 			zone.emission.setpoint(0)
 
