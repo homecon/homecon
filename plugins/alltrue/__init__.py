@@ -24,11 +24,11 @@ logger = logging.getLogger('')
 
 class AllTrue:
 	def __init__(self,smarthome):
-		logger.info('AllTrue started')
 		self._sh = smarthome
 
 	def run(self):
 		self.alive = True
+		logger.info('AllTrue initialized')
 
 	def stop(self):
 		self.alive = False
@@ -52,9 +52,9 @@ class AllTrue:
 
 			condition = True
 			if master_item != None:
-				for item in self._sh.find_items('alltrue_item'):
-					if item.conf['alltrue_master'] == master_str:
-						val = float(item())
+				for it in self._sh.find_items('alltrue_item'):
+					if it.conf['alltrue_master'] == master_str:
+						val = float(it())
 						# evaluate the condition
 						if not eval(str(val) + master_item.conf['alltrue_condition']):
 							condition = False
@@ -69,9 +69,9 @@ class AllTrue:
 
 			condition = False
 			if master_item != None:
-				for item in self._sh.find_items('alltrue_item'):
-					if item.conf['anytrue_item'] == master_str:
-						val = float(item())
+				for it in self._sh.find_items('anytrue_item'):
+					if it.conf['anytrue_item'] == master_str:
+						val = float(it())
 						# evaluate the condition
 						if eval(str(val) + master_item.conf['anytrue_condition']):
 							condition = True
