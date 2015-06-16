@@ -357,7 +357,7 @@ $.widget("knxcontrol.weather_block",{
 		item_temperature: '',
 		item_windspeed: '',
 		item_winddirection: '',
-		item_irradiation: '',
+		item_clouds: '',
 		mini: false,
 		daysahead: -1
     },
@@ -367,7 +367,7 @@ $.widget("knxcontrol.weather_block",{
 							'<img src="icons/weather/blank.png">'+
 							'<div data-field="temperature"></div>'+
 							'<div data-field="wind"></div>'+
-							'<div data-field="irradiation"></div>'
+							'<div data-field="clouds"></div>'
 		);
 		if(this.options.mini){
 			this.element.addClass("mini");
@@ -383,7 +383,8 @@ $.widget("knxcontrol.weather_block",{
 		});
 	},
 	update: function(){
-		if(knxcontrol.item['knxcontrol.weather.prediction.detailed']){
+		var item = this.options.item;
+		if(knxcontrol.item[item]){
 			if(this.options.daysahead>=0){
 				// find noon of the correct day
 				for(var index = 0+Math.max(0,(this.options.daysahead-1)*8);index<knxcontrol.item[item].length;index++){
@@ -396,16 +397,15 @@ $.widget("knxcontrol.weather_block",{
 			}
 			
 			if(index < knxcontrol.item[item].length){
-				
-				this.element.find('img').attr('src','icons/weather/'+this.icons[knxcontrol.item['knxcontrol.weather.prediction.detailed'][index].icon]);
+				this.element.find('img').attr('src','icons/weather/'+this.icons[knxcontrol.item[item][index].icon]);
 				
 				var temperature = 0;
 				var windspeed = 0;
 				var winddirection = '';
-				var irradiation = 0;
+				var clouds = 0;
 				
 				
-				date = new Date(knxcontrol.item['knxcontrol.weather.prediction.detailed'][index].datetime*1000);
+				date = new Date(knxcontrol.item[item][index].datetime*1000);
 				var weekday = (date.getDay()+6)%7;
 				var day = date.getDate();
 				var month = date.getMonth();
@@ -422,40 +422,40 @@ $.widget("knxcontrol.weather_block",{
 				var date_string = language.weekday_short[weekday];
 				
 				if(this.options.item_temperature == ''){
-					temperature = knxcontrol.item['knxcontrol.weather.prediction.detailed'][index].temperature;
+					temperature = knxcontrol.item[item][index].temperature;
 				}
 				else{
 					temperature = knxcontrol.item[this.options.item_temperature];
 				}
 				if(this.options.item_windspeed == ''){
-					windspeed = knxcontrol.item['knxcontrol.weather.prediction.detailed'][index].wind_speed;
+					windspeed = knxcontrol.item[item][index].wind_speed;
 				}
 				else{
 					windspeed = knxcontrol.item[this.options.item_windspeed];
 				}
 				if(this.options.item_winddirection == ''){
-					winddirection = language.winddirection(knxcontrol.item['knxcontrol.weather.prediction.detailed'][index].wind_direction)
+					winddirection = language.winddirection(knxcontrol.item[item][index].wind_direction)
 				}
 				else{
 					winddirection = language.winddirection(knxcontrol.item[this.options.item_winddirection]);
 				}
-				if(this.options.item_irradiation == ''){
-					irradiation = knxcontrol.item['knxcontrol.weather.prediction.detailed'][index].cloudfactor;
+				if(this.options.item_clouds == ''){
+					clouds = knxcontrol.item[item][index].clouds;
 				}
 				else{
-					irradiation = knxcontrol.item[this.options.item_irradiation];
+					clouds = knxcontrol.item[this.options.item_clouds];
 				}
 				
 				if(this.options.mini){
 					this.element.find('[data-field="date"]').html(date_string);
 					this.element.find('[data-field="temperature"]').html(Math.round(temperature)/10+'&deg;C');
 					this.element.find('[data-field="wind"]').html(Math.round(windspeed*1)/1+' m/s '+ winddirection);
-					this.element.find('[data-field="irradiation"]').html(Math.round(irradiation*1)/1+' W/m<sup>2</sup>');
+					this.element.find('[data-field="clouds"]').html(Math.round(clouds*1)/1+'%');
 				}
 				else{
 					this.element.find('[data-field="temperature"]').html(language.capitalize(language.temperature)+': '+Math.round(temperature)/10+'&deg;C');
 					this.element.find('[data-field="wind"]').html(language.capitalize(language.wind)+': '+Math.round(windspeed*1)/1+' m/s '+ winddirection);
-					this.element.find('[data-field="irradiation"]').html(language.capitalize(language.irradiation)+': '+Math.round(irradiation*1)/1+' W/m<sup>2</sup>');
+					this.element.find('[data-field="clouds"]').html(language.capitalize(language.clouds)+': '+Math.round(clouds*1)/1+'%');
 				}
 			}
 			else{
@@ -464,7 +464,7 @@ $.widget("knxcontrol.weather_block",{
 				this.element.find('[data-field="date"]').html('-');
 				this.element.find('[data-field="temperature"]').html('-');
 				this.element.find('[data-field="wind"]').html('-');
-				this.element.find('[data-field="irradiation"]').html('-');
+				this.element.find('[data-field="clouds"]').html('-');
 			}
 		}
 	},

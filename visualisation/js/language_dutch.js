@@ -24,6 +24,7 @@ language = {
 	temperature: 'temperatuur',
 	wind: 'wind',
 	irradiation: 'irradiatie',
+	clouds: 'bewolking',
 	alarm: 'wekker',
 	add_alarm: 'wekker toevoegen',
 	select_action: 'selecteer actie',
