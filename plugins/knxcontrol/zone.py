@@ -98,7 +98,7 @@ class Zone():
 		# calculate new shading positions
 		for idx,window in enumerate(windows):
 			oldirradiation = sum( [w.irradiation_max(average=True)*(1-p)+w.irradiation_min(average=True)*p for w,p in zip(windows,newpos)] )
-		
+
 			if oldirradiation <= irradiation_set:
 				break
 
@@ -115,6 +115,9 @@ class Zone():
 					newpos[idx] = 1
 					newirradiation = sum([w.irradiation_max(average=True)*(1-p)+w.irradiation_min(average=True)*(p) for w,p in zip(windows,newpos)])
 					newpos[idx] = min(1,max(0,(irradiation_set - oldirradiation)/(newirradiation - oldirradiation)))
+		
+		logger.warning( [w.irradiation_max(average=True)*(1-p)+w.irradiation_min(average=True)*p for w,p in zip(windows,newpos)] )
+		logger.warning(newpos)
 
 		# set all shading positions
 		for idx,window in enumerate(windows):
@@ -124,3 +127,6 @@ class Zone():
 						# only actually set the shading position if the change is larger than 20% or it is closed or open
 						window.shading.value( float(window.shading.conf['open_value'])+newpos[idx]*(float(window.shading.conf['closed_value'])-float(window.shading.conf['open_value'])) )
 
+
+		# estimate the new value for irradiation and set it
+		self.irradiation_est()

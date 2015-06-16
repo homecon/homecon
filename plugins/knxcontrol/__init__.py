@@ -159,17 +159,19 @@ class KNXControl:
 		Update all values dependent on time
 		Run every minute
 		"""
+		logger.warning('low level control')
+		
 		self.weather.update()
 
-		for zone in self.zones:
-			zone.irradiation_est()
-		
 		# set controls
 		for zone in self.zones:
-			zone.item.irradiation.setpoint(5000)
-			zone.item.emission.setpoint(0)
+			logger.warning(zone)
+
+			zone.irradiation.setpoint(500)
+			zone.emission.setpoint(0)
 
 			zone.shading_control()
+
 
 
 
