@@ -33,7 +33,8 @@ var smarthome = {
     },
 // Ask for item values over the websocket                                    //
     monitor: function(){
-		smarthome.send({'cmd': 'monitor', 'items': knxcontrol.getkeys('item')});
+		smarthome.send({'cmd': 'monitor', 'items': knxcontrol.getkeys('item'), 'token': smarthome.token});
+		smarthome.send({'cmd': 'log', 'name': 'env.core.log', 'max': 100, 'token': smarthome.token});
     },
 // private functions	
 // Opens the connection and add some handlers                                //
@@ -41,17 +42,14 @@ var smarthome = {
         smarthome.socket = new WebSocket('ws://' + smarthome.address + ':' + smarthome.port + '/');
 
         smarthome.socket.onopen = function(){
-            smarthome.send({'cmd': 'proto', 'ver': smarthome.version});
+            smarthome.send({'cmd': 'proto', 'ver': smarthome.version, 'token': smarthome.token});
             console.log('connected to smarthome.py');
 			
 			// initialize widgets
 			knxcontrol.item.get();
 			
-			// request the values of all items from smarthome.py
+			// request the values of all items and the log from smarthome.py
 			smarthome.monitor();
-			
-			// get the smarthome.py log
-			knxcontrol.smarthome_log.get();
          };
 		
         smarthome.socket.onmessage = function(event){

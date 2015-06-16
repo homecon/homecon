@@ -115,10 +115,6 @@ var knxcontrol = {
 	},
 	smarthome_log: {
 		log: [],
-		get: function(){
-			this.log = [];
-			smarthome.send({'cmd': 'log', 'name': 'env.core.log', 'max': 100});
-		},
 		update: function(log){
 			this.log = log.concat(this.log);
 			$('[data-role="smarthome_log"]').trigger('update');
@@ -231,7 +227,7 @@ var knxcontrol = {
 			if(id){
 				where = 'id='+id;
 			}
-			$.post('requests/select_from_table.php',{table: 'alarm_actions', column: '*', where: where},function(result){
+			$.post('requests/select_from_table.php',{table: 'actions', column: '*', where: where},function(result){
 				var actions = JSON.parse(result);
 				$.each(actions,function(index,action){
 					knxcontrol.action[action.id] = {
@@ -253,14 +249,14 @@ var knxcontrol = {
 		},
 		update: function(id,data_field,value){
 			// set the alarm in the database
-			$.post('requests/update_table.php',{table: 'alarm_actions', column: data_field.join(';'), value: value.join(';'), where: 'id='+id},function(result){
+			$.post('requests/update_table.php',{table: 'actions', column: data_field.join(';'), value: value.join(';'), where: 'id='+id},function(result){
 				// on success update knxcontrol
 				console.log(result);
 				knxcontrol.action.get(id);
 			});
 		},
 		add: function(){
-			$.post('requests/insert_into_table.php',{table: 'alarm_actions', column: ['name','sectionid','delay1'].join(';'), value: ['Name',0,0].join(';')},function(result){
+			$.post('requests/insert_into_table.php',{table: 'actions', column: ['name','sectionid','delay1'].join(';'), value: ['Name',0,0].join(';')},function(result){
 				id = JSON.parse(result);
 				id = id[0];
 				// add the action to knxcontrol
@@ -268,7 +264,7 @@ var knxcontrol = {
 			});
 		},
 		del: function(id){
-			$.post('requests/delete_from_table.php',{table: 'alarm_actions', where: 'id='+id},function(result){
+			$.post('requests/delete_from_table.php',{table: 'actions', where: 'id='+id},function(result){
 				delete knxcontrol.action[id];
 				$('[data-role="action_list"]').trigger('update',id);
 			});
@@ -317,7 +313,7 @@ var knxcontrol = {
 				// a loading variable as the load time is significant to not load double
 				if(that.loading_quarterhourdata==false){
 					that.loading_quarterhourdata = true;
-					$.post('requests/select_from_table.php',{table: 'measurements_quarterhouraverage', column: 'time,value', where: 'signal_id='+id+' AND time > '+((new Date()).getTime()/1000-7*24*3600), orderby: 'time'},function(result){
+					$.post('requests/select_from_table.php',{table: 'measurements_average_quarterhour', column: 'time,value', where: 'signal_id='+id+' AND time > '+((new Date()).getTime()/1000-7*24*3600), orderby: 'time'},function(result){
 						that.quarterhourdata = []
 						$.each(JSON.parse(result),function(index,value){
 							that.quarterhourdata.push([parseFloat(value.time)*1000,parseFloat(value.value)]);
@@ -363,7 +359,7 @@ var knxcontrol = {
 				var that = this[id];
 				if(that.loading_weekdata==false){
 					that.loading_weekdata = true;
-					$.post('requests/select_from_table.php',{table: 'measurements_weekaverage', column: 'time,value', where: 'signal_id='+id+' AND time > '+((new Date()).getTime()/1000-52*7*24*3600), orderby: 'time'},function(result){
+					$.post('requests/select_from_table.php',{table: 'measurements_average_week', column: 'time,value', where: 'signal_id='+id+' AND time > '+((new Date()).getTime()/1000-52*7*24*3600), orderby: 'time'},function(result){
 						that.weekdata = []
 						
 						$.each(JSON.parse(result),function(index,value){
@@ -382,7 +378,7 @@ var knxcontrol = {
 				that = this[id];
 				if(that.loading_monthdata==false){
 					that.loading_monthdata = true;
-					$.post('requests/select_from_table.php',{table: 'measurements_monthaverage', column: 'time,value', where: 'signal_id='+id+' AND time > '+((new Date()).getTime()/1000-365*24*3600), orderby: 'time'},function(result){
+					$.post('requests/select_from_table.php',{table: 'measurements_average_month', column: 'time,value', where: 'signal_id='+id+' AND time > '+((new Date()).getTime()/1000-365*24*3600), orderby: 'time'},function(result){
 						that.monthdata = []
 						
 						$.each(JSON.parse(result),function(index,value){
@@ -405,7 +401,7 @@ var knxcontrol = {
 				where = 'id='+id;
 			}
 			var that = this;
-			$.post('requests/select_from_table.php',{table: 'profile_legend', column: '*', where: where},function(result){
+			$.post('requests/select_from_table.php',{table: 'profiles_legend', column: '*', where: where},function(result){
 				var results = JSON.parse(result);
 				$.each(results,function(index,result){
 					that[result.id] = {
@@ -423,13 +419,13 @@ var knxcontrol = {
 		},
 		update: function(id,field,value){
 			var that = this;
-			$.post('requests/update_table.php',{table: 'profile_legend', column: field, value: value, where: 'id='+id},function(result){
+			$.post('requests/update_table.php',{table: 'profiles_legend', column: field, value: value, where: 'id='+id},function(result){
 				that.get(id);
 			});
 		},
 		add: function(){
 			var that = this;
-			$.post('requests/insert_into_table.php',{table: 'profile_legend', column: ['name','quantity','unit','description'].join(';'), value: ["'Name'","''","''","''"].join(';')},function(result){
+			$.post('requests/insert_into_table.php',{table: 'profiles_legend', column: ['name','quantity','unit','description'].join(';'), value: ["'Name'","''","''","''"].join(';')},function(result){
 				var id = JSON.parse(result);
 				id = id[0];
 				//add blank data
@@ -440,7 +436,7 @@ var knxcontrol = {
 		},
 		del: function(id){
 			var that = this;
-			$.post('requests/delete_from_table.php',{table: 'profile_legend', where: 'id='+id},function(result){
+			$.post('requests/delete_from_table.php',{table: 'profiles_legend', where: 'id='+id},function(result){
 				$.post('requests/delete_from_table.php',{table: 'profile', where: 'profile_id='+id},function(result){
 					delete that[id];
 					$('[data-role="profile_list"]').trigger('update',id);

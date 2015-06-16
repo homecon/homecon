@@ -434,7 +434,7 @@ $(document).on('click','a.edit_widget',function(){
 	$('#widget_def_popup div.options').empty();
 	$.each(pagebuilder.section[section_id].page[page_id].section[page_section_id].widget[widget_id].options,function(index,option){
 		if( !(index=='disabled' || index=='create') ){
-			if( !(index=='item' && option=='building.weatherforecast')){
+			if( !(index=='item' && option=='knxcontrol.weather.prediction.detailed')){
 				$('#widget_def_popup div.options').append('<input type="text" data-field="'+index+'" value="'+option+'" placeholder="'+index+'">');
 			}
 		}
@@ -649,7 +649,7 @@ render_page = function(section_id,page_id){
 						option = option+'.value';
 					}
 					else if(widget.type=='shading'){
-						option = option+'.shading.pos';
+						option = option+'.shading.value';
 					}
 				}
 				$('#renderpage section[data-id="'+section_index+'"] div[data-id="'+widget_index+'"]').attr('data-'+index,option);
@@ -761,7 +761,7 @@ publish_page = function(section_id,page_id){
 							option = option+'.value';
 						}
 						else if(widget.type=='shading'){
-							option = option+'.shading.pos';
+							option = option+'.shading.value';
 						}
 					}
 					publish += ' data-'+index+'="'+option+'"';
