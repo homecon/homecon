@@ -216,7 +216,8 @@ pagebuilder = {
 		displayvalue: {name: 'Display value'},
 		btn: {name: 'Button'},
 		weather_block: {name: 'Weather block'},
-		ventilation_control: {name: 'Ventilation control'}
+		ventilation_control: {name: 'Ventilation control'},
+		setpoint: {name: 'Slider'}
 	},
 	iconlist:[
 		'fts_sunblind.png',
@@ -432,7 +433,14 @@ $(document).on('click','a.edit_widget',function(){
 	$('#widget_def_popup').attr('data-id',widget_id);
 	$('#widget_def_popup').attr('data-page_section_id',page_section_id);
 	$('#widget_def_popup div.options').empty();
-	$.each(pagebuilder.section[section_id].page[page_id].section[page_section_id].widget[widget_id].options,function(index,option){
+				
+				
+	$.each($.knxcontrol[type].prototype.options,function(index,option){
+		// check if the current option allready has a value
+		if(index in pagebuilder.section[section_id].page[page_id].section[page_section_id].widget[widget_id].options){
+			option = pagebuilder.section[section_id].page[page_id].section[page_section_id].widget[widget_id].options[index];
+		}
+
 		if( !(index=='disabled' || index=='create') ){
 			$('#widget_def_popup div.options').append('<input type="text" data-field="'+index+'" value="'+option+'" placeholder="'+index+'">');
 		}
@@ -641,6 +649,7 @@ render_page = function(section_id,page_id){
 			
 			// widget options
 			widget_index = index;
+
 			$.each(widget.options,function(index,option){
 				if(index=='item'){
 					if(widget.type=='lightdimmer'){

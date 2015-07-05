@@ -90,6 +90,92 @@ $.widget('knxcontrol.btn',{
         });
 	}
 });
+/*****************************************************************************/
+/*                     checkbox                                              */
+/*****************************************************************************/
+$.widget('knxcontrol.checkbox',{
+	options: {
+		label: '',
+		item: '',
+    },
+	
+	_create: function(){
+		// enhance
+		this.element.prepend('<label><input type="checkbox">'+this.options.label+'</label>');
+		this.update();
+		
+		// bind events
+		
+		this._on(this.element, {
+            'click input': function(event){
+				var item = this.options.item;
+				// update the value in smarthome
+				smarthome.write(item, (knxcontrol.item[item]+1)%2);
+			},
+			'update': function(event){
+				this.update();
+			}
+        });
+		
+	},
+
+	update: function(){
+		var item = this.options.item;
+				
+		if(knxcontrol.item[item]){
+			this.element.find('input').prop('checked', true).checkboxradio('refresh');
+		}
+		else{
+			this.element.find('input').prop('checked', false).checkboxradio('refresh');
+		}
+	}
+
+});
+/*****************************************************************************/
+/*                     setpoint                                              */
+/*****************************************************************************/
+$.widget("knxcontrol.setpoint",{
+	options: {
+		label: '', 
+		item: '',
+		val_on: 1,
+		val_off: 0
+    },
+	lock: false,
+	_create: function(){
+		// enhance
+		this.element.prepend('<p>'+this.options.label+'</p>'+
+							 '<input type="range" value="'+this.options.val_off+'" min="'+this.options.val_off+'" max="'+this.options.val_on+'" step="'+(this.options.val_on-this.options.val_off)/51+'" data-highlight="true"/>');
+		this.element.enhanceWithin();
+		this.update();
+
+		// bind events
+		this._on(this.element, {
+			'change input': function(event){
+				var item = this.options.item;
+				if(!this.lock){
+					smarthome.write(item, this.element.find('input').val());
+				}
+			},
+			'update': function(event){
+				this.update();
+			}
+        });
+	},
+	update: function(){
+		this.lock = true;
+		//console.log(this.options.item+' locked');
+		var that = this;
+		setTimeout(function(){
+			that.lock = false;
+			//console.log(that.options.item+' unlocked');
+		},500);
+		
+		var item = this.options.item;
+		this.element.find('input').val(knxcontrol.item[item]).slider('refresh');
+	}
+});
+
 
 /*****************************************************************************/
 /*                     light switch                                          */
@@ -205,7 +291,8 @@ $.widget("knxcontrol.shading",{
 		label: '',
 		item: '',
 		val_on: 255,
-		val_off: 0
+		val_off: 0,
+		advanced: false
     },
 	_create: function(){
 		// enhance
@@ -213,10 +300,19 @@ $.widget("knxcontrol.shading",{
 		this.element.prepend('<p>'+this.options.label+'</p>'+
 							 '<a href="#" class="open"><img src="icons/ffffff/fts_shutter_10.png"></a>'+
 							 '<a href="#" class="close"><img src="icons/ffffff/fts_shutter_100.png"></a>'+
-							 '<input type="range" value="'+this.options.val_off+'" min="'+this.options.val_off+'" max="'+this.options.val_on+'" step="'+(this.options.val_on-this.options.val_off)/51+'" data-highlight="true"/>');
+							 '<input class="value" type="range" value="'+this.options.val_off+'" min="'+this.options.val_off+'" max="'+this.options.val_on+'" step="'+(this.options.val_on-this.options.val_off)/51+'" data-highlight="true"/>');
 		this.element.enhanceWithin();
 		this.update();
 		
+		if(this.options.advanced){
+			// get the parent item
+			arr = this.options.item.split('.');
+			parent = arr.slice(0,arr.length-1).join('.');
+
+			console.log(parent);
+			this.element.append('<div data-role="checkbox" data-label="Auto" data-item="'+parent+'.auto"></div>');
+		}
+
 		// bind events
 		this._on(this.element, {
 			'change input': function(event){
@@ -247,10 +343,11 @@ $.widget("knxcontrol.shading",{
 			//console.log(that.options.item+' unlocked');
 		},500);
 		
-		
 		var item = this.options.item;
 
-		this.element.find('input').val(knxcontrol.item[item]).slider('refresh');
+		this.element.find('input.value').val(knxcontrol.item[item]).slider('refresh');
+
+		
 	}
 });
 
@@ -300,7 +397,7 @@ $.widget("knxcontrol.clock",{
 		m1 = Math.floor( now.getMinutes() / 10 );
 		m2 = now.getMinutes() % 10;
 
-		if( h2 != this.h2_current){
+		if(h2 != this.h2_current){
 			this.flip('img.hoursRight',h2);
 			this.h2_current = h2;
 					
