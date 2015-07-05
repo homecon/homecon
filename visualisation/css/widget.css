@@ -37,6 +37,19 @@ div[data-role="fieldcontain"]{
 	padding: .1em 0;
 }
 
+div.twocols{
+	display: inline-block;
+	float: left; 
+	width: 49%;
+	margin: 0;
+}
+div.threecols{
+	display: inline-block;
+	float: left; 
+	width: 32%;
+	margin: 0;
+}
+
 /*****************************************************************************/
 /*                     Separator line                                        */
 /*****************************************************************************/
@@ -228,6 +241,13 @@ div[data-role="shading"] a.edit_widget{
     top: -10px;
 	right: 50px;
 }
+div[data-role="shading"] div.advanced{
+	position: absolute;
+	width: 100%;
+    bottom: 0px;
+	left: 0px;
+}
+
 #home_pagebuilder div[data-role="shading"]{
 	border: solid 1px #222;
 }

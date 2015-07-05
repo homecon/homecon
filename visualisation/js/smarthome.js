@@ -72,6 +72,7 @@ var smarthome = {
 
 						// update widgets
                         knxcontrol.item.update(item, value);
+
                     };
                     break;
 				case 'log':

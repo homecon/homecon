@@ -101,13 +101,13 @@ $.widget('knxcontrol.checkbox',{
 	
 	_create: function(){
 		// enhance
-		this.element.prepend('<label><input type="checkbox">'+this.options.label+'</label>');
+		this.element.prepend('<label>'+this.options.label+'<input type="checkbox" data-mini="true"/></label>');
+		this.element.enhanceWithin();
 		this.update();
-		
+
 		// bind events
-		
 		this._on(this.element, {
-            'click input': function(event){
+            'change input': function(event){
 				var item = this.options.item;
 				// update the value in smarthome
 				smarthome.write(item, (knxcontrol.item[item]+1)%2);
@@ -301,21 +301,27 @@ $.widget("knxcontrol.shading",{
 							 '<a href="#" class="open"><img src="icons/ffffff/fts_shutter_10.png"></a>'+
 							 '<a href="#" class="close"><img src="icons/ffffff/fts_shutter_100.png"></a>'+
 							 '<input class="value" type="range" value="'+this.options.val_off+'" min="'+this.options.val_off+'" max="'+this.options.val_on+'" step="'+(this.options.val_on-this.options.val_off)/51+'" data-highlight="true"/>');
+		
 		this.element.enhanceWithin();
 		this.update();
-		
+
 		if(this.options.advanced){
 			// get the parent item
 			arr = this.options.item.split('.');
 			parent = arr.slice(0,arr.length-1).join('.');
 
-			console.log(parent);
-			this.element.append('<div data-role="checkbox" data-label="Auto" data-item="'+parent+'.auto"></div>');
+			this.element.append('<div class="advanced">'+
+									'<div class="threecols"><div data-role="checkbox" data-label="Auto" data-item="'+parent+'.auto"></div></div>'+
+									'<div class="threecols"><div data-role="checkbox" data-label="Closed" data-item="'+parent+'.closed"></div></div>'+
+									'<div class="threecols"><div data-role="checkbox" data-label="Override" data-item="'+parent+'.override"></div></div>'+
+								'</div>');
+			$('div[data-role="checkbox"]').checkbox();
 		}
+		
 
 		// bind events
 		this._on(this.element, {
-			'change input': function(event){
+			'change input.value': function(event){
 				var item = this.options.item;
 				if(!this.lock){
 					smarthome.write(item, this.element.find('input').val());
