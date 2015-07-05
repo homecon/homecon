@@ -42,6 +42,8 @@ class KNXControl:
 		self._sh = smarthome
 		self._mysql_pass = mysql_pass
 
+		self.item = None
+
 		self.sh_listen_items = {}
 
 		self.zones = []
@@ -62,6 +64,7 @@ class KNXControl:
 		self.measurements = Measurements(self)
 		self.weather = Weather(self)
 
+		self.item = self._sh.knxcontrol
 
 		# Zone objects
 		for item in self.find_item('zone'):
@@ -164,8 +167,8 @@ class KNXControl:
 
 		# set controls
 		for zone in self.zones:
-			zone.irradiation.setpoint(500)
-			zone.emission.setpoint(0)
+			#zone.irradiation.setpoint(500)
+			#zone.emission.setpoint(0)
 
 			zone.shading_control()
 

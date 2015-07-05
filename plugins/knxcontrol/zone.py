@@ -73,7 +73,7 @@ class Zone():
 		"""
 		Function tries to control the shading so the actual solar gains to the zone match the setpoint
 		"""
-		#logger.warning('automatic shading control for zone: '+ self.item.id())
+		
 		irradiation_set = self.item.irradiation.setpoint()
 
 		# close shadings until the setpoint is reached
@@ -95,16 +95,17 @@ class Zone():
 				newpos.append(-1)
 				oldpos.append(-1)
 
+		
 		# calculate new shading positions
 		for idx,window in enumerate(windows):
 			oldirradiation = sum( [w.irradiation_max(average=True)*(1-p)+w.irradiation_min(average=True)*p for w,p in zip(windows,newpos)] )
 
 			if window.shading != None:
-				if window.shading.closed():
+				if self.knxcontrol.item.weather.current.precipitation() and ('open_when_raining' in window.shading.conf):
+					newpos[idx] = 0
+				elif window.shading.closed():
 					newpos[idx] = 1
 				elif not window.shading.auto():
-					newpos[idx] = 0
-				elif self.knxcontrol.weather.current.precipitation() and ('open_when_raining' in window.shading.conf):
 					newpos[idx] = 0
 				elif window.shading.override():
 					newpos[idx] = (window.shading.value()-float(window.shading.conf['open_value']))/(float(window.shading.conf['closed_value'])-float(window.shading.conf['open_value']))
@@ -114,20 +115,21 @@ class Zone():
 					newpos[idx] = min(1,max(0,(irradiation_set - oldirradiation)/(newirradiation - oldirradiation)))
 
 						
-
-		logger.warning( [w.irradiation_max(average=True)*(1-p)+w.irradiation_min(average=True)*p for w,p in zip(windows,newpos)] )
-		logger.warning(newpos)
-
 		# set all shading positions
 		for idx,window in enumerate(windows):
 			if window.shading != None:
-				if window.shading.closed():
-					window.shading.value( float(window.shading.conf['closed_value']) )
-				elif not window.shading.override():
-					if abs( newpos[idx]-oldpos[idx]) > 0.2 or newpos[idx]==0.0 or newpos[idx]==1.0:
-						# only actually set the shading position if the change is larger than 20% or it is closed or open
-						window.shading.value( float(window.shading.conf['open_value'])+newpos[idx]*(float(window.shading.conf['closed_value'])-float(window.shading.conf['open_value'])) )
+				#if window.shading.closed():
+				#	window.shading.value( float(window.shading.conf['closed_value']) )
+				#elif not window.shading.override():
+				if abs( newpos[idx]-oldpos[idx]) > 0.2 or newpos[idx]==0.0 or newpos[idx]==1.0:
+					# only actually set the shading position if the change is larger than 20% or it is closed or open
+					window.shading.value( float(window.shading.conf['open_value'])+newpos[idx]*(float(window.shading.conf['closed_value'])-float(window.shading.conf['open_value'])) )
 
-
+		
 		# estimate the new value for irradiation and set it
 		self.irradiation_est()
+
+		logger.warning(  'automatic shading control for zone: {0}, setpoint: {1:.1f}, estimate: {2:.1f}'.format( self.item.id(),self.irradiation.setpoint(),self.irradiation() )  )
+		logger.warning(  ', '.join('{0} pos: {1:.1f} irr: {2:.1f}'.format(w.item.id(),p,w.irradiation_est(average=True)) for w,p in zip(windows,newpos))  )
+
+
