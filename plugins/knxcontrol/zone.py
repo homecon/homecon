@@ -130,6 +130,6 @@ class Zone():
 		self.irradiation_est()
 
 		logger.warning(  'automatic shading control for zone: {0}, setpoint: {1:.1f}, estimate: {2:.1f}'.format( self.item.id(),self.irradiation.setpoint(),self.irradiation() )  )
-		logger.warning(  ', '.join('{0} pos: {1:.1f} irr: {2:.1f}'.format(w.item.id(),p,w.irradiation_est(average=True)) for w,p in zip(windows,newpos))  )
+		logger.warning(  ', '.join('{0} pos: {1:.1f} irr: {2:.1f}'.format(w.item.id(),p,w.irradiation_est(average=False)) for w,p in zip(windows,newpos))  )
 
 
