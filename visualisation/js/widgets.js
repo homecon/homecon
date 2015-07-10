@@ -524,24 +524,14 @@ $.widget("knxcontrol.weather_block",{
 		var item = this.options.item;
 		if(knxcontrol.item[item]){
 			if(this.options.daysahead>=0){
-				if(item =='knxcontrol.weather.prediction.detailed'){
-					// find noon of the correct day
-					for(var index = 0+Math.max(0,(this.options.daysahead-1)*8);index<knxcontrol.item[item].length;index++){
-						date = new Date(knxcontrol.item[item][index].datetime*1000);
-						if((date.getHours()>11 && date.getHours()<15)) break;
-					}
-				}
-				else{
-					index = this.options.daysahead
-				}
+				index = this.options.daysahead
 			}
 			else{
 				index = 0;
 			}
-			
+
 			if(index < knxcontrol.item[item].length){
 				this.element.find('img').attr('src','icons/weather/'+this.icons[knxcontrol.item[item][index].icon]);
-				
 				var temperature = 0;
 				var windspeed = 0;
 				var winddirection = '';
