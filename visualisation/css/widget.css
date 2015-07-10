@@ -77,39 +77,39 @@ div[data-role="line"].line{
 }
 
 /*****************************************************************************/
-/*                     Slider                                                */
+/*                     inputslider                                           */
 /*****************************************************************************/
-div[data-role="setpoint"]{
+div[data-role="inputslider"]{
 	display: inline-block;
 	position: relative;
 	height: 60px;
 	width: 98%;
 	text-align: left;
 }
-div[data-role="setpoint"] p{
+div[data-role="inputslider"] p{
 	position: absolute;
 	margin-left: 54px;
 	margin-top: 5px;
 	font-weight: 700;
 }
-div[data-role="setpoint"] .ui-slider{
+div[data-role="inputslider"] .ui-slider{
 	margin-left: 64px;
 	margin-right: 64px;
 	margin-top: 25px;
 	margin-bottom: 0;
 }
-div[data-role="setpoint"] .ui-slider-track{
+div[data-role="inputslider"] .ui-slider-track{
 	margin-left: 0;
 	margin-right: 0;
 }
-div[data-role="setpoint"] .ui-slider input{
+div[data-role="inputslider"] .ui-slider input{
 	visibility: hidden;
 }
 
-#home_pagebuilder div[data-role="setpoint"]{
+#home_pagebuilder div[data-role="inputslider"]{
 	border: solid 1px #222;
 }
-#home_pagebuilder div[data-role="setpoint"] a.edit_widget{
+#home_pagebuilder div[data-role="inputslider"] a.edit_widget{
     top: -5px;
 	right: -5px;
 }

@@ -167,9 +167,9 @@ $.widget('knxcontrol.checkbox',{
 
 });
 /*****************************************************************************/
-/*                     setpoint                                              */
+/*                     inputslider                                           */
 /*****************************************************************************/
-$.widget("knxcontrol.setpoint",{
+$.widget("knxcontrol.inputslider",{
 	options: {
 		label: '', 
 		item: '',
