@@ -61,6 +61,41 @@ $.widget('knxcontrol.displayvalue',{
 		this.element.html(value);
 	}
 });
+/*****************************************************************************/
+/*                     input value                                           */
+/*****************************************************************************/
+$.widget("knxcontrol.inputvalue",{
+	options: {
+		label: '',
+		unit: '',
+		item: ''
+    },
+	lock: false,
+	_create: function(){
+		// enhance
+		this.element.prepend('<p class="label">'+this.options.label+'</p>'+
+							 '<input type="text"/>'+
+							 '<p class="unit">'+this.options.unit+'</p>');
+		this.element.enhanceWithin();
+		this.update();
+
+		// bind events
+		this._on(this.element, {
+			'change input': function(event){
+				var item = this.options.item;
+				smarthome.write(item, this.element.find('input').val());
+				
+			},
+			'update': function(event){
+				this.update();
+			}
+        });
+	},
+	update: function(){	
+		var item = this.options.item;
+		this.element.find('input').val(knxcontrol.item[item]);
+	}
+});
 
 /*****************************************************************************/
 /*                     button                                                */
@@ -144,8 +179,8 @@ $.widget("knxcontrol.setpoint",{
 	lock: false,
 	_create: function(){
 		// enhance
-		this.element.prepend('<p>'+this.options.label+'</p>'+
-							 '<input type="range" value="'+this.options.val_off+'" min="'+this.options.val_off+'" max="'+this.options.val_on+'" step="'+(this.options.val_on-this.options.val_off)/51+'" data-highlight="true"/>');
+		this.element.prepend('<p class="label">'+this.options.label+'</p>'+
+							 '<input type="range" value="'+this.options.val_off+'" min="'+this.options.val_off+'" max="'+this.options.val_on+'" step="1" data-highlight="true"/>');
 		this.element.enhanceWithin();
 		this.update();
 
@@ -170,7 +205,7 @@ $.widget("knxcontrol.setpoint",{
 			that.lock = false;
 			//console.log(that.options.item+' unlocked');
 		},500);
-		
+
 		var item = this.options.item;
 		this.element.find('input').val(knxcontrol.item[item]).slider('refresh');
 	}

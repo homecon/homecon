@@ -115,6 +115,45 @@ div[data-role="setpoint"] .ui-slider input{
 }
 
 /*****************************************************************************/
+/*                     input value                                           */
+/*****************************************************************************/
+div[data-role="inputvalue"]{
+	display: inline-block;
+	position: relative;
+	height: 65px;
+	width: 98%;
+	text-align: left;
+}
+div[data-role="inputvalue"] p.label{
+	position: absolute;
+	margin-left: 54px;
+	margin-top: 5px;
+	font-weight: 700;
+}
+
+div[data-role="inputvalue"] div.ui-input-text{
+	position: absolute;
+	margin-left: 54px;
+	margin-top: 24px;
+	margin-bottom: 0px;
+	width: 150px;
+}
+div[data-role="inputvalue"] p.unit{
+	position: absolute;
+	margin-top: 30px;
+	margin-left: 214px;
+	margin-bottom: 0px;
+
+}
+
+#home_pagebuilder div[data-role="inputvalue"]{
+	border: solid 1px #222;
+}
+#home_pagebuilder div[data-role="inputvalue"] a.edit_widget{
+    top: -5px;
+	right: -5px;
+}
+/*****************************************************************************/
 /*                     Light switch                                          */
 /*****************************************************************************/
 div[data-role="lightswitch"]{

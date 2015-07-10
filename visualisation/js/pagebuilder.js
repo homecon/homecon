@@ -217,7 +217,8 @@ pagebuilder = {
 		btn: {name: 'Button'},
 		weather_block: {name: 'Weather block'},
 		ventilation_control: {name: 'Ventilation control'},
-		setpoint: {name: 'Slider'}
+		setpoint: {name: 'Slider'},
+		inputvalue: {name: 'Input Value'}
 	},
 	iconlist:[
 		'fts_sunblind.png',
