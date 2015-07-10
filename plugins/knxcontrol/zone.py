@@ -95,11 +95,12 @@ class Zone():
 				newpos.append(-1)
 				oldpos.append(-1)
 
-		
-		# calculate new shading positions
-		for idx,window in enumerate(windows):
-			oldirradiation = sum( [w.irradiation_max(average=True)*(1-p)+w.irradiation_min(average=True)*p for w,p in zip(windows,newpos)] )
+		tolerance = 100		
 
+		# calculate new shading positions
+		irradiation = self.irradiation_max(average=True)
+		for idx,window in enumerate(windows):
+			logger.warning(irradiation)
 			if window.shading != None:
 				if self.knxcontrol.item.weather.current.precipitation() and ('open_when_raining' in window.shading.conf):
 					newpos[idx] = 0
@@ -110,9 +111,13 @@ class Zone():
 				elif window.shading.override():
 					newpos[idx] = (window.shading.value()-float(window.shading.conf['open_value']))/(float(window.shading.conf['closed_value'])-float(window.shading.conf['open_value']))
 				else:
-					newpos[idx] = 1
-					newirradiation = sum([w.irradiation_max(average=True)*(1-p)+w.irradiation_min(average=True)*(p) for w,p in zip(windows,newpos)])
-					newpos[idx] = min(1,max(0,(irradiation_set - oldirradiation)/(newirradiation - oldirradiation)))
+					irradiation_temp = irradiation-window.irradiation_max(average=True)+window.irradiation_min(average=True)
+					if abs(irradiation-irradiation_set) > tolerance and irradiation-irradiation_temp > 1:
+						# to avoid devisions by zero
+						newpos[idx] = min(1,max(0,(irradiation-irradiation_set)/(irradiation-irradiation_temp)))
+				
+					# update irradiation
+					irradiation = irradiation - newpos[idx]*window.irradiation_max(average=True) + newpos[idx]*window.irradiation_min(average=True)
 
 						
 		# set all shading positions
@@ -129,7 +134,7 @@ class Zone():
 		# estimate the new value for irradiation and set it
 		self.irradiation_est()
 
-		logger.warning(  'automatic shading control for zone: {0}, setpoint: {1:.1f}, estimate: {2:.1f}'.format( self.item.id(),self.irradiation.setpoint(),self.irradiation() )  )
-		logger.warning(  ', '.join('{0} pos: {1:.1f} irr: {2:.1f}'.format(w.item.id(),p,w.irradiation_est(average=False)) for w,p in zip(windows,newpos))  )
+		logger.warning(  'automatic shading control for zone: {0}, setpoint: {1:.1f}, estimate: {2:.1f}'.format( self.item.id(),self.irradiation.setpoint(),self.irradiation() )  )		
+		logger.warning(  ', '.join(['{0} pos: {1:.1f} irr: {2:.1f}'.format(w.item.id(),p,w.irradiation_est()) for w,p in zip(windows,newpos)])  )
 
 
