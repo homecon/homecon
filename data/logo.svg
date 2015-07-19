@@ -17,14 +17,6 @@
    sodipodi:docname="logo.svg">
   <defs
      id="defs4">
-    <filter
-       inkscape:collect="always"
-       id="filter3839">
-      <feGaussianBlur
-         inkscape:collect="always"
-         stdDeviation="0.42090938"
-         id="feGaussianBlur3841" />
-    </filter>
     <clipPath
        clipPathUnits="userSpaceOnUse"
        id="clipPath3862">
@@ -43,11 +35,11 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="1.979899"
-     inkscape:cx="172.07863"
-     inkscape:cy="115.78134"
+     inkscape:zoom="2.8"
+     inkscape:cx="92.765006"
+     inkscape:cy="99.072053"
      inkscape:document-units="px"
-     inkscape:current-layer="layer2"
+     inkscape:current-layer="layer1"
      showgrid="false"
      inkscape:snap-bbox="false"
      inkscape:window-width="1320"
@@ -55,7 +47,7 @@
      inkscape:window-x="46"
      inkscape:window-y="18"
      inkscape:window-maximized="1"
-     inkscape:snap-nodes="true"
+     inkscape:snap-nodes="false"
      inkscape:snap-grids="true"
      inkscape:object-paths="true"
      inkscape:object-nodes="true"
@@ -113,7 +105,7 @@
            sodipodi:nodetypes="cccc"
            inkscape:connector-curvature="0"
            id="path3806"
-           d="m 125,942.3622 0,19.99977 c -19.64625,20.05896 -34.788563,22.46873 -50,25.00021 l 0,-20.00011"
+           d="m 125,942.3622 0,19.99977 c -14.10014,16.26425 -34.788563,22.46873 -50,25.00021 l 0,-20.00011"
            style="fill:#b78e82;fill-opacity:1;stroke:none" />
         <path
            sodipodi:nodetypes="ccccc"
@@ -133,10 +125,9 @@
            style="fill:#428a47;fill-opacity:1;stroke:none" />
         <path
            style="fill:#bcdfbf;fill-opacity:1;stroke:none"
-           d="m 45,917.36218 -31,17 0,8 c 25.79017,0.14711 44.904977,13.13145 62,30 l 0,-7 z"
-           id="path3784"
-           inkscape:connector-curvature="0"
-           sodipodi:nodetypes="cccccc" />
+           d="M 31.8125 80.5625 L 5 95.28125 L 5 105.5 C 11.486577 112.0961 20.100871 118.50372 29.21875 123.3125 L 29.21875 117.78125 L 41.34375 123.84375 L 41.34375 128.59375 C 47.341949 130.61945 53.245954 131.68743 58.625 131.4375 L 58.625 122.09375 L 31.8125 80.5625 z "
+           transform="matrix(1.155867,0,0,1.155867,8.220665,824.22985)"
+           id="path3784" />
         <path
            style="fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:round;stroke-opacity:1"
            d="m 45,917.36218 -31,17 0,40 28,14 0,-28 14,7 0,28 20,10.00002 0,-40.00002 z"
@@ -157,7 +148,7 @@
            sodipodi:nodetypes="ccccc"
            inkscape:connector-curvature="0"
            id="path3005"
-           d="m 45,917.36218 17,26 c 15.436676,-3.6677 32.006412,-1.93899 49,-24 l -16,-22 z"
+           d="m 45,917.36218 17,26 c 20.8188,-4.44162 36.965931,-10.10516 49,-24 l -16,-22 z"
            style="fill:#b7c2d6;fill-opacity:1;stroke:none" />
         <path
            sodipodi:nodetypes="ccccc"

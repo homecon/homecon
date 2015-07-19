@@ -28,7 +28,7 @@
 <!DOCTYPE html>
 <html>
 	<head>
-		<title>KNX control</title>
+		<title>HomeCon</title>
 
 		<meta charset='utf-8'/>
 		<meta name='viewport' content='width=device-width, user-scalable=yes, initial-scale=1, maximum-scale=1.3, minimum-scale=1' />
@@ -37,9 +37,8 @@
 		<meta name='apple-mobile-web-app-status-bar-style' content='black-translucent' />
 		<meta http-equiv='expires' content='0' />
 
-		<link rel='icon' href='favicon.png'/>
-		<link rel='apple-touch-icon' href='favicon.png' />
-		<link rel='icon' href='favicon.ico' type='image/x-icon' />
+		<link rel='icon' href='icons/favicon.png'/>
+		<link rel='apple-touch-icon' href='icons/favicon.png' />
 
 		<!-- jquery mobile -->
 		<script src='lib/jquery-1.11.0.min.js'></script>
