@@ -105,3 +105,20 @@ class Window():
 			logger.warning('Override of %s control released'%self.shading)
 		
 		threading.Timer(4*3600,release).start()
+
+	def shading_value2pos(self,value=None):
+		
+		if self.shading != None:
+			if value==None:
+				value = self.shading.value()
+
+			return (value-float(self.shading.conf['open_value']))/(float(self.shading.conf['closed_value'])-float(self.shading.conf['open_value']))
+		else:
+			return 0
+
+	def shading_pos2value(self,pos):
+
+		if self.shading != None:
+			return float(self.shading.conf['open_value'])+pos*(float(self.shading.conf['closed_value'])-float(self.shading.conf['open_value']))
+		else:
+			return 0

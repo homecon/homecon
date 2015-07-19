@@ -132,11 +132,7 @@ class KNXControl:
 
 		########################################################################
 		# check if shading override values need to be set
-		if item in self._sh.match_items('*.shading.move'):
-			window = item.return_parent().conf['knxcontrolobject']
-			window.shading_override()
-
-		if item in self._sh.match_items('*.shading.stop'):
+		if item in self._sh.match_items('*.shading.set_override'):
 			window = item.return_parent().conf['knxcontrolobject']
 			window.shading_override()
 
