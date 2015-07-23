@@ -116,7 +116,19 @@ var knxcontrol = {
 	smarthome_log: {
 		log: [],
 		update: function(log){
-			this.log = log.concat(this.log);
+			var templog = log.concat(this.log);
+
+			// remove items with equal time
+			var uniquetimes = [];
+			var newlog = []
+			$.each(templog, function(index,value){
+				if($.inArray(value.time, uniquetimes) === -1){
+					uniquetimes.push(value.time);
+					newlog.push(value)
+				}
+			});
+			this.log = newlog
+
 			$('[data-role="smarthome_log"]').trigger('update');
 		}
 	},
