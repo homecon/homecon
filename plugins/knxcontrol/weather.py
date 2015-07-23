@@ -266,7 +266,7 @@ class Weather():
 		try:
 			weatherforecast = []
 
-			response = urllib.request.urlopen('http://api.openweathermap.org/data/2.5/forecast?lat=%s&lon=%s' % (self.knxcontrol.lat,self.knxcontrol.lon))
+			response = urllib.request.urlopen('http://api.openweathermap.org/data/2.5/forecast?lat={0}&lon={1}'.format(self.knxcontrol.lat,self.knxcontrol.lon))
 			response = json.loads(response.read().decode('utf-8'))
 
 			for forecast in response['list']:
@@ -278,13 +278,14 @@ class Weather():
 				currentforecast['clouds'] = forecast['clouds']['all']
 				currentforecast['wind_speed'] = forecast['wind']['speed']
 				currentforecast['wind_directions'] = forecast['wind']['deg']
-				if 'rain' in forecast:
+				try:
 					currentforecast['rain'] = forecast['rain']['3h']
-				else:
+				except:
 					currentforecast['rain'] = 0
-				
+
+
 				weatherforecast.append(currentforecast)
-		
+
 			# set the smarthome item
 			self.prediction_detailed(weatherforecast)
 		
@@ -300,7 +301,7 @@ class Weather():
 	
 		try:
 			weatherforecast = []
-			response = urllib.request.urlopen('http://api.openweathermap.org/data/2.5/forecast/daily?lat=%s&lon=%s' % (self.knxcontrol.lat,self.knxcontrol.lon))
+			response = urllib.request.urlopen('http://api.openweathermap.org/data/2.5/forecast/daily?lat={0}&lon={1}'.format(self.knxcontrol.lat,self.knxcontrol.lon))
 			response = json.loads(response.read().decode('utf-8'))
 
 			for forecast in response['list']:
@@ -313,9 +314,9 @@ class Weather():
 				currentforecast['clouds'] = forecast['clouds']
 				currentforecast['wind_speed'] = forecast['speed']
 				currentforecast['wind_directions'] = forecast['deg']
-				if 'rain' in forecast:
+				try:
 					currentforecast['rain'] = forecast['rain']
-				else:
+				except:
 					currentforecast['rain'] = 0
 				
 				weatherforecast.append(currentforecast)
