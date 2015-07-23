@@ -97,6 +97,7 @@ class Window():
 
 	def shading_override(self):
 		self.shading.override(True)
+		self.shading.closed(False)
 		logger.warning('Overriding %s control'%self.shading)
 
 		# release override after 4h

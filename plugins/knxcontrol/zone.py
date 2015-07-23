@@ -69,34 +69,15 @@ class Zone():
 		"""
 		Function tries to control the shading so the actual solar gains to the zone match the setpoint
 		"""
-		
-		irradiation_set = self.item.irradiation.setpoint()
 
-		# close shadings until the setpoint is reached
-		# try to keep as many shadings completely open, to maintain view through the windows
-		# so start with the windows with the highest difference between max and min
-		
+		irradiation_set = self.irradiation.setpoint()
+
+		logger.warning( 'automatic shading control for zone: {0}, setpoint: {1:.1f}'.format( self.item.id(),self.irradiation.setpoint() )  )
+
 		# create an array of irradiation difference for all windows
 		differ = [w.irradiation_open(average=True)-w.irradiation_closed(average=True) for w in self.windows]
 		windows = sorted(self.windows, key=lambda w: w.irradiation_open(average=True)-w.irradiation_closed(average=True), reverse=True)
 
-
-		# get old shading positions
-		pos_new = []
-		pos_old = []
-		irradiation_open = []
-		irradiation_closed = []
-		for window in windows:
-			if window.shading != None:
-				pos_new.append(0)
-				pos_old.append( (window.shading.value()-float(window.shading.conf['open_value']))/(float(window.shading.conf['closed_value'])-float(window.shading.conf['open_value'])) )
-			else:
-				pos_new.append(-1)
-				pos_old.append(-1)
-
-	
-			irradiation_open.append( window.irradiation_open(average=True) )
-			irradiation_closed.append( window.irradiation_closed(average=True) )
 		tolerance = 100		
 
 		# set position min/max values
@@ -119,27 +100,80 @@ class Zone():
 			else:
 				pos_min.append(0)
 				pos_max.append(0)
-			
-		# calculate new shading positions
-		irradiation = sum([(1-pos_min[idx])*irradiation_open[idx]+(pos_min[idx])*irradiation_closed[idx] for idx,w in enumerate(windows)])
 
-		for idx,window in enumerate(windows):
-			logger.warning(irradiation)
-			
-			irradiation_temp = irradiation - ( (pos_max[idx]-pos_min[idx])*irradiation_open[idx] + (pos_min[idx]-pos_max[idx])*irradiation_closed[idx] )
-
-			if abs(irradiation-irradiation_set) > tolerance and irradiation-irradiation_temp > 1:
-				# to avoid devisions by zero
-				pos_new[idx] = (irradiation-irradiation_set)/(irradiation-irradiation_temp)
+		# get old shading positions updated them with the new extreme values
+		pos_old = []
+		pos_new = []
+		irradiation_open = []
+		irradiation_closed = []
+		for window,pmin,pmax in zip(windows,pos_min,pos_max):
+			if window.shading != None:
+				p = window.shading_value2pos()
+				p = min(pmax,max(pmin,p))				
+				pos_old.append( p )
+				pos_new.append( p )
+			else:
+				pos_old.append(0)
+				pos_new.append(0)
 		
-			pos_new[idx] = min(pos_max[idx],max(pos_min[idx],pos_new[idx]))
+			irradiation_open.append( window.irradiation_open(average=True) )
+			irradiation_closed.append( window.irradiation_closed(average=True) )
 
-			# update irradiation
-			irradiation = irradiation - irradiation_open[idx] + (1-pos_new[idx])*irradiation_open[idx] + (pos_new[idx])*irradiation_closed[idx]
+				
+		# calculate the irradiation with the old shading positions updated with the current min and max
+		irradiation = sum([(1-p)*irr_open+(p)*irr_closed for p,irr_open,irr_closed in zip(pos_old,irradiation_open,irradiation_closed)])
 
+		# calculate new shading positions
+		lower_shading = False
+		raise_shading = False
+		if irradiation < tolerance:
+			# set all shades to their minimum value
+			pos_new = pos_min
+			logger.warning('go to minimum')
+		else:
+			if irradiation < irradiation_set-tolerance:
+				# raise more shades
+				raise_shading = True
+				irradiation_set_move = irradiation_set+0.75*tolerance
+				logger.warning('raising')
+			elif irradiation > irradiation_set+tolerance:
+				# lower more shades
+				lower_shading = True
+				irradiation_set_move = irradiation_set-0.75*tolerance
+				logger.warning('lowering')
+			else: 
+				# do nothing
+				logger.warning('do nothing')
+
+			if lower_shading or raise_shading:
+				if lower_shading:
+					windowloop = enumerate(windows)
+				else:
+					windowloop = enumerate(reversed(windows))
+
+				for i,window in windowloop:
+
+					# maximum and minimum possible irradiation by changing this window only
+					irradiation_max = irradiation - ((1-pos_old[i])*irradiation_open[i]+(pos_old[i])*irradiation_closed[i]) + ((1-pos_min[i])*irradiation_open[i]+(pos_min[i])*irradiation_closed[i])
+					irradiation_min = irradiation - ((1-pos_old[i])*irradiation_open[i]+(pos_old[i])*irradiation_closed[i]) + ((1-pos_max[i])*irradiation_open[i]+(pos_max[i])*irradiation_closed[i])
+
+					# to avoid devisions by zero
+					if abs(irradiation_max-irradiation_min) > 1:
+						pos_new[i] = (irradiation_max-irradiation_set_move)/(irradiation_max-irradiation_min)
+						pos_new[i] = min(pos_max[i],max(pos_min[i],pos_new[i]))
 			
+					logger.warning('window: {0}, pos_old: {1:.1f}, irr: {2}, irr_max:{3}, irr_min:{4}, pos_new: {5:.1f}'.format(window.item.id(),pos_old[i],irradiation,irradiation_max,irradiation_min,pos_new[i]))
+
+					# update the irradiation value
+					irradiation = irradiation - ((1-pos_old[i])*irradiation_open[i]+(pos_old[i])*irradiation_closed[i]) +  ((1-pos_new[i])*irradiation_open[i]+(pos_new[i])*irradiation_closed[i])
+
+					if abs(irradiation - irradiation_set_move) < 0.1*tolerance:
+						break
+
+
+
 		# set shading positions which are auto and not override
-		for idx,window in enumerate(windows):
+		for i,window in enumerate(windows):
 			if window.shading != None:
 				# only actually set the shading position if
 				# it is set to closed
@@ -147,18 +181,14 @@ class Zone():
 				# it is set to open when raining and it rains
 				condition2 = self.knxcontrol.item.weather.current.precipitation() and ('open_when_raining' in window.shading.conf)
 				# auto is set and override is not set and if the change is larger than 20% or it is closed or open
-				condition3 = window.shading.auto() and (not window.shading.override()) and abs(pos_new[idx]-pos_old[idx]) > 0.2
+				condition3 = window.shading.auto() and (not window.shading.override()) and (abs(pos_new[i]-pos_old[i]) > 0.2 or pos_new[i]==0 or pos_new[i]==1)
 				if condition1 or condition2 or condition3:
-					window.shading.value( window.shading_pos2value(pos_new[idx]) )
+					window.shading.value( window.shading_pos2value(pos_new[i]) )
 
 		
 		# estimate the new value for irradiation and set it
 		self.irradiation_est()
 
-		logger.warning(  'automatic shading control for zone: {0}, setpoint: {1:.1f}, estimate: {2:.1f}'.format( self.item.id(),self.irradiation.setpoint(),self.irradiation_est(average=True) )  )		
-		az,al = self.knxcontrol.weather.sunposition()
-		cl = self.knxcontrol.item.weather.current.irradiation.clouds()
-		logger.warning(  'azimuth: {0:.0f}, altitude: {1:.0f}, clouds: {2:.2f}'.format(az*180./np.pi,al*180./np.pi,cl)  )
-		logger.warning(  ', '.join(['{0} pos: {1:.1f} min: {2:.1f} max:{3:.1f} irr: {4:.1f}'.format(w.item.id(),p,pmin,pmax,w.irradiation_est()) for w,p,pmin,pmax in zip(windows,pos_new,pos_min,pos_max)])  )
-
+		#logger.warning(  ', '.join(['{0} pos: {1:.1f} min: {2:.1f} max:{3:.1f} irr: {4:.1f}'.format(w.item.id(),p,pmin,pmax,w.irradiation_est()) for w,p,pmin,pmax in zip(windows,pos_new,pos_min,pos_max)])  )
+		logger.warning( 'estimate: {2:.1f}'.format( self.item.id(),self.irradiation.setpoint(),self.irradiation_est(average=True) )  )		
 

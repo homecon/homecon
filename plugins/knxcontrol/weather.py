@@ -138,12 +138,15 @@ class Weather():
 		self.cloudsarray.append(clouds)
 
 
-	def clearskyirrradiation(self,utcdate=datetime.datetime.utcnow()):
+	def clearskyirrradiation(self,utcdate=None):
 		"""
 		Method returns the clear sky theoretical direct and diffuse solar irradiation
 		according to ASHRAE
 		"""
 		
+		if utcdate == None:
+			utcdate = datetime.datetime.utcnow()
+
 		(azi,alt) = self.sunposition(utcdate)
 
 		# air mass between the observer and the sun
@@ -178,13 +181,16 @@ class Weather():
 
 		return (I_b,I_d)
 
-	def sunposition(self,utcdate=datetime.datetime.utcnow()):
+	def sunposition(self,utcdate=None):
 		"""
 		Method returns the sun azimuth and altitude at a certain utcdate
 		at the location specified in smarthome.conf
 		Output is in radians
 		"""
-		
+
+		if utcdate == None:
+			utcdate = datetime.datetime.utcnow()
+
 		obs = self.obs
 		obs.date = utcdate
 
