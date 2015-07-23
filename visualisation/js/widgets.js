@@ -1434,9 +1434,10 @@ $.widget("knxcontrol.smarthome_log",{
 		});
 	},
 	update: function(){
-		this.element.empty();
-		
 		that = this;
+
+		that.element.empty();
+		
 		$.each(knxcontrol.smarthome_log.log,function(index,value){
 			var date = new Date(value.time);
 			var hour = date.getHours();
