@@ -75,8 +75,7 @@ class Zone():
 		logger.warning( 'automatic shading control for zone: {0}, setpoint: {1:.1f}'.format( self.item.id(),self.irradiation.setpoint() )  )
 
 		# create an array of irradiation difference for all windows
-		differ = [w.irradiation_open(average=True)-w.irradiation_closed(average=True) for w in self.windows]
-		windows = sorted(self.windows, key=lambda w: w.irradiation_open(average=True)-w.irradiation_closed(average=True), reverse=True)
+		windows = sorted(self.windows, key=lambda w: w.item.conf['area'], reverse=True)
 
 		tolerance = 100		
 

@@ -74,12 +74,6 @@ class KNXControl:
 		logger.warning('New objects created')
 
 
-		# create the mpc objects
-		self.mpc = MPC(self)
-		#self.mpc.systemidentification()
-
-		self.low_level_control()
-
  		# schedule low_level_control
 		self._sh.scheduler.add('KNXControl_update', self.low_level_control, prio=2, cron='* * * *')
 
@@ -98,9 +92,11 @@ class KNXControl:
 
 
 
-		# create a parameter estimation object
-		#self.optimization_model = Optimization_model(self._sh)
-		
+		# create the mpc objects
+		self.mpc = MPC(self)
+		#self.mpc.systemidentification()
+
+
 		logger.warning('Initialization Complete')
 
 
