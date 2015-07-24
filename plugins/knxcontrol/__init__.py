@@ -57,21 +57,26 @@ class KNXControl:
 	def run(self):
 		# called once after the items have been parsed
 		self.alive = True
-			
+		
+		self.item = self._sh.knxcontrol
+
 		# create objects
 		self.mysql = Mysql(self)
 		self.alarms = Alarms(self)
 		self.measurements = Measurements(self)
 		self.weather = Weather(self)
 
-		self.item = self._sh.knxcontrol
-
-		# Zone objects
+		# zone objects
 		for item in self.find_item('zone'):
 			logger.warning(item)
 			self.zones.append( Zone(self,item) )
 
 		logger.warning('New objects created')
+
+
+		# create the mpc objects
+		self.mpc = MPC(self)
+		#self.mpc.systemidentification()
 
 		self.low_level_control()
 
