@@ -153,6 +153,17 @@ class KNXControl:
 			for zone in self.zones:
 				zone.shading_control()
 
+		########################################################################
+		# check for model identify
+		if item.id() == 'knxcontrol.mpc.model.identification':
+			mpc.model.identify()
+
+		########################################################################
+		# check for model identify
+		if item.id() == 'knxcontrol.mpc.model.validation':
+			mpc.model.validate()
+
+
 
 	def parse_logic(self, logic):
 		pass

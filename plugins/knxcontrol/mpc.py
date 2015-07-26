@@ -236,9 +236,6 @@ class Model:
 		nlp = self.identification_nlp
 		self.set_identification_data(nlp)
 
-		logger.debug(nlp.variables['UA_op_amb'].lowerbound)
-		logger.debug(nlp.variables['UA_op_amb'].upperbound)
-
 		# start the optimization
 		logger.warning('Start optimization')
 		nlp.solve()
