@@ -81,11 +81,15 @@
 					<img src='icons/ffffff/edit_settings.png'>
 					<h1>Settings</h1>
 				</header>
-				<section data-role='collapsible' data-theme='a' data-collapsed='false'>
+				<section data-role='collapsible' data-theme='a' data-collapsed='true'>
 					<h1>General</h1>
 					<div data-role='settings'></div>
 				</section>
 				<section data-role='collapsible' data-theme='a' data-collapsed='false'>
+					<h1>System identification</h1>
+					<div data-role='system_identification'></div>
+				</section>
+				<section data-role='collapsible' data-theme='a' data-collapsed='true'>
 					<h1>Smarthome log</h1>
 					<div data-role='smarthome_log'></div>
 				</section>

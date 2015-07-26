@@ -107,6 +107,10 @@ var knxcontrol = {
 				var item = $(this).attr('data-item');
 				knxcontrol.item[item] = 0;
 			});
+			knxcontrol.item['knxcontrol.mpc.model.identification'] = 0;
+			knxcontrol.item['knxcontrol.mpc.model.validation'] = 0;
+			knxcontrol.item['knxcontrol.mpc.model.identification.result'] = 0;
+			knxcontrol.item['knxcontrol.mpc.model.validation.result'] = 0;
 		},	
 		update: function(item,value){
 			knxcontrol.item[item] = value;

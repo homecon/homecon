@@ -1574,3 +1574,89 @@ $(document).on('click','#password_def_popup_save',function(event){
 	console.log(id);
 	//knxcontrol.user.update(id,field,value);
 });
+
+
+
+/*****************************************************************************/
+/*                     system identification                                 */
+/*****************************************************************************/
+$.widget("knxcontrol.system_identification",{
+	options: {
+	},
+	_create: function(){
+		this.element.html('<div class="buttons">'+
+						      '<div class="twocols"><div data-role="btn" data-label="Identify" data-item="knxcontrol.mpc.model.identification" data-value=1></div></div>'+
+						      '<div class="twocols"><div data-role="btn" data-label="Validate" data-item="knxcontrol.mpc.model.validation" data-value=1></div></div>'+
+						  '</div>'+
+						  '<div class="chart_container">'+
+						  '</div>');
+
+		$('div[data-role="btn"]').btn();
+
+		Highcharts.setOptions({
+			global: {
+				useUTC: false
+			}
+		});
+
+		this.chart_options.chart.type = 'line';
+		this.chart_options.xAxis.range = 2 * 24 * 3600 * 1000;
+		this.chart_options.tooltip.xDateFormat='%Y-%m-%d %H:%M';
+		$(this.element).children('.chart_container').highcharts('StockChart',this.chart_options);
+		this.chart = $(this.element).children('.chart_container').highcharts();
+		this.chart.reflow()
+
+		this.element.enhanceWithin();	
+
+		// bind events
+		this._on(this.element, {
+			'update': function(event){
+				this.update();
+			}
+		});
+	},
+	update: function(){
+		var that = this;
+
+		console.log(knxcontrol.item['knxcontrol.mpc.model.validation.result']['measured_states'])
+
+		// remove all data from the chart
+		//while(that.chart.series.length > 0){
+		//	that.chart.series[0].remove(true);
+		//}
+
+		$.each((knxcontrol.item['knxcontrol.mpc.model.validation.result']['measured_states']),function(index,value){
+			that.chart.addSeries({                        
+    			name: index+' measurement',
+    			data: value['measurement']
+			}, false);
+			that.chart.addSeries({                        
+    			name: index+' simulation',
+    			data: value['simulation']
+			}, false);
+			that.chart.redraw();
+		});
+		
+	},
+	chart: {},
+	chart_options: {
+		chart: {
+		},
+		title: {
+			text: ''
+		},
+		xAxis: {
+			type: 'datetime',
+			ordinal: false
+		},
+		tooltip: {
+			xDateFormat: '%Y-%m-%d',
+			valueDecimals: 1,
+			shared: true
+		},
+		rangeSelector : {
+			enabled: false
+		},
+		series: []
+	}
+});

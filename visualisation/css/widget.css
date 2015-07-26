@@ -680,3 +680,19 @@ div[data-role="profile_list"] div.profile a.edit{
 	border: 0;
 }
 
+/*****************************************************************************/
+/*                     System identification                                 */
+/*****************************************************************************/
+div[data-role="system_identification"]{
+	width: 98%;
+	position: relative;
+	text-align: left;
+}
+div[data-role="system_identification"] div.buttons{
+	display: inline-block;
+	width: 100%;
+}
+div[data-role="system_identification"] div.chart_container{
+	display: inline-block;
+	width: 100%;
+}
