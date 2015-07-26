@@ -1,10 +1,27 @@
 #!/usr/bin/env python3
+######################################################################################
+#    Copyright 2015 Brecht Baeten
+#    This file is part of HomeCon.
+#
+#    HomeCon is free software: you can redistribute it and/or modify
+#    it under the terms of the GNU General Public License as published by
+#    the Free Software Foundation, either version 3 of the License, or
+#    (at your option) any later version.
+#
+#    HomeCon is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU General Public License for more details.
+#
+#    You should have received a copy of the GNU General Public License
+#    along with HomeCon.  If not, see <http://www.gnu.org/licenses/>.
+######################################################################################
 
 import logging
 import pymysql
 import datetime
 import numpy as np
-import pyipopt
+import copy
 import parsenlp
 
 logger = logging.getLogger('')
@@ -19,9 +36,10 @@ class MPC:
 	def __init__(self,homecon):
 
 		self.homecon = homecon
+		self.item = self.homecon.item.mpc
 
 
-		# model definition
+		# model 1 definition ###################################################
 		# define model parameters
 		parameters = {}
 		parameters['C_op'] = {'expression': parsenlp.Expression('C_op',[]),
@@ -86,9 +104,13 @@ class MPC:
                                                 'Q_sol[i]': '-1',
                                                 'Q_hea[i]': '-1'}
 
+		self.model1 = Model(self,parameters,measured_states,unmeasured_states,inputs,state_equations)
 
 
-		self.model = Model(self,parameters,measured_states,unmeasured_states,inputs,state_equations)
+
+
+		# model choice #########################################################
+		self.model = self.model1
 
 
 ################################################################################
@@ -101,6 +123,7 @@ class Model:
 		"""		
 
 		self.mpc = mpc
+		self.item = self.mpc.item.model
 
 		self.parameters = parameters
 		self.measured_states = measured_states
@@ -110,9 +133,10 @@ class Model:
 
 
 		self.create_identification_nlp()
+		self.create_validation_nlp()
 
 
-
+##### system identification ####################################################
 	def create_identification_nlp(self):
 		"""
 		define the identification optimization
@@ -190,12 +214,97 @@ class Model:
 		logger.warning('System identification model ready')
 
 
+	def create_validation_nlp(self):
+		"""
+		define the validation optimization
+		"""
+		# copy the identification nlp
+		nlp = copy.copy(self.identification_nlp)
+
+		# change the objective
+		nlp.set_objective('0',gradientdict={}) 
+
+		self.validation_nlp = nlp	
+
+	
 	def identify(self):
 		"""
 		run the system identification
 		"""
 
 		logger.warning('Start system identification')
+		nlp = self.identification_nlp
+		self.set_identification_data(nlp)
+
+		logger.debug(nlp.variables['UA_op_amb'].lowerbound)
+		logger.debug(nlp.variables['UA_op_amb'].upperbound)
+
+		# start the optimization
+		logger.warning('Start optimization')
+		nlp.solve()
+		logger.warning('Finished optimization')
+
+		# print values
+		logger.warning( ['{0}: {1:.0f}'.format(key,nlp.variables[key].value) for key in self.parameters] )	
+
+
+	def validate(self):
+		"""
+		compares the identified model with the most recent dataset
+		"""
+
+		logger.warning('Start model validation')
+		nlp = self.validation_nlp
+		self.set_identification_data(nlp)
+
+		# change the parameter variables bounds so they are fixed
+		for key in self.parameters:
+			var = self.parameters[key]
+			nlp.variables[key].lowerbound = nlp.variables[key].value
+			nlp.variables[key].upperbound = nlp.variables[key].value
+
+		logger.debug(nlp.variables['UA_op_amb'].lowerbound)
+		logger.debug(nlp.variables['UA_op_amb'].upperbound)
+
+		# start the optimization
+		logger.warning('Start optimization')
+		nlp.solve()
+		logger.warning('Finished optimization')
+
+		# print values
+		for key in self.measured_states:
+			mmnt_key = self.measured_states[key]['mmnt_key']
+			logger.warning( ['{:.1f}'.format(var.value) for var in nlp.parameters[mmnt_key]] )
+			logger.warning( ['{:.1f}'.format(var.value) for var in nlp.variables[key]] )
+			logger.warning( 'rmse: {:.1f}'.format( sum([(var.value-mmnt_var.value)**2 for var,mmnt_var in zip(nlp.variables[key],nlp.parameters[mmnt_key])])**0.5 ) )
+
+		# store the validation results in an item
+		inputs = {}
+		for key in self.inputs:
+			inputs[key] = {'measurement': [var.value for var in nlp.parameters[key]]}
+
+		unmeasured_states = {}
+		for key in self.unmeasured_states:
+			unmeasured_states[key] = {'simulation': [var.value for var in nlp.variables[key]]}
+
+		measured_states = {}
+		for key in self.measured_states:
+			mmnt_key = self.measured_states[key]['mmnt_key']
+			measured_states[key] = {'measurement': [var.value for var in nlp.parameters[mmnt_key]],
+			                        'simulation':  [var.value for var in nlp.variables[key]]}
+
+		result = {'inputs': inputs,
+				  'measured_states': measured_states,
+                  'unmeasured_states': unmeasured_states}
+		logger.debug(result)
+
+		self.item.validation.result(result)
+
+
+	def set_identification_data(self,nlp):
+		"""
+		set the system identification data to a nlp
+		"""
 
 		dt = self.identificationtimestep 
 		t = np.arange(0,self.identificationtime,dt)
@@ -209,52 +318,28 @@ class Model:
 
 		starttimestamp = int( (enddate - datetime.datetime(1970,1,1)).total_seconds() ) - t[-1]
 		time = starttimestamp + t
-		
+
+
 		# get the required data from the database and set the parameter values and initial values for the measured states
 		logger.warning('Loading data')
-		self.identification_nlp.parameters['dt'].value = dt
+		nlp.parameters['dt'].value = dt
 
 		for key in self.measured_states:		
 			values = self._load_data(self.measured_states[key]['mysql_data_string'],time)	
 			mmnt_key = self.measured_states[key]['mmnt_key']
 			for i,v in enumerate(values):
-				self.identification_nlp.parameters[mmnt_key][i].value = v
-				self.identification_nlp.variables[key][i].value = v
+				nlp.parameters[mmnt_key][i].value = v
+				nlp.variables[key][i].value = v
 
 		for key in self.inputs:		
 			values = self._load_data(self.inputs[key]['mysql_data_string'],time)	
 			for i,v in enumerate(values):
-				self.identification_nlp.parameters[key][i].value = v
-				
-		
-		# start the optimization
-		logger.warning('Start optimization')
-		self.identification_nlp.solve()
-		logger.warning('Finished optimization')
-
-		# print values
-		logger.warning( ['{:.1f}'.format(self.identification_nlp.parameters['T_op_mmnt'][i].value) for i in range(N)] )
-		logger.warning( ['{:.1f}'.format(self.identification_nlp.variables['T_op'][i].value) for i in range(N)] )
-		logger.warning( 'UA_op_amb: {:.0f}, C_op: {:.0f}'.format(self.identification_nlp.variables['UA_op_amb'].value,self.identification_nlp.variables['C_op'].value) )
-
-
-	def create_validation_nlp(self):
-		"""
-		define the validation optimization
-		"""
-		
-
-	def validate(self):
-		"""
-		compares the identified model with the most recent dataset
-		"""
-
-		# get inputs
+				nlp.parameters[key][i].value = v
 
 
 
 
-
+##### optimal control ##########################################################
 	def control(self):
 		"""
 		solve the optimal control problem
@@ -301,7 +386,7 @@ class Model:
 		con,cur = self.mpc.homecon.mysql.create_cursor()
 		for id in ids:
 			try:
-				cur.execute("SELECT time,value FROM  measurements_average_quarterhour WHERE signal_id={0} AND time>={1} AND time<={2}".format(id,time[0]-self.dt,time[-1]+self.dt))		
+				cur.execute("SELECT time,value FROM  measurements_average_quarterhour WHERE signal_id={0} AND time>={1} AND time<={2}".format(id,time[0]-3600,time[-1]+3600))		
 				data = np.array(list(cur))
 				values[id] = np.interp(time,data[:,0],data[:,1],left=data[0,1],right=data[-1,1])			
 			except:

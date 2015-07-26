@@ -127,3 +127,20 @@
 #					sh_listen = ''
 
 ######################################################################################
+	[[mpc]]
+		[[[model]]]
+			[[[[identification]]]]
+				type = bool
+				visu_acl = rw
+
+			[[[[validation]]]]
+				type = bool
+				visu_acl = rw
+				[[[[[result]]]]]
+					type = dict
+
+
+
+
+
+
