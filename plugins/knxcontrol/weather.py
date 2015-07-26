@@ -41,6 +41,12 @@ class Weather():
 
 		self.item.conf['knxcontrolobject'] = self
 
+
+		self.current = self.item.current
+		self.prediction = self.item.prediction
+
+
+
 		# find a irradiationsensor item
 		items = self.knxcontrol.find_item('irradiationsensor')
 		if len(items) == 0:

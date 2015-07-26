@@ -36,7 +36,7 @@ class Zone():
 			if item.conf['knxcontrolitem']== 'window':
 				self.windows.append( Window(knxcontrol,self,item) )
 
-		
+		self.temperature = self.item.temperature
 		self.irradiation = self.item.irradiation
 		self.emission = self.item.emission
 

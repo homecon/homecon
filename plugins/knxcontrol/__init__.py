@@ -60,6 +60,11 @@ class KNXControl:
 		
 		self.item = self._sh.knxcontrol
 
+		self.energy = self.item.energy
+		self.ventilation = self.item.ventilation
+		self.heat_production = self.item.heat_production
+	
+
 		# create objects
 		self.mysql = Mysql(self)
 		self.alarms = Alarms(self)
@@ -94,7 +99,7 @@ class KNXControl:
 
 		# create the mpc objects
 		self.mpc = MPC(self)
-		#self.mpc.systemidentification()
+		self.mpc.model.identify()
 
 
 		logger.warning('Initialization Complete')

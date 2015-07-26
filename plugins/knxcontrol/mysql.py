@@ -22,8 +22,9 @@ class Mysql:
 		self._sh = knxcontrol._sh
 		self._mysql_pass = knxcontrol._mysql_pass
 
-		con = pymysql.connect('localhost', 'knxcontrol', self._mysql_pass, 'knxcontrol')
-		cur = con.cursor()
+
+
+		con,cur = self.create_cursor()
 
 		# users table
 		query = ("CREATE TABLE IF NOT EXISTS `users` ("
@@ -177,8 +178,14 @@ class Mysql:
 		con.commit()	
 		con.close()
 		
-		
-		
+
+	def create_cursor(self):
+		con = pymysql.connect('localhost', 'knxcontrol', self._mysql_pass, 'knxcontrol')
+		cur = con.cursor()
+
+		return con,cur
+
+
 	def backup(self):
 		"""
 		backup mysql data without measurements to backupdir
