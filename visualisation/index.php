@@ -70,9 +70,9 @@
 	
 		include("pages/pages.html");
 		include("pages/menu.html");
-		include("data/header.php");
-		include("data/modules.php");
-		include("data/templates.php");
+		include("data/header.html");
+		include("data/settings.html");
+		include("data/pagebuilder.html");
 		
 	}
 	else{
