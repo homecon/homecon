@@ -15,248 +15,29 @@
     You should have received a copy of the GNU General Public License
     along with KNXControl.  If not, see <http://www.gnu.org/licenses/>.
 */
-//
-
-
-/*****************************************************************************/
-/*                     separation line                                       */
-/*****************************************************************************/
-$.widget('knxcontrol.line',{
-	options: {
-		line: 'true'
-    },
-	_create: function(){
-		// enhance
-		if(this.options.line){
-			this.element.addClass("line");
-		}
-	},
-});
-
-/*****************************************************************************/
-/*                     display value                                         */
-/*****************************************************************************/
-$.widget('knxcontrol.displayvalue',{
-	options: {
-      item: '',
-	  digits: 1
-    },
-	_create: function(){
-		// enhance
-		this.update();
-		
-		// bind events
-		this._on(this.element, {
-			'update': function(event){	
-				this.update();
-			}
-		});
-	},
-	update: function(){
-		var item = this.options.item;
-		var rounding = Math.pow(10,this.options.digits);
-		
-		var value = Math.round(knxcontrol.item[item]*rounding)/rounding;
-		
-		this.element.html(value);
-	}
-});
-/*****************************************************************************/
-/*                     input value                                           */
-/*****************************************************************************/
-$.widget("knxcontrol.inputvalue",{
-	options: {
-		label: '',
-		unit: '',
-		item: ''
-    },
-	lock: false,
-	_create: function(){
-		// enhance
-		this.element.prepend('<p class="label">'+this.options.label+'</p>'+
-							 '<input type="text"/>'+
-							 '<p class="unit">'+this.options.unit+'</p>');
-		this.element.enhanceWithin();
-		this.update();
-
-		// bind events
-		this._on(this.element, {
-			'change input': function(event){
-				var item = this.options.item;
-				smarthome.write(item, this.element.find('input').val());
-				
-			},
-			'update': function(event){
-				this.update();
-			}
-        });
-	},
-	update: function(){	
-		var item = this.options.item;
-		this.element.find('input').val(knxcontrol.item[item]);
-	}
-});
-
-/*****************************************************************************/
-/*                     button                                                */
-/*****************************************************************************/
-$.widget('knxcontrol.btn',{
-	options: {
-		label: '',
-		item: '',
-		value: '',
-		src: '',
-    },
-	
-	_create: function(){
-		// enhance
-		this.element.append('<a data-role="button" data-corners="false">'+this.options.label+'</a>');
-		if(this.options.src!=''){
-			this.element.append('<img src="'+this.options.src+'"/>');
-		}
-		this.element.enhanceWithin();
-	
-		// bind events
-		this._on(this.element, {
-            'click a': function(event){
-				// update the value in smarthome
-				smarthome.write(this.options.item, this.options.value);
-			},
-        });
-	}
-});
-/*****************************************************************************/
-/*                     checkbox                                              */
-/*****************************************************************************/
-$.widget('knxcontrol.checkbox',{
-	options: {
-		label: '',
-		item: '',
-    },
-	
-	_create: function(){
-		// enhance
-		this.element.prepend('<label>'+this.options.label+'<input type="checkbox" data-mini="true"/></label>');
-		this.element.enhanceWithin();
-		this.update();
-
-		// bind events
-		this._on(this.element, {
-            'change input': function(event){
-				var item = this.options.item;
-				// update the value in smarthome
-				smarthome.write(item, (knxcontrol.item[item]+1)%2);
-			},
-			'update': function(event){
-				this.update();
-			}
-        });
-		
-	},
-
-	update: function(){
-		var item = this.options.item;
-				
-		if(knxcontrol.item[item]){
-			this.element.find('input').prop('checked', true).checkboxradio('refresh');
-		}
-		else{
-			this.element.find('input').prop('checked', false).checkboxradio('refresh');
-		}
-	}
-
-});
-/*****************************************************************************/
-/*                     inputslider                                           */
-/*****************************************************************************/
-$.widget("knxcontrol.inputslider",{
-	options: {
-		label: '', 
-		item: '',
-		val_on: 1,
-		val_off: 0
-    },
-	lock: false,
-	_create: function(){
-		// enhance
-		this.element.prepend('<p class="label">'+this.options.label+'</p>'+
-							 '<input type="range" value="'+this.options.val_off+'" min="'+this.options.val_off+'" max="'+this.options.val_on+'" step="1" data-highlight="true"/>');
-		this.element.enhanceWithin();
-		this.update();
-
-		// bind events
-		this._on(this.element, {
-			'change input': function(event){
-				var item = this.options.item;
-				if(!this.lock){
-					smarthome.write(item, this.element.find('input').val());
-				}
-			},
-			'update': function(event){
-				this.update();
-			}
-        });
-	},
-	update: function(){
-		this.lock = true;
-		//console.log(this.options.item+' locked');
-		var that = this;
-		setTimeout(function(){
-			that.lock = false;
-			//console.log(that.options.item+' unlocked');
-		},500);
-
-		var item = this.options.item;
-		this.element.find('input').val(knxcontrol.item[item]).slider('refresh');
-	}
-});
 
 
 /*****************************************************************************/
 /*                     light switch                                          */
 /*****************************************************************************/
-$.widget('knxcontrol.lightswitch',{
+$.widget('homecon.lightswitch',{
 	options: {
 		label: '',
 		item: '',
 		src_on: 'icons/f79a1f/light_light.png',
 		src_off: 'icons/ffffff/light_light.png',
-    },
-	
-	_create: function(){
-		// enhance
-		this.element.prepend('<a href="#" class="switch"><img src="'+this.options.src_off+'">'+this.options.label+'</a>');
-		this.update();
-		
-		// bind events
-		this._on(this.element, {
-            'click a.switch': function(event){
-				var item = this.options.item;
-				// update the value in smarthome
-				smarthome.write(item, (knxcontrol.item[item]+1)%2);
-			},
-			'update': function(event){
-				this.update();
-			}
-        });
 	},
-	update: function(){
-		var item = this.options.item;
-				
-		if(knxcontrol.item[item]){
-			this.element.find('img').attr('src',this.options.src_on);
-		}
-		else{
-			this.element.find('img').attr('src',this.options.src_off);
-		}
+	_create: function(){
+		this.element.prepend('<div data-role="toggleswitch" data-item="'+this.options.item+'" data-label="'+this.options.label+'" data-val_on="1" data-val_off="0" data-src_on="'+this.options.src_on+'" data-src_off="'+this.options.src_off+'"></div>');
+		this.element.find('div[data-role="toggleswitch"]').toggleswitch()
 	}
-
 });
+
 
 /*****************************************************************************/
 /*                     light dimmer                                          */
 /*****************************************************************************/
-$.widget("knxcontrol.lightdimmer",{
+$.widget("homecon.lightdimmer",{
 	options: {
 		label: '', 
 		item: '',
@@ -265,63 +46,22 @@ $.widget("knxcontrol.lightdimmer",{
 		val_on: 255,
 		val_off: 0
     },
-	lock: false,
 	_create: function(){
 		// enhance
 		this.element.prepend('<p>'+this.options.label+'</p>'+
-							 '<a href="#" class="switch"><img src="icons/ffffff/light_light.png"></a>'+
-							 '<input type="range" value="'+this.options.val_off+'" min="'+this.options.val_off+'" max="'+this.options.val_on+'" step="'+(this.options.val_on-this.options.val_off)/51+'" data-highlight="true"/>');
-		this.element.enhanceWithin();
-		this.update();
-
-		// bind events
-		this._on(this.element, {
-			'change input': function(event){
-				var item = this.options.item;
-				if(!this.lock){
-					smarthome.write(item, this.element.find('input').val());
-				}
-			},
-            'click a.switch': function(event){
-				var item = this.options.item;
-				// update the value in smarthome
-				if( knxcontrol.item[item] > this.options.val_off){
-					smarthome.write(item, this.options.val_off);
-				}
-				else{
-					smarthome.write(item, this.options.val_on);
-				}
-			},
-			'update': function(event){
-				this.update();
-			}
-        });
-	},
-	update: function(){
-		this.lock = true;
-		//console.log(this.options.item+' locked');
-		var that = this;
-		setTimeout(function(){
-			that.lock = false;
-			//console.log(that.options.item+' unlocked');
-		},500);
+						     '<div data-role="toggleswitch" data-item="'+this.options.item+'" data-val_on="'+this.options.val_on+'" data-val_off="'+this.options.val_off+'" data-src_on="'+this.options.src_on+'" data-src_off="'+this.options.src_off+'"></div>'+
+						     '<div data-role="inputslider"  data-item="'+this.options.item+'" data-val_on="'+this.options.val_on+'" data-val_off="'+this.options.val_off+'"></div>');
 		
-		var item = this.options.item;
-		this.element.find('input').val(knxcontrol.item[item]).slider('refresh');
-	
-		if(knxcontrol.item[item]>this.options.val_off){
-			this.element.find('img').attr('src',this.options.src_on);
-		}
-		else{
-			this.element.find('img').attr('src',this.options.src_off);
-		}
+		this.element.find('div[data-role="toggleswitch"]').toggleswitch()
+		this.element.find('div[data-role="inputslider"]').inputslider()
+		this.element.enhanceWithin();
 	}
 });
 
 /*****************************************************************************/
 /*                     shading                                               */
 /*****************************************************************************/ 
-$.widget("knxcontrol.shading",{
+$.widget("homecon.shading",{
 	options: {
 		label: '',
 		item: '',
@@ -331,14 +71,14 @@ $.widget("knxcontrol.shading",{
     },
 	_create: function(){
 		// enhance
-		var text = this.element.html();
 		this.element.prepend('<p>'+this.options.label+'</p>'+
-							 '<a href="#" class="open"><img src="icons/ffffff/fts_shutter_10.png"></a>'+
-							 '<a href="#" class="close"><img src="icons/ffffff/fts_shutter_100.png"></a>'+
-							 '<input class="value" type="range" value="'+this.options.val_off+'" min="'+this.options.val_off+'" max="'+this.options.val_on+'" step="'+(this.options.val_on-this.options.val_off)/51+'" data-highlight="true"/>');
+						     '<div data-role="valueswitch" class="open" data-item="'+this.options.item+'" data-value="'+this.options.val_off+'" data-src="icons/ffffff/fts_shutter_10.png"></div>'+
+							 '<div data-role="valueswitch" class="close" data-item="'+this.options.item+'" data-value="'+this.options.val_on+'" data-src="icons/ffffff/fts_shutter_100.png"></div>'+    
+							 '<div data-role="inputslider" data-item="'+this.options.item+'" data-val_on="'+this.options.val_on+'" data-val_off="'+this.options.val_off+'"></div>');
 		
+		this.element.find('div[data-role="valueswitch"]').valueswitch()
+		this.element.find('div[data-role="inputslider"]').inputslider()
 		this.element.enhanceWithin();
-		this.update();
 
 		if(this.options.advanced){
 			// get the parent item
@@ -352,50 +92,14 @@ $.widget("knxcontrol.shading",{
 								'</div>');
 			$('div[data-role="checkbox"]').checkbox();
 		}
-		
-
-		// bind events
-		this._on(this.element, {
-			'change input.value': function(event){
-				var item = this.options.item;
-				if(!this.lock){
-					smarthome.write(item, this.element.find('input').val());
-				}
-			},
-            'click a.open': function(event){
-				var item = this.options.item;
-				smarthome.write(item, this.options.val_off);
-			},
-			'click a.close': function(event){
-				var item = this.options.item;
-				smarthome.write(item, this.options.val_on);
-			},
-			'update': function(event){
-				this.update();
-			}
-        });
-	},
-	update: function(){
-		this.lock = true;
-		//console.log(this.options.item+' locked');
-		var that = this;
-		setTimeout(function(){
-			that.lock = false;
-			//console.log(that.options.item+' unlocked');
-		},500);
-		
-		var item = this.options.item;
-
-		this.element.find('input.value').val(knxcontrol.item[item]).slider('refresh');
-
-		
 	}
 });
+
 
 /*****************************************************************************/
 /*                     clock                                                 */
 /*****************************************************************************/ 
-$.widget("knxcontrol.clock",{
+$.widget("homecon.clock",{
 	options: {
     },
 	_create: function(){
@@ -489,7 +193,7 @@ $.widget("knxcontrol.clock",{
 /*****************************************************************************/
 /*                     weather block                                         */
 /*****************************************************************************/ 
-$.widget("knxcontrol.weather_block",{
+$.widget("homecon.weather_block",{
 	options: {
 		item: 'knxcontrol.weather.prediction.detailed',
 		item_temperature: '',
@@ -629,7 +333,7 @@ $.widget("knxcontrol.weather_block",{
 /*****************************************************************************/
 /*                     alarm                                                 */
 /*****************************************************************************/ 
-$.widget("knxcontrol.alarm",{
+$.widget("homecon.alarm",{
 	options: {
 		section: 1
     },
@@ -768,7 +472,7 @@ $.widget("knxcontrol.alarm",{
 /*****************************************************************************/
 /*                     measurement export                                    */
 /*****************************************************************************/
-$.widget("knxcontrol.measurement_export",{
+$.widget("homecon.measurement_export",{
 	options: {
 	},
 	_create: function(){
@@ -794,7 +498,7 @@ $.widget("knxcontrol.measurement_export",{
 /*****************************************************************************/
 /*                     settings                                              */
 /*****************************************************************************/
-$.widget("knxcontrol.settings",{
+$.widget("homecon.settings",{
 	options: {
 	},
 	_create: function(){
@@ -836,7 +540,7 @@ $.widget("knxcontrol.settings",{
 /*****************************************************************************/
 /*                     chart                                                 */
 /*****************************************************************************/
-$.widget('knxcontrol.chart',{
+$.widget('homecon.chart',{
 	options: {
       signals: '1',
 	  type: 'quarterhour',
@@ -959,7 +663,7 @@ $.widget('knxcontrol.chart',{
 /*****************************************************************************/
 /*                     action list                                           */
 /*****************************************************************************/
-$.widget("knxcontrol.action_list",{
+$.widget("homecon.action_list",{
 	options: {
 		section: 1
     },
@@ -1075,7 +779,7 @@ $(document).on('click','#action_def_popup_delete',function(event){
 /*****************************************************************************/
 /*                     measurement list                                      */
 /*****************************************************************************/
-$.widget("knxcontrol.measurement_list",{
+$.widget("homecon.measurement_list",{
 	options: {
 	},
 	_create: function(){
@@ -1143,7 +847,7 @@ $(document).on('click','#measurement_def_popup_save',function(event){
 /*****************************************************************************/
 /*                     profile list                                          */
 /*****************************************************************************/
-$.widget('knxcontrol.profile_list',{
+$.widget('homecon.profile_list',{
 	options: {
     },
 	_create: function(){
@@ -1343,7 +1047,7 @@ $(document).on('click','#profile_def_popup_delete',function(event){
 /*****************************************************************************/
 /*                     ventilation control                                   */
 /*****************************************************************************/
-$.widget('knxcontrol.ventilation_control',{
+$.widget('homecon.ventilation_control',{
 	options: {
 		label: '',
 		item: 'building.ventilation.speedcontrol',
@@ -1417,7 +1121,7 @@ $.widget('knxcontrol.ventilation_control',{
 /*****************************************************************************/
 /*                     smarthome log                                         */
 /*****************************************************************************/
-$.widget("knxcontrol.smarthome_log",{
+$.widget("homecon.smarthome_log",{
 	options: {
 	},
 	_create: function(){
@@ -1464,7 +1168,7 @@ $.widget("knxcontrol.smarthome_log",{
 /*****************************************************************************/
 /*                     users list                                            */
 /*****************************************************************************/
-$.widget("knxcontrol.user_list",{
+$.widget("homecon.user_list",{
 	options: {
 	},
 	_create: function(){
@@ -1528,7 +1232,7 @@ $(document).on('click','#user_def_popup_save',function(event){
 /*****************************************************************************/
 /*                     user profile                                          */
 /*****************************************************************************/
-$.widget("knxcontrol.user_profile",{
+$.widget("homecon.user_profile",{
 	options: {
 	},
 	_create: function(){
@@ -1580,7 +1284,7 @@ $(document).on('click','#password_def_popup_save',function(event){
 /*****************************************************************************/
 /*                     system identification                                 */
 /*****************************************************************************/
-$.widget("knxcontrol.system_identification",{
+$.widget("homecon.system_identification",{
 	options: {
 	},
 	_create: function(){

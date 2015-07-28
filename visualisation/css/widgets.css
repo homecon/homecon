@@ -16,103 +16,6 @@
     along with KNXControl.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-/*****************************************************************************/
-/*                     General                                               */
-/*****************************************************************************/
-a.edit_widget{
-	position: absolute;
-	margin: 0;
-}
-a.edit_page_section{
-	position: absolute;
-	margin: 0;
-	top: -10px;
-	left: -10px;
-}
-a.edit_page{
-	position: absolute;
-	margin: 0;
-}
-div[data-role="fieldcontain"]{
-	padding: .1em 0;
-}
-
-div.twocols{
-	display: inline-block;
-	float: left; 
-	width: 49%;
-	margin: 0;
-}
-div.threecols{
-	display: inline-block;
-	float: left; 
-	width: 32%;
-	margin: 0;
-}
-
-/*****************************************************************************/
-/*                     Separator line                                        */
-/*****************************************************************************/
-div[data-role="line"]{
-	display: block;
-	position: relative;
-	height: 0px;
-	margin-top: 5px;
-	margin-bottom: 5px;
-	width: 98%;
-}
-div[data-role="line"].line{
-	border-bottom: solid 1px #ddd;
-}
-#home_pagebuilder div[data-role="line"]{
-	height: 5px;
-	border-bottom: solid 1px #444;
-}
-#home_pagebuilder div[data-role="line"].line{
-	border-bottom: solid 1px #ddd;
-}
-#home_pagebuilder div[data-role="line"] a.edit_widget{
-    top: -15px;
-	right: -5px;
-}
-
-/*****************************************************************************/
-/*                     inputslider                                           */
-/*****************************************************************************/
-div[data-role="inputslider"]{
-	display: inline-block;
-	position: relative;
-	height: 60px;
-	width: 98%;
-	text-align: left;
-}
-div[data-role="inputslider"] p{
-	position: absolute;
-	margin-left: 54px;
-	margin-top: 5px;
-	font-weight: 700;
-}
-div[data-role="inputslider"] .ui-slider{
-	margin-left: 64px;
-	margin-right: 64px;
-	margin-top: 25px;
-	margin-bottom: 0;
-}
-div[data-role="inputslider"] .ui-slider-track{
-	margin-left: 0;
-	margin-right: 0;
-}
-div[data-role="inputslider"] .ui-slider input{
-	visibility: hidden;
-}
-
-#home_pagebuilder div[data-role="inputslider"]{
-	border: solid 1px #222;
-}
-#home_pagebuilder div[data-role="inputslider"] a.edit_widget{
-    top: -5px;
-	right: -5px;
-}
 
 /*****************************************************************************/
 /*                     input value                                           */
@@ -165,19 +68,6 @@ div[data-role="lightswitch"]{
 	text-align: left;
 	float: left;
 }
-div[data-role="lightswitch"] a{
-	text-decoration: none;
-	color: #FFF !important;
-}
-div[data-role="lightswitch"] img{
-	height: 50px;
-	vertical-align: middle;
-}
-
-div[data-role="lightswitch"] a:hover {
-	color: #FFF;
-}
-
 #home_pagebuilder div[data-role="lightswitch"]{
 	margin-bottom: 5px;
 	margin-right: 1%;
@@ -544,35 +434,6 @@ div[data-role="chart"]{
 	right: -5px;
 }
 
-/*****************************************************************************/
-/*                     Button                                                */
-/*****************************************************************************/
-div[data-role="btn"]{
-    display: inline-block;
-    position: relative;
-    margin: 0;
-    width: 24.5%;
-    min-width: 120px;
-}
-div[data-role="btn"] a{
-    margin: 0;
-    margin-right: -5px;
-    margin-bottom: -5px;
-    padding-left: 5px;
-    padding-right: 5px;
-}
-div[data-role="btn"] img{
-    position: absolute;
-    width: 30px;
-    height: 30px;
-    top: 5px;
-    left: 5px;
-}
-#home_pagebuilder div[data-role="btn"] a.edit_widget{
-	z-index: 1;
-    top: -5px;
-	right: -5px;
-}
 /*****************************************************************************/
 /*                     Ventilation control                                   */
 /*****************************************************************************/

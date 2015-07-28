@@ -133,7 +133,7 @@ pagebuilder = {
 	add_widget: function(section,type){
 		section.widget.push({
 			type: type,
-			options: JSON.parse(JSON.stringify($.knxcontrol[type].prototype.options))
+			options: JSON.parse(JSON.stringify($.homecon[type].prototype.options))
 		});
 	},
 	update_widget: function(widget,type,options){
@@ -214,7 +214,7 @@ pagebuilder = {
 		alarm: {name: 'Alarm'},
 		chart: {name: 'Chart'},
 		displayvalue: {name: 'Display value'},
-		btn: {name: 'Button'},
+		pushbutton: {name: 'Push button'},
 		weather_block: {name: 'Weather block'},
 		ventilation_control: {name: 'Ventilation control'},
 		inputslider: {name: 'Slider'},
@@ -436,7 +436,7 @@ $(document).on('click','a.edit_widget',function(){
 	$('#widget_def_popup div.options').empty();
 				
 				
-	$.each($.knxcontrol[type].prototype.options,function(index,option){
+	$.each($.homecon[type].prototype.options,function(index,option){
 		// check if the current option allready has a value
 		if(index in pagebuilder.section[section_id].page[page_id].section[page_section_id].widget[widget_id].options){
 			option = pagebuilder.section[section_id].page[page_id].section[page_section_id].widget[widget_id].options[index];

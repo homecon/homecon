@@ -1,0 +1,174 @@
+/*
+    Copyright 2015 Brecht Baeten
+    This file is part of HomeCon.
+
+    HomeCon is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    HomeCon is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with HomeCon.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
+/*****************************************************************************/
+/*                     General                                               */
+/*****************************************************************************/
+a.edit_widget{
+	position: absolute;
+	margin: 0;
+}
+a.edit_page_section{
+	position: absolute;
+	margin: 0;
+	top: -10px;
+	left: -10px;
+}
+a.edit_page{
+	position: absolute;
+	margin: 0;
+}
+div[data-role="fieldcontain"]{
+	padding: .1em 0;
+}
+
+div.twocols{
+	display: inline-block;
+	float: left; 
+	width: 49%;
+	margin: 0;
+}
+div.threecols{
+	display: inline-block;
+	float: left; 
+	width: 32%;
+	margin: 0;
+}
+
+/******************************************************************************/
+/*                     Separator line                                         */
+/******************************************************************************/
+div[data-role="line"]{
+	display: block;
+	position: relative;
+	height: 0px;
+	margin-top: 5px;
+	margin-bottom: 5px;
+	width: 98%;
+}
+div[data-role="line"].line{
+	border-bottom: solid 1px #ddd;
+}
+#home_pagebuilder div[data-role="line"]{
+	height: 5px;
+	border-bottom: solid 1px #444;
+}
+#home_pagebuilder div[data-role="line"].line{
+	border-bottom: solid 1px #ddd;
+}
+#home_pagebuilder div[data-role="line"] a.edit_widget{
+    top: -15px;
+	right: -5px;
+}
+
+/******************************************************************************/
+/*                     display value                                          */
+/******************************************************************************/
+
+
+/******************************************************************************/
+/*                     input value                                            */
+/******************************************************************************/
+
+/******************************************************************************/
+/*                     value switch                                           */
+/******************************************************************************/
+div[data-role="valueswitch"] a{
+	text-decoration: none;
+	color: #FFF !important;
+}
+div[data-role="valueswitch"] img{
+	height: 50px;
+	vertical-align: middle;
+}
+div[data-role="valueswitch"] a:hover {
+	color: #FFF;
+}
+
+/******************************************************************************/
+/*                     pushbutton                                             */
+/******************************************************************************/
+div[data-role="pushbutton"]{
+    display: inline-block;
+    position: relative;
+    margin: 0;
+    width: 24.5%;
+    min-width: 120px;
+}
+div[data-role="pushbutton"] a{
+    margin: 0;
+    margin-right: -5px;
+    margin-bottom: -5px;
+    padding-left: 5px;
+    padding-right: 5px;
+}
+div[data-role="pushbutton"] img{
+    position: absolute;
+    width: 30px;
+    height: 30px;
+    top: 5px;
+    left: 5px;
+}
+#home_pagebuilder div[data-role="pushbutton"] a.edit_widget{
+	z-index: 1;
+    top: -5px;
+	right: -5px;
+}
+
+/******************************************************************************/
+/*                     toggle switch                                          */
+/******************************************************************************/
+div[data-role="toggleswitch"] a{
+	text-decoration: none;
+	color: #FFF !important;
+}
+div[data-role="toggleswitch"] img{
+	height: 50px;
+	vertical-align: middle;
+}
+div[data-role="toggleswitch"] a:hover {
+	color: #FFF;
+}
+
+/******************************************************************************/
+/*                     checkbox                                               */
+/******************************************************************************/
+
+
+
+/******************************************************************************/
+/*                     inputslider                                            */
+/******************************************************************************/
+div[data-role="inputslider"] .ui-slider{
+	margin-left: 64px;
+	margin-right: 64px;
+	margin-top: 25px;
+	margin-bottom: 0;
+}
+div[data-role="inputslider"] .ui-slider-track{
+	margin-left: 0;
+	margin-right: 0;
+}
+div[data-role="inputslider"] .ui-slider input{
+	visibility: hidden;
+}
+
+
+
+
+
