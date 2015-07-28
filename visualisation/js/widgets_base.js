@@ -40,7 +40,8 @@ $.widget('homecon.displayvalue',{
       item: '',
 	  pre: '',
 	  app: '',
-	  digits: 1
+	  digits: 1,
+	  scale: 1
     },
 	_create: function(){
 		// enhance
@@ -57,7 +58,7 @@ $.widget('homecon.displayvalue',{
 		var item = this.options.item;
 		var rounding = Math.pow(10,this.options.digits);
 		
-		var value = Math.round(knxcontrol.item[item]*rounding)/rounding;
+		var value = Math.round(knxcontrol.item[item]*this.options.scale*rounding)/rounding;
 		
 		this.element.html(this.options.pre + value + this.options.app);
 	}
@@ -271,4 +272,184 @@ $.widget("homecon.inputslider",{
 	}
 });
 
+/*****************************************************************************/
+/*                     clock                                                 */
+/*****************************************************************************/ 
+$.widget("homecon.clock",{
+	options: {
+    },
+	_create: function(){
+		// enhance
+		this.element.append('<div class="time"><div>'+
+								'<img class="bg" src="icons/clock/clockbg1.png">'+
+								'<img class="hoursLeft" src="icons/clock/0.png"/>'+
+								'<img class="hoursRight" src="icons/clock/1.png"/><hr>'+
+							  '</div><div>'+
+								'<img class="bg" src="icons/clock/clockbg1.png">'+
+								'<img class="minutesLeft" src="icons/clock/2.png"/>'+
+								'<img class="minutesRight" src="icons/clock/3.png"/><hr>'+
+							  '</div></div>'+
+							  '<div class="date">1 januari 2015</div>');
+		//this.element.enhanceWithin();
+
+		// bind events
+		this.setDate();
+		this.setTime();
+		
+		var that = this;
+		setInterval(function(){that.setDate()}, 30000);
+		setInterval(function(){that.setTime()}, 5000);
+	},
+	setDate: function(){
+		now = new Date();
+		var weekday = (now.getDay()+6)%7;
+		var day = now.getDate();
+		var month = now.getMonth();
+		var year = now.getFullYear();
+
+		var date_string = language.capitalize(language.weekday[weekday])+' '+day+' '+language.capitalize(language.month[month])+' '+year;
+	
+		this.element.find('.date').html(date_string);
+	},
+	setTime: function(){
+		now = new Date();
+		h1 = Math.floor( now.getHours() / 10 );
+		h2 = now.getHours() % 10;
+		m1 = Math.floor( now.getMinutes() / 10 );
+		m2 = now.getMinutes() % 10;
+
+		if(h2 != this.h2_current){
+			this.flip('img.hoursRight',h2);
+			this.h2_current = h2;
+					
+			this.flip('img.hoursLeft',h1);
+			this.h1_current = h1;
+		}
+		   
+		if( m2 != this.m2_current){
+			this.flip('img.minutesRight',m2);
+			this.m2_current = m2;
+
+			this.flip('img.minutesLeft',m1);
+			this.m1_current = m1;
+		}
+	},
+	flip: function(selector,num){
+	
+		var src1 = 'icons/clock/'+num+'-1.png';
+		var src2 = 'icons/clock/'+num+'-2.png';
+		var src3 = 'icons/clock/'+num+'-3.png';
+		var src  = 'icons/clock/'+num+'.png';
+		
+		var that = this;
+		if(this.h1_current==-1){
+			// avoid animation on refresh
+			that.element.find(selector).attr('src',src);
+		}
+		else{
+			that.element.find(selector).attr('src',src1);
+			
+			setTimeout(function(){
+				that.element.find(selector).attr('src',src2);
+			},60);
+			setTimeout(function(){
+				that.element.find(selector).attr('src',src3);
+			},120);
+			setTimeout(function(){
+				that.element.find(selector).attr('src',src);
+			},180);
+		}
+	},
+	h1_current: -1,
+	h2_current: -1,
+	m1_current:-1,
+	m2_current:-1
+});
+
+/*****************************************************************************/
+/*                     chart                                                 */
+/*****************************************************************************/
+$.widget('homecon.chart',{
+	options: {
+	},
+	_create: function(){
+
+		// set global options
+		Highcharts.setOptions({
+			global: {
+				useUTC: false
+			}
+		});
+
+		// Enhance
+		this.element.append('<div class="chart_container"></div>');
+		this.create_chart()
+		this.chart = $(this.element).children('.chart_container').highcharts();
+		this.chart.reflow();
+
+		// bind events
+		this._on(this.element, {
+			'update': function(event,series){			
+				this.update(series);
+			},
+			'get_series': function(event,id){
+				this.get_series(id)
+			},
+			'get_data': function(event){			
+				this.get_data()
+			}
+		});
+
+	},
+	create_chart: function(){
+		$(this.element).children('.chart_container').highcharts(this.chart_options);
+	},
+	update: function(series){
+		var add = true;
+		$.each(this.chart.series,function(index,ser){
+			if(ser.name == series.name){
+				// update the data
+				ser.setData(series.data);
+				add = false;
+			}
+		});
+		if(add){
+			this.chart.addSeries(series);
+		}
+		this.chart.yAxis[0].setTitle({text: series.unit})
+		this.chart.reflow();
+	},
+	get_series: function(id){
+	},
+	get_data: function(){
+	},
+	chart_options: {
+		chart: {
+			type: 'line'
+		},
+		title: {
+			text: ''
+		},
+		xAxis: {
+			type: 'datetime',
+			ordinal: false
+		},
+		tooltip: {
+			xDateFormat: '%Y-%m-%d %H:%M',
+			valueDecimals: 1,
+			shared: true
+		},
+		rangeSelector: {
+			enabled: false
+		},
+		plotOptions: {
+			line: {
+				marker: {
+					enabled: false
+				}
+			}
+		},
+		series: []
+	}
+});
 

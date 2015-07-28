@@ -323,12 +323,16 @@ var knxcontrol = {
 						description: result.description,
 						loading_quarterhourdata: false,
 						loading_weekdata: false,
-						loading_monthdata: false
+						loading_monthdata: false,
+						quarterhourdata: [],
+						daydata: [],
+						weekdata: [],
+						monthdata: []
 					};
 					$('[data-role="measurement_list"]').trigger('update',result.id);
 					//that.get_data(result.id);  // this will load all data which results in a lot of data traffic
 				});
-				$('[data-role="chart"]').trigger('get_data');
+				$('[data-role="measurementchart"]').trigger('get_data');
 			});
 		},
 		update: function(id,field,value){
@@ -378,7 +382,7 @@ var knxcontrol = {
 							that.daydata.push([starttime[index],sum[index]/numel[index]]);
 						});
 						that.loading_quarterhourdata = false;
-						$('[data-role="chart"]').trigger('update',id);
+						$('[data-role="measurementchart"]').trigger('get_series',id);
 						
 					});
 				}
@@ -398,7 +402,7 @@ var knxcontrol = {
 						});
 						
 						that.loading_weekdata = false;
-						$('[data-role="chart"]').trigger('update',id);
+						$('[data-role="measurementchart"]').trigger('get_series',id);
 					});
 				}
 			}
@@ -417,7 +421,7 @@ var knxcontrol = {
 						});
 						
 						that.loading_monthdata = false;
-						$('[data-role="chart"]').trigger('update',id);
+						$('[data-role="measurementchart"]').trigger('get_series',id);
 					});
 				}
 			}

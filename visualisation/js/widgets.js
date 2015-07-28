@@ -95,101 +95,6 @@ $.widget("homecon.shading",{
 	}
 });
 
-
-/*****************************************************************************/
-/*                     clock                                                 */
-/*****************************************************************************/ 
-$.widget("homecon.clock",{
-	options: {
-    },
-	_create: function(){
-		// enhance
-		this.element.append('<div class="time"><div>'+
-								'<img class="bg" src="icons/clock/clockbg1.png">'+
-								'<img class="hoursLeft" src="icons/clock/0.png"/>'+
-								'<img class="hoursRight" src="icons/clock/1.png"/><hr>'+
-							  '</div><div>'+
-								'<img class="bg" src="icons/clock/clockbg1.png">'+
-								'<img class="minutesLeft" src="icons/clock/2.png"/>'+
-								'<img class="minutesRight" src="icons/clock/3.png"/><hr>'+
-							  '</div></div>'+
-							  '<div class="date">1 januari 2015</div>');
-		//this.element.enhanceWithin();
-
-		// bind events
-		this.setDate();
-		this.setTime();
-		
-		var that = this;
-		setInterval(function(){that.setDate()}, 30000);
-		setInterval(function(){that.setTime()}, 5000);
-	},
-	setDate: function(){
-		now = new Date();
-		var weekday = (now.getDay()+6)%7;
-		var day = now.getDate();
-		var month = now.getMonth();
-		var year = now.getFullYear();
-
-		var date_string = language.capitalize(language.weekday[weekday])+' '+day+' '+language.capitalize(language.month[month])+' '+year;
-	
-		this.element.find('.date').html(date_string);
-	},
-	setTime: function(){
-		now = new Date();
-		h1 = Math.floor( now.getHours() / 10 );
-		h2 = now.getHours() % 10;
-		m1 = Math.floor( now.getMinutes() / 10 );
-		m2 = now.getMinutes() % 10;
-
-		if(h2 != this.h2_current){
-			this.flip('img.hoursRight',h2);
-			this.h2_current = h2;
-					
-			this.flip('img.hoursLeft',h1);
-			this.h1_current = h1;
-		}
-		   
-		if( m2 != this.m2_current){
-			this.flip('img.minutesRight',m2);
-			this.m2_current = m2;
-
-			this.flip('img.minutesLeft',m1);
-			this.m1_current = m1;
-		}
-	},
-	flip: function(selector,num){
-	
-		var src1 = 'icons/clock/'+num+'-1.png';
-		var src2 = 'icons/clock/'+num+'-2.png';
-		var src3 = 'icons/clock/'+num+'-3.png';
-		var src  = 'icons/clock/'+num+'.png';
-		
-		var that = this;
-		if(this.h1_current==-1){
-			// avoid animation on refresh
-			that.element.find(selector).attr('src',src);
-		}
-		else{
-			that.element.find(selector).attr('src',src1);
-			
-			setTimeout(function(){
-				that.element.find(selector).attr('src',src2);
-			},60);
-			setTimeout(function(){
-				that.element.find(selector).attr('src',src3);
-			},120);
-			setTimeout(function(){
-				that.element.find(selector).attr('src',src);
-			},180);
-		}
-	},
-	h1_current: -1,
-	h2_current: -1,
-	m1_current:-1,
-	m2_current:-1
-});
-
 /*****************************************************************************/
 /*                     weather block                                         */
 /*****************************************************************************/ 
@@ -206,19 +111,31 @@ $.widget("homecon.weather_block",{
 	_create: function(){
 		// enhance
 		this.element.append('<div data-field="date"></div>'+
-							'<img src="icons/weather/blank.png">'+
-							'<div data-field="temperature"></div>'+
-							'<div data-field="wind"></div>'+
-							'<div data-field="clouds"></div>'
-		);
+							'<img src="icons/weather/blank.png">');
+
+		if(this.options.item_temperature == ''){
+			this.element.append( '<div data-field="temperature"></div>');
+		}
+		else{
+			this.element.append( '<div data-role="displayvalue" data-item="'+this.options.item_temperature+'" data-app="&deg;C" data-digits="1"></div>');
+		}
+		this.element.append( '<div data-field="windd"></div>');
+	
+		if(this.options.item_clouds == ''){
+			this.element.append( '<div data-field="clouds"></div>');
+		}
+		else{
+			this.element.append( '<div data-role="displayvalue" data-item="'+this.options.item_clouds+'" data-app="%" data-digits="0" data-scale="100"></div>');
+		}
+
 		if(this.options.mini){
 			this.element.addClass("mini");
 		}
 		this.element.enhanceWithin();
 		
+
 		// bind events
 		this._on(this.document,{
-		
 			'update': function(){
 				this.update();
 			}
@@ -241,7 +158,6 @@ $.widget("homecon.weather_block",{
 				var winddirection = '';
 				var clouds = 0;
 				
-				
 				date = new Date(knxcontrol.item[item][index].datetime*1000);
 				var weekday = (date.getDay()+6)%7;
 				var day = date.getDate();
@@ -258,35 +174,16 @@ $.widget("homecon.weather_block",{
 				
 				var date_string = language.weekday_short[weekday];
 				
-				if(this.options.item_temperature == ''){
-					if(item =='knxcontrol.weather.prediction.detailed'){
-						temperature = knxcontrol.item[item][index].temperature;
-					}
-					else{
-						temperature = knxcontrol.item[item][index].temperature_day;
-					}
+				
+				if(item =='knxcontrol.weather.prediction.detailed'){
+					temperature = knxcontrol.item[item][index].temperature;
 				}
 				else{
-					temperature = knxcontrol.item[this.options.item_temperature];
+					temperature = knxcontrol.item[item][index].temperature_day;
 				}
-				if(this.options.item_windspeed == ''){
-					windspeed = knxcontrol.item[item][index].wind_speed;
-				}
-				else{
-					windspeed = knxcontrol.item[this.options.item_windspeed];
-				}
-				if(this.options.item_winddirection == ''){
-					winddirection = language.winddirection(knxcontrol.item[item][index].wind_direction)
-				}
-				else{
-					winddirection = language.winddirection(knxcontrol.item[this.options.item_winddirection]);
-				}
-				if(this.options.item_clouds == ''){
-					clouds = knxcontrol.item[item][index].clouds;
-				}
-				else{
-					clouds = knxcontrol.item[this.options.item_clouds];
-				}
+				windspeed = knxcontrol.item[item][index].wind_speed;
+				winddirection = language.winddirection(knxcontrol.item[item][index].wind_direction)
+				clouds = knxcontrol.item[item][index].clouds;
 				
 				if(this.options.mini){
 					this.element.find('[data-field="date"]').html(date_string);
@@ -300,34 +197,28 @@ $.widget("homecon.weather_block",{
 					this.element.find('[data-field="clouds"]').html(language.capitalize(language.clouds)+': '+Math.round(clouds*1)/1+'%');
 				}
 			}
-			else{
-				this.element.find('img').attr('src','icons/weather/na.png');
-				
-				this.element.find('[data-field="date"]').html('-');
-				this.element.find('[data-field="temperature"]').html('-');
-				this.element.find('[data-field="wind"]').html('-');
-				this.element.find('[data-field="clouds"]').html('-');
-			}
 		}
 	},
-	icons: {'01d': 'sun_1.png',
-			'02d': 'sun_3.png',
-			'03d': 'cloud_4.png',
-			'04d': 'cloud_5.png',
-			'09d': 'cloud_7.png',
-			'10d': 'sun_7.png' ,
-			'11d': 'cloud_10.png',
-			'13d': 'cloud_13.png',
-			'50d': 'sun_6.png',
-			'01n': 'moon_1.png',
-			'02n': 'moon_3.png',
-			'03n': 'cloud_4.png',
-			'04n': 'cloud_5.png',
-			'09n': 'cloud_7.png',
-			'10n': 'moon_7.png',
-			'11n': 'cloud_10.png',
-			'13n': 'cloud_13.png',
-			'50n': 'moon_6.png'}
+	icons: {
+		'01d': 'sun_1.png',
+		'02d': 'sun_3.png',
+		'03d': 'cloud_4.png',
+		'04d': 'cloud_5.png',
+		'09d': 'cloud_7.png',
+		'10d': 'sun_7.png' ,
+		'11d': 'cloud_10.png',
+		'13d': 'cloud_13.png',
+		'50d': 'sun_6.png',
+		'01n': 'moon_1.png',
+		'02n': 'moon_3.png',
+		'03n': 'cloud_4.png',
+		'04n': 'cloud_5.png',
+		'09n': 'cloud_7.png',
+		'10n': 'moon_7.png',
+		'11n': 'cloud_10.png',
+		'13n': 'cloud_13.png',
+		'50n': 'moon_6.png'
+	}
 });
 
 /*****************************************************************************/
@@ -470,30 +361,140 @@ $.widget("homecon.alarm",{
 });
 
 /*****************************************************************************/
-/*                     measurement export                                    */
+/*                     chart                                                 */
 /*****************************************************************************/
-$.widget("homecon.measurement_export",{
+
+$.widget('homecon.measurementchart',$.homecon.chart,{
 	options: {
+      signals: '1',
+	  title: '',
+	  type: 'line',
+	  period: 'quarterhour',
+	  step: false
+    },
+	create_chart: function(){
+		if(this.options.period == 'quarterhour'){
+			this.chart_options.xAxis.range = 2 * 24 * 3600 * 1000;
+		}
+		this.chart_options.chart.type = this.options.type;
+		this.chart_options.title.text = this.options.title;
+		if(this.options.type == 'line'){
+			$(this.element).children('.chart_container').highcharts('StockChart',this.chart_options);
+		}
+		else{
+			$(this.element).children('.chart_container').highcharts(this.chart_options);
+		}
 	},
-	_create: function(){
-		// enhance
-		this.element.html('<div class="ui-field-contain">Startdate:<input type="date" class="startdate"></div><div class="ui-field-contain">Enddate:<input type="date" class="enddate"></div><a href="#" class="export" data-role="button" data-rel="popup">'+language.capitalize(language.export_measurements)+'</a>');
-		this.element.enhanceWithin();	
-
-		// bind events
-		this._on(this.element, {
-			'click a.export': function(event){
-				// get start and end date
-				
-				var startdate = $(this.element.find('input.startdate')).val();
-				var enddate   = $(this.element.find('input.enddate')).val();
-
-				// not sure if this will work
-				window.open('requests/measurements_export.php?table=measurements&startdate='+startdate+'&enddate='+enddate);
+	get_data: function(){
+		var that = this;
+		$.each((''+this.options.signals).split(','),function(index,id){
+			if(that.options.period == 'quarterhour' || that.options.period == 'day'){
+				knxcontrol.measurement.get_quarterhourdata(id);
+			}
+			else if(that.options.period == 'week'){
+				knxcontrol.measurement.get_weekdata(id);
+			}
+			else if(that.options.period == 'month'){
+				knxcontrol.measurement.get_monthdata(id);
 			}
 		});
+	},
+	get_series: function(id){
+		if( (''+this.options.signals).split(',').indexOf(id) > -1 ){
+			var series = {
+				name: knxcontrol.measurement[id].name,
+				data: [],
+				unit: knxcontrol.measurement[id].unit,
+				step: this.options.step
+			}
+			if(this.options.period == 'quarterhour'){
+				series.data = knxcontrol.measurement[id].quarterhourdata
+			}
+			else if(this.options.period == 'day'){
+				series.data = knxcontrol.measurement[id].daydata
+			}
+			else if(this.options.period == 'week'){
+				series.data = knxcontrol.measurement[id].weekdata
+			}
+			else if(this.options.period == 'month'){
+				series.data = knxcontrol.measurement[id].monthdata
+			}
+			this.update(series)
+		}
 	}
 });
+
+/*****************************************************************************/
+/*                     ventilation control                                   */
+/*****************************************************************************/
+$.widget('homecon.ventilation_control',{
+	options: {
+		label: '',
+		item: 'building.ventilation.speedcontrol',
+		src_auto_off: 'icons/ffffff/vent_ventilation_level_automatic.png',
+		src_auto_on: 'icons/f79a1f/vent_ventilation_level_automatic.png',
+		src_0_off: 'icons/ffffff/vent_ventilation_level_0.png',
+		src_1_off: 'icons/ffffff/vent_ventilation_level_1.png',
+		src_2_off: 'icons/ffffff/vent_ventilation_level_2.png',
+		src_3_off: 'icons/ffffff/vent_ventilation_level_3.png',
+		src_0_on: 'icons/f79a1f/vent_ventilation_level_0.png',
+		src_1_on: 'icons/f79a1f/vent_ventilation_level_1.png',
+		src_2_on: 'icons/f79a1f/vent_ventilation_level_2.png',
+		src_3_on: 'icons/f79a1f/vent_ventilation_level_3.png'
+    },
+	
+	_create: function(){
+		// enhance
+		this.element.prepend('<p>'+this.options.label+'</p>'+
+							 '<div class="speedcontrol">'+
+								'<div data-role="valueswitch" value="0" src_on="'+this.options.src_0_on+'" src_off="'+this.options.src_0_off+'"></div>'+
+								'<div data-role="valueswitch" value="1" src_on="'+this.options.src_1_on+'" src_off="'+this.options.src_1_off+'"></div>'+
+								'<div data-role="valueswitch" value="2" src_on="'+this.options.src_2_on+'" src_off="'+this.options.src_2_off+'"></div>'+
+								'<div data-role="valueswitch" value="3" src_on="'+this.options.src_3_on+'" src_off="'+this.options.src_3_off+'"></div>'+
+							 '</div>').enhanceWithin();
+
+		this.element.find('div[data-role="valueswitch"]').valueswitch()
+	}
+});
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /*****************************************************************************/
 /*                     settings                                              */
@@ -538,127 +539,31 @@ $.widget("homecon.settings",{
 });
 
 /*****************************************************************************/
-/*                     chart                                                 */
+/*                     measurement export                                    */
 /*****************************************************************************/
-$.widget('homecon.chart',{
+$.widget("homecon.measurement_export",{
 	options: {
-      signals: '1',
-	  type: 'quarterhour',
-	  step: false
-    },
+	},
 	_create: function(){
-		
-		// Enhance
-		this.element.append('<div class="chart_container"></div>');
-		
-		Highcharts.setOptions({
-			global: {
-				useUTC: false
-			}
-		});
-				
-		// add empty series
-		var that = this;
-		that.chart_options.series = [];
-		$.each((''+this.options.signals).split(','),function(index,id){
-			that.chart_options.series.push({name: ' ', step: that.options.step});
-		});
-		
-		if(this.options.type == 'quarterhour'){
-			this.chart_options.chart.type = 'line';
-			this.chart_options.xAxis.range = 2 * 24 * 3600 * 1000;
-			this.chart_options.tooltip.xDateFormat='%Y-%m-%d %H:%M';
-			$(this.element).children('.chart_container').highcharts('StockChart',this.chart_options);
-		}
-		else if(this.options.type == 'week'){
-			this.chart_options.chart.type = 'line';
-			this.chart_options.plotOptions = { line: { marker: { enabled: false} } };
-			$(this.element).children('.chart_container').highcharts(this.chart_options);
-		}
-		else{
-			this.chart_options.chart.type = 'column';
-			$(this.element).children('.chart_container').highcharts(this.chart_options);
-		}
-		
-		this.chart = $(this.element).children('.chart_container').highcharts();
-		this.chart.reflow();
+		// enhance
+		this.element.html('<div class="ui-field-contain">Startdate:<input type="date" class="startdate"></div><div class="ui-field-contain">Enddate:<input type="date" class="enddate"></div><a href="#" class="export" data-role="button" data-rel="popup">'+language.capitalize(language.export_measurements)+'</a>');
+		this.element.enhanceWithin();	
 
-		// try to get data
-		this.get_data();		
-		
 		// bind events
 		this._on(this.element, {
-			'update': function(event,id){			
-				this.update(id);
-				this.chart.reflow();
-			},
-			'get_data': function(event){			
-				this.get_data();
-			}
-		});
-	},
-	update: function(id){
-		var that = this;
-		$.each((''+this.options.signals).split(','),function(index,signal){
-			if(signal==id){
-				that.chart.series[index].name = knxcontrol.measurement[id].name;
-				that.chart.yAxis[0].setTitle({text: knxcontrol.measurement[id].unit});
+			'click a.export': function(event){
+				// get start and end date
 				
-				if(that.options.type == 'quarterhour'){
-					that.chart.series[index].setData(knxcontrol.measurement[id].quarterhourdata);
-				}
-				else if(that.options.type == 'day'){
-					that.chart.series[index].setData(knxcontrol.measurement[id].daydata);
-					that.chart.legend.allItems[index].update({name: knxcontrol.measurement[id].name});
-				}
-				else if(that.options.type == 'week'){
-					that.chart.series[index].setData(knxcontrol.measurement[id].weekdata);
-					that.chart.legend.allItems[index].update({name: knxcontrol.measurement[id].name});
-				}
-				else if(that.options.type == 'month'){
-					that.chart.series[index].setData(knxcontrol.measurement[id].monthdata);
-					that.chart.legend.allItems[index].update({name: knxcontrol.measurement[id].name});
-				}
+				var startdate = $(this.element.find('input.startdate')).val();
+				var enddate   = $(this.element.find('input.enddate')).val();
+
+				// not sure if this will work
+				window.open('requests/measurements_export.php?table=measurements&startdate='+startdate+'&enddate='+enddate);
 			}
 		});
-		
-	},
-	get_data: function(){
-		var that = this;
-		$.each((''+this.options.signals).split(','),function(index,id){
-			if(that.options.type == 'quarterhour' || that.options.type == 'day'){
-				knxcontrol.measurement.get_quarterhourdata(id);
-			}
-			else if(that.options.type == 'week'){
-				knxcontrol.measurement.get_weekdata(id);
-			}
-			else if(that.options.type == 'month'){
-				knxcontrol.measurement.get_monthdata(id);
-			}
-		});
-	},
-	chart: {},
-	chart_options: {
-		chart: {
-		},
-		title: {
-			text: ''
-		},
-		xAxis: {
-			type: 'datetime',
-			ordinal: false
-		},
-		tooltip: {
-			xDateFormat: '%Y-%m-%d',
-			valueDecimals: 1,
-			shared: true
-		},
-		rangeSelector : {
-			enabled: false
-		},
-		series: []
 	}
 });
+
 
 /*****************************************************************************/
 /*                     action list                                           */
@@ -1045,80 +950,6 @@ $(document).on('click','#profile_def_popup_delete',function(event){
 });
 
 /*****************************************************************************/
-/*                     ventilation control                                   */
-/*****************************************************************************/
-$.widget('homecon.ventilation_control',{
-	options: {
-		label: '',
-		item: 'building.ventilation.speedcontrol',
-		src_auto_off: 'icons/ffffff/vent_ventilation_level_automatic.png',
-		src_auto_on: 'icons/f79a1f/vent_ventilation_level_automatic.png',
-		src_0_off: 'icons/ffffff/vent_ventilation_level_0.png',
-		src_1_off: 'icons/ffffff/vent_ventilation_level_1.png',
-		src_2_off: 'icons/ffffff/vent_ventilation_level_2.png',
-		src_3_off: 'icons/ffffff/vent_ventilation_level_3.png',
-		src_0_on: 'icons/f79a1f/vent_ventilation_level_0.png',
-		src_1_on: 'icons/f79a1f/vent_ventilation_level_1.png',
-		src_2_on: 'icons/f79a1f/vent_ventilation_level_2.png',
-		src_3_on: 'icons/f79a1f/vent_ventilation_level_3.png'
-    },
-	
-	_create: function(){
-		// enhance
-		this.element.prepend('<p>'+this.options.label+'</p>'+
-							 '<!--<a href="#" class="auto"><img src="'+this.options.src_auto_off+'"></a>-->'+
-							 '<div class="speedcontrol">'+
-								'<a href="#" data-value="0"><img src="'+this.options.src_0_off+'"></a>'+
-								'<a href="#" data-value="1"><img src="'+this.options.src_1_off+'"></a>'+
-								'<a href="#" data-value="2"><img src="'+this.options.src_2_off+'"></a>'+
-								'<a href="#" data-value="3"><img src="'+this.options.src_3_off+'"></a>'+
-							 '</div>').enhanceWithin();
-		this.update();
-		
-		// bind events
-		this._on(this.element, {
-            'click div.speedcontrol a': function(event){
-				// update the value in smarthome
-				smarthome.write(this.options.item, $(event.target).parents('a').attr('data-value'));
-			},
-			'update': function(event){
-				this.update();
-			}
-        });
-	},
-	update: function(){
-		var item = this.options.item;
-		var speedcontrol = item+'.speedcontrol';
-		
-		if(knxcontrol.item[item]==0){
-			this.element.find('a[data-value="0"] img').attr('src',this.options.src_0_on);
-			this.element.find('a[data-value="1"] img').attr('src',this.options.src_1_off);
-			this.element.find('a[data-value="2"] img').attr('src',this.options.src_2_off);
-			this.element.find('a[data-value="3"] img').attr('src',this.options.src_3_off);
-		}
-		else if(knxcontrol.item[item]==1){
-			this.element.find('a[data-value="0"] img').attr('src',this.options.src_0_off);
-			this.element.find('a[data-value="1"] img').attr('src',this.options.src_1_on);
-			this.element.find('a[data-value="2"] img').attr('src',this.options.src_2_off);
-			this.element.find('a[data-value="3"] img').attr('src',this.options.src_3_off);
-		}
-		else if(knxcontrol.item[item]==2){
-			this.element.find('a[data-value="0"] img').attr('src',this.options.src_0_off);
-			this.element.find('a[data-value="1"] img').attr('src',this.options.src_1_off);
-			this.element.find('a[data-value="2"] img').attr('src',this.options.src_2_on);
-			this.element.find('a[data-value="3"] img').attr('src',this.options.src_3_off);
-		}
-		else if(knxcontrol.item[item]==3){
-			this.element.find('a[data-value="0"]  img').attr('src',this.options.src_0_off);
-			this.element.find('a[data-value="1"]  img').attr('src',this.options.src_1_off);
-			this.element.find('a[data-value="2"]  img').attr('src',this.options.src_2_off);
-			this.element.find('a[data-value="3"]  img').attr('src',this.options.src_3_on);
-		}
-	}
-
-});
-
-/*****************************************************************************/
 /*                     smarthome log                                         */
 /*****************************************************************************/
 $.widget("homecon.smarthome_log",{
@@ -1289,13 +1120,13 @@ $.widget("homecon.system_identification",{
 	},
 	_create: function(){
 		this.element.html('<div class="buttons">'+
-						      '<div class="twocols"><div data-role="btn" data-label="Identify" data-item="knxcontrol.mpc.model.identification" data-value=1></div></div>'+
-						      '<div class="twocols"><div data-role="btn" data-label="Validate" data-item="knxcontrol.mpc.model.validation" data-value=1></div></div>'+
+						      '<div class="twocols"><div data-role="pushbutton" data-label="Identify" data-item="knxcontrol.mpc.model.identification" data-value=1></div></div>'+
+						      '<div class="twocols"><div data-role="pushbutton" data-label="Validate" data-item="knxcontrol.mpc.model.validation" data-value=1></div></div>'+
 						  '</div>'+
 						  '<div class="chart_container">'+
 						  '</div>');
 
-		$('div[data-role="btn"]').btn();
+		$('div[data-role="pushbutton"]').pushbutton();
 
 		Highcharts.setOptions({
 			global: {

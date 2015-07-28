@@ -324,53 +324,6 @@ div[data-role="settings"]{
 }
 
 /*****************************************************************************/
-/*                     Clock                                                 */
-/*****************************************************************************/
-
-div[data-role="clock"] {
-	position: relative;
-	width: 90%;
-	margin-left: auto;
-	margin-right: auto;
-	text-align: center;
-}
-div[data-role="clock"] .time>div{
-	position: relative;
-	display: inline-block;
-}
-div[data-role="clock"] img{
-	height: 100px;
-}
-div[data-role="clock"] img.hoursLeft, div[data-role="clock"] img.minutesLeft{
-	position: absolute;
-	top: 0px;
-	left: 10px;
-}
-div[data-role="clock"] img.hoursRight, div[data-role="clock"] img.minutesRight{
-	position: absolute;
-	top: 0px;
-	right: 10px;
-}
-div[data-role="clock"]  hr{
-	position: absolute;
-	top: 40px;
-	left: 6px;
-	width: 86px;
-}
-div[data-role="clock"] .date{
-	margin-top: 0;
-	margin-bottom: 0;
-}
-#home_pagebuilder div[data-role="clock"]{
-	margin-bottom: 5px;
-	border: solid 1px #222;
-}
-#home_pagebuilder div[data-role="clock"] a.edit_widget{
-    top: -5px;
-	right: -5px;
-}
-
-/*****************************************************************************/
 /*                     Weather block                                       */
 /*****************************************************************************/
 div[data-role="weather_block"]{
@@ -416,24 +369,23 @@ div[data-role="weather_block"].mini div{
     top: -5px;
 	right: -5px;
 }
-
-/*****************************************************************************/
-/*                     Chart                                                 */
-/*****************************************************************************/
-div[data-role="chart"]{
+*
+/******************************************************************************/
+/*                     measurementchart                                       */
+/******************************************************************************/
+div[data-role="measurementchart"]{
 	width: 98%;
 	position: relative;
 	margin-bottom: 5px;
 }
-#home_pagebuilder div[data-role="chart"]{
+#home_pagebuilder div[data-role="measurementchart"]{
 	border: solid 1px #222;
 }
-#home_pagebuilder div[data-role="chart"] a.edit_widget{
+#home_pagebuilder div[data-role="measurementchart"] a.edit_widget{
 	z-index: 1;
     top: -5px;
 	right: -5px;
 }
-
 /*****************************************************************************/
 /*                     Ventilation control                                   */
 /*****************************************************************************/

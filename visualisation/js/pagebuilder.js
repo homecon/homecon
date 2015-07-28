@@ -212,7 +212,7 @@ pagebuilder = {
 		lightdimmer: {name: 'Light dimmer'},
 		shading: {name: 'Shading control'},
 		alarm: {name: 'Alarm'},
-		chart: {name: 'Chart'},
+		measurementchart: {name: 'Chart'},
 		displayvalue: {name: 'Display value'},
 		pushbutton: {name: 'Push button'},
 		weather_block: {name: 'Weather block'},
