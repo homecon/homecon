@@ -55,7 +55,7 @@ var smarthome = {
         smarthome.socket.onmessage = function(event){
 			//console.log(event.data);
 			
-            var data = JSON.parse(event.data);   
+            var data = JSON.parse(event.data);
             switch(data.cmd){
 				
                 case 'item':

@@ -221,3 +221,23 @@ section div.endofsection{
 	  padding: .2em .4em;
 	  min-height: 1.2em;
 }
+
+
+
+div[data-role="fieldcontain"]{
+	padding: .1em 0;
+}
+
+div.twocols{
+	display: inline-block;
+	float: left; 
+	width: 49%;
+	margin: 0;
+}
+div.threecols{
+	display: inline-block;
+	float: left; 
+	width: 32%;
+	margin: 0;
+}
+

@@ -381,6 +381,9 @@ $.widget('homecon.chart',{
 			}
 		});
 
+		// fix width bug
+		this.chart_options.chart['width'] = 0.9*this.element.parents('div.ui-content').width()/100*Math.max(document.documentElement.clientWidth, window.innerWidth || 0)
+
 		// Enhance
 		this.element.append('<div class="chart_container"></div>');
 		this.create_chart()

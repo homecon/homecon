@@ -16,46 +16,6 @@
     along with KNXControl.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-
-/*****************************************************************************/
-/*                     input value                                           */
-/*****************************************************************************/
-div[data-role="inputvalue"]{
-	display: inline-block;
-	position: relative;
-	height: 65px;
-	width: 98%;
-	text-align: left;
-}
-div[data-role="inputvalue"] p.label{
-	position: absolute;
-	margin-left: 54px;
-	margin-top: 5px;
-	font-weight: 700;
-}
-
-div[data-role="inputvalue"] div.ui-input-text{
-	position: absolute;
-	margin-left: 54px;
-	margin-top: 24px;
-	margin-bottom: 0px;
-	width: 150px;
-}
-div[data-role="inputvalue"] p.unit{
-	position: absolute;
-	margin-top: 30px;
-	margin-left: 214px;
-	margin-bottom: 0px;
-
-}
-
-#home_pagebuilder div[data-role="inputvalue"]{
-	border: solid 1px #222;
-}
-#home_pagebuilder div[data-role="inputvalue"] a.edit_widget{
-    top: -5px;
-	right: -5px;
-}
 /*****************************************************************************/
 /*                     Light switch                                          */
 /*****************************************************************************/
@@ -68,16 +28,6 @@ div[data-role="lightswitch"]{
 	text-align: left;
 	float: left;
 }
-#home_pagebuilder div[data-role="lightswitch"]{
-	margin-bottom: 5px;
-	margin-right: 1%;
-	width: 48%;
-	border: solid 1px #222;
-}
-#home_pagebuilder div[data-role="lightswitch"] a.edit_widget{
-    top: -5px;
-	right: -5px;
-}
 
 /*****************************************************************************/
 /*                     Light dimmer                                          */
@@ -89,7 +39,7 @@ div[data-role="lightdimmer"]{
 	width: 98%;
 	text-align: left;
 }
-div[data-role="lightdimmer"] img{
+div[data-role="lightdimmer"] div[data-role="toggleswitch"]{
 	height: 50px;
 	vertical-align: middle;
 	float: left;
@@ -112,14 +62,6 @@ div[data-role="lightdimmer"] .ui-slider-track{
 }
 div[data-role="lightdimmer"] .ui-slider input{
 	visibility: hidden;
-}
-
-#home_pagebuilder div[data-role="lightdimmer"]{
-	border: solid 1px #222;
-}
-#home_pagebuilder div[data-role="lightdimmer"] a.edit_widget{
-    top: -5px;
-	right: -5px;
 }
 
 
@@ -177,14 +119,6 @@ div[data-role="shading"] div.advanced{
 	left: 0px;
 }
 
-#home_pagebuilder div[data-role="shading"]{
-	border: solid 1px #222;
-}
-#home_pagebuilder div[data-role="shading"] a.edit_widget{
-    top: -5px;
-	right: -5px;
-}
-
 /*****************************************************************************/
 /*                     Alarm                                                 */
 /*****************************************************************************/
@@ -217,10 +151,90 @@ div[data-role="alarm"] label{
 	padding-left: 8px;
 	padding-right: 8px;
 }
-#home_pagebuilder div[data-role="alarm"]{
-	margin-bottom: 5px;
-	border: solid 1px #222;
+
+/*****************************************************************************/
+/*                     Weather block                                       */
+/*****************************************************************************/
+div[data-role="weather_block"]{
+	position: relative;
+	display: inline-block;
+	width: 98%;
+	margin-left: auto;
+	margin-right: auto;
+	text-align: center;
 }
+div[data-role="weather_block"] img{
+	width: 90%;
+	max-width: 300px;
+	margin-top: -10px;
+	margin-bottom: -10px;
+}
+div[data-role="weather_block"] div{
+	height: 20px;
+}
+div[data-role="weather_block"] div[data-field="date"]{
+	height: 0;
+}
+div[data-role="weather_block"].mini{
+	width: 20%;
+	min-width: 75px;
+	max-width: 150px;
+	margin-left: 0;
+	margin-right: 0;
+	font-size: 0.9em;
+}
+div[data-role="weather_block"].mini img{
+	width: 100%;
+	margin-bottom: -10px;
+}
+div[data-role="weather_block"].mini div{
+	height: 15px;
+}
+
+/******************************************************************************/
+/*                     measurementchart                                       */
+/******************************************************************************/
+div[data-role="measurementchart"]{
+	width: 98%;
+	position: relative;
+	margin-bottom: 5px;
+}
+
+/*****************************************************************************/
+/*                     Ventilation control                                   */
+/*****************************************************************************/
+div[data-role="ventilation_control"]{
+	display: inline-block;
+	position: relative;
+	width: 98%;
+	text-align: left;
+}
+div[data-role="ventilation_control"] p{
+	position: relative;
+	margin-left: 5px;
+	margin-top: 5px;
+	margin-bottom: 0;
+	font-weight: 700;
+}
+div[data-role="ventilation_control"] div.speedcontrol{
+	display: inline-block;
+}
+div[data-role="ventilation_control"] img{
+	height: 50px;
+	vertical-align: middle;
+	float: left;
+}
+div[data-role="ventilation_control"] a.auto img{
+	margin-right: 50px;
+}
+
+
+
+
+
+
+
+
 
 
 
@@ -321,104 +335,6 @@ div[data-role="measurement_list"] div.measurement div.name{
 div[data-role="settings"]{
 	width: 98%;
 	text-align: left;
-}
-
-/*****************************************************************************/
-/*                     Weather block                                       */
-/*****************************************************************************/
-div[data-role="weather_block"]{
-	position: relative;
-	display: inline-block;
-	width: 98%;
-	margin-left: auto;
-	margin-right: auto;
-	text-align: center;
-}
-div[data-role="weather_block"] img{
-	width: 90%;
-	max-width: 300px;
-	margin-top: -10px;
-	margin-bottom: -10px;
-}
-div[data-role="weather_block"] div{
-	height: 20px;
-}
-div[data-role="weather_block"] div[data-field="date"]{
-	height: 0;
-}
-div[data-role="weather_block"].mini{
-	width: 20%;
-	min-width: 75px;
-	max-width: 150px;
-	margin-left: 0;
-	margin-right: 0;
-	font-size: 0.9em;
-}
-div[data-role="weather_block"].mini img{
-	width: 100%;
-	margin-bottom: -10px;
-}
-div[data-role="weather_block"].mini div{
-	height: 15px;
-}
-#home_pagebuilder div[data-role="weather_block"]{
-	margin-bottom: 5px;
-	border: solid 1px #222;
-}
-#home_pagebuilder div[data-role="weather_block"] a.edit_widget{
-    top: -5px;
-	right: -5px;
-}
-*
-/******************************************************************************/
-/*                     measurementchart                                       */
-/******************************************************************************/
-div[data-role="measurementchart"]{
-	width: 98%;
-	position: relative;
-	margin-bottom: 5px;
-}
-#home_pagebuilder div[data-role="measurementchart"]{
-	border: solid 1px #222;
-}
-#home_pagebuilder div[data-role="measurementchart"] a.edit_widget{
-	z-index: 1;
-    top: -5px;
-	right: -5px;
-}
-/*****************************************************************************/
-/*                     Ventilation control                                   */
-/*****************************************************************************/
-div[data-role="ventilation_control"]{
-	display: inline-block;
-	position: relative;
-	width: 98%;
-	text-align: left;
-}
-div[data-role="ventilation_control"] p{
-	position: relative;
-	margin-left: 5px;
-	margin-top: 5px;
-	margin-bottom: 0;
-	font-weight: 700;
-}
-div[data-role="ventilation_control"] div.speedcontrol{
-	display: inline-block;
-}
-div[data-role="ventilation_control"] img{
-	height: 50px;
-	vertical-align: middle;
-	float: left;
-}
-div[data-role="ventilation_control"] a.auto img{
-	margin-right: 50px;
-}
-#home_pagebuilder div[data-role="ventilation_control"]{
-	border: solid 1px #222;
-}
-#home_pagebuilder div[data-role="ventilation_control"] a.edit_widget{
-    top: -5px;
-	right: -5px;
 }
 
 /*****************************************************************************/

@@ -646,7 +646,7 @@ render_page = function(section_id,page_id){
 		// widgets
 		section_index = index;
 		$.each(section.widget,function(index,widget){
-			$('#renderpage section[data-id="'+section_index+'"]').append('<div data-role="'+widget.type+'" data-id="'+index+'"><a href"#" class="edit_widget" data-role="button" data-rel="popup" data-icon="grid" data-mini="true" data-iconpos="notext" data-inline="true">Edit</a></div>');
+			$('#renderpage section[data-id="'+section_index+'"]').append('<div class="widget" data-role="'+widget.type+'" data-id="'+index+'"><a href"#" class="edit_widget" data-role="button" data-rel="popup" data-icon="grid" data-mini="true" data-iconpos="notext" data-inline="true">Edit</a></div>');
 			
 			// widget options
 			widget_index = index;

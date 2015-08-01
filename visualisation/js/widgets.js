@@ -480,18 +480,15 @@ $.widget('homecon.ventilation_control',{
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
+/******************************************************************************/
+/******************************************************************************/
+/******************************************************************************/
+/******************************************************************************/
+/*                     General widgedts                                       */
+/******************************************************************************/
+/******************************************************************************/
+/******************************************************************************/
+/******************************************************************************/
 
 
 
@@ -539,31 +536,51 @@ $.widget("homecon.settings",{
 });
 
 /*****************************************************************************/
-/*                     measurement export                                    */
+/*                     smarthome log                                         */
 /*****************************************************************************/
-$.widget("homecon.measurement_export",{
+$.widget("homecon.smarthome_log",{
 	options: {
 	},
 	_create: function(){
 		// enhance
-		this.element.html('<div class="ui-field-contain">Startdate:<input type="date" class="startdate"></div><div class="ui-field-contain">Enddate:<input type="date" class="enddate"></div><a href="#" class="export" data-role="button" data-rel="popup">'+language.capitalize(language.export_measurements)+'</a>');
+		this.element.html('');
 		this.element.enhanceWithin();	
-
+		this.update();
+		
 		// bind events
 		this._on(this.element, {
-			'click a.export': function(event){
-				// get start and end date
-				
-				var startdate = $(this.element.find('input.startdate')).val();
-				var enddate   = $(this.element.find('input.enddate')).val();
+			'update': function(event,id,data){			
+				this.update();
+			},
+		});
+	},
+	update: function(){
+		that = this;
 
-				// not sure if this will work
-				window.open('requests/measurements_export.php?table=measurements&startdate='+startdate+'&enddate='+enddate);
+		that.element.empty();
+		
+		$.each(knxcontrol.smarthome_log.log,function(index,value){
+			var date = new Date(value.time);
+			var hour = date.getHours();
+			var minute = date.getMinutes();
+			var second = date.getSeconds();
+			if(hour<10){
+				hour = '0'+hour;
 			}
+			if(minute<10){
+				minute = '0'+minute;
+			}
+			if(second<10){
+				second = '0'+second;
+			}
+
+			date_string = date.getDate()+'-'+(date.getMonth()+1)+'-'+date.getFullYear()+', '+hour+':'+minute+':'+second;
+
+		
+			that.element.append('<div><div class="time">'+date_string+'</div><div class="message">'+value.level+':'+value.message+'</div></div>')
 		});
 	}
 });
-
 
 /*****************************************************************************/
 /*                     action list                                           */
@@ -747,6 +764,147 @@ $(document).on('click','#measurement_def_popup_save',function(event){
 			 $('#measurement_def_popup').find('input[data-field="description"]').val()].join();
 	console.log(id);
 	knxcontrol.measurement.update(id,data_field,value);
+});
+
+/*****************************************************************************/
+/*                     measurement export                                    */
+/*****************************************************************************/
+$.widget("homecon.measurement_export",{
+	options: {
+	},
+	_create: function(){
+		// enhance
+		this.element.html('<div class="ui-field-contain">Startdate:<input type="date" class="startdate"></div><div class="ui-field-contain">Enddate:<input type="date" class="enddate"></div><a href="#" class="export" data-role="button" data-rel="popup">'+language.capitalize(language.export_measurements)+'</a>');
+		this.element.enhanceWithin();	
+
+		// bind events
+		this._on(this.element, {
+			'click a.export': function(event){
+				// get start and end date
+				
+				var startdate = $(this.element.find('input.startdate')).val();
+				var enddate   = $(this.element.find('input.enddate')).val();
+
+				// not sure if this will work
+				window.open('requests/measurements_export.php?table=measurements&startdate='+startdate+'&enddate='+enddate);
+			}
+		});
+	}
+});
+
+/*****************************************************************************/
+/*                     users list                                            */
+/*****************************************************************************/
+$.widget("homecon.user_list",{
+	options: {
+	},
+	_create: function(){
+		this.element.html('<div class="user_list"></div><a href="#" class="add" data-role="button" data-rel="popup">'+language.capitalize(language.add_user)+'</a>');
+		var that = this;
+		$.each(knxcontrol.user,function(index,user){
+			if(typeof user == 'object'){
+				that.update(user.id);
+			}
+		});
+		this.element.enhanceWithin();	
+
+		// bind events
+		this._on(this.element, {
+			'update': function(event,id){
+				this.update(id);
+			},
+			'click a.edit': function(event){
+				// populate the popup
+				id = $(event.target).parents('.user').attr('data-id');
+				$('#user_def_popup').find('input[data-field="name"]').val(knxcontrol.user[id].username);
+				
+				$('#user_def_popup').find('#user_def_popup_save').attr('data-id',id);
+			}
+		});
+	},
+	update: function(id){
+		// check if the user exists in knxcontrol
+		if(knxcontrol.user[id]){
+			
+			// check if the user does not already exists in the DOM
+			if(this.element.find('.user_list').find('.user[data-id="'+id+'"]').length==0){
+				//add the user to the DOM
+				this.element.find('.user_list').append('<div class="user" data-id="'+id+'">'+
+															'<div class="name" data-field="name">'+knxcontrol.user[id].username+'&nbsp;</div>'+
+															'<a href="#user_def_popup" class="edit" data-role="button" data-rel="popup" data-icon="grid" data-mini="true" data-iconpos="notext">Edit</a>'+
+													   '</div>').enhanceWithin();
+			}
+			else{
+				// update the user in the DOM
+				this.element.find('.user_list').find('.user[data-id="'+id+'"]').html('<div class="user" data-id="'+id+'">'+
+																						'<div class="name" data-field="name">'+knxcontrol.user[id].username+'&nbsp;</div>'+
+																						'<a href="#user_def_popup" class="edit" data-role="button" data-rel="popup" data-icon="grid" data-mini="true" data-iconpos="notext">Edit</a>'+
+																					 '</div>').enhanceWithin();
+			}
+		}
+		else{
+			// remove the user from the DOM
+			this.element.find('.user[data-id="'+id+'"]').remove();
+		}
+	}
+});
+$(document).on('click','#user_def_popup_save',function(event){
+	id = $(this).attr('data-id');
+	$('#user_def_popup').popup('close');
+	field = ['username'];
+	value = [$('#user_def_popup').find('input[data-field="name"]').val()];
+	console.log(id);
+	knxcontrol.user.update(id,field,value);
+});
+
+/*****************************************************************************/
+/*                     user profile                                          */
+/*****************************************************************************/
+$.widget("homecon.user_profile",{
+	options: {
+	},
+	_create: function(){
+		var id = knxcontrol.user_id;
+		this.element.html('<div class="user" data-id="'+id+'">'+
+							'<div class="name" data-field="name">'+knxcontrol.user[id].username+'&nbsp;</div>'+
+							'<a href="#user_def_popup" class="edit" data-role="button" data-rel="popup" data-icon="grid" data-mini="true" data-iconpos="notext">Edit</a>'+
+					     '</div><a href="#" class="delete" data-role="button" data-rel="popup">'+language.capitalize(language.delete_user)+'</a>');
+		this.element.enhanceWithin();	
+
+		// bind events
+		this._on(this.element, {
+			'update': function(event){
+				this.update();
+			},
+			'click a.edit': function(event){
+				// populate the popup
+				var id = knxcontrol.user_id;
+				$('#password_def_popup').find('input[data-field="name"]').val(knxcontrol.user[id].username);
+				
+				$('#password_def_popup').find('#password_def_popup_save').attr('data-id',id);
+			}
+		});
+	},
+	update: function(){
+		// check if the user exists in knxcontrol
+		var id = knxcontrol.user_id;
+		if(id){
+			// update user to the DOM
+			this.element.find('.name').html(knxcontrol.user[id].username).enhanceWithin();
+		}
+		else{
+			// remove the user from the DOM
+			this.element.find('.user[data-id="'+id+'"]').remove();
+		}
+	}
+});
+$(document).on('click','#password_def_popup_save',function(event){
+	id = $(this).attr('data-id');
+	$('#user_def_popup').popup('close');
+	field = ['username'];
+	value = [$('#user_def_popup').find('input[data-field="name"]').val()];
+	console.log(id);
+	//knxcontrol.user.update(id,field,value);
 });
 
 /*****************************************************************************/
@@ -950,169 +1108,6 @@ $(document).on('click','#profile_def_popup_delete',function(event){
 });
 
 /*****************************************************************************/
-/*                     smarthome log                                         */
-/*****************************************************************************/
-$.widget("homecon.smarthome_log",{
-	options: {
-	},
-	_create: function(){
-		// enhance
-		this.element.html('');
-		this.element.enhanceWithin();	
-		this.update();
-		
-		// bind events
-		this._on(this.element, {
-			'update': function(event,id,data){			
-				this.update();
-			},
-		});
-	},
-	update: function(){
-		that = this;
-
-		that.element.empty();
-		
-		$.each(knxcontrol.smarthome_log.log,function(index,value){
-			var date = new Date(value.time);
-			var hour = date.getHours();
-			var minute = date.getMinutes();
-			var second = date.getSeconds();
-			if(hour<10){
-				hour = '0'+hour;
-			}
-			if(minute<10){
-				minute = '0'+minute;
-			}
-			if(second<10){
-				second = '0'+second;
-			}
-
-			date_string = date.getDate()+'-'+(date.getMonth()+1)+'-'+date.getFullYear()+', '+hour+':'+minute+':'+second;
-
-		
-			that.element.append('<div><div class="time">'+date_string+'</div><div class="message">'+value.level+':'+value.message+'</div></div>')
-		});
-	}
-});
-
-/*****************************************************************************/
-/*                     users list                                            */
-/*****************************************************************************/
-$.widget("homecon.user_list",{
-	options: {
-	},
-	_create: function(){
-		this.element.html('<div class="user_list"></div><a href="#" class="add" data-role="button" data-rel="popup">'+language.capitalize(language.add_user)+'</a>');
-		var that = this;
-		$.each(knxcontrol.user,function(index,user){
-			if(typeof user == 'object'){
-				that.update(user.id);
-			}
-		});
-		this.element.enhanceWithin();	
-
-		// bind events
-		this._on(this.element, {
-			'update': function(event,id){
-				this.update(id);
-			},
-			'click a.edit': function(event){
-				// populate the popup
-				id = $(event.target).parents('.user').attr('data-id');
-				$('#user_def_popup').find('input[data-field="name"]').val(knxcontrol.user[id].username);
-				
-				$('#user_def_popup').find('#user_def_popup_save').attr('data-id',id);
-			}
-		});
-	},
-	update: function(id){
-		// check if the user exists in knxcontrol
-		if(knxcontrol.user[id]){
-			
-			// check if the user does not already exists in the DOM
-			if(this.element.find('.user_list').find('.user[data-id="'+id+'"]').length==0){
-				//add the user to the DOM
-				this.element.find('.user_list').append('<div class="user" data-id="'+id+'">'+
-															'<div class="name" data-field="name">'+knxcontrol.user[id].username+'&nbsp;</div>'+
-															'<a href="#user_def_popup" class="edit" data-role="button" data-rel="popup" data-icon="grid" data-mini="true" data-iconpos="notext">Edit</a>'+
-													   '</div>').enhanceWithin();
-			}
-			else{
-				// update the user in the DOM
-				this.element.find('.user_list').find('.user[data-id="'+id+'"]').html('<div class="user" data-id="'+id+'">'+
-																						'<div class="name" data-field="name">'+knxcontrol.user[id].username+'&nbsp;</div>'+
-																						'<a href="#user_def_popup" class="edit" data-role="button" data-rel="popup" data-icon="grid" data-mini="true" data-iconpos="notext">Edit</a>'+
-																					 '</div>').enhanceWithin();
-			}
-		}
-		else{
-			// remove the user from the DOM
-			this.element.find('.user[data-id="'+id+'"]').remove();
-		}
-	}
-});
-$(document).on('click','#user_def_popup_save',function(event){
-	id = $(this).attr('data-id');
-	$('#user_def_popup').popup('close');
-	field = ['username'];
-	value = [$('#user_def_popup').find('input[data-field="name"]').val()];
-	console.log(id);
-	knxcontrol.user.update(id,field,value);
-});
-/*****************************************************************************/
-/*                     user profile                                          */
-/*****************************************************************************/
-$.widget("homecon.user_profile",{
-	options: {
-	},
-	_create: function(){
-		var id = knxcontrol.user_id;
-		this.element.html('<div class="user" data-id="'+id+'">'+
-							'<div class="name" data-field="name">'+knxcontrol.user[id].username+'&nbsp;</div>'+
-							'<a href="#user_def_popup" class="edit" data-role="button" data-rel="popup" data-icon="grid" data-mini="true" data-iconpos="notext">Edit</a>'+
-					     '</div><a href="#" class="delete" data-role="button" data-rel="popup">'+language.capitalize(language.delete_user)+'</a>');
-		this.element.enhanceWithin();	
-
-		// bind events
-		this._on(this.element, {
-			'update': function(event){
-				this.update();
-			},
-			'click a.edit': function(event){
-				// populate the popup
-				var id = knxcontrol.user_id;
-				$('#password_def_popup').find('input[data-field="name"]').val(knxcontrol.user[id].username);
-				
-				$('#password_def_popup').find('#password_def_popup_save').attr('data-id',id);
-			}
-		});
-	},
-	update: function(){
-		// check if the user exists in knxcontrol
-		var id = knxcontrol.user[knxcontrol.user_id];
-		if(id){
-			// update user to the DOM
-			this.element.find('.name').html(knxcontrol.user[id].username).enhanceWithin();
-		}
-		else{
-			// remove the user from the DOM
-			this.element.find('.user[data-id="'+id+'"]').remove();
-		}
-	}
-});
-$(document).on('click','#password_def_popup_save',function(event){
-	id = $(this).attr('data-id');
-	$('#user_def_popup').popup('close');
-	field = ['username'];
-	value = [$('#user_def_popup').find('input[data-field="name"]').val()];
-	console.log(id);
-	//knxcontrol.user.update(id,field,value);
-});
-
-
-
-/*****************************************************************************/
 /*                     system identification                                 */
 /*****************************************************************************/
 $.widget("homecon.system_identification",{
@@ -1123,24 +1118,11 @@ $.widget("homecon.system_identification",{
 						      '<div class="twocols"><div data-role="pushbutton" data-label="Identify" data-item="knxcontrol.mpc.model.identification" data-value=1></div></div>'+
 						      '<div class="twocols"><div data-role="pushbutton" data-label="Validate" data-item="knxcontrol.mpc.model.validation" data-value=1></div></div>'+
 						  '</div>'+
-						  '<div class="chart_container">'+
+						  '<div data-role="chart">'+
 						  '</div>');
 
 		$('div[data-role="pushbutton"]').pushbutton();
-
-		Highcharts.setOptions({
-			global: {
-				useUTC: false
-			}
-		});
-
-		this.chart_options.chart.type = 'line';
-		this.chart_options.xAxis.range = 2 * 24 * 3600 * 1000;
-		this.chart_options.tooltip.xDateFormat='%Y-%m-%d %H:%M';
-		$(this.element).children('.chart_container').highcharts('StockChart',this.chart_options);
-		this.chart = $(this.element).children('.chart_container').highcharts();
-		this.chart.reflow()
-
+		$('div[data-role="chart"]').chart();
 		this.element.enhanceWithin();	
 
 		// bind events
@@ -1152,46 +1134,34 @@ $.widget("homecon.system_identification",{
 	},
 	update: function(){
 		var that = this;
+		console.log(knxcontrol.item['knxcontrol.mpc.model.validation.result'])
 
-		console.log(knxcontrol.item['knxcontrol.mpc.model.validation.result']['measured_states'])
+		if(knxcontrol.item['knxcontrol.mpc.model.validation.result'].hasOwnProperty('measured_states')){
+			//var time = knxcontrol.item['knxcontrol.mpc.model.validation.result']['time']
+			console.log(knxcontrol.item['knxcontrol.mpc.model.validation.result']['measured_states'])
+	
+			$.each((knxcontrol.item['knxcontrol.mpc.model.validation.result']['measured_states']),function(index,value){
+			
+				//var i, data = [];
+				//for(i=0;i<time.length;i++){
+				//	data.push([time[i],value['measurement'][i]]);
+				//}
+				data = value['measurement']
+				series = {name: index+' measurement',
+						  data: data}
+				that.element.find('[data-role="chart"]').chart('update',series)
 
-		// remove all data from the chart
-		//while(that.chart.series.length > 0){
-		//	that.chart.series[0].remove(true);
-		//}
 
-		$.each((knxcontrol.item['knxcontrol.mpc.model.validation.result']['measured_states']),function(index,value){
-			that.chart.addSeries({                        
-    			name: index+' measurement',
-    			data: value['measurement']
-			}, false);
-			that.chart.addSeries({                        
-    			name: index+' simulation',
-    			data: value['simulation']
-			}, false);
-			that.chart.redraw();
-		});
-		
-	},
-	chart: {},
-	chart_options: {
-		chart: {
-		},
-		title: {
-			text: ''
-		},
-		xAxis: {
-			type: 'datetime',
-			ordinal: false
-		},
-		tooltip: {
-			xDateFormat: '%Y-%m-%d',
-			valueDecimals: 1,
-			shared: true
-		},
-		rangeSelector : {
-			enabled: false
-		},
-		series: []
+				//var i, data = [];
+				//for(i=0;i<time.length;i++){
+				//	data.push([time[i],value['simulation'][i]]);
+				//}
+				data = value['simulation']
+				series = {name: index+' simulation',
+						  data: data}
+				that.element.find('[data-role="chart"]').chart('update',series)
+
+			});
+		}
 	}
 });
