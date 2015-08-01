@@ -43,9 +43,9 @@ class MPC:
 		# define model parameters
 		parameters = {}
 		parameters['C_op'] = {'expression': parsenlp.Expression('C_op',[]),
-                              'lowerbound':   0.1e6,
-                              'upperbound': 100.0e6,
-                              'initialvalue': 10e6}
+                              'lowerbound':  0.1e6,
+                              'upperbound': 10.0e9,
+                              'initialvalue': 100e6}
  
 		parameters['UA_op_amb'] = {'expression': parsenlp.Expression('UA_op_amb',[]),
                                    'lowerbound':    1,
@@ -145,7 +145,7 @@ class Model:
 
 		# define time
 		self.identificationtimestep = 3600
-		self.identificationtime = 1*24*3600
+		self.identificationtime = 3*24*3600
 
 		dt = self.identificationtimestep 
 		t = np.arange(0,self.identificationtime,dt)
@@ -333,7 +333,8 @@ class Model:
 			for i,v in enumerate(values):
 				nlp.parameters[key][i].value = v
 
-
+		# return time to use in the validation visualization
+		return time
 
 
 ##### optimal control ##########################################################

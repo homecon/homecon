@@ -74,8 +74,8 @@ class Zone():
 
 		logger.warning( 'automatic shading control for zone: {0}, setpoint: {1:.1f}'.format( self.item.id(),self.irradiation.setpoint() )  )
 
-		# create an array of irradiation difference for all windows
-		windows = sorted(self.windows, key=lambda w: w.item.conf['area'], reverse=True)
+		# sort all windows based on their averaged open irradiation
+		windows = sorted(self.windows, key=lambda w: w.irradiation_open(average=True) , reverse=True)
 
 		tolerance = 100		
 
@@ -161,7 +161,7 @@ class Zone():
 						pos_new[i] = (irradiation_max-irradiation_set_move)/(irradiation_max-irradiation_min)
 						pos_new[i] = min(pos_max[i],max(pos_min[i],pos_new[i]))
 			
-					logger.warning('window: {0}, pos_old: {1:.1f}, irr: {2}, irr_max:{3}, irr_min:{4}, pos_new: {5:.1f}'.format(window.item.id(),pos_old[i],irradiation,irradiation_max,irradiation_min,pos_new[i]))
+					logger.warning('window: {0}, pos_old: {1:.1f}, irr: {2:.0f}, irr_max:{3:.0f}, irr_min:{4:.0f}, pos_new: {5:.1f}'.format(window.item.id(),pos_old[i],irradiation,irradiation_max,irradiation_min,pos_new[i]))
 
 					# update the irradiation value
 					irradiation = irradiation - ((1-pos_old[i])*irradiation_open[i]+(pos_old[i])*irradiation_closed[i]) +  ((1-pos_new[i])*irradiation_open[i]+(pos_new[i])*irradiation_closed[i])
