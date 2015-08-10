@@ -419,7 +419,7 @@ $.widget('homecon.measurementchart',$.homecon.chart,{
 			else if(this.options.period == 'month'){
 				series.data = knxcontrol.measurement[id].monthdata
 			}
-			this.update(series)
+			this.update_series(series)
 		}
 	}
 });
@@ -1118,7 +1118,7 @@ $.widget("homecon.system_identification",{
 						      '<div class="twocols"><div data-role="pushbutton" data-label="Identify" data-item="knxcontrol.mpc.model.identification" data-value=1></div></div>'+
 						      '<div class="twocols"><div data-role="pushbutton" data-label="Validate" data-item="knxcontrol.mpc.model.validation" data-value=1></div></div>'+
 						  '</div>'+
-						  '<div data-role="chart">'+
+						  '<div data-role="chart" data-item="knxcontrol.mpc.model.validation.result">'+
 						  '</div>');
 
 		$('div[data-role="pushbutton"]').pushbutton();
@@ -1134,11 +1134,9 @@ $.widget("homecon.system_identification",{
 	},
 	update: function(){
 		var that = this;
-		console.log(knxcontrol.item['knxcontrol.mpc.model.validation.result'])
 
 		if(knxcontrol.item['knxcontrol.mpc.model.validation.result'].hasOwnProperty('measured_states')){
 			//var time = knxcontrol.item['knxcontrol.mpc.model.validation.result']['time']
-			console.log(knxcontrol.item['knxcontrol.mpc.model.validation.result']['measured_states'])
 	
 			$.each((knxcontrol.item['knxcontrol.mpc.model.validation.result']['measured_states']),function(index,value){
 			
@@ -1148,8 +1146,9 @@ $.widget("homecon.system_identification",{
 				//}
 				data = value['measurement']
 				series = {name: index+' measurement',
-						  data: data}
-				that.element.find('[data-role="chart"]').chart('update',series)
+						  data: data,
+					 	  unit: ''}
+				that.element.find('[data-role="chart"]').chart('update_series',series)
 
 
 				//var i, data = [];
@@ -1158,8 +1157,9 @@ $.widget("homecon.system_identification",{
 				//}
 				data = value['simulation']
 				series = {name: index+' simulation',
-						  data: data}
-				that.element.find('[data-role="chart"]').chart('update',series)
+						  data: data, 
+						  unit: ''}
+				that.element.find('[data-role="chart"]').chart('update_series',series)
 
 			});
 		}

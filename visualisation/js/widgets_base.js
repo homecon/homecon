@@ -392,8 +392,8 @@ $.widget('homecon.chart',{
 
 		// bind events
 		this._on(this.element, {
-			'update': function(event,series){			
-				this.update(series);
+			'update_series': function(event,series){			
+				this.update_series(series);
 			},
 			'get_series': function(event,id){
 				this.get_series(id)
@@ -407,7 +407,7 @@ $.widget('homecon.chart',{
 	create_chart: function(){
 		$(this.element).children('.chart_container').highcharts(this.chart_options);
 	},
-	update: function(series){
+	update_series: function(series){
 		var add = true;
 		$.each(this.chart.series,function(index,ser){
 			if(ser.name == series.name){
@@ -419,7 +419,7 @@ $.widget('homecon.chart',{
 		if(add){
 			this.chart.addSeries(series);
 		}
-		this.chart.yAxis[0].setTitle({text: series.unit})
+		this.chart.yAxis[0].setTitle({text: series.unit});
 		this.chart.reflow();
 	},
 	get_series: function(id){

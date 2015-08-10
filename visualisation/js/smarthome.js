@@ -47,7 +47,6 @@ var smarthome = {
 			
 			// initialize widgets
 			knxcontrol.item.get();
-			
 			// request the values of all items and the log from smarthome.py
 			smarthome.monitor();
          };
@@ -57,7 +56,6 @@ var smarthome = {
 			
             var data = JSON.parse(event.data);
             switch(data.cmd){
-				
                 case 'item':
 					for(var i = 0; i < data.items.length; i++){
                         var item = data.items[i][0];
