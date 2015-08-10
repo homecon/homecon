@@ -40,6 +40,7 @@ class Zone():
 		self.irradiation = self.item.irradiation
 		self.emission = self.item.emission
 
+		self.raincountdown = -1
 		
 
 	def irradiation_max(self,average=False):
@@ -79,12 +80,19 @@ class Zone():
 
 		tolerance = 100		
 
+
+		# rain countdown
+		if self.knxcontrol.item.weather.current.precipitation():
+			self.raincountdown = 15
+		else:
+			self.raincountdown = self.raincountdown-1
+		
 		# set position min/max values
 		pos_min = []
 		pos_max = []
 		for window in windows:
 			if window.shading != None:
-				if self.knxcontrol.item.weather.current.precipitation() and ('open_when_raining' in window.shading.conf):
+				if self.raincountdown > 0 and ('open_when_raining' in window.shading.conf):
 					pos_min.append( 0 )
 					pos_max.append( 0 )
 				elif window.shading.closed():
@@ -178,7 +186,7 @@ class Zone():
 				# it is set to closed
 				condition1 = window.shading.closed()
 				# it is set to open when raining and it rains
-				condition2 = self.knxcontrol.item.weather.current.precipitation() and ('open_when_raining' in window.shading.conf)
+				condition2 = self.raincountdown>0 and ('open_when_raining' in window.shading.conf)
 				# auto is set and override is not set and if the change is larger than 20% or it is closed or open
 				condition3 = window.shading.auto() and (not window.shading.override()) and (abs(pos_new[i]-pos_old[i]) > 0.2 or pos_new[i]==0 or pos_new[i]==1)
 				if condition1 or condition2 or condition3:

@@ -242,9 +242,13 @@ class Model:
 		logger.warning('Finished optimization')
 
 		# print values
-		logger.warning( ['{0}: {1:.0f}'.format(key,nlp.variables[key].value) for key in self.parameters] )	
+		logger.warning( ['{0}: {1:.0f}'.format(key,nlp.variables[key].value) for key in self.parameters] )
+		
+		self.item.identification(0)
 
-
+		# simulate against the most resent data
+		self.validate()
+		
 	def validate(self):
 		"""
 		compares the identified model with the most recent dataset
@@ -295,6 +299,7 @@ class Model:
                   'unmeasured_states': unmeasured_states}
 		logger.debug(result)
 
+		self.item.validation(0)
 		self.item.validation.result(result)
 
 

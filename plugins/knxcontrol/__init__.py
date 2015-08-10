@@ -159,7 +159,7 @@ class KNXControl:
 			self.mpc.model.identify()
 
 		########################################################################
-		# check for model identify
+		# check for model validation
 		if item.id() == 'knxcontrol.mpc.model.validation':
 			self.mpc.model.validate()
 
