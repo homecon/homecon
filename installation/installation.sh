@@ -43,7 +43,7 @@ cd homecon
 # eibd
 ./installation/eibd.sh $username
 
-
-
+# webserver
+./installation/webserver.sh $username
 
 
