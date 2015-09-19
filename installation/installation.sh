@@ -18,22 +18,23 @@ while [ "$password" != "$password2" ]; do
 done
 
 # add the user
-useradd $username 
+useradd -d /home/$username $username 
 echo -e "$password\n$password\n" | passwd $username
 
 # Tools
 apt-get update 
-apt-get -y install ntp openntpd python3 python3-dev python3-setuptools git unzip wget
+apt-get -y install openntpd python3 python3-dev python3-setuptools git unzip wget gcc g++ gfortran subversion patch 
 easy_install3 pip
 pip install ephem
 pip install PyMySQL
 
 
 # Installing Homecon
-cd /home/homecon
+cd /home/$username
 git clone --recursive git://github.com/brechtba/homecon.git
 #chown -R admin:admin /usr/local/homecon
 #chmod -R 755 /usr/local/knxcontrol
+cd homecon
 
 
 # networking
