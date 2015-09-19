@@ -19,7 +19,7 @@ cd ..
 
 
 # unpack and install eibd
-tar -zxvf installation/bcusdk_0.0.5.tar.gz
+tar -zxvf bcusdk_0.0.5.tar.gz
 cd bcusdk-0.0.5
 export LD_LIBRARY_PATH=/usr/local/lib
 ./configure --with-pth=yes --without-pth-test --enable-onlyeibd --enable-eibnetip --enable-eibnetiptunnel --enable-eibnetipserver
