@@ -1,11 +1,9 @@
-# Raspbery Pi preparation for KNXControl
 
+# Raspbery Pi preparation for HomeCon
 ## Start fresh
 Write a fresh raspbian image to a 8GB SD card using win32diskimager. 
 A high end SD card is preferable as we will write to it a lot. 
 Plug in the raspberry pi and connect to your network.
-
-The rest of these instruction might also work for any other linux Debian systems.
 
 ## General configuration
 ### First login
@@ -25,6 +23,35 @@ Under the internationalisation options choose Change Timezone and set it to your
 I'm not changing the password yet to make a general image of this pi with the default password.
 
 When asked choose Reboot now
+
+
+
+# Debian preparation for HomeCon
+## Install the operating system from a live cd or usb
+
+## add user to sudoers
+```
+$ su
+$ adduser yourusername sudo
+```
+
+## install ssh
+```
+$ sudo apt-get install openssh-server
+```
+
+## install git
+```
+$ sudo apt-get install git
+```
+
+## temporary clone the repo to some folder the submodules are not required
+```
+$ sudo git clone git://github.com/brechtba/homecon.git
+```
+
+
+
 	
 ### Networking
 After the reboot find the ip adress again and connect using PuTTy
