@@ -41,7 +41,7 @@ cd homecon
 ./installation/networking.sh
 
 # eibd
-./installation/eibd.sh $username $knxip
+./installation/eibd.sh $username
 
 
 

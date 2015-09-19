@@ -7,6 +7,8 @@ username=$1
 # make sure we have essential build tools
 apt-get install build-essential
 
+cd installation
+
 # unpack and install pthsem
 tar zxvf pthsem_2.0.8.tar.gz
 cd pthsem-2.0.8/
@@ -15,8 +17,9 @@ make
 make install
 cd ..
 
+
 # unpack and install eibd
-tar -zxvf bcusdk_0.0.5.tar.gz
+tar -zxvf installation/bcusdk_0.0.5.tar.gz
 cd bcusdk-0.0.5
 export LD_LIBRARY_PATH=/usr/local/lib
 ./configure --with-pth=yes --without-pth-test --enable-onlyeibd --enable-eibnetip --enable-eibnetiptunnel --enable-eibnetipserver
@@ -52,4 +55,6 @@ update-rc.d eibd defaults
 read -p "Enter a KNX group adress to test eibd: " testgroupadress
 groupswrite ip:localhost $testgroupadress 1
 groupswrite ip:localhost $testgroupadress 0
+
+cd ..
 
