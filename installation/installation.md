@@ -9,7 +9,7 @@ The rest of these instruction might also work for any other linux Debian systems
 
 ## General configuration
 ### First login
-Find the ip adress of the raspberry.pi using Advanced IP Scanner
+Find the ip adress of the raspberry.pi using Advanced IP Scanner or `sudo nmap -sP 192.168.1.1/24` on Linux
 Use PuTTy to connect to your raspberry over ssh with any computer in your network
 Use the above found ip adress, port 22
 login as: `pi`, password: `raspberry`
@@ -102,11 +102,11 @@ $ sudo pip install PyMySQL
 	
 	
 	
-## KNXControl
+## HomeCon
 Clone the repository to a directory where all files will be kept
 ```
 $ cd /usr/local
-$ sudo git clone git://github.com/brechtba/knxcontrol.git
+$ sudo git clone --recursive git://github.com/brechtba/homecon.git
 ```
 
 Set permissions
