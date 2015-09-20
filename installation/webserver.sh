@@ -30,7 +30,7 @@ apt-get -y install vsftpd
 
 sed -i -e "s/\(anonymous_enable=\).*/\1NO/" \
 -e "s/\(local_enable=\).*/\1YES/" \
--e 's/#local_umask=022/local_umask=0002\nfile_open_mode=0777/g'
+-e 's/#local_umask=022/local_umask=0002\nfile_open_mode=0777/g' \
 -e 's/#write_enable=YES/write_enable=YES/g' /etc/vsftpd.conf
 
 service vsftpd restart

@@ -17,6 +17,10 @@ while [ "$password" != "$password2" ]; do
 	fi
 done
 
+# generate a token
+token=$(date +%s | sha256sum | base64 | head -c 32)
+
+
 # add the user
 useradd -d /home/$username $username 
 echo -e "$password\n$password\n" | passwd $username
@@ -46,4 +50,6 @@ cd homecon
 # webserver
 ./installation/webserver.sh $username
 
+# homecon
+./installation/homecon.sh $password $token
 
