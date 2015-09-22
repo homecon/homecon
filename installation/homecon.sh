@@ -11,8 +11,6 @@ hash=$(echo -n "$temphash" | md5sum | cut -b-32)
 echo "CREATE DATABASE IF NOT EXISTS homecon;
       GRANT ALL PRIVILEGES ON homecon.* TO 'homecon'@'localhost'  identified by '$password';" | mysql -u root -p$password
 
-#echo "mysql -u root -p$password -e \"CREATE DATABASE homecon;CREATE USER 'homecon'@'localhost' IDENTIFIED BY '$password';GRANT ALL PRIVILEGES ON homecon.* TO 'homecon'@'localhost';\""
-
 ## Create tables
 ### users
 echo "USE homecon;
@@ -25,7 +23,6 @@ echo "USE homecon;
 
 echo "USE homecon;
 	  INSERT IGNORE INTO users (id,username,password) VALUES (1,'homecon','$hash');" | mysql -u root -p$password
-
 
 ### data
 echo "USE homecon;
@@ -44,6 +41,7 @@ echo "USE homecon;
 echo "USE homecon;
 	  INSERT IGNORE INTO data (id,ip,port,web_ip,web_port,token,latitude,longitude,elevation) VALUES (1,'192.168.255.1','2424','mydomain.duckdns.org','9024','$token',51,5,70);" | mysql -u root -p$password
 
+### alarms
 echo "USE homecon;
 	  CREATE TABLE IF NOT EXISTS alarms (
 		id int(11) NOT NULL AUTO_INCREMENT,
@@ -63,6 +61,7 @@ echo "USE homecon;
 		sun tinyint(4) NOT NULL DEFAULT '0',
 		PRIMARY KEY (id) ) ENGINE=InnoDB  DEFAULT CHARSET=latin1 AUTO_INCREMENT=1;" | mysql -u root -p$password
 
+### actions
 echo "USE homecon;
 	  CREATE TABLE IF NOT EXISTS actions (
 		id int(11) NOT NULL AUTO_INCREMENT,
@@ -85,6 +84,7 @@ echo "USE homecon;
 		value5 varchar(255) DEFAULT NULL,	
 		PRIMARY KEY (id) ) ENGINE=InnoDB  DEFAULT CHARSET=latin1 AUTO_INCREMENT=1;" | mysql -u root -p$password
 
+### profiles_legend
 echo "USE homecon;
 	  CREATE TABLE IF NOT EXISTS profiles_legend (
 		id int(11) NOT NULL AUTO_INCREMENT,
@@ -94,6 +94,7 @@ echo "USE homecon;
 		description text DEFAULT NULL,
 		UNIQUE KEY ID (id)) ENGINE=InnoDB  DEFAULT CHARSET=latin1 AUTO_INCREMENT=1;" | mysql -u root -p$password
 
+### profiles
 echo "USE homecon;
 	  CREATE TABLE IF NOT EXISTS profiles (
 		id bigint(20) NOT NULL AUTO_INCREMENT,
@@ -101,7 +102,8 @@ echo "USE homecon;
 		time bigint(20) NOT NULL,
 		value float DEFAULT NULL,
 		UNIQUE KEY ID (id)) ENGINE=InnoDB  DEFAULT CHARSET=latin1 AUTO_INCREMENT=1;" | mysql -u root -p$password
-		
+
+### pagebuilder	
 echo "USE homecon;
 	  CREATE TABLE IF NOT EXISTS pagebuilder (
 		id int(11) NOT NULL AUTO_INCREMENT,
@@ -112,4 +114,15 @@ echo "USE homecon;
 	  INSERT IGNORE INTO pagebuilder (id,model) VALUES (1,'[{\"id\":\"home\",\"name\":\"Home\",\"page\":[{\"id\":\"home\",\"name\":\"Home\",\"img\":\"\",\"temperature_item\":\"\",\"section\":[]}]}]');" | mysql -u root -p$password
 echo "USE homecon;
 	  INSERT IGNORE INTO pagebuilder (id,model) VALUES (2,'[{\"id\":\"home\",\"name\":\"Home\",\"page\":[{\"id\":\"home\",\"name\":\"Home\",\"img\":\"\",\"temperature_item\":\"\",\"section\":[]}]}]');" | mysql -u root -p$password
+
+
+
+# website backend MySQL config 
+echo "<?php
+// define variables to access mysql
+define(\"HOST\", \"localhost\");
+define(\"USER\", \"homecon\");
+define(\"PASSWORD\", \"$password\");
+define(\"DATABASE\", \"homecon\");
+?>" | tee /home/homecon/homecon/visualisation/pages/config.php
 

@@ -1,14 +1,16 @@
+# Installation
+Several installation scripts are created to simplify the installation process.
+When starting from a clean installation of Debian or Raspbian on a Raspberry Pi the full installation script can be used.
+When installing HomeCon on a machine which is allready used for webserving or other services some parts must be ommitted and some tweaking might be necessary.
 
-# Raspbery Pi preparation for HomeCon
-## Start fresh
+
+## Preparation of a fresh Raspberry Pi
 Write a fresh raspbian image to a 8GB SD card using win32diskimager. 
 A high end SD card is preferable as we will write to it a lot. 
 Plug in the raspberry pi and connect to your network.
 
-## General configuration
-### First login
 Find the ip adress of the raspberry.pi using Advanced IP Scanner or `sudo nmap -sP 192.168.1.1/24` on Linux
-Use PuTTy to connect to your raspberry over ssh with any computer in your network
+Use PuTTy or ssh to connect to your raspberry over ssh with any computer in your network
 Use the above found ip adress, port 22
 login as: `pi`, password: `raspberry`
 
@@ -16,6 +18,7 @@ Run configuration
 ```
 $ sudo raspi-config
 ```
+
 Choose
 Enlarge the root partition
 
@@ -26,26 +29,30 @@ When asked choose Reboot now
 
 
 
-# Debian preparation for HomeCon
-## Install the operating system from a live cd or usb
 
-## add user to sudoers
+## Preparation of a fresh Debian distro
+Install the operating system from a live cd or usb.
+Make sure the machine is connected to the internet when doing so.
+You will be asked for a root password and a user for you to work with.
+Use any username but 'homecon' as this will be the user to own the homecon installation
+
+add yourself to sudoers
 ```
 $ su
 $ adduser yourusername sudo
 ```
 
-## install ssh
+install ssh and you're good to go
 ```
 $ sudo apt-get install openssh-server
 ```
 
-## install git
-```
-$ sudo apt-get install git
-```
+Find the ip adress of the machine using Advanced IP Scanner or `sudo nmap -sP 192.168.1.1/24` on Linux
+Use PuTTy or ssh to connect to your machine over ssh with any computer in your network
+Use the above found ip adress, port 22
 
-## temporary clone the repo to some folder the submodules are not required
+
+download the installation forlder of homecon into some temp folder
 ```
 $ sudo git clone git://github.com/brechtba/homecon.git
 ```

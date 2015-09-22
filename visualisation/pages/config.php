@@ -1,8 +1,7 @@
 <?php
 // define variables to access mysql
 define("HOST", "localhost");
-define("USER", "knxcontrol");
+define("USER", "homecon");
 define("PASSWORD", "admin");
-define("DATABASE", "knxcontrol");
-
+define("DATABASE", "homecon");
 ?>

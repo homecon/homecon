@@ -5,7 +5,7 @@ apt-get update
 apt-get -y install apache2 vsftpd php5 php5-json libawl-php php5-curl
 
 # Create a symlink in the www directory
-ln -s /home/homecon/visualisation  /var/www/homecon
+ln -s /home/homecon/homecon/visualisation  /var/www/homecon
 
 # MySQL
 echo "mysql-server mysql-server/root_password password $password" | sudo debconf-set-selections
@@ -34,3 +34,17 @@ sed -i -e "s/\(anonymous_enable=\).*/\1NO/" \
 -e 's/#write_enable=YES/write_enable=YES/g' /etc/vsftpd.conf
 
 service vsftpd restart
+
+# virtual hosts
+echo "<VirtualHost *:80>
+    ServerAdmin admin@test.com
+    ServerName homecon
+    ServerAlias homecon
+    DocumentRoot /home/homecon/homecon/visualization
+    ErrorLog ${APACHE_LOG_DIR}/error.log
+    CustomLog ${APACHE_LOG_DIR}/access.log combined
+</VirtualHost>" | tee /etc/apache2/sites-available/homecon.conf
+
+a2ensite /etc/apache2/sites-available/homecon.conf
+
+service apache2 reload

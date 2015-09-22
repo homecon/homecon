@@ -33,7 +33,7 @@ pip install ephem
 pip install PyMySQL
 
 
-# Installing Homecon
+# CLoning HomeCon to it's default destination
 cd /home/$username
 git clone --recursive git://github.com/brechtba/homecon.git
 #chown -R admin:admin /usr/local/homecon
@@ -44,11 +44,11 @@ cd homecon
 # networking
 ./installation/networking.sh
 
-# eibd
-./installation/eibd.sh $username
-
 # webserver
 ./installation/webserver.sh $username
+
+# eibd
+./installation/eibd.sh $username
 
 # homecon
 ./installation/homecon.sh $password $token
