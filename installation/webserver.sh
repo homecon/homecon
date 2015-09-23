@@ -24,6 +24,8 @@ echo "phpmyadmin phpmyadmin/mysql/app-pass password $password" | sudo debconf-se
 
 apt-get -y install phpmyadmin
 
+echo "# phpmyadmin
+Include /etc/phpmyadmin/apache.conf" | tee -a /etc/apache2/apache2.conf
 
 # ftp
 apt-get -y install vsftpd
@@ -36,15 +38,15 @@ sed -i -e "s/\(anonymous_enable=\).*/\1NO/" \
 service vsftpd restart
 
 # virtual hosts
-echo "<VirtualHost *:80>
-    ServerAdmin admin@test.com
-    ServerName homecon
-    ServerAlias homecon
-    DocumentRoot /home/homecon/homecon/visualization
-    ErrorLog ${APACHE_LOG_DIR}/error.log
-    CustomLog ${APACHE_LOG_DIR}/access.log combined
-</VirtualHost>" | tee /etc/apache2/sites-available/homecon.conf
+#echo "<VirtualHost *:80>
+#    ServerAdmin admin@test.com
+#    ServerName homecon
+#    ServerAlias homecon
+#    DocumentRoot /home/homecon/homecon/visualization
+#    ErrorLog ${APACHE_LOG_DIR}/error.log
+#    CustomLog ${APACHE_LOG_DIR}/access.log combined
+#</VirtualHost>" | tee /etc/apache2/sites-available/homecon.conf
 
-a2ensite /etc/apache2/sites-available/homecon.conf
+#a2ensite /etc/apache2/sites-available/homecon.conf
 
-service apache2 reload
+service apache2 restart
