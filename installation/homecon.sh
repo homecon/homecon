@@ -1,5 +1,4 @@
 #!/bin/bash
-
 password=$1
 token=$2
 
@@ -117,7 +116,7 @@ echo "USE homecon;
 
 
 
-# website backend MySQL config 
+## website backend MySQL config 
 echo "<?php
 // define variables to access mysql
 define(\"HOST\", \"localhost\");
@@ -125,4 +124,8 @@ define(\"USER\", \"homecon\");
 define(\"PASSWORD\", \"$password\");
 define(\"DATABASE\", \"homecon\");
 ?>" | tee /home/homecon/homecon/visualisation/pages/config.php
+
+
+# Smarthome
+cp /usr/local/knxcontrol/installation/smarthome /etc/init.d/smarthome
 

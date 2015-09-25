@@ -134,6 +134,91 @@ $ sudo pip install ephem
 $ sudo pip install PyMySQL
 ```
 	
+
+
+## Optimization tools
+### Ipopt
+Ipopt (pronounced eye pee opt) is a solver for large scale non-linear programs (NLP) using the interior point algorithm. 
+In KNXControl we will use the program from Smarthome.py to do a system identification. 
+We will compile the program from source ourself as there is no suitable binary for Raspberry-pi. 
+Documentation is found at http://www.coin-or.org/Ipopt/documentation/
+
+Install prequisites
+```
+$ sudo apt-get install gcc g++ gfortran subversion patch wget
+```
+
+Get ipopt from the repository
+```
+$ cd /etc
+$ sudo svn co https://projects.coin-or.org/svn/Ipopt/stable/3.11 CoinIpopt 
+$ cd /etc/CoinIpopt
+```
+
+Getting 3rd party libraries, there are files present in the Ipopt source to do this so we will use them. 
+We will use the MUMPS Linear solver as it is open, not everyone has access to an academic solver like MA57 and for our purpose it will be sufficient.
+```
+$ cd /etc/CoinIpopt/ThirdParty/Blas/
+$ sudo ./get.Blas
+$ cd ../Lapack
+$ sudo ./get.Lapack
+$ cd ../ASL
+$ sudo ./get.ASL
+$ cd ../Mumps
+$ sudo ./get.Mumps
+$ cd ../Metis
+$ sudo ./get.Metis
+$ cd /etc/CoinIpopt
+```
+
+Run the following commands to compile Ipopt, and go for a cup of coffee as it will take about two hours.
+```
+$ sudo mkdir /etc/CoinIpopt/build
+$ cd /etc/CoinIpopt/build
+$ sudo /etc/CoinIpopt/configure --prefix=/usr/local/ -C ADD_CFLAGS="-DNO_fpu_control"
+$ sudo make
+$ sudo make test
+$ sudo make install
+```
+
+Test the example
+```
+$ cd /etc/CoinIpopt/build/Ipopt/examples/hs071_cpp
+$ sudo make
+$ sudo ./hs071_cpp
+```
+If everything works you should see some program iterations and a reported that a solution was found `*** The problem solved!`.
+
+### pyipopt
+We'll use a package to let us interface ipopt from python and thus from within smarthome.py. 
+First we need some prequisites.
+```
+$ sudo apt-get install python3.2-dev
+```
+
+Install pyipopt I'v forked the repository and changed some things 
+```
+$ cd /etc
+$ sudo git clone https://github.com/BrechtBa/pyipopt.git
+$ cd /etc/pyipopt
+
+```
+
+Build and install
+```
+$ sudo ldconfig
+$ sudo python3.2 setup.py build
+$ sudo python3.2 setup.py install
+```
+
+Now we're ready to test the interface from python by running an example:
+```
+$ sudo python3.2 /etc/pyipopt/examples/hs071_PY3.py
+```
+
+You should see the same solution as above.
+
+
 	
 	
 ## HomeCon
@@ -332,6 +417,7 @@ Log out using
 
 Open a browser window and go to "http://192.168.1.2/knxcontrol/data/create_tables.php". This will create all required mysql tables 
 
+
 ## SMARTHOME.PY
 The next step is configuring smarthome.py. First we set the permissions of some files:
 ```
@@ -439,88 +525,6 @@ And restart Samba
 $ sudo /etc/init.d/samba restart
 ```
 
-
-## Optimization tools
-### Ipopt
-Ipopt (pronounced eye pee opt) is a solver for large scale non-linear programs (NLP) using the interior point algorithm. 
-In KNXControl we will use the program from Smarthome.py to do a system identification. 
-We will compile the program from source ourself as there is no suitable binary for Raspberry-pi. 
-Documentation is found at http://www.coin-or.org/Ipopt/documentation/
-
-Install prequisites
-```
-$ sudo apt-get install gcc g++ gfortran subversion patch wget
-```
-
-Get ipopt from the repository
-```
-$ cd /etc
-$ sudo svn co https://projects.coin-or.org/svn/Ipopt/stable/3.11 CoinIpopt 
-$ cd /etc/CoinIpopt
-```
-
-Getting 3rd party libraries, there are files present in the Ipopt source to do this so we will use them. 
-We will use the MUMPS Linear solver as it is open, not everyone has access to an academic solver like MA57 and for our purpose it will be sufficient.
-```
-$ cd /etc/CoinIpopt/ThirdParty/Blas/
-$ sudo ./get.Blas
-$ cd ../Lapack
-$ sudo ./get.Lapack
-$ cd ../ASL
-$ sudo ./get.ASL
-$ cd ../Mumps
-$ sudo ./get.Mumps
-$ cd ../Metis
-$ sudo ./get.Metis
-$ cd /etc/CoinIpopt
-```
-
-Run the following commands to compile Ipopt, and go for a cup of coffee as it will take about two hours.
-```
-$ sudo mkdir /etc/CoinIpopt/build
-$ cd /etc/CoinIpopt/build
-$ sudo /etc/CoinIpopt/configure --prefix=/usr/local/ -C ADD_CFLAGS="-DNO_fpu_control"
-$ sudo make
-$ sudo make test
-$ sudo make install
-```
-
-Test the example
-```
-$ cd /etc/CoinIpopt/build/Ipopt/examples/hs071_cpp
-$ sudo make
-$ sudo ./hs071_cpp
-```
-If everything works you should see some program iterations and a reported that a solution was found `*** The problem solved!`.
-
-### pyipopt
-We'll use a package to let us interface ipopt from python and thus from within smarthome.py. 
-First we need some prequisites.
-```
-$ sudo apt-get install python3.2-dev
-```
-
-Install pyipopt I'v forked the repository and changed some things 
-```
-$ cd /etc
-$ sudo git clone https://github.com/BrechtBa/pyipopt.git
-$ cd /etc/pyipopt
-
-```
-
-Build and install
-```
-$ sudo ldconfig
-$ sudo python3.2 setup.py build
-$ sudo python3.2 setup.py install
-```
-
-Now we're ready to test the interface from python by running an example:
-```
-$ sudo python3.2 /etc/pyipopt/examples/hs071_PY3.py
-```
-
-You should see the same solution as above.
 
 
 

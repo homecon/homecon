@@ -32,14 +32,8 @@ easy_install3 pip
 pip install ephem
 pip install PyMySQL
 
-
-# CLoning HomeCon to it's default destination
-cd /home/$username
-git clone --recursive git://github.com/brechtba/homecon.git
-#chown -R admin:admin /usr/local/homecon
-#chmod -R 755 /usr/local/knxcontrol
-cd homecon
-
+# ipopt
+./ipopt.sh
 
 # networking
 ./installation/networking.sh
@@ -50,6 +44,16 @@ cd homecon
 # eibd
 ./installation/eibd.sh $username
 
+
+
+
 # homecon
+# Cloning HomeCon to it's default destination
+cd /home/$username
+git clone --recursive git://github.com/brechtba/homecon.git
+chown -R $username:$username /home/$username/homecon
+chmod -R 755 /usr/local/knxcontrol
+cd /home/$username/homecon
+
 ./installation/homecon.sh $password $token
 
