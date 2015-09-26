@@ -1,5 +1,5 @@
 HomeConn
-==========
+========
 
 Control your home instalation using state of the art control algorithms and visualise the results
 
@@ -18,7 +18,7 @@ The goal of the project is to have an open source, user friendly control system 
  
 The following steps will take you through the installation and configuration of KNXControl.
 
-* [Installation](https://github.com/BrechtBa/homeconn/wiki/Installation)
+* [Installation](https://github.com/BrechtBa/homecon/blob/master/installation/installation.md)
 * [Configuration](https://github.com/BrechtBa/homeconn/wiki/Configuration)
 * [Visualisation](https://github.com/BrechtBa/homeconn/wiki/Visualisation)
 

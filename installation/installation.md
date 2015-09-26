@@ -1,4 +1,26 @@
-# Installation
+Installation
+============
+
+# Hardware
+#### Required
+* KNX/EIB home installation
+* KNX/EIB Gateway, Ethernet interface
+* Router
+* Raspberry-Pi or some old PC
+
+Connect your KNX/EIB gateway to your home network, the same network the server computer is on.
+Make sure the KNX/EIB gateway has a static ip adress and that you know it.
+By default the server you're going to setup will use the static ip adress 192.168.1.254.
+Make sure this adress is outside of the DHCP range of your router (Most of the time this is the case by default).
+
+#### Optional
+* Flukso meter
+
+Connect your Flukso meter to your home network and make sure it has a static ip adress.
+
+
+
+# Installation and configuration
 Several installation scripts are created to simplify the installation process.
 When starting from a clean installation of Debian or Raspbian on a Raspberry Pi the full installation script can be used.
 When installing HomeCon on a machine which is allready used for webserving or other services some parts must be ommitted and some tweaking might be necessary, check the installation scripts.
@@ -60,11 +82,6 @@ $ su
 ```
 
 ## Installing homecon
-Connect your KNX/EIB gateway to your home network, the same network the server computer is on.
-Make sure the KNX/EIB gateway has a static ip adress and that you know it.
-By default the server you're going to setup will use the static ip adress 192.168.1.254.
-Make sure this adress is outside of the DHCP range of your router (Most of the time this is the case by default).
-
 Download the installation folder of homecon into some temp folder
 ```
 $ cd
