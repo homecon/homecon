@@ -10,6 +10,8 @@ token=$(date +%s | sha256sum | base64 | head -c 32)
 # Cloning HomeCon to it's default destination
 cd /home/$username
 git clone --recursive git://github.com/brechtba/homecon.git
+
+# Set permissions
 chown -R $username:$username /home/$username/homecon
 chmod -R 755 /usr/local/knxcontrol
 cd /home/$username/homecon

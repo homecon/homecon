@@ -1,7 +1,17 @@
 # Installation
 Several installation scripts are created to simplify the installation process.
 When starting from a clean installation of Debian or Raspbian on a Raspberry Pi the full installation script can be used.
-When installing HomeCon on a machine which is allready used for webserving or other services some parts must be ommitted and some tweaking might be necessary.
+When installing HomeCon on a machine which is allready used for webserving or other services some parts must be ommitted and some tweaking might be necessary, check the installation scripts.
+
+First of all I must say that the power of a Raspberry pi is sufficient for using HomeCon, running a small webserver alongside of it and even setup a logitech media server (allthough the web interface will be slow).
+If you want more, for instance an OwnCloud service you'll need some more power but this comes at a cost! As the server will be on 24/7 365 days a year, it will use a lot of energy!
+For instance a modern desktop consumes around 40W when not working hard.
+This amounts to around 350kWh on a yearly basis, which in Belgium will cost you around €70.
+Furthermore the accompanying 100kg CO2 emissions (according to [The european Association for battery electric vehicels](http://ec.europa.eu/transport/themes/strategies/consultations/doc/2009_03_27_future_of_transport/20090408_eabev_%28scientific_study%29.pdf)) are perfectly avoidable.
+A Raspberry Pi uses only 5W, thus around €9 per year and 13kg CO2 emissions.
+Some laptops give a good compromise between power and electricity use. I tested some laptops which used around 20W, but older laptops usually perform worse.
+
+That aside, here are the installation instructions:
 
 
 ## Preparation of a fresh Raspberry Pi
@@ -9,7 +19,7 @@ Write a fresh raspbian image to a 8GB SD card using win32diskimager.
 A high end SD card is preferable as we will write to it a lot. 
 Plug in the raspberry pi and connect to your network.
 
-Find the ip adress of the raspberry.pi using Advanced IP Scanner or `sudo nmap -sP 192.168.1.1/24` on Linux
+Find the ip adress of the raspberry.pi using Advanced IP Scanner or `sudo nmap -sP 192.168.1.*` on Linux
 Use PuTTy or ssh to connect to your raspberry over ssh with any computer in your network
 Use the above found ip adress, port 22
 login as: `pi`, password: `raspberry`
@@ -27,434 +37,71 @@ I'm not changing the password yet to make a general image of this pi with the de
 
 When asked choose Reboot now
 
-
-
-
 ## Preparation of a fresh Debian distro
-Install the operating system from a live cd or usb.
+Install the operating system from a live cd or usb and add the ssh server during installation.
 Make sure the machine is connected to the internet when doing so.
 You will be asked for a root password and a user for you to work with.
 Use any username but 'homecon' as this will be the user to own the homecon installation
 
-add yourself to sudoers
+if you forgot to check the ssh server mark you can do it in root mode:
 ```
 $ su
-$ adduser yourusername sudo
+# sudo apt-get install openssh-server
 ```
 
-install ssh and you're good to go
-```
-$ sudo apt-get install openssh-server
-```
-
-Find the ip adress of the machine using Advanced IP Scanner or `sudo nmap -sP 192.168.1.1/24` on Linux
+Find the ip adress of the machine using Advanced IP Scanner or `sudo nmap -sP 192.168.1.*` on Linux
 Use PuTTy or ssh to connect to your machine over ssh with any computer in your network
 Use the above found ip adress, port 22
 
-
-download the installation forlder of homecon into some temp folder
+add yourself to sudoers
 ```
+$ su
+# adduser yourusername sudo
+```
+
+## Installing homecon
+Connect your KNX/EIB gateway to your home network, the same network the server computer is on.
+Make sure the KNX/EIB gateway has a static ip adress and that you know it.
+By default the server you're going to setup will use the static ip adress 192.168.1.254.
+Make sure this adress is outside of the DHCP range of your router (Most of the time this is the case by default).
+
+Download the installation folder of homecon into some temp folder
+```
+$ cd
+$ sudo mkdir temp
 $ sudo git clone git://github.com/brechtba/homecon.git
 ```
 
-
-
-	
-### Networking
-After the reboot find the ip adress again and connect using PuTTy
-
-#### Static ip
-Setup a static ip adress open the network interfaces file
-```
-$ sudo nano /etc/network/interfaces
-```
-
-Change file contents to:
-```
-auto lo
-iface lo inet loopback
-
-auto eth0
-iface eth0 inet static
-address 192.168.1.2
-gateway 192.168.1.1
-netmask 255.255.255.0
-```
-Save the file and Exit using `Ctrl+O` `Return` and `Ctrl+X`
-
-restart networking
-```
-$ sudo /etc/init.d/networking restart
-```
-you can safely ignore error messages
-
-Now close your current putty session and start a new one using the static ip adress 192.168.1.2 in this example.
-A reboot might also be required for the static ip to come to effect:
-```
-$ sudo reboot
-```
-
-From now on you can allways acces your pi through that ip adress.
-It must be noted that it is best to choose an ip adress outside of your routers DHCP range, so set the DHCP range accordingly.
-
-### User	
-Add a user named "admin" with password "admin" (for now), this user will own all eibd and smarthome stuff
-```
-$ sudo adduser admin
-```
-type the password (admin) twice and keep hitting enter and finally hit "y" when asked if the info is correct
-
-Add admin to the sudoers file to be able to use sudo
-```
-$ sudo adduser admin sudo
-```
-
-Logout 
-```
-$ logout
-```
-	
-Start a new PuTTy session using the new credentials
-We can leave the pi user for now but it will have to be deleted at some point
-	
-### Time
-To automatically set the timezone we use a Network Time Protocol, just install ntp and the time should be fine
-```
-$ sudo apt-get install ntp
-```
-
-
-### Tools
-Some essential linux tools we will be using need to be installed now, when sudo is called you will be asked for a password, enter admin
-```	
-$ sudo apt-get update
-$ sudo apt-get -y install apache2 vsftpd php5 php5-json openntpd python3 python3-dev python3-setuptools git unzip wget libawl-php php5-curl
-$ sudo easy_install3 pip
-$ sudo pip install ephem
-$ sudo pip install PyMySQL
-```
-	
-
-
-## Optimization tools
-### Ipopt
-Ipopt (pronounced eye pee opt) is a solver for large scale non-linear programs (NLP) using the interior point algorithm. 
-In KNXControl we will use the program from Smarthome.py to do a system identification. 
-We will compile the program from source ourself as there is no suitable binary for Raspberry-pi. 
-Documentation is found at http://www.coin-or.org/Ipopt/documentation/
-
-Install prequisites
-```
-$ sudo apt-get install gcc g++ gfortran subversion patch wget
-```
-
-Get ipopt from the repository
-```
-$ cd /etc
-$ sudo svn co https://projects.coin-or.org/svn/Ipopt/stable/3.11 CoinIpopt 
-$ cd /etc/CoinIpopt
-```
-
-Getting 3rd party libraries, there are files present in the Ipopt source to do this so we will use them. 
-We will use the MUMPS Linear solver as it is open, not everyone has access to an academic solver like MA57 and for our purpose it will be sufficient.
-```
-$ cd /etc/CoinIpopt/ThirdParty/Blas/
-$ sudo ./get.Blas
-$ cd ../Lapack
-$ sudo ./get.Lapack
-$ cd ../ASL
-$ sudo ./get.ASL
-$ cd ../Mumps
-$ sudo ./get.Mumps
-$ cd ../Metis
-$ sudo ./get.Metis
-$ cd /etc/CoinIpopt
-```
-
-Run the following commands to compile Ipopt, and go for a cup of coffee as it will take about two hours.
-```
-$ sudo mkdir /etc/CoinIpopt/build
-$ cd /etc/CoinIpopt/build
-$ sudo /etc/CoinIpopt/configure --prefix=/usr/local/ -C ADD_CFLAGS="-DNO_fpu_control"
-$ sudo make
-$ sudo make test
-$ sudo make install
-```
-
-Test the example
-```
-$ cd /etc/CoinIpopt/build/Ipopt/examples/hs071_cpp
-$ sudo make
-$ sudo ./hs071_cpp
-```
-If everything works you should see some program iterations and a reported that a solution was found `*** The problem solved!`.
-
-### pyipopt
-We'll use a package to let us interface ipopt from python and thus from within smarthome.py. 
-First we need some prequisites.
-```
-$ sudo apt-get install python3.2-dev
-```
-
-Install pyipopt I'v forked the repository and changed some things 
-```
-$ cd /etc
-$ sudo git clone https://github.com/BrechtBa/pyipopt.git
-$ cd /etc/pyipopt
-
-```
-
-Build and install
-```
-$ sudo ldconfig
-$ sudo python3.2 setup.py build
-$ sudo python3.2 setup.py install
-```
-
-Now we're ready to test the interface from python by running an example:
-```
-$ sudo python3.2 /etc/pyipopt/examples/hs071_PY3.py
-```
-
-You should see the same solution as above.
-
-
-	
-	
-## HomeCon
-Clone the repository to a directory where all files will be kept
-```
-$ cd /usr/local
-$ sudo git clone --recursive git://github.com/brechtba/homecon.git
-```
-
-Set permissions
-```
-$ sudo chown -R admin:admin /usr/local/knxcontrol
-$ sudo chmod -R 755 /usr/local/knxcontrol
-$ sudo chmod -R 755 /usr/local/knxcontrol/visualisation
-$ sudo chmod 755 /usr
-$ sudo chmod 755 /usr/local
-$ sudo chmod 755 /usr/local/knxcontrol
-```
-	
-	
-## EIBD
-Go to the installation directory
-```
-$ cd /usr/local/knxcontrol/installation
-```
-
-Execute the eibd_installation.sh file.
-```
-$ ./eibd_installation.sh
-```
-
-Preliminary test
-```
-$ /usr/local/bin/eibd -D -S -T -i --eibaddr=0.0.1 --daemon=/var/log/eibd.log --no-tunnel-client-queuing ipt:192.168.1.3
-$ groupswrite ip:localhost 1/1/71 1
-```
-	
-### Configuration
-Create a configuration file
-```
-$ sudo nano /etc/default/eibd
-```
-
-Write the following within, use your knx ip gateway ip adress
-```
-EIB_ARGS="--daemon --Server --Tunnelling --Discovery --GroupCache --listen-tcp"
-
-EIB_ADDR="0.0.255"
-
-EIB_IF="ipt:192.168.1.3"
-```
-Save the file and Exit using `Ctrl+O` `Return` and `Ctrl+X`
-
-Copy the file "eibd" from the installation folder to /etc/init.d
-```
-$ sudo cp /usr/local/knxcontrol/installation/eibd /etc/init.d/eibd
-```
-
-Change the owner and group to root and set permissions
-```
-$ sudo chown root /etc/init.d/eibd
-$ sudo chgrp root /etc/init.d/eibd
-$ sudo chmod 755 /etc/init.d/eibd
-```
-
-Activate auto starting
-```
-$ sudo update-rc.d eibd defaults
-```
-
-Restart EIBD
-```
-$ sudo /etc/init.d/eibd restart
-```
-
-### Test	
-Test eibd by writing to the knx bus using groupswrite to an existing knx adress
-```
-$ groupswrite ip:localhost 1/1/71 1
-$ groupswrite ip:localhost 1/1/71 0
-```
-
-Also test if eibd is loaded on reboot by rebooting (`sudo reboot`), starting a new PuTTy session and retrying the above commands
-
-
-
-## FTP
-We will set up an ftp server to move files to your pi. The actual server is already installed
-To configure the server open the configure file
-```
-$ sudo nano /etc/vsftpd.conf
-```
-
-Search through the file and change the following lines:
-change `anonymous_enable=YES` to anonymous_enable=NO
-Uncomment the following lines:
-```
-#local_enable=YES
-#write_enable=YES
-```
-
-To set default file permissions
-Change the line `#local_unmask=022` to
-```
-local_unmask=02
-
-file_open_mode=0777
-```
-
-Also, add a line to the bottom of the file:
-```
-force_dot_files=YES
-```
-
-Save the file and Exit using `Ctrl+O` `Return` and `Ctrl+X` and restart the ftp server:
-```
-$ sudo service vsftpd restart
-```
-
-## www directory
-Create a symlink in the www directory to the `knxcontrol/visualisation` folder:
-```
-$ cd /var/www
-$ sudo ln -s /usr/local/knxcontrol/visualisation  knxcontrol
-```
-
-
-
-## MySQL
-Install the mysql server package
-```
-$ sudo apt-get install mysql-server
-```
-During the install procedure a root account for mysql will be created. Set it to "admin" as the default setting.
-
-Enable php to communicate with mysql by installing php5-mysql:
-```
-$ sudo apt-get install  php5-mysql
-```
-
-### phpMyAdmin
-Install phpMyadmin
-```
-$ sudo apt-get install phpmyadmin
-```
-During the installation you will be asked several questions:
-- Select Apache2 for the server
-- Choose YES when asked about whether to Configure the database for phpmyadmin with dbconfig-common
-- Enter your MySQL password when prompted (admin)
-- Enter the password that you want to use to log into phpmyadmin (admin)
-
-After the installation has completed, add phpmyadmin to the apache configuration.
-```
-$ sudo nano /etc/apache2/apache2.conf
-```
-Add the phpmyadmin config to the end of the file.
-```
-# phpmyadmin
-
-Include /etc/phpmyadmin/apache.conf
-```
-
-And restart apache
-```
-$ sudo service apache2 restart
-```
-
-You can now login to php myadmin at 192.168.1.2/phpmyadmin using usernamer `root` and password `admin`.
-
-### Setup tables
-Login to myqsl from the command line using
+Now run the installation script
 ```
-$ mysql -u root -p
+$ cd ~/temp/homcon/installation
+$ ./installation.sh
 ```
-enter the password (admin) when asked.
 
-Create a database:
-```
-> CREATE DATABASE knxcontrol;
-```
+You will be asked for a homecon password and the ip adress of your KNX/EIB Gateway and a group adress to test eibd. Ghoose the adress of a light control, if everything works out it should go on and off and you're done!
 
-Create a new user:
-```
-> CREATE USER 'knxcontrol'@'localhost' IDENTIFIED BY 'admin';
-```
 
-Set privileges of the new user:
-```
-> GRANT ALL PRIVILEGES ON knxcontrol.* TO 'knxcontrol'@'localhost';
-```
+## Smarthome Items
+Create smarthome configuration files. I'm hoping to make the configuration files obsolete in the near future so no instructions here yet. This is fairly well explained on the [Smarthome.py website](http://mknx.github.io/smarthome/)
 
-Log out using
-```
-> quit
-```
 
-Open a browser window and go to "http://192.168.1.2/knxcontrol/data/create_tables.php". This will create all required mysql tables 
+## First connection
+Go to 192.168.1.254/homecon in a web browser.
+You can log in using username 'homecon' and the password you've entered during the installation.
+Click the pagebuilder Icon on the top navigation bar and start adding pages and controls to HomeCon!
 
 
-## SMARTHOME.PY
-The next step is configuring smarthome.py. First we set the permissions of some files:
-```
-$ sudo chmod 744 /usr/local/knxcontrol/smarthome/bin/smarthome.py
-$ sudo chmod 755 /usr/local/knxcontrol/smarthome/var/log/smarthome.log
-```
 
-Copy the file "smarthome" from the installation folder to /etc/init.d
-```
-$ sudo cp /usr/local/knxcontrol/installation/smarthome /etc/init.d/smarthome
-```
 
-Change the owner and group to root and set permissions
-```
-$ sudo chown root:root /etc/init.d/smarthome
-$ sudo chmod 755 /etc/init.d/smarthome
-```
 
-Activate auto starting
-```
-$ sudo update-rc.d smarthome defaults
-```
 
-### Test
-Start smarthome.py with
-```
-$ sudo /etc/init.d/smarthome restart
-```
 
-And check the log file for errors
-```
-$ tail /usr/local/knxcontrol/smarthome/var/log/smarthome.log
-```
+# Other installation steps which might come in handy
 
-Add a symlink to the smarthome log file
+## Nano
+nano is a great linux shell text editor
 ```
-$ sudo ln -s /usr/local/knxcontrol/smarthome/var/log/smarthome.log /usr/local/knxcontrol/visualisation/data/smarthome.log
+$ sudo nano filename
 ```
 
 ## External hard drive
@@ -497,8 +144,7 @@ And finally mount all remaining devices:
 $ sudo mount -a 
 ```
 
-
-### network storage
+### Network storage
 ```
 $ sudo apt-get install samba samba-common-bin
 ```
@@ -533,35 +179,18 @@ Before we open up ports to the www it's time to change all relevant passwords so
 I suggest using a different, strong password for every application and storing them is some password manager (LastPass free works well for me).
 
 ### Raspberry pi
-Start with the Raspberry pi password. To do this just type `passwd` in a ssh session. You will be asked for your old password and the new one twice and you're done.
-
-### MySQL
-Next is the MySQL root password, enter the following in a shell (change newpass with your new password)
-```
-$ mysqladmin -u root -p'admin' password newpass
-```
-No we need to set the MySQL knxcontrol user password. So login to mysql as root with your new password, switch to the users database and set the new password
-```
-$ mysql -u root -p
-> use mysql;
-> SET PASSWORD FOR 'knxcontrol'@'localhost' = PASSWORD('newpass');
-```
-Exit the MySQL shell using `Ctrl+D`
-
-Now set the new password for the knxcontrol user in 'pages/config.php' and in 'items/building.conf' upload them to the raspberry and restart smarthome.py using
-```
-$ sudo /etc/init.d/smarthome restart
-```
-
-### knxcontrol
-To secure the WebSocket which is used to talk to smarthome a token is transmitted on every write request. This token must be set in '/smarthome/items/building.conf' and in the settings page of KNXcontrol.
+Start with the Raspberry pi password. To do this just type `passwd` in a ssh session.
+You will be asked for your old password and the new one twice and you're done.
+Definetely do this for the `pi` user as it has a default password which is a serious security hazzard when connecting the Pi to the web.
 
 
 ## Connecting to the web
-To connect KNXControl to the web you need to do some port forwarding from your router to the ports set up for KNXcontrol.
-First you need to forward a port to the http port of the raspbery pi, so go to your routers configuration page (usualy found at 192.168.1.1) and set up port forwarding from some port to 192.168.1.2 and port 80.
+To connect to your HomeCon server from anywhere in the world you need to do some port forwarding from your router to the ports set up for HomeCon.
+Be warned that I am no internet security expert, far from it. The HomeCon websocket is only secured using a server side token which must match the client side token.
+Connecting your server to the web is at your own risk! Don't come complaining when someone hacks your server and opens your garage door!
 
-By default the port used to forward the websocket is port 9024 so setup another port forwarding from port 9024 to 192.168.1.2 port 2424 and you're good to go.
+First you need to forward a port to the http port of the server, so go to your routers configuration page (usualy found at 192.168.1.1) and set up port forwarding from some port to 192.168.1.254 and port 80.
+By default the port used to forward the websocket is port 9024 so setup another port forwarding from port 9024 to 192.168.1.254 port 2424 and you're good to go.
 The port used for the websocket forwarding can be changed under settings in KNXcontrol.
 
 ### Dynamic dns
@@ -570,7 +199,7 @@ The trick to use id DDNS. We basically install a small program on the raspberry 
 This server links an easily readable name to the ip address so you can access the pi from the outside.
 
 #### DuckDNS
-Go to www.duckdns.org and login using facebook or some other options, create a blank Facebook account if necessary.
+Go to [www.duckdns.org](www.duckdns.org) and login using facebook or some other options (this is the huge downside of DuckDNS if you ask me), create a blank Facebook account if necessary.
 
 Choose a domain name and fill it in and click go.
 
@@ -581,7 +210,7 @@ $ sudo mkdir duckdns
 $ cd duckdns
 $ sudo nano duck.sh
 ```
-No copy the text from the website into the file. I should look like this:
+No copy the text from the website into the file. It should look something like this:
 ```
 echo url="https://www.duckdns.org/update?domains=yourdomain&token=yourtoken&ip=" | curl -k -o /usr/local/duckdns/duck.log -K -
 ```
@@ -606,9 +235,11 @@ $ cat duck.log
 And were done.
 
 #### NO-IP
-You can also use NO-IP for this service. It's free and provides nice names so thats fun, the downside is you have to confirm your address every month. To install it go to www.noip.com and register. Now add a host and choose a domain name to your liking.
+You can also use NO-IP for this service.
+It's free and provides nice names so thats fun, the downside is you have to confirm your address every month.
+To install it go to www.noip.com and register. Now add a host and choose a domain name to your liking.
 
-Now we need to download the client, install it on the raspberry pi and configure it to point to your domain name:
+Now we need to download the client, install it on the server and configure it to point to your domain name:
 ```
 $ cd /usr/local/src
 $ sudo wget http://www.no-ip.com/client/linux/noip-duc-linux.tar.gz
@@ -637,7 +268,9 @@ $ sudo -i
 And were done.
 
 
-## Create an image
+
+
+## Create an image of your Raspbery Pi
 At this step you can make an image as backup. This is done on a different machine running some linux version. I used a bootable usb drive with Ubuntu 14.04.1.
 
 First shutdown yout pi using `sudo halt`. Wait until it has stopped and remove the sd card. Fire up your linux machine, insert the sd card but do not mount it but check the name with:

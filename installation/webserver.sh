@@ -1,5 +1,7 @@
+#!/bin/bash
 
-password=$1
+username=$1
+password=$2
 
 apt-get update 
 apt-get -y install apache2 vsftpd php5 php5-json libawl-php php5-curl
@@ -14,6 +16,8 @@ echo "mysql-server mysql-server/root_password_again password $password" | sudo d
 apt-get -y install mysql-server
 apt-get -y install php5-mysql
 
+# you can now acces mysql from the command line using
+# mysql -u root -p $password
 
 # phpMyAdmin
 echo "phpmyadmin phpmyadmin/reconfigure-webserver multiselect apache2" | sudo debconf-set-selections
@@ -27,12 +31,19 @@ apt-get -y install phpmyadmin
 echo "# phpmyadmin
 Include /etc/phpmyadmin/apache.conf" | tee -a /etc/apache2/apache2.conf
 
-# ftp
+# You can now login to php myadmin at 192.168.1.254/phpmyadmin using usernamer root and password $password
+
+
+# FTP
+# We will set up an ftp server to move files to your system.
 apt-get -y install vsftpd
 
+# Configure the ftp server
 sed -i -e "s/\(anonymous_enable=\).*/\1NO/" \
 -e "s/\(local_enable=\).*/\1YES/" \
+-e 's/#local_enable=YES/local_enable=YES/g' \
 -e 's/#local_umask=022/local_umask=0002\nfile_open_mode=0777/g' \
+-e "s/\(write_enable=\).*/\1YES/" \
 -e 's/#write_enable=YES/write_enable=YES/g' /etc/vsftpd.conf
 
 service vsftpd restart
@@ -41,8 +52,8 @@ service vsftpd restart
 #echo "<VirtualHost *:80>
 #    ServerAdmin admin@test.com
 #    ServerName homecon
-#    ServerAlias homecon
-#    DocumentRoot /home/homecon/homecon/visualization
+#    ServerAlias 192.168.1.254/homecon
+#    DocumentRoot /home/$username/homecon/visualization
 #    ErrorLog ${APACHE_LOG_DIR}/error.log
 #    CustomLog ${APACHE_LOG_DIR}/access.log combined
 #</VirtualHost>" | tee /etc/apache2/sites-available/homecon.conf

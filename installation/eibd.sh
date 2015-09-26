@@ -4,6 +4,9 @@
 
 username=$1
 
+read -p "KNX Gateway ip adress: " knxip
+read -p "Enter a KNX group adress to test eibd: " testgroupadress
+
 # make sure we have essential build tools
 apt-get install build-essential
 
@@ -34,8 +37,11 @@ sudo ldconfig
 touch /var/log/eibd.log
 chown $username /var/log/eibd.log
 
+# Preliminary test
+# /usr/local/bin/eibd -D -S -T -i --eibaddr=0.0.1 --daemon=/var/log/eibd.log --no-tunnel-client-queuing ipt:$knxip
+# groupswrite ip:localhost 1/1/71 1
+
 # create a configuration file
-read -p "KNX Gateway ip adress: " knxip
 echo -e "EIB_ARGS=\"--daemon --Server --Tunnelling --Discovery --GroupCache --listen-tc\"
 
 EIB_ADDR=\"0.0.255\"
@@ -55,7 +61,6 @@ update-rc.d eibd defaults
 /etc/init.d/eibd restart
 
 # test	
-read -p "Enter a KNX group adress to test eibd: " testgroupadress
 groupswrite ip:localhost $testgroupadress 1
 groupswrite ip:localhost $testgroupadress 0
 
