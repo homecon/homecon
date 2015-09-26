@@ -86,6 +86,7 @@ Download the installation folder of homecon into some temp folder
 ```
 $ cd
 $ sudo mkdir temp
+$ sudo apt-get -y install git
 $ sudo git clone git://github.com/brechtba/homecon.git
 ```
 
