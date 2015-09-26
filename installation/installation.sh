@@ -17,10 +17,6 @@ while [ "$password" != "$password2" ]; do
 	fi
 done
 
-# generate a token
-token=$(date +%s | sha256sum | base64 | head -c 32)
-
-
 # add the user
 useradd -d /home/$username $username 
 echo -e "$password\n$password\n" | passwd $username
@@ -44,16 +40,6 @@ pip install PyMySQL
 # eibd
 ./installation/eibd.sh $username
 
-
-
-
 # homecon
-# Cloning HomeCon to it's default destination
-cd /home/$username
-git clone --recursive git://github.com/brechtba/homecon.git
-chown -R $username:$username /home/$username/homecon
-chmod -R 755 /usr/local/knxcontrol
-cd /home/$username/homecon
-
-./installation/homecon.sh $password $token
+./installation/homecon.sh $username $password
 

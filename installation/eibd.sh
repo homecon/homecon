@@ -27,7 +27,7 @@ make
 make install
 cd ..
 
-# You have to load the dynamic library in /usr/local/lib in order for eibd to work, do the following:
+# you have to load the dynamic library in /usr/local/lib in order for eibd to work, do the following:
 echo "/usr/local/lib" | sudo tee -a /etc/ld.so.conf.d/bcusdk.conf
 sudo ldconfig
 
@@ -44,14 +44,17 @@ EIB_IF=\"ipt:$knxip\"" > /etc/default/eibd
 
 # copy the init script and set permissions
 cp initscripts/eibd /etc/init.d/eibd
+
+sed -i -e "s/EIB_UID=\"homecon\"/EIB_UID=\"$username\"/g" /etc/init.d/eibd
+
 chown root:root /etc/init.d/eibd
 chmod 755 /etc/init.d/eibd
 
-# Activate auto starting
+# activate auto starting
 update-rc.d eibd defaults
 /etc/init.d/eibd restart
 
-# Test	
+# test	
 read -p "Enter a KNX group adress to test eibd: " testgroupadress
 groupswrite ip:localhost $testgroupadress 1
 groupswrite ip:localhost $testgroupadress 0

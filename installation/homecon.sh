@@ -1,6 +1,19 @@
 #!/bin/bash
-password=$1
-token=$2
+username=$1
+password=$2
+
+
+# generate a token
+token=$(date +%s | sha256sum | base64 | head -c 32)
+
+
+# Cloning HomeCon to it's default destination
+cd /home/$username
+git clone --recursive git://github.com/brechtba/homecon.git
+chown -R $username:$username /home/$username/homecon
+chmod -R 755 /usr/local/knxcontrol
+cd /home/$username/homecon
+
 
 temphash=$(echo -n "$password" | md5sum | cut -b-32)
 hash=$(echo -n "$temphash" | md5sum | cut -b-32)
@@ -127,5 +140,22 @@ define(\"DATABASE\", \"homecon\");
 
 
 # Smarthome
-cp /usr/local/knxcontrol/installation/smarthome /etc/init.d/smarthome
+# copy the init script and set permissions
+cp /home/$username/homecon/installation/initscripts/smarthome /etc/init.d/smarthome
+
+sed -i -e "s%SH_UID=\"homecon\"%SH_UID=\"$username\"%g" \
+-e "s%DIR=/home/homecon/homecon/smarthome/bin%DIR=/home/$username/homecon/smarthome/bin%g" /etc/init.d/smarthome
+
+chown root:root /etc/init.d/smarthome
+chmod 755 /etc/init.d/smarthome
+
+# activate auto starting
+update-rc.d smarthome defaults
+
+# test
+/etc/init.d/smarthome restart
+tail /home/$username/homecon/smarthome/var/log/smarthome.log
+
+
+
 

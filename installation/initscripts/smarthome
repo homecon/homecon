@@ -13,10 +13,10 @@
 DESC="SmartHome.py"
 NAME=smarthome.py
 SH_ARGS="-q"
-SH_UID="admin"
+SH_UID="homecon"
 
 PATH=/sbin:/usr/sbin:/bin:/usr/bin:/usr/local/bin
-DIR=/usr/local/knxcontrol/smarthome/bin
+DIR=/home/homecon/homecon/smarthome/bin
 DAEMON=$DIR/$NAME
 SCRIPTNAME=/etc/init.d/$NAME
 PIDFILE=/var/run/$NAME.pid
