@@ -9,10 +9,10 @@ logger = logging.getLogger('')
 
 class Measurements:
 
-	def __init__(self,knxcontrol):
+	def __init__(self,homecon):
 		"""
 		A measurements object is created
-		and mysql measurement_legend is filled with items required for knxcontrol
+		and mysql measurement_legend is filled with items required for homecon
 		and measurement ids are stored for reference
 		
 		arguments:
@@ -20,15 +20,15 @@ class Measurements:
 		mysql_pass:  mysql password 
 
 
-		there are 2 kinds of measurements: defined by knxcontrol, required for functioning and defined by the user, for reference
+		there are 2 kinds of measurements: defined by homecon, required for functioning and defined by the user, for reference
 		both kinds should have the same capabilities
 		the string in item determines the value which is stored.
 		"""
 
-		self._sh = knxcontrol._sh
-		self._mysql_pass = knxcontrol._mysql_pass
+		self._sh = homecon._sh
+		self._mysql_pass = homecon._mysql_pass
 
-		con = pymysql.connect('localhost', 'knxcontrol', self._mysql_pass, 'knxcontrol')
+		con = pymysql.connect('localhost', 'homecon', self._mysql_pass, 'homecon')
 		cur = con.cursor()
 
 
@@ -113,23 +113,23 @@ class Measurements:
 		self.get_legend()
 		
 		# current weather
-		item = self._sh.return_item('knxcontrol.weather.current.temperature')
+		item = self._sh.return_item('homecon.weather.current.temperature')
 		self.add_legend_item(item,name='Temperature',quantity='Temperature',unit='degC',description='Ambient temperature')
-		item = self._sh.return_item('knxcontrol.weather.current.humidity')
+		item = self._sh.return_item('homecon.weather.current.humidity')
 		self.add_legend_item(item,name='Humidity',quantity='Humidity',unit='-',description='Relative ambient humidity')
-		item = self._sh.return_item('knxcontrol.weather.current.irradiation.horizontal')
+		item = self._sh.return_item('homecon.weather.current.irradiation.horizontal')
 		self.add_legend_item(item,name='Horizontal irradiation',quantity='Heat flux',unit='W/m2',description='Estimated global horizontal solar irradiation')
-		item = self._sh.return_item('knxcontrol.weather.current.irradiation.clouds')
+		item = self._sh.return_item('homecon.weather.current.irradiation.clouds')
 		self.add_legend_item(item,name='Clouds',quantity='',unit='-',description='Estimated cloud cover')
-		item = self._sh.return_item('knxcontrol.weather.current.precipitation')
+		item = self._sh.return_item('homecon.weather.current.precipitation')
 		self.add_legend_item(item,name='Rain',quantity='Boolean',unit='-',description='Rain or not')							
-		item = self._sh.return_item('knxcontrol.weather.current.wind.speed')
+		item = self._sh.return_item('homecon.weather.current.wind.speed')
 		self.add_legend_item(item,name='Wind speed',quantity='Velocity',unit='m/s',description='Wind speed')
-		item = self._sh.return_item('knxcontrol.weather.current.wind.direction')
+		item = self._sh.return_item('homecon.weather.current.wind.direction')
 		self.add_legend_item(item,name='Wind direction',quantity='Angle',unit='deg',description='Wind direction (0deg is North, 90deg is East)')
 
 		# energy use
-		for item in self._sh.return_item('knxcontrol.energy'):
+		for item in self._sh.return_item('homecon.energy'):
 			item_name = item.id().split(".")[-1]
 			self.add_legend_item(item,name=item_name,quantity=item.conf['quantity'],unit=item.conf['unit'],description=item_name+' use')
 
@@ -142,18 +142,18 @@ class Measurements:
 			self.add_legend_item(item.emission,name='Emission',quantity='Power',unit='W',description=item_name+' emission power')
 
 		# ventilation
-		for item in self._sh.return_item('knxcontrol.ventilation'):
+		for item in self._sh.return_item('homecon.ventilation'):
 			item_name = item.id().split(".")[-1]
 			self.add_legend_item(item.fanspeed,name=item_name+' fanspeed',quantity='',unit='-',description=item_name+' fan speed control signal')
 			self.add_legend_item(item.heatrecovery,name=item_name+' heatrecovery',quantity='',unit='-',description=item_name+' heat recovery control signal')
 
 		# heat production 10 systems max
-		for item in self._sh.return_item('knxcontrol.heat_production'):
+		for item in self._sh.return_item('homecon.heat_production'):
 			item_name = item.id().split(".")[-1]
 			self.add_legend_item(item.power,name=item_name+' power',quantity='Power',unit='W',description=item_name+' heat production')
 
 		# electricity generation 10 systems max
-		for item in self._sh.return_item('knxcontrol.electricity_production'):
+		for item in self._sh.return_item('homecon.electricity_production'):
 			item_name = item.id().split(".")[-1]
 			self.add_legend_item(item.power,name=item_name+' power',quantity='Power',unit='W',description=item_name+' electricity generation')
 
@@ -171,7 +171,7 @@ class Measurements:
 		"""
 		self.legend = {}
 		
-		con = pymysql.connect('localhost', 'knxcontrol', self._mysql_pass, 'knxcontrol')
+		con = pymysql.connect('localhost', 'homecon', self._mysql_pass, 'homecon')
 		cur = con.cursor()
 		cur.execute("SELECT id,item FROM measurements_legend WHERE item <> ''")
 
@@ -195,7 +195,7 @@ class Measurements:
 		description: 	description string
 		"""
 
-		con = pymysql.connect('localhost', 'knxcontrol', self._mysql_pass, 'knxcontrol')
+		con = pymysql.connect('localhost', 'homecon', self._mysql_pass, 'homecon')
 		cur = con.cursor()
 
 		# check if the item was allready logged and copy the data if required
@@ -231,7 +231,7 @@ class Measurements:
 		timestamp = int( (now - datetime.datetime(1970,1,1)).total_seconds() )-60
 
 		# connect to the mysql database
-		con = pymysql.connect('localhost', 'knxcontrol', self._mysql_pass, 'knxcontrol')
+		con = pymysql.connect('localhost', 'homecon', self._mysql_pass, 'homecon')
 		cur = con.cursor()
 
 		legend = con.cursor()
@@ -324,7 +324,7 @@ class Measurements:
 		endtimestamp = int( (endddate - epoch).total_seconds() )
 
 		# connect to database
-		con = pymysql.connect('localhost', 'knxcontrol', self._mysql_pass, 'knxcontrol')
+		con = pymysql.connect('localhost', 'homecon', self._mysql_pass, 'homecon')
 		cur = con.cursor()
 
 		# build query

@@ -24,20 +24,20 @@ import threading
 import types
 
 
-from plugins.knxcontrol.mysql import *
-from plugins.knxcontrol.alarms import *
-from plugins.knxcontrol.measurements import *
-from plugins.knxcontrol.weather import *
-from plugins.knxcontrol.zone import *
-from plugins.knxcontrol.mpc import *
+from plugins.homecon.mysql import *
+from plugins.homecon.alarms import *
+from plugins.homecon.measurements import *
+from plugins.homecon.weather import *
+from plugins.homecon.zone import *
+from plugins.homecon.mpc import *
 
 
 logger = logging.getLogger('')
 
-class KNXControl:
+class HomeCon:
 
 	def __init__(self, smarthome, mysql_pass='admin'):
-		logger.info('KNXControl started')
+		logger.info('HomeCon started')
 		
 		self._sh = smarthome
 		self._mysql_pass = mysql_pass
@@ -58,7 +58,7 @@ class KNXControl:
 		# called once after the items have been parsed
 		self.alive = True
 		
-		self.item = self._sh.knxcontrol
+		self.item = self._sh.homecon
 
 		self.energy = self.item.energy
 		self.ventilation = self.item.ventilation
@@ -80,7 +80,7 @@ class KNXControl:
 
 
  		# schedule low_level_control
-		self._sh.scheduler.add('KNXControl_update', self.low_level_control, prio=2, cron='* * * *')
+		self._sh.scheduler.add('HomeCon_update', self.low_level_control, prio=2, cron='* * * *')
 
 		# schedule alarms
 		self._sh.scheduler.add('Alarm_run', self.alarms.run, prio=1, cron='* * * *')
@@ -139,28 +139,28 @@ class KNXControl:
 		########################################################################
 		# check if shading override values need to be set
 		if item in self._sh.match_items('*.shading.set_override'):
-			window = item.return_parent().conf['knxcontrolobject']
+			window = item.return_parent().conf['homeconobject']
 			window.shading_override()
 
 		if item in self._sh.match_items('*.shading.value'):
 			if caller!='KNX' and caller != 'Logic':
-				window = item.return_parent().conf['knxcontrolobject']
+				window = item.return_parent().conf['homeconobject']
 				window.shading_override()
 
 		########################################################################
 		# check for rain
-		if item.id() == 'knxcontrol.weather.current.precipitation':
+		if item.id() == 'homecon.weather.current.precipitation':
 			for zone in self.zones:
 				zone.shading_control()
 
 		########################################################################
 		# check for model identify
-		if item.id() == 'knxcontrol.mpc.model.identification':
+		if item.id() == 'homecon.mpc.model.identification':
 			self.mpc.model.identify()
 
 		########################################################################
 		# check for model validation
-		if item.id() == 'knxcontrol.mpc.model.validation':
+		if item.id() == 'homecon.mpc.model.validation':
 			self.mpc.model.validate()
 
 
@@ -192,13 +192,13 @@ class KNXControl:
 
 
 
-	def find_item(self,knxcontrolitem):
+	def find_item(self,homeconitem):
 		"""
-		function to find items with a certain knxcontrol attribute
+		function to find items with a certain homecon attribute
 		"""
 		items = []
-		for item in self._sh.find_items('knxcontrolitem'):
-			if item.conf['knxcontrolitem'] == knxcontrolitem:
+		for item in self._sh.find_items('homeconitem'):
+			if item.conf['homeconitem'] == homeconitem:
 				items.append(item)
 
 		return items

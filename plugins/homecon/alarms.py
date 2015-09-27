@@ -8,14 +8,14 @@ import datetime
 logger = logging.getLogger('')
 
 class Alarms:
-	def __init__(self,knxcontrol):
+	def __init__(self,homecon):
 		"""
 		Create an Alarms object
 		"""
 
-		self.knxcontrol = knxcontrol
-		self._sh = knxcontrol._sh
-		self._mysql_pass = knxcontrol._mysql_pass
+		self.homecon = homecon
+		self._sh = homecon._sh
+		self._mysql_pass = homecon._mysql_pass
 
 		logger.warning("Alarms initialized")
 
@@ -23,7 +23,7 @@ class Alarms:
 		now = self._sh.now()
 	
 		# connect to the mysql database
-		con = pymysql.connect('localhost', 'knxcontrol', self._mysql_pass, 'knxcontrol')
+		con = pymysql.connect('localhost', 'homecon', self._mysql_pass, 'homecon')
 		cur = con.cursor(pymysql.cursors.DictCursor)
 
 		# get alarm data from mysql 

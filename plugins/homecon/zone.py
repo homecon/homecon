@@ -1,40 +1,40 @@
 #!/usr/bin/python3
 ######################################################################################
 #    Copyright 2015 Brecht Baeten
-#    This file is part of KNXControl.
+#    This file is part of HomeCon.
 #
-#    KNXControl is free software: you can redistribute it and/or modify
+#    HomeCon is free software: you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License as published by
 #    the Free Software Foundation, either version 3 of the License, or
 #    (at your option) any later version.
 #
-#    KNXControl is distributed in the hope that it will be useful,
+#    HomeCon is distributed in the hope that it will be useful,
 #    but WITHOUT ANY WARRANTY; without even the implied warranty of
 #    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 #    GNU General Public License for more details.
 #
 #    You should have received a copy of the GNU General Public License
-#    along with KNXControl.  If not, see <http://www.gnu.org/licenses/>.
+#    along with HomeCon.  If not, see <http://www.gnu.org/licenses/>.
 ######################################################################################
 
 import logging
 import numpy as np
-from plugins.knxcontrol.window import *
+from plugins.homecon.window import *
 
 logger = logging.getLogger('')
 
 class Zone():
-	def __init__(self,knxcontrol,item):
-		self.knxcontrol = knxcontrol
+	def __init__(self,homecon,item):
+		self.homecon = homecon
 		self.item = item
-		self.item.conf['knxcontrolobject'] = self
+		self.item.conf['homeconobject'] = self
 
 		self.windows = []
 		self.emission = []
 
-		for item in self.knxcontrol._sh.find_children(self.item, 'knxcontrolitem'):
-			if item.conf['knxcontrolitem']== 'window':
-				self.windows.append( Window(knxcontrol,self,item) )
+		for item in self.homecon._sh.find_children(self.item, 'homeconitem'):
+			if item.conf['homeconitem']== 'window':
+				self.windows.append( Window(homecon,self,item) )
 
 		self.temperature = self.item.temperature
 		self.irradiation = self.item.irradiation
@@ -82,7 +82,7 @@ class Zone():
 
 
 		# rain countdown
-		if self.knxcontrol.item.weather.current.precipitation():
+		if self.homecon.item.weather.current.precipitation():
 			self.raincountdown = 15
 		else:
 			self.raincountdown = self.raincountdown-1

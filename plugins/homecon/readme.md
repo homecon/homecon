@@ -1,10 +1,10 @@
-# KNXControl plugin
+# HomeCon plugin
 
 
 
 
 ## System identification
-A method of system identification is implemented in KNXControl. The method requires that several things are measured
+A method of system identification is implemented in HomeCon. The method requires that several things are measured
 ### Optimization problem structure
 the optimization problem is discretized to N timesteps with length 15 minutes
 

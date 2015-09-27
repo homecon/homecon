@@ -1,20 +1,20 @@
 #!/usr/bin/python3
 ######################################################################################
 #    Copyright 2015 Brecht Baeten
-#    This file is part of KNXControl.
+#    This file is part of HomeCon.
 #
-#    KNXControl is free software: you can redistribute it and/or modify
+#    HomeCon is free software: you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License as published by
 #    the Free Software Foundation, either version 3 of the License, or
 #    (at your option) any later version.
 #
-#    KNXControl is distributed in the hope that it will be useful,
+#    HomeCon is distributed in the hope that it will be useful,
 #    but WITHOUT ANY WARRANTY; without even the implied warranty of
 #    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 #    GNU General Public License for more details.
 #
 #    You should have received a copy of the GNU General Public License
-#    along with KNXControl.  If not, see <http://www.gnu.org/licenses/>.
+#    along with HomeCon.  If not, see <http://www.gnu.org/licenses/>.
 ######################################################################################
 
 import logging
@@ -28,18 +28,18 @@ logger = logging.getLogger('')
 
 
 class Weather():
-	def __init__(self,knxcontrol):
-		self.knxcontrol = knxcontrol
+	def __init__(self,homecon):
+		self.homecon = homecon
 
 		# find weather item
-		items = self.knxcontrol.find_item('weather')
+		items = self.homecon.find_item('weather')
 		if len(items) == 0:
 			self.item = None
 			logger.warning('No weather item found')
 		else:
 			self.item = items[0]
 
-		self.item.conf['knxcontrolobject'] = self
+		self.item.conf['homeconlobject'] = self
 
 
 		self.current = self.item.current
@@ -48,7 +48,7 @@ class Weather():
 
 
 		# find a irradiationsensor item
-		items = self.knxcontrol.find_item('irradiationsensor')
+		items = self.homecon.find_item('irradiationsensor')
 		if len(items) == 0:
 			self.irradiationsensor = None
 		else:
@@ -56,7 +56,7 @@ class Weather():
 
 
 		# find a clouds item
-		items = self.knxcontrol.find_item('clouds')
+		items = self.homecon.find_item('clouds')
 		if len(items) == 0:
 			self.clouds = None
 		else:
@@ -67,7 +67,7 @@ class Weather():
 
 
 		# find a horizontal_irradiation item
-		items = self.knxcontrol.find_item('horizontal_irradiation')
+		items = self.homecon.find_item('horizontal_irradiation')
 		if len(items) == 0:
 			self.horizontal_irradiation = None
 		else:
@@ -75,13 +75,13 @@ class Weather():
 
 		
 		# find prediction items
-		items = self.knxcontrol.find_item('weatherforecast_detailed')
+		items = self.homecon.find_item('weatherforecast_detailed')
 		if len(items) == 0:
 			self.prediction_detailed = None
 		else:
 			self.prediction_detailed = items[0]
 
-		items = self.knxcontrol.find_item('weatherforecast_daily')
+		items = self.homecon.find_item('weatherforecast_daily')
 		if len(items) == 0:
 			self.prediction_daily = None
 		else:
@@ -91,12 +91,12 @@ class Weather():
 		# create an ephem observer
 		# http://rhodesmill.org/pyephem/quick.html
 		self.obs = ephem.Observer()
-		self.obs.lat = self.knxcontrol.lat*np.pi/180     #N+
-		self.obs.lon = self.knxcontrol.lon*np.pi/180     #E+
-		self.obs.elev = self.knxcontrol.elev
+		self.obs.lat = self.homecon.lat*np.pi/180     #N+
+		self.obs.lon = self.homecon.lon*np.pi/180     #E+
+		self.obs.elev = self.homecon.elev
 
 		# update the parent
-		self.knxcontrol.weather = self
+		self.homecon.weather = self
 
 		# load predictions
 		self.prediction_detailed_load()
@@ -272,7 +272,7 @@ class Weather():
 		try:
 			weatherforecast = []
 
-			response = urllib.request.urlopen('http://api.openweathermap.org/data/2.5/forecast?lat={0}&lon={1}'.format(self.knxcontrol.lat,self.knxcontrol.lon))
+			response = urllib.request.urlopen('http://api.openweathermap.org/data/2.5/forecast?lat={0}&lon={1}'.format(self.homecon.lat,self.homecon.lon))
 			response = json.loads(response.read().decode('utf-8'))
 
 			for forecast in response['list']:
@@ -307,7 +307,7 @@ class Weather():
 	
 		try:
 			weatherforecast = []
-			response = urllib.request.urlopen('http://api.openweathermap.org/data/2.5/forecast/daily?lat={0}&lon={1}'.format(self.knxcontrol.lat,self.knxcontrol.lon))
+			response = urllib.request.urlopen('http://api.openweathermap.org/data/2.5/forecast/daily?lat={0}&lon={1}'.format(self.homecon.lat,self.homecon.lon))
 			response = json.loads(response.read().decode('utf-8'))
 
 			for forecast in response['list']:
