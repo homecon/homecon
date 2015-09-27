@@ -98,8 +98,8 @@ $ sudo git clone git://github.com/brechtba/homecon.git
 
 Now run the installation script
 ```
-$ cd ~/temp/homcon/installation
-$ ./installation.sh
+$ cd ~/temp/homecon/installation
+$ sudo ./installation.sh
 ```
 
 You will be asked for a homecon password and the ip adress of your KNX/EIB Gateway and a group adress to test eibd. Ghoose the adress of a light control, if everything works out it should go on and off and you're done!
@@ -303,7 +303,6 @@ And were done.
 
 
 
-
 ## Create an image of your Raspbery Pi
 At this step you can make an image as backup. This is done on a different machine running some linux version. I used a bootable usb drive with Ubuntu 14.04.1.
 
@@ -327,4 +326,13 @@ You can write the image back to an sd card using:
 $ sudo dd if=knxcontrol.img of=/dev/mmcblk0
 ```
 You will get an error message at the end of the process but this doesn't matter as the end is just blank.
+
+
+## Laptop lid functions
+To keep a laptop from shutting down when you close the lid edit the logind.conf file
+```
+sudo nano /etc/systemd/logind.conf
+```
+
+Add a line `HandleLidSwitch=ignore`
 

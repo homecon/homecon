@@ -7,9 +7,9 @@ password="pass"
 password2=""
 
 while [ "$password" != "$password2" ]; do
-	read -s -p "Enter Password: " password
+	read -s -p "Enter a HomeCon password: " password
 	echo
-	read -s -p "Re-enter Password: " password2
+	read -s -p "Re-enter password: " password2
 	echo
 	if [ "$password" != "$password2" ]; then
 		echo "Passwords do not match!"
@@ -30,17 +30,17 @@ pip install ephem
 pip install PyMySQL
 
 # networking
-./installation/networking.sh
+./networking.sh
 
 # webserver
-./installation/webserver.sh $username $password
+./webserver.sh $username $password
 
 # eibd
-./installation/eibd.sh $username
+./eibd.sh $username
 
 # ipopt
 ./ipopt.sh
 
 # homecon
-./installation/homecon.sh $username $password
+./homecon.sh $username $password
 
