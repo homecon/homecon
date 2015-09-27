@@ -6,9 +6,6 @@ password=$2
 apt-get update 
 apt-get -y install apache2 vsftpd php5 php5-json libawl-php php5-curl
 
-# Create a symlink in the www directory
-ln -s /home/homecon/homecon/visualisation  /var/www/homecon
-
 # MySQL
 echo "mysql-server mysql-server/root_password password $password" | sudo debconf-set-selections
 echo "mysql-server mysql-server/root_password_again password $password" | sudo debconf-set-selections
@@ -31,7 +28,7 @@ apt-get -y install phpmyadmin
 echo "# phpmyadmin
 Include /etc/phpmyadmin/apache.conf" | tee -a /etc/apache2/apache2.conf
 
-# You can now login to php myadmin at 192.168.1.254/phpmyadmin using usernamer root and password $password
+# You can now login to php myadmin at 192.168.1.234/phpmyadmin using usernamer root and password $password
 
 
 # FTP
@@ -48,11 +45,14 @@ sed -i -e "s/\(anonymous_enable=\).*/\1NO/" \
 
 service vsftpd restart
 
+# Create a symlink in the www directory
+ln -s /home/homecon/homecon  /var/www/homecon
+
 # virtual hosts
 #echo "<VirtualHost *:80>
 #    ServerAdmin admin@test.com
 #    ServerName homecon
-#    ServerAlias 192.168.1.254/homecon
+#    ServerAlias 192.168.1.234/homecon
 #    DocumentRoot /home/$username/homecon/visualization
 #    ErrorLog ${APACHE_LOG_DIR}/error.log
 #    CustomLog ${APACHE_LOG_DIR}/access.log combined

@@ -10,7 +10,7 @@ Installation
 
 Connect your KNX/EIB gateway to your home network, the same network the server computer is on.
 Make sure the KNX/EIB gateway has a static ip adress and that you know it.
-By default the server you're going to setup will use the static ip adress 192.168.1.254.
+By default the server you're going to setup will use the static ip adress 192.168.1.234.
 Make sure this adress is outside of the DHCP range of your router (Most of the time this is the case by default).
 
 #### Optional
@@ -104,9 +104,13 @@ Create smarthome configuration files. I'm hoping to make the configuration files
 
 
 ## First connection
-Go to 192.168.1.254/homecon in a web browser.
+Go to 192.168.1.234/homecon in a web browser.
 You can log in using username 'homecon' and the password you've entered during the installation.
 Click the pagebuilder Icon on the top navigation bar and start adding pages and controls to HomeCon!
+
+
+
+
 
 
 
@@ -207,8 +211,8 @@ To connect to your HomeCon server from anywhere in the world you need to do some
 Be warned that I am no internet security expert, far from it. The HomeCon websocket is only secured using a server side token which must match the client side token.
 Connecting your server to the web is at your own risk! Don't come complaining when someone hacks your server and opens your garage door!
 
-First you need to forward a port to the http port of the server, so go to your routers configuration page (usualy found at 192.168.1.1) and set up port forwarding from some port to 192.168.1.254 and port 80.
-By default the port used to forward the websocket is port 9024 so setup another port forwarding from port 9024 to 192.168.1.254 port 2424 and you're good to go.
+First you need to forward a port to the http port of the server, so go to your routers configuration page (usualy found at 192.168.1.1) and set up port forwarding from some port to 192.168.1.234 and port 80.
+By default the port used to forward the websocket is port 9024 so setup another port forwarding from port 9024 to 192.168.1.234 port 2424 and you're good to go.
 The port used for the websocket forwarding can be changed under settings in KNXcontrol.
 
 ### Dynamic dns

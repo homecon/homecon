@@ -20,6 +20,7 @@ chmod -R 755 /home/$username/homecon
 chown -R $username:$username /home/$username/smarthome
 chmod -R 755 //home/$username/smarthome
 
+chown -R www-data:www-data /home/$username/homecon/pages
 
 temphash=$(echo -n "$password" | md5sum | cut -b-32)
 hash=$(echo -n "$temphash" | md5sum | cut -b-32)
@@ -57,7 +58,7 @@ echo "USE homecon;
 		PRIMARY KEY (id) ) ENGINE=InnoDB DEFAULT CHARSET=latin1 AUTO_INCREMENT=1;" | mysql -u root -p$password
 
 echo "USE homecon;
-	  INSERT IGNORE INTO data (id,ip,port,web_ip,web_port,token,latitude,longitude,elevation) VALUES (1,'192.168.255.1','2424','mydomain.duckdns.org','9024','$token',51,5,70);" | mysql -u root -p$password
+	  INSERT IGNORE INTO data (id,ip,port,web_ip,web_port,token,latitude,longitude,elevation) VALUES (1,'192.168.234.1','2424','mydomain.duckdns.org','9024','$token',51,5,70);" | mysql -u root -p$password
 
 ### alarms
 echo "USE homecon;
@@ -142,7 +143,7 @@ define(\"HOST\", \"localhost\");
 define(\"USER\", \"homecon\");
 define(\"PASSWORD\", \"$password\");
 define(\"DATABASE\", \"homecon\");
-?>" | tee /home/homecon/homecon/visualisation/pages/config.php
+?>" | tee /home/homecon/homecon/pages/config.php
 
 
 # Smarthome
