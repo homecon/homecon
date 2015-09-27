@@ -17,104 +17,6 @@
 */
 
 /*****************************************************************************/
-/*                     General                                               */
-/*****************************************************************************/
-a.edit_widget{
-	position: absolute;
-	margin: 0;
-}
-a.edit_page_section{
-	position: absolute;
-	margin: 0;
-	top: -10px;
-	left: -10px;
-}
-a.edit_page{
-	position: absolute;
-	margin: 0;
-}
-div[data-role="fieldcontain"]{
-	padding: .1em 0;
-}
-
-div.twocols{
-	display: inline-block;
-	float: left; 
-	width: 49%;
-	margin: 0;
-}
-div.threecols{
-	display: inline-block;
-	float: left; 
-	width: 32%;
-	margin: 0;
-}
-
-/*****************************************************************************/
-/*                     Separator line                                        */
-/*****************************************************************************/
-div[data-role="line"]{
-	display: block;
-	position: relative;
-	height: 0px;
-	margin-top: 5px;
-	margin-bottom: 5px;
-	width: 98%;
-}
-div[data-role="line"].line{
-	border-bottom: solid 1px #ddd;
-}
-#home_pagebuilder div[data-role="line"]{
-	height: 5px;
-	border-bottom: solid 1px #444;
-}
-#home_pagebuilder div[data-role="line"].line{
-	border-bottom: solid 1px #ddd;
-}
-#home_pagebuilder div[data-role="line"] a.edit_widget{
-    top: -15px;
-	right: -5px;
-}
-
-/*****************************************************************************/
-/*                     Slider                                                */
-/*****************************************************************************/
-div[data-role="setpoint"]{
-	display: inline-block;
-	position: relative;
-	height: 60px;
-	width: 98%;
-	text-align: left;
-}
-div[data-role="setpoint"] p{
-	position: absolute;
-	margin-left: 54px;
-	margin-top: 5px;
-	font-weight: 700;
-}
-div[data-role="setpoint"] .ui-slider{
-	margin-left: 64px;
-	margin-right: 64px;
-	margin-top: 25px;
-	margin-bottom: 0;
-}
-div[data-role="setpoint"] .ui-slider-track{
-	margin-left: 0;
-	margin-right: 0;
-}
-div[data-role="setpoint"] .ui-slider input{
-	visibility: hidden;
-}
-
-#home_pagebuilder div[data-role="setpoint"]{
-	border: solid 1px #222;
-}
-#home_pagebuilder div[data-role="setpoint"] a.edit_widget{
-    top: -5px;
-	right: -5px;
-}
-
-/*****************************************************************************/
 /*                     Light switch                                          */
 /*****************************************************************************/
 div[data-role="lightswitch"]{
@@ -125,29 +27,6 @@ div[data-role="lightswitch"]{
 	min-width: 200px;
 	text-align: left;
 	float: left;
-}
-div[data-role="lightswitch"] a{
-	text-decoration: none;
-	color: #FFF !important;
-}
-div[data-role="lightswitch"] img{
-	height: 50px;
-	vertical-align: middle;
-}
-
-div[data-role="lightswitch"] a:hover {
-	color: #FFF;
-}
-
-#home_pagebuilder div[data-role="lightswitch"]{
-	margin-bottom: 5px;
-	margin-right: 1%;
-	width: 48%;
-	border: solid 1px #222;
-}
-#home_pagebuilder div[data-role="lightswitch"] a.edit_widget{
-    top: -5px;
-	right: -5px;
 }
 
 /*****************************************************************************/
@@ -160,7 +39,7 @@ div[data-role="lightdimmer"]{
 	width: 98%;
 	text-align: left;
 }
-div[data-role="lightdimmer"] img{
+div[data-role="lightdimmer"] div[data-role="toggleswitch"]{
 	height: 50px;
 	vertical-align: middle;
 	float: left;
@@ -183,14 +62,6 @@ div[data-role="lightdimmer"] .ui-slider-track{
 }
 div[data-role="lightdimmer"] .ui-slider input{
 	visibility: hidden;
-}
-
-#home_pagebuilder div[data-role="lightdimmer"]{
-	border: solid 1px #222;
-}
-#home_pagebuilder div[data-role="lightdimmer"] a.edit_widget{
-    top: -5px;
-	right: -5px;
 }
 
 
@@ -248,14 +119,6 @@ div[data-role="shading"] div.advanced{
 	left: 0px;
 }
 
-#home_pagebuilder div[data-role="shading"]{
-	border: solid 1px #222;
-}
-#home_pagebuilder div[data-role="shading"] a.edit_widget{
-    top: -5px;
-	right: -5px;
-}
-
 /*****************************************************************************/
 /*                     Alarm                                                 */
 /*****************************************************************************/
@@ -288,10 +151,90 @@ div[data-role="alarm"] label{
 	padding-left: 8px;
 	padding-right: 8px;
 }
-#home_pagebuilder div[data-role="alarm"]{
-	margin-bottom: 5px;
-	border: solid 1px #222;
+
+/*****************************************************************************/
+/*                     Weather block                                       */
+/*****************************************************************************/
+div[data-role="weather_block"]{
+	position: relative;
+	display: inline-block;
+	width: 98%;
+	margin-left: auto;
+	margin-right: auto;
+	text-align: center;
 }
+div[data-role="weather_block"] img{
+	width: 90%;
+	max-width: 300px;
+	margin-top: -10px;
+	margin-bottom: -10px;
+}
+div[data-role="weather_block"] div{
+	height: 20px;
+}
+div[data-role="weather_block"] div[data-field="date"]{
+	height: 0;
+}
+div[data-role="weather_block"].mini{
+	width: 20%;
+	min-width: 75px;
+	max-width: 150px;
+	margin-left: 0;
+	margin-right: 0;
+	font-size: 0.9em;
+}
+div[data-role="weather_block"].mini img{
+	width: 100%;
+	margin-bottom: -10px;
+}
+div[data-role="weather_block"].mini div{
+	height: 15px;
+}
+
+/******************************************************************************/
+/*                     measurementchart                                       */
+/******************************************************************************/
+div[data-role="measurementchart"]{
+	width: 98%;
+	position: relative;
+	margin-bottom: 5px;
+}
+
+/*****************************************************************************/
+/*                     Ventilation control                                   */
+/*****************************************************************************/
+div[data-role="ventilation_control"]{
+	display: inline-block;
+	position: relative;
+	width: 98%;
+	text-align: left;
+}
+div[data-role="ventilation_control"] p{
+	position: relative;
+	margin-left: 5px;
+	margin-top: 5px;
+	margin-bottom: 0;
+	font-weight: 700;
+}
+div[data-role="ventilation_control"] div.speedcontrol{
+	display: inline-block;
+}
+div[data-role="ventilation_control"] img{
+	height: 50px;
+	vertical-align: middle;
+	float: left;
+}
+div[data-role="ventilation_control"] a.auto img{
+	margin-right: 50px;
+}
+
+
+
+
+
+
+
+
 
 
 
@@ -395,181 +338,6 @@ div[data-role="settings"]{
 }
 
 /*****************************************************************************/
-/*                     Clock                                                 */
-/*****************************************************************************/
-
-div[data-role="clock"] {
-	position: relative;
-	width: 90%;
-	margin-left: auto;
-	margin-right: auto;
-	text-align: center;
-}
-div[data-role="clock"] .time>div{
-	position: relative;
-	display: inline-block;
-}
-div[data-role="clock"] img{
-	height: 100px;
-}
-div[data-role="clock"] img.hoursLeft, div[data-role="clock"] img.minutesLeft{
-	position: absolute;
-	top: 0px;
-	left: 10px;
-}
-div[data-role="clock"] img.hoursRight, div[data-role="clock"] img.minutesRight{
-	position: absolute;
-	top: 0px;
-	right: 10px;
-}
-div[data-role="clock"]  hr{
-	position: absolute;
-	top: 40px;
-	left: 6px;
-	width: 86px;
-}
-div[data-role="clock"] .date{
-	margin-top: 0;
-	margin-bottom: 0;
-}
-#home_pagebuilder div[data-role="clock"]{
-	margin-bottom: 5px;
-	border: solid 1px #222;
-}
-#home_pagebuilder div[data-role="clock"] a.edit_widget{
-    top: -5px;
-	right: -5px;
-}
-
-/*****************************************************************************/
-/*                     Weather block                                       */
-/*****************************************************************************/
-div[data-role="weather_block"]{
-	position: relative;
-	display: inline-block;
-	width: 98%;
-	margin-left: auto;
-	margin-right: auto;
-	text-align: center;
-}
-div[data-role="weather_block"] img{
-	width: 90%;
-	max-width: 300px;
-	margin-top: -10px;
-	margin-bottom: -10px;
-}
-div[data-role="weather_block"] div{
-	height: 20px;
-}
-div[data-role="weather_block"] div[data-field="date"]{
-	height: 0;
-}
-div[data-role="weather_block"].mini{
-	width: 20%;
-	min-width: 75px;
-	max-width: 150px;
-	margin-left: 0;
-	margin-right: 0;
-	font-size: 0.9em;
-}
-div[data-role="weather_block"].mini img{
-	width: 100%;
-	margin-bottom: -10px;
-}
-div[data-role="weather_block"].mini div{
-	height: 15px;
-}
-#home_pagebuilder div[data-role="weather_block"]{
-	margin-bottom: 5px;
-	border: solid 1px #222;
-}
-#home_pagebuilder div[data-role="weather_block"] a.edit_widget{
-    top: -5px;
-	right: -5px;
-}
-
-/*****************************************************************************/
-/*                     Chart                                                 */
-/*****************************************************************************/
-div[data-role="chart"]{
-	width: 98%;
-	position: relative;
-	margin-bottom: 5px;
-}
-#home_pagebuilder div[data-role="chart"]{
-	border: solid 1px #222;
-}
-#home_pagebuilder div[data-role="chart"] a.edit_widget{
-	z-index: 1;
-    top: -5px;
-	right: -5px;
-}
-
-/*****************************************************************************/
-/*                     Button                                                */
-/*****************************************************************************/
-div[data-role="btn"]{
-    display: inline-block;
-    position: relative;
-    margin: 0;
-    width: 24.5%;
-    min-width: 120px;
-}
-div[data-role="btn"] a{
-    margin: 0;
-    margin-right: -5px;
-    margin-bottom: -5px;
-    padding-left: 5px;
-    padding-right: 5px;
-}
-div[data-role="btn"] img{
-    position: absolute;
-    width: 30px;
-    height: 30px;
-    top: 5px;
-    left: 5px;
-}
-#home_pagebuilder div[data-role="btn"] a.edit_widget{
-	z-index: 1;
-    top: -5px;
-	right: -5px;
-}
-/*****************************************************************************/
-/*                     Ventilation control                                   */
-/*****************************************************************************/
-div[data-role="ventilation_control"]{
-	display: inline-block;
-	position: relative;
-	width: 98%;
-	text-align: left;
-}
-div[data-role="ventilation_control"] p{
-	position: relative;
-	margin-left: 5px;
-	margin-top: 5px;
-	margin-bottom: 0;
-	font-weight: 700;
-}
-div[data-role="ventilation_control"] div.speedcontrol{
-	display: inline-block;
-}
-div[data-role="ventilation_control"] img{
-	height: 50px;
-	vertical-align: middle;
-	float: left;
-}
-div[data-role="ventilation_control"] a.auto img{
-	margin-right: 50px;
-}
-#home_pagebuilder div[data-role="ventilation_control"]{
-	border: solid 1px #222;
-}
-#home_pagebuilder div[data-role="ventilation_control"] a.edit_widget{
-    top: -5px;
-	right: -5px;
-}
-
-/*****************************************************************************/
 /*                     Smarthome log                                         */
 /*****************************************************************************/
 div[data-role="smarthome_log"]{
@@ -641,3 +409,19 @@ div[data-role="profile_list"] div.profile a.edit{
 	border: 0;
 }
 
+/*****************************************************************************/
+/*                     System identification                                 */
+/*****************************************************************************/
+div[data-role="system_identification"]{
+	width: 98%;
+	position: relative;
+	text-align: left;
+}
+div[data-role="system_identification"] div.buttons{
+	display: inline-block;
+	width: 100%;
+}
+div[data-role="system_identification"] div.chart_container{
+	display: inline-block;
+	width: 100%;
+}

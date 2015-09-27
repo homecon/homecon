@@ -1,0 +1,222 @@
+/*
+    Copyright 2015 Brecht Baeten
+    This file is part of HomeCon.
+
+    HomeCon is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    HomeCon is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with HomeCon.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
+/******************************************************************************/
+/*                     pagebuilder                                            */
+/******************************************************************************/
+a.edit_widget{
+	position: absolute;
+	margin: 0;
+}
+a.edit_page_section{
+	position: absolute;
+	margin: 0;
+	top: -10px;
+	left: -10px;
+}
+a.edit_page{
+	position: absolute;
+	margin: 0;
+}
+#home_pagebuilder div.widget{
+	border: solid 1px #222;
+}
+#home_pagebuilder div.widget a.edit_widget{
+	z-index: 1005;
+    top: -5px;
+	right: -5px;
+}
+
+/******************************************************************************/
+/*                     Separator line                                         */
+/******************************************************************************/
+div[data-role="line"]{
+	display: block;
+	position: relative;
+	height: 0px;
+	margin-top: 5px;
+	margin-bottom: 5px;
+	width: 98%;
+}
+div[data-role="line"].line{
+	border-bottom: solid 1px #ddd;
+}
+#home_pagebuilder div[data-role="line"]{
+	height: 5px;
+}
+#home_pagebuilder div[data-role="line"].line{
+	border-bottom: solid 1px #ddd;
+}
+
+/******************************************************************************/
+/*                     display value                                          */
+/******************************************************************************/
+
+
+/******************************************************************************/
+/*                     input value                                            */
+/******************************************************************************/
+div[data-role="inputvalue"]{
+	display: inline-block;
+	position: relative;
+	height: 65px;
+	width: 98%;
+	text-align: left;
+}
+div[data-role="inputvalue"] p.label{
+	position: absolute;
+	margin-left: 54px;
+	margin-top: 5px;
+	font-weight: 700;
+}
+
+div[data-role="inputvalue"] div.ui-input-text{
+	position: absolute;
+	margin-left: 54px;
+	margin-top: 24px;
+	margin-bottom: 0px;
+	width: 150px;
+}
+div[data-role="inputvalue"] p.unit{
+	position: absolute;
+	margin-top: 30px;
+	margin-left: 214px;
+	margin-bottom: 0px;
+
+}
+
+/******************************************************************************/
+/*                     value switch                                           */
+/******************************************************************************/
+div[data-role="valueswitch"] a{
+	text-decoration: none;
+	color: #FFF !important;
+}
+div[data-role="valueswitch"] img{
+	height: 50px;
+	vertical-align: middle;
+}
+div[data-role="valueswitch"] a:hover {
+	color: #FFF;
+}
+
+/******************************************************************************/
+/*                     pushbutton                                             */
+/******************************************************************************/
+div[data-role="pushbutton"]{
+    display: inline-block;
+    position: relative;
+    margin: 0;
+    width: 24.5%;
+    min-width: 120px;
+}
+div[data-role="pushbutton"] a{
+    margin: 0;
+    margin-right: -5px;
+    margin-bottom: -5px;
+    padding-left: 5px;
+    padding-right: 5px;
+}
+div[data-role="pushbutton"] img{
+    position: absolute;
+    width: 30px;
+    height: 30px;
+    top: 5px;
+    left: 5px;
+}
+
+/******************************************************************************/
+/*                     toggle switch                                          */
+/******************************************************************************/
+div[data-role="toggleswitch"] a{
+	text-decoration: none;
+	color: #FFF !important;
+}
+div[data-role="toggleswitch"] img{
+	height: 50px;
+	vertical-align: middle;
+}
+div[data-role="toggleswitch"] a:hover {
+	color: #FFF;
+}
+
+/******************************************************************************/
+/*                     checkbox                                               */
+/******************************************************************************/
+
+
+
+/******************************************************************************/
+/*                     inputslider                                            */
+/******************************************************************************/
+div[data-role="inputslider"] .ui-slider{
+	margin-left: 64px;
+	margin-right: 64px;
+	margin-top: 25px;
+	margin-bottom: 0;
+}
+div[data-role="inputslider"] .ui-slider-track{
+	margin-left: 0;
+	margin-right: 0;
+}
+div[data-role="inputslider"] .ui-slider input{
+	visibility: hidden;
+}
+
+/*****************************************************************************/
+/*                     Clock                                                 */
+/*****************************************************************************/
+
+div[data-role="clock"] {
+	position: relative;
+	width: 90%;
+	margin-left: auto;
+	margin-right: auto;
+	text-align: center;
+}
+div[data-role="clock"] .time>div{
+	position: relative;
+	display: inline-block;
+}
+div[data-role="clock"] img{
+	height: 100px;
+}
+div[data-role="clock"] img.hoursLeft, div[data-role="clock"] img.minutesLeft{
+	position: absolute;
+	top: 0px;
+	left: 10px;
+}
+div[data-role="clock"] img.hoursRight, div[data-role="clock"] img.minutesRight{
+	position: absolute;
+	top: 0px;
+	right: 10px;
+}
+div[data-role="clock"]  hr{
+	position: absolute;
+	top: 40px;
+	left: 6px;
+	width: 86px;
+}
+div[data-role="clock"] .date{
+	margin-top: 0;
+	margin-bottom: 0;
+}
+
+
+
+

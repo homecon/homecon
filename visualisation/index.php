@@ -28,7 +28,7 @@
 <!DOCTYPE html>
 <html>
 	<head>
-		<title>KNX control</title>
+		<title>HomeCon</title>
 
 		<meta charset='utf-8'/>
 		<meta name='viewport' content='width=device-width, user-scalable=yes, initial-scale=1, maximum-scale=1.3, minimum-scale=1' />
@@ -37,9 +37,8 @@
 		<meta name='apple-mobile-web-app-status-bar-style' content='black-translucent' />
 		<meta http-equiv='expires' content='0' />
 
-		<link rel='icon' href='favicon.png'/>
-		<link rel='apple-touch-icon' href='favicon.png' />
-		<link rel='icon' href='favicon.ico' type='image/x-icon' />
+		<link rel='icon' href='icons/favicon.png'/>
+		<link rel='apple-touch-icon' href='icons/favicon.png' />
 
 		<!-- jquery mobile -->
 		<script src='lib/jquery-1.11.0.min.js'></script>
@@ -55,12 +54,14 @@
 		<script type='text/javascript' src='js/language_dutch.js'></script>
 		<script type='text/javascript' src='js/smarthome.js'></script>
 		<script type='text/javascript' src='js/knxcontrol.js'></script>
+		<script type='text/javascript' src='js/widgets_base.js'></script>
 		<script type='text/javascript' src='js/widgets.js'></script>
 		<script type='text/javascript' src='js/view.js'></script>
 		<script type='text/javascript' src='js/pagebuilder.js'></script>
 				
 		<link rel='stylesheet' type='text/css' href='css/layout.css'/>
-		<link rel='stylesheet' type='text/css' href='css/widget.css'/>
+		<link rel='stylesheet' type='text/css' href='css/widgets_base.css'/>
+		<link rel='stylesheet' type='text/css' href='css/widgets.css'/>
 	</head>
 	<body>
 
@@ -71,9 +72,9 @@
 	
 		include("pages/pages.html");
 		include("pages/menu.html");
-		include("data/header.php");
-		include("data/modules.php");
-		include("data/templates.php");
+		include("data/header.html");
+		include("data/settings.html");
+		include("data/pagebuilder.html");
 		
 	}
 	else{

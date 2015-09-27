@@ -16,9 +16,9 @@
     along with KNXControl.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-/*****************************************************************************/
-/*                     Main event handlers                                   */
-/*****************************************************************************/
+/******************************************************************************/
+/*                     Main event handlers                                    */
+/******************************************************************************/
 // initialize
 $(document).on('authenticated',function(event,user_id){
 
@@ -43,12 +43,17 @@ $(document).on('connect',function(event){
 		smarthome.init(knxcontrol.settings.web_ip,knxcontrol.settings.web_port,knxcontrol.settings.token);
 	}
 });
-/*****************************************************************************/
-/*                     KNXControl model                                      */
-/*****************************************************************************/
+
+
+/******************************************************************************/
+/*                     KNXControl model                                       */
+/******************************************************************************/
 var knxcontrol = {
 	user_id: 0,
-	location:	{
+/******************************************************************************/
+/*                     Settings                                               */
+/******************************************************************************/
+	location: {
 		latitude: 0,
 		longitude: 0,
 		altitude: 80,
@@ -99,7 +104,9 @@ var knxcontrol = {
 			});
 		}
 	},
-//items                                                                      //
+/******************************************************************************/
+/*                     Items                                                  */
+/******************************************************************************/
 	item: {
 		// living.lights.light: 0
 		get: function(){
@@ -116,11 +123,25 @@ var knxcontrol = {
 	smarthome_log: {
 		log: [],
 		update: function(log){
-			this.log = log.concat(this.log);
+			var templog = log.concat(this.log);
+
+			// remove items with equal time
+			var uniquetimes = [];
+			var newlog = []
+			$.each(templog, function(index,value){
+				if($.inArray(value.time, uniquetimes) === -1){
+					uniquetimes.push(value.time);
+					newlog.push(value)
+				}
+			});
+			this.log = newlog
+
 			$('[data-role="smarthome_log"]').trigger('update');
 		}
 	},
-// users                                                                     //	
+/******************************************************************************/
+/*                     Users                                                  */
+/******************************************************************************/
 	user:{
 		// 1: {id: 1, username: 'test',...}
 		get: function(id){
@@ -164,7 +185,9 @@ var knxcontrol = {
 		}
 	},
 
-// alarms                                                                    //
+/******************************************************************************/
+/*                     Alarms                                                 */
+/******************************************************************************/
 	alarm: {
 		// 1: {id: 1, section_id: 2, hour: 13, minute: 12, mon: 1, tue: 1, wed: 1, thu: 1, fri: 1, sat: 1, sun: 1, action_id: 2},...
 		get: function(id){
@@ -219,7 +242,9 @@ var knxcontrol = {
 		}
 	},
 	
-// actions                                                                   //
+/******************************************************************************/
+/*                     Actions                                                */
+/******************************************************************************/
 	action:{
 		// 1: {id: 1, name: 'Licht aan', section_id: 0, actions: [{id: 1, delay: 0, item: 'living.lights.licht', value: 0},{...},...]},...
 		get: function(id){
@@ -271,7 +296,9 @@ var knxcontrol = {
 		}
 	},
 	
-// measurement                                                             //
+/******************************************************************************/
+/*                     Measurements                                           */
+/******************************************************************************/
 	measurement: {
 		// 1: {id: 1, name: 'Temperatuur', item: 'buiten.measurements.temperature', quantity: 'Temperature', unit: 'degC', description: 'Buiten temeratuur', quarterhourdata: [], daydata: [], weekdata: [], monthdata: []},
 		get: function(id){
@@ -292,12 +319,16 @@ var knxcontrol = {
 						description: result.description,
 						loading_quarterhourdata: false,
 						loading_weekdata: false,
-						loading_monthdata: false
+						loading_monthdata: false,
+						quarterhourdata: [],
+						daydata: [],
+						weekdata: [],
+						monthdata: []
 					};
 					$('[data-role="measurement_list"]').trigger('update',result.id);
 					//that.get_data(result.id);  // this will load all data which results in a lot of data traffic
 				});
-				$('[data-role="chart"]').trigger('get_data');
+				$('[data-role="measurementchart"]').trigger('get_data');
 			});
 		},
 		update: function(id,field,value){
@@ -347,7 +378,7 @@ var knxcontrol = {
 							that.daydata.push([starttime[index],sum[index]/numel[index]]);
 						});
 						that.loading_quarterhourdata = false;
-						$('[data-role="chart"]').trigger('update',id);
+						$('[data-role="measurementchart"]').trigger('get_series',id);
 						
 					});
 				}
@@ -367,7 +398,7 @@ var knxcontrol = {
 						});
 						
 						that.loading_weekdata = false;
-						$('[data-role="chart"]').trigger('update',id);
+						$('[data-role="measurementchart"]').trigger('get_series',id);
 					});
 				}
 			}
@@ -386,13 +417,15 @@ var knxcontrol = {
 						});
 						
 						that.loading_monthdata = false;
-						$('[data-role="chart"]').trigger('update',id);
+						$('[data-role="measurementchart"]').trigger('get_series',id);
 					});
 				}
 			}
 		}
 	},
-// profile                                                                   //
+/******************************************************************************/
+/*                     Profiles                                               */
+/******************************************************************************/
 	profile: {
 		// 1: {id: 1, name: 'Temperatuur', quantity: 'Temperature', unit: 'degC', description: 'Buiten temeratuur', data: []},
 		get: function(id){
@@ -474,7 +507,9 @@ var knxcontrol = {
 		}
 	},
 	
-// helping functions                                                         //
+/******************************************************************************/
+/*                     Helping functions                                      */
+/******************************************************************************/
 	getkeys: function(objectstring){
 		var ind = [];
 		

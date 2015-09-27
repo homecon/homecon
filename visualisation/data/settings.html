@@ -16,140 +16,76 @@
     along with KNXControl.  If not, see <http://www.gnu.org/licenses/>.
 -->
 
-		<div id='home_users' data-role='page' data-theme='b'>
+		<div id='home_settings' data-role='page' data-theme='b'>
 			<div data-role='content'>
+
+
+				<header>
+					<img src='icons/ffffff/edit_settings.png'>
+					<h1>Settings</h1>
+				</header>
+				<section data-role='collapsible' data-theme='a' data-collapsed='true'>
+					<h1>General</h1>
+					<div data-role='settings'></div>
+				</section>
+				<section data-role='collapsible' data-theme='a' data-collapsed='true'>
+					<h1>Smarthome log</h1>
+					<div data-role='smarthome_log'></div>
+				</section>
+
+
+
 				<header>
 					<img src='icons/ffffff/knxcontrol_users.png'>
 					<h1>Users</h1>
 				</header>
-				<section data-role='collapsible' data-theme='a' data-collapsed='false'>
+				<section data-role='collapsible' data-theme='a' data-collapsed='true'>
 					<h1>Profile</h1>
 					<div data-role='user_profile'></div>
 				</section>
-				<?php if($_SESSION['user_id']==1){ ?>
-				<section data-role='collapsible' data-theme='a' data-collapsed='false'>
+				<section data-role='collapsible' data-theme='a' data-collapsed='true'>
 					<h1>Users</h1>
 					<div data-role='user_list'></div>
 				</section>
-				<?php } ?>
-			</div>
-		</div>
-		
-		
-		<div id='home_alarms' data-role='page' data-theme='b'>
-			<div data-role='content'>
-				<header>
-					<img src='icons/ffffff/control_alarm.png'>
-					<h1>Alarms</h1>
-				</header>
-				
-				<section data-role='collapsible' data-theme='a' data-collapsed='false'>
-					<h1>Actions</h1>
-					<div data-role='action_list'></div>
-				</section>
-				
-			</div>
-		</div>
-		
-		
-		<div id='home_measurements' data-role='page' data-theme='b'>
-			<div data-role='content'>
+
+
+
 				<header>
 					<img src='icons/ffffff/measure_power_meter.png'>
 					<h1>Measurements</h1>
 				</header>
-				
-				<section data-role='collapsible' data-theme='a' data-collapsed='false'>
+				<section data-role='collapsible' data-theme='a' data-collapsed='true'>
 					<h1>List</h1>
 					<div data-role='measurement_list'></div>
 				</section>
-				<section data-role='collapsible' data-theme='a' data-collapsed='false'>
+				<section data-role='collapsible' data-theme='a' data-collapsed='true'>
 					<h1>Export</h1>
 					<div data-role='measurement_export'></div>
 				</section>
-				<section data-role='collapsible' data-theme='a' data-collapsed='false'>
+				<section data-role='collapsible' data-theme='a' data-collapsed='true'>
+					<h1>System identification</h1>
+					<div data-role='system_identification'></div>
+				</section>
+
+
+
+				<header>
+					<img src='icons/ffffff/control_alarm.png'>
+					<h1>Actions</h1>
+				</header>
+				<section data-role='collapsible' data-theme='a' data-collapsed='true'>
+					<h1>Actions</h1>
+					<div data-role='action_list'></div>
+				</section>
+
+
+
+				<section data-role='collapsible' data-theme='a' data-collapsed='true'>
 					<h1>Profiles</h1>
 					<div data-role='profile_list'></div>
 				</section>
 			</div>
 		</div>
-		
-		
-		<div id='home_settings' data-role='page' data-theme='b'>
-			<div data-role='content'>
-				<header>
-					<img src='icons/ffffff/edit_settings.png'>
-					<h1>Settings</h1>
-				</header>
-				<section data-role='collapsible' data-theme='a' data-collapsed='false'>
-					<h1>General</h1>
-					<div data-role='settings'></div>
-				</section>
-				<section data-role='collapsible' data-theme='a' data-collapsed='false'>
-					<h1>Smarthome log</h1>
-					<div data-role='smarthome_log'></div>
-				</section>
-			</div>
-		</div>
-		
-
-		<div id='home_pagebuilder' data-role='page' data-theme='b'>
-			<div id='renderpage' data-role='content'>
-			</div>
-			
-			<div id='section_def_popup' class='ui-content def' data-role='popup' data-position-to='window' data-theme='b' data-overlay-theme='b'>
-				<div class='options'>
-					<input type='text' data-field='name' placeholder='name'>
-					<input type='text' data-field='init' placeholder='initially open'>
-				</div>
-				<div class='move'>
-					<a class='move_up' data-role='button' data-icon="arrow-u" data-iconpos="notext">Move up</a>
-					<a class='move_down' data-role='button' data-icon="arrow-d" data-iconpos="notext">Move down</a>
-				</div>
-				<a class='save' data-role='button'>Save</a>
-				<a class='delete' data-role='button'>Delete</a>
-				<a href="#" data-rel="back" data-role="button" data-theme="b" data-icon="delete" data-iconpos="notext" class="ui-btn-right">Close</a>
-			</div>
-			<div id='page_def_popup' class='ui-content def' data-role='popup' data-position-to='window' data-theme='b' data-overlay-theme='b'>
-				<div class='options'>
-					<input type='text' data-field='name' placeholder='name'>
-					<input type='text' data-field='measurement_item' placeholder='measurement_item'>
-					<select data-field='img'></select>
-				</div>
-				<div class='move'>
-					<a class='move_up' data-role='button' data-icon="arrow-u" data-iconpos="notext">Move up</a>
-					<a class='move_down' data-role='button' data-icon="arrow-d" data-iconpos="notext">Move down</a>
-				</div>
-				<a class='save' data-role='button'>Save</a>
-				<a class='delete' data-role='button'data-section_id='1'>Delete</a>
-				<a href="#" data-rel="back" data-role="button" data-theme="b" data-icon="delete" data-iconpos="notext" class="ui-btn-right">Close</a>
-			</div>
-			<div id='page_section_def_popup' class='ui-content def' data-role='popup' data-position-to='window' data-theme='b' data-overlay-theme='b'>
-				<div class='options'>
-					<input type='text' data-field='name' placeholder='name'>
-					<select data-field='type'><option value=''>Invisible</option><option value='collapsible'>Collapsible</option><option value='collapsed'>Collapsed</option></select>
-				</div>
-				<div class='move'>
-					<a class='move_up' data-role='button' data-icon="arrow-u" data-iconpos="notext">Move up</a>
-					<a class='move_down' data-role='button' data-icon="arrow-d" data-iconpos="notext">Move down</a>
-				</div>
-				<a class='save' data-role='button'>Save</a>
-				<a class='delete' data-role='button'data-section_id='1'>Delete</a>
-				<a href="#" data-rel="back" data-role="button" data-theme="b" data-icon="delete" data-iconpos="notext" class="ui-btn-right">Close</a>
-			</div>
-			<div id='widget_def_popup' class='ui-content def' data-role='popup' data-position-to='window' data-theme='b' data-overlay-theme='b'>
-				<div class='options'>
-				</div>
-				<div class='move'>
-					<a class='move_up' data-role='button' data-icon="arrow-u" data-iconpos="notext">Move up</a>
-					<a class='move_down' data-role='button' data-icon="arrow-d" data-iconpos="notext">Move down</a>
-				</div>
-				<a class='save' data-role='button' data-mini='true'>Save</a>
-				<a class='delete' data-role='button' data-mini='true' data-section_id='1'>Delete</a>
-				<a href="#" data-rel="back" data-role="button" data-theme="b" data-icon="delete" data-iconpos="notext" class="ui-btn-right">Close</a>
-			</div>
-		</div>
-		
 		
 		<div id='action_def_popup' class='ui-content' data-role='popup' data-position-to='window' data-theme='b' data-overlay-theme='b'>
 			<div class='labeledfield'>
@@ -310,7 +246,8 @@
 			<a id='profile_def_popup_delete' data-role='button' data-id='1'>Delete</a>
 			<a href="#" data-rel="back" data-role="button" data-theme="b" data-icon="delete" data-iconpos="notext" class="ui-btn-right">Close</a>
 		</div>
-		
-		
+
+
+
 		<div id='message_popup' class='ui-content' data-role='popup' data-position-to='window' data-theme='b' data-overlay-theme='b'>
 		</div>

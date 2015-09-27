@@ -133,7 +133,7 @@ pagebuilder = {
 	add_widget: function(section,type){
 		section.widget.push({
 			type: type,
-			options: JSON.parse(JSON.stringify($.knxcontrol[type].prototype.options))
+			options: JSON.parse(JSON.stringify($.homecon[type].prototype.options))
 		});
 	},
 	update_widget: function(widget,type,options){
@@ -212,12 +212,13 @@ pagebuilder = {
 		lightdimmer: {name: 'Light dimmer'},
 		shading: {name: 'Shading control'},
 		alarm: {name: 'Alarm'},
-		chart: {name: 'Chart'},
+		measurementchart: {name: 'Chart'},
 		displayvalue: {name: 'Display value'},
-		btn: {name: 'Button'},
+		pushbutton: {name: 'Push button'},
 		weather_block: {name: 'Weather block'},
 		ventilation_control: {name: 'Ventilation control'},
-		setpoint: {name: 'Slider'}
+		inputslider: {name: 'Slider'},
+		inputvalue: {name: 'Input Value'}
 	},
 	iconlist:[
 		'fts_sunblind.png',
@@ -435,7 +436,7 @@ $(document).on('click','a.edit_widget',function(){
 	$('#widget_def_popup div.options').empty();
 				
 				
-	$.each($.knxcontrol[type].prototype.options,function(index,option){
+	$.each($.homecon[type].prototype.options,function(index,option){
 		// check if the current option allready has a value
 		if(index in pagebuilder.section[section_id].page[page_id].section[page_section_id].widget[widget_id].options){
 			option = pagebuilder.section[section_id].page[page_id].section[page_section_id].widget[widget_id].options[index];
@@ -645,7 +646,7 @@ render_page = function(section_id,page_id){
 		// widgets
 		section_index = index;
 		$.each(section.widget,function(index,widget){
-			$('#renderpage section[data-id="'+section_index+'"]').append('<div data-role="'+widget.type+'" data-id="'+index+'"><a href"#" class="edit_widget" data-role="button" data-rel="popup" data-icon="grid" data-mini="true" data-iconpos="notext" data-inline="true">Edit</a></div>');
+			$('#renderpage section[data-id="'+section_index+'"]').append('<div class="widget" data-role="'+widget.type+'" data-id="'+index+'"><a href"#" class="edit_widget" data-role="button" data-rel="popup" data-icon="grid" data-mini="true" data-iconpos="notext" data-inline="true">Edit</a></div>');
 			
 			// widget options
 			widget_index = index;
