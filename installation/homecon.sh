@@ -9,12 +9,16 @@ token=$(date +%s | sha256sum | base64 | head -c 32)
 
 # Cloning HomeCon to it's default destination
 cd /home/$username
-git clone --recursive git://github.com/brechtba/homecon.git
+git clone git://github.com/brechtba/homecon.git
+
+# Clone homecon version of smarthome
+git clone -b homecon git://github.com/brechtba/homecon.git
 
 # Set permissions
 chown -R $username:$username /home/$username/homecon
-chmod -R 755 /usr/local/knxcontrol
-cd /home/$username/homecon
+chmod -R 755 /home/$username/homecon
+chown -R $username:$username /home/$username/smarthome
+chmod -R 755 //home/$username/smarthome
 
 
 temphash=$(echo -n "$password" | md5sum | cut -b-32)
