@@ -47,9 +47,9 @@ class JSONEncoder(json.JSONEncoder):
         return json.JSONEncoder.default(self, obj)
 
 
-class HomeConGui(lib.connection.Server):
+class HomeConApp(lib.connection.Server):
 
-    def __init__(self, smarthome, visu_dir=False, generator_dir=False, ip='0.0.0.0', port=2424, tls='no', smartvisu_dir=False, acl='ro',token=''):
+    def __init__(self, smarthome, visu_dir=False, generator_dir=False, ip='0.0.0.0', port=2424, tls='no', smartvisu_dir=False, acl='rw',token=''):
         lib.connection.Server.__init__(self, ip, port)
         self._sh = smarthome
         self.__acl = acl
