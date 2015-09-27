@@ -45,7 +45,7 @@ class JSONEncoder(json.JSONEncoder):
 
 class WebSocket(lib.connection.Server):
 
-    def __init__(self, smarthome, visu_dir=False, generator_dir=False, ip='0.0.0.0', port=2424, tls='no', smartvisu_dir=False, acl='ro',token=''):
+    def __init__(self, smarthome, visu_dir=False, generator_dir=False, ip='0.0.0.0', port=2424, tls='no', smartvisu_dir=False, acl='ro'):
         lib.connection.Server.__init__(self, ip, port)
         self._sh = smarthome
         self.__acl = acl
@@ -64,7 +64,6 @@ class WebSocket(lib.connection.Server):
         if generator_dir:  # transition feature
             self.generator_dir = generator_dir
         self.smartvisu_dir = smartvisu_dir
-        self.token = token
 
     def _smartvisu_pages(self, directory):
         from . import smartvisu
@@ -122,7 +121,7 @@ class WebSocket(lib.connection.Server):
             except Exception as e:
                 logger.exception(e)
                 return
-        client = WebSocketHandler(self._sh, self, sock, address, self.visu_items, self.visu_logics,token=self.token)
+        client = WebSocketHandler(self._sh, self, sock, address, self.visu_items, self.visu_logics)
         self.clients.append(client)
 
     def run(self):
@@ -200,7 +199,7 @@ class WebSocket(lib.connection.Server):
 
 class WebSocketHandler(lib.connection.Stream):
 
-    def __init__(self, smarthome, dispatcher, sock, addr, items, logics, token=''):
+    def __init__(self, smarthome, dispatcher, sock, addr, items, logics):
         lib.connection.Stream.__init__(self, sock, addr)
         self.terminator = b"\r\n\r\n"
         self._sh = smarthome
@@ -218,7 +217,6 @@ class WebSocketHandler(lib.connection.Stream):
         self._series_lock = threading.Lock()
         self.logics = logics
         self.proto = 3
-        self.token = token
 
     def send_event(self, event, data):
         data = data.copy()  # don't filter the orignal data dict
@@ -276,90 +274,85 @@ class WebSocketHandler(lib.connection.Stream):
             logger.debug("Problem decoding {0} from {1}: {2}".format(repr(data), self.addr, e))
             return
         command = data['cmd']
-        token = data['token']
-        # some security, we will only use the command if the sent token is correct
-        if token == self.token: 
-            if command == 'item':
-                path = data['id']
-                value = data['val']
+        if command == 'item':
+            path = data['id']
+            value = data['val']
+            if path in self.items:
+                if not self.items[path]['acl'] == 'ro':
+                    self.items[path]['item'](value, 'Visu', self.addr)
+                else:
+                    logger.warning("Client {0} want to update read only item: {1}".format(self.addr, path))
+            else:
+                logger.warning("Client {0} want to update invalid item: {1}".format(self.addr, path))
+        elif command == 'monitor':
+            if data['items'] == [None]:
+                return
+            for path in list(set(data['items']).difference(set(self.monitor['item']))):
                 if path in self.items:
-                    if not self.items[path]['acl'] == 'ro':
-                        self.items[path]['item'](value, 'Visu', self.addr)
+                    self.json_send({'cmd': 'item', 'items': [[path, self.items[path]['item']()]]})
+                else:
+                    logger.warning("Client {0} requested invalid item: {1}".format(self.addr, path))
+            self.monitor['item'] = data['items']
+        elif command == 'logic':  # logic
+            if 'name' not in data or 'val' not in data:
+                return
+            name = data['name']
+            value = data['val']
+            if name in self.logics:
+                logger.info("Client {0} triggerd logic {1} with '{2}'".format(self.addr, name, value))
+                self.logics[name].trigger(by='Visu', value=value, source=self.addr)
+            else:
+                logger.warning("Client {0} requested invalid logic: {1}".format(self.addr, name))
+        elif command == 'series':
+            path = data['item']
+            series = data['series']
+            start = data['start']
+            if 'end' in data:
+                end = data['end']
+            else:
+                end = 'now'
+            if 'count' in data:
+                count = data['count']
+            else:
+                count = 100
+            if path in self.items:
+                if hasattr(self.items[path]['item'], 'series'):
+                    try:
+                        reply = self.items[path]['item'].series(series, start, end, count)
+                    except Exception as e:
+                        logger.exception("Problem fetching series for {0}: {1}".format(path, e))
                     else:
-                        logger.warning("Client {0} want to update read only item: {1}".format(self.addr, path))
-                else:
-                    logger.warning("Client {0} want to update invalid item: {1}".format(self.addr, path))
-            elif command == 'monitor':
-                if data['items'] == [None]:
-                    return
-                for path in list(set(data['items']).difference(set(self.monitor['item']))):
-                    if path in self.items:
-                        self.json_send({'cmd': 'item', 'items': [[path, self.items[path]['item']()]]})
-                    else:
-                        logger.warning("Client {0} requested invalid item: {1}".format(self.addr, path))
-                self.monitor['item'] = data['items']
-            elif command == 'logic':  # logic
-                if 'name' not in data or 'val' not in data:
-                    return
-                name = data['name']
-                value = data['val']
-                if name in self.logics:
-                    logger.info("Client {0} triggerd logic {1} with '{2}'".format(self.addr, name, value))
-                    self.logics[name].trigger(by='Visu', value=value, source=self.addr)
-                else:
-                    logger.warning("Client {0} requested invalid logic: {1}".format(self.addr, name))
-            elif command == 'series':
-                path = data['item']
-                series = data['series']
-                start = data['start']
-                if 'end' in data:
-                    end = data['end']
-                else:
-                    end = 'now'
-                if 'count' in data:
-                    count = data['count']
-                else:
-                    count = 100
-                if path in self.items:
-                    if hasattr(self.items[path]['item'], 'series'):
-                        try:
-                            reply = self.items[path]['item'].series(series, start, end, count)
-                        except Exception as e:
-                            logger.exception("Problem fetching series for {0}: {1}".format(path, e))
+                        if 'update' in reply:
+                            self._series_lock.acquire()
+                            self._update_series[reply['sid']] = {'update': reply['update'], 'params': reply['params']}
+                            self._series_lock.release()
+                            del(reply['update'])
+                            del(reply['params'])
+                        if reply['series'] is not None:
+                            self.json_send(reply)
                         else:
-                            if 'update' in reply:
-                                self._series_lock.acquire()
-                                self._update_series[reply['sid']] = {'update': reply['update'], 'params': reply['params']}
-                                self._series_lock.release()
-                                del(reply['update'])
-                                del(reply['params'])
-                            if reply['series'] is not None:
-                                self.json_send(reply)
-                            else:
-                                logger.info("WebSocket: no entries for series {} {}".format(path, series))
-                    else:
-                        logger.warning("Client {0} requested invalid series: {1}.".format(self.addr, path))
-            elif command == 'log':
-                self.log = True
-                name = data['name']
-                num = 10
-                if 'max' in data:
-                    num = int(data['max'])
-                if name in self.logs:
-                    self.json_send({'cmd': 'log', 'name': name, 'log': self.logs[name].export(num), 'init': 'y'})
+                            logger.info("WebSocket: no entries for series {} {}".format(path, series))
                 else:
-                    logger.warning("Client {0} requested invalid log: {1}".format(self.addr, name))
-                if name not in self.monitor['log']:
-                    self.monitor['log'].append(name)
-            elif command == 'proto':  # protocol version
-                proto = data['ver']
-                if proto > self.proto:
-                    logger.warning("WebSocket: protocol mismatch. Update SmartHome.py")
-                elif proto < self.proto:
-                    logger.warning("WebSocket: protocol mismatch. Update your client: {0}".format(self.addr))
-                self.json_send({'cmd': 'proto', 'ver': self.proto, 'time': self._sh.now()})
-        else:
-            logger.warning("WebSocket: Wrong token sent to smarthome.py")
+                    logger.warning("Client {0} requested invalid series: {1}.".format(self.addr, path))
+        elif command == 'log':
+            self.log = True
+            name = data['name']
+            num = 10
+            if 'max' in data:
+                num = int(data['max'])
+            if name in self.logs:
+                self.json_send({'cmd': 'log', 'name': name, 'log': self.logs[name].export(num), 'init': 'y'})
+            else:
+                logger.warning("Client {0} requested invalid log: {1}".format(self.addr, name))
+            if name not in self.monitor['log']:
+                self.monitor['log'].append(name)
+        elif command == 'proto':  # protocol version
+            proto = data['ver']
+            if proto > self.proto:
+                logger.warning("WebSocket: protocol mismatch. Update SmartHome.py")
+            elif proto < self.proto:
+                logger.warning("WebSocket: protocol mismatch. Update your client: {0}".format(self.addr))
+            self.json_send({'cmd': 'proto', 'ver': self.proto, 'time': self._sh.now()})
 
     def parse_header(self, data):
         data = bytes(data)
