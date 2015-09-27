@@ -1,12 +1,12 @@
-HomeConn
-========
+HomeCon
+=======
 
 Control your home instalation using state of the art control algorithms and visualise the results
 
-HomeConn is intended to have the conn over the entire energy management of your house and direct it in the best possible way.
-Not only HomeConn has the conn but you do. As the software is entirely local (no information gets sent from your home to the web) you can rest assured that your privacy is respected.
-This in contrast to "Smart Thermostats" available on the market (ala Google NEST) which gather information about you.
-HomeConn's intention is also to go further than just controlling the heating of your home. It will control heating, cooling, shading, ventilation,...
+HomeCon is intended to have the conn over the entire energy management of your home and direct it in the best possible way.
+Not only HomeCon has the conn but you do. As the software is entirely local (no information gets sent from your home to the web) you can rest assured that your privacy is respected.
+This in contrast to "Smart Thermostats" available on the market (ala Google NEST) which gather information about you and sell that information to advertisers.
+HomeCon's intention is also to go further than just controlling the heating of your home. It will control heating, cooling, shading, ventilation,...
 
 
 
@@ -19,7 +19,7 @@ The goal of the project is to have an open source, user friendly control system 
 The following steps will take you through the installation and configuration of KNXControl.
 
 * [Installation](https://github.com/BrechtBa/homecon/blob/master/installation/installation.md)
-* [Configuration](https://github.com/BrechtBa/homeconn/wiki/Configuration)
-* [Visualisation](https://github.com/BrechtBa/homeconn/wiki/Visualisation)
+* [Configuration](https://github.com/BrechtBa/homecon/wiki/Configuration)
+* [Visualisation](https://github.com/BrechtBa/homecon/wiki/Visualisation)
 
 More descriptions on implemented modules can be found under [Documentation](https://github.com/BrechtBa/homecontrol/wiki/Documentation)
