@@ -68,13 +68,18 @@ Use any username but 'homecon' as this will be the user to own the homecon insta
 if you forgot to check the ssh server mark you can do it in root mode:
 ```
 $ su
-# sudo apt-get install openssh-server
+# apt-get install openssh-server
 ```
 
 Find the ip adress of the machine using Advanced IP Scanner or `sudo nmap -sP 192.168.1.*` on Linux
 Use PuTTy or ssh to connect to your machine over ssh with any computer in your network
 Use the above found ip adress, port 22
 
+it is possible that you need to install sudo manually
+```
+$ su
+# apt-get install sudo
+```
 add yourself to sudoers
 ```
 $ su
@@ -86,6 +91,7 @@ Download the installation folder of homecon into some temp folder
 ```
 $ cd
 $ sudo mkdir temp
+$ cd temp
 $ sudo apt-get -y install git
 $ sudo git clone git://github.com/brechtba/homecon.git
 ```
@@ -119,6 +125,12 @@ Click the pagebuilder Icon on the top navigation bar and start adding pages and 
 
 
 # Other installation steps which might come in handy
+## Reconfiguring locales
+```
+$ sudo export LC_ALL=en_US.UTF-8
+$ sudo locale-gen en_US.UTF-8
+$ sudo dpkg-reconfigure locales
+```
 
 ## Nano
 nano is a great linux shell text editor
