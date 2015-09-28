@@ -9,16 +9,12 @@ token=$(date +%s | sha256sum | base64 | head -c 32)
 
 # Cloning HomeCon to it's default destination
 cd /home/$username
+rm -f homecon
 git clone git://github.com/brechtba/homecon.git
-
-# Clone homecon version of smarthome
-git clone -b homecon git://github.com/brechtba/homecon.git
 
 # Set permissions
 chown -R $username:$username /home/$username/homecon
 chmod -R 755 /home/$username/homecon
-chown -R $username:$username /home/$username/smarthome
-chmod -R 755 //home/$username/smarthome
 
 chown -R www-data:www-data /home/$username/homecon/pages
 
@@ -143,15 +139,38 @@ define(\"HOST\", \"localhost\");
 define(\"USER\", \"homecon\");
 define(\"PASSWORD\", \"$password\");
 define(\"DATABASE\", \"homecon\");
-?>" | tee /home/homecon/homecon/pages/config.php
+?>" | tee /home/$username/homecon/pages/config.php
+
+
+# install sympy
+pip3 install sympy
+
+# install parsenlp
+# parsenlp is a helping module to define optimization problems in python
+cd /usr/local/lib/python3.4/dist-packages
+rm -f parsenlp
+git clone git://github.com/brechtba/parsenlp.git
+sudo chmod -R 755 parsenlp
+
 
 
 # Smarthome
+# Clone homecon version of smarthome
+cd /home/$username
+rm -f smarthome
+git clone -b homecon git://github.com/brechtba/smarthome.git
+
+chown -R $username:$username /home/$username/smarthome
+chmod -R 755 //home/$username/smarthome
+
 # copy the init script and set permissions
 cp /home/$username/homecon/installation/initscripts/smarthome /etc/init.d/smarthome
 
 sed -i -e "s%SH_UID=\"homecon\"%SH_UID=\"$username\"%g" \
--e "s%DIR=/home/homecon/homecon/smarthome/bin%DIR=/home/$username/homecon/smarthome/bin%g" /etc/init.d/smarthome
+-e "s%DIR=/home/homecon/smarthome/bin%DIR=/home/$username/smarthome/bin%g" /etc/init.d/smarthome
+
+# set token in smarthome plugin.conf
+sed -i -e "s%token=token%token=$token%g" /home/$username/smarthome/etc/plugin.conf
 
 chown root:root /etc/init.d/smarthome
 chmod 755 /etc/init.d/smarthome
@@ -161,7 +180,7 @@ update-rc.d smarthome defaults
 
 # test
 /etc/init.d/smarthome restart
-tail /home/$username/homecon/smarthome/var/log/smarthome.log
+tail /home/$username/smarthome/var/log/smarthome.log
 
 
 

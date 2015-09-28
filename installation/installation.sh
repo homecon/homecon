@@ -22,6 +22,10 @@ done
 useradd -d /home/$username $username 
 echo -e "$password\n$password\n" | passwd $username
 
+# create the user home dir
+mkdir /home/$username
+chown $username:$username /home/$username
+
 # Tools
 apt-get update 
 apt-get -y install openntpd python3 python3-dev python3-setuptools git unzip wget gcc g++ gfortran subversion patch 
