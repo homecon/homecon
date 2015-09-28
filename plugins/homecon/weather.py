@@ -38,8 +38,7 @@ class Weather():
 			logger.warning('No weather item found')
 		else:
 			self.item = items[0]
-
-		self.item.conf['homeconlobject'] = self
+			self.item.conf['homeconobject'] = self
 
 
 		self.current = self.item.current
