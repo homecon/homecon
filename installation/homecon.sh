@@ -170,7 +170,8 @@ sed -i -e "s%SH_UID=\"homecon\"%SH_UID=\"$username\"%g" \
 -e "s%DIR=/home/homecon/smarthome/bin%DIR=/home/$username/smarthome/bin%g" /etc/init.d/smarthome
 
 # set token in smarthome plugin.conf
-sed -i -e "s%token=token%token=$token%g" /home/$username/smarthome/etc/plugin.conf
+sed -i -e "s%token=token%token=$token%g" \ 
+-e "s%mysql_pass=mysql_pass%mysql_pass=$password%g"  /home/$username/smarthome/etc/plugin.conf
 
 chown root:root /etc/init.d/smarthome
 chmod 755 /etc/init.d/smarthome
