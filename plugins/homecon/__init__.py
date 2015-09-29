@@ -53,6 +53,30 @@ class HomeCon:
 		self.lon  = float(self._sh._lon)
 		self.elev = float(self._sh._elev)
 
+		#code for adding items for homecon and from mysql will come here
+		# 
+        #for attr, value in config.items():
+        #    if isinstance(value, dict):
+        #        child_path = self._path + '.' + attr
+        #        try:
+        #            child = Item(smarthome, self, child_path, value)
+		#"""
+        #Arguments:
+        #smarthome: the smarthome object
+        #parent: the parent item
+        #config: a dict with key value pairs of config attributes or child items
+		#
+        #Example:
+        #item = Item(smarthome,parentitem,'sh.firstfloor.living.window.shading',{'transmittance':'0.3','move':{'type':'bool','knx_dpt':'1','knx_send':'2/1/5'}})
+        #"""
+        #        except Exception as e:
+        #            logger.error("Item {}: problem creating: {}".format(child_path, e))
+        #        else:
+        #            vars(self)[attr] = child
+        #            smarthome.add_item(child_path, child)
+        #            self.__children.append(child)
+
+
 
 	def run(self):
 		# called once after the items have been parsed

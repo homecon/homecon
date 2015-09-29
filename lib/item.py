@@ -147,6 +147,15 @@ def _fadejob(item, dest, step, delta):
 class Item():
 
     def __init__(self, smarthome, parent, path, config):
+        """
+        Arguments:
+        smarthome: the smarthome object
+        parent: the parent item
+        config: a dict with key value pairs of config attributes or child items
+
+        Example:
+        item = Item(smarthome,parentitem,'sh.firstfloor.living.window.shading',{'transmittance':'0.3','move':{'type':'bool','knx_dpt':'1','knx_send':'2/1/5'}})
+        """
         self._autotimer = False
         self._cache = False
         self.cast = _cast_bool
