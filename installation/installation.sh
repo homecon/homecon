@@ -28,23 +28,20 @@ chown $username:$username /home/$username
 
 # Tools
 apt-get update 
-apt-get -y install openntpd python3 python3-dev python3-setuptools git unzip wget gcc g++ gfortran subversion patch 
-easy_install3 pip
-pip install ephem
-pip install PyMySQL
+apt-get -y install openntpd
 
 # networking
 ./networking.sh
 
 # webserver
-./webserver.sh $username $password
+./webserver.sh $password
 
 # eibd
-./eibd.sh $username
+./eibd.sh
 
 # ipopt
 ./ipopt.sh
 
 # homecon
-./homecon.sh $username $password
+./homecon.sh $password
 

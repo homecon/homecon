@@ -1,7 +1,7 @@
 #!/bin/bash
 
-username=$1
-password=$2
+username="homecon"
+password=$1
 
 apt-get update 
 apt-get -y install apache2 vsftpd php5 php5-json libawl-php php5-curl

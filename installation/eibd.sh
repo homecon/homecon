@@ -2,15 +2,14 @@
 # eibd installation script
 # must be run from the homecon installation folder
 
-username=$1
+username="homecon"
 
 read -p "KNX Gateway ip adress: " knxip
 read -p "Enter a KNX group adress to test eibd: " testgroupadress
 
 # make sure we have essential build tools
-apt-get install build-essential
+apt-get install build-essential gcc g++ gfortran unzip
 
-cd installation
 
 # unpack and install pthsem
 tar zxvf pthsem_2.0.8.tar.gz
@@ -64,5 +63,4 @@ update-rc.d eibd defaults
 groupswrite ip:localhost $testgroupadress 1
 groupswrite ip:localhost $testgroupadress 0
 
-cd ..
 

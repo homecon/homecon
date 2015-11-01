@@ -1,6 +1,11 @@
 #!/bin/bash
-username=$1
-password=$2
+username="homecon"
+password=$1
+
+apt-get -y install python3 git
+easy_install3 pip
+pip3 install ephem
+pip3 install PyMySQL
 
 
 # generate a token

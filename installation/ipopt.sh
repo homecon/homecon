@@ -48,7 +48,7 @@ make
 # Pyipopt
 # We'll use a package to let us interface ipopt from python and thus from within smarthome.py. 
 # First we need some prequisites.
-apt-get -y install python3-dev python3-numpy
+apt-get -y install python3 python3-dev python3-setuptools python3-numpy
 
 # Download pyipopt I'v forked the repository and changed some things 
 cd /etc
