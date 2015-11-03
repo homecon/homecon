@@ -301,6 +301,28 @@ $ sudo -i
 ```
 And were done.
 
+### Domain Name server
+On an standard router you will not be able to access local sites by requesting their global address from inside the local network.
+When you go to your newly created and forwarded duckdns address in a web browser from inside your local network you will probably get an error.
+We can resolve this by setting up our local dns server and route all request from within the LAN through this server. dnsmasq is suitable for this task.
+```
+$ sudo apt-get install dnsmasq
+```
+
+Next configure dnsmasq, go to its settings file:
+```
+$ sudo nano /etc/dnsmasq.conf
+```
+
+And set the following content:
+```
+server=8.8.8.8
+local=/localnet/
+address=myserver.duckdns.org/192.168.1.234
+address=myserver2.duckdns.org/192.168.1.234
+```
+
+Next open the `/etc/resolv.conf` file and change the nameserver to 127.0.0.1
 
 
 ## Create an image of your Raspbery Pi
