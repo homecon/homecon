@@ -47,16 +47,14 @@ service vsftpd restart
 # Create a symlink in the www directory
 ln -s /home/homecon/homecon  /var/www/homecon
 
-# virtual hosts
-#echo "<VirtualHost *:80>
-#    ServerAdmin admin@test.com
-#    ServerName homecon
-#    ServerAlias 192.168.1.234/homecon
-#    DocumentRoot /home/$username/homecon/visualization
-#    ErrorLog ${APACHE_LOG_DIR}/error.log
-#    CustomLog ${APACHE_LOG_DIR}/access.log combined
-#</VirtualHost>" | tee /etc/apache2/sites-available/homecon.conf
+# add an alias to apache
+echo "# homecon
+Alias /homecon \"/home/homecon/www\"
+<Directory \"/home/homecon/www\">
+	Order allow,deny
+	Allow from all
+	Require all granted
+</Directory>" | tee -a /etc/apache2/apache2.conf
 
-#a2ensite /etc/apache2/sites-available/homecon.conf
 
 service apache2 restart
