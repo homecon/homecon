@@ -18,7 +18,7 @@ The goal of the project is to have an open source, user friendly control system 
  
 The following steps will take you through the installation and configuration of KNXControl.
 
-* [Installation](https://github.com/BrechtBa/homecon/blob/master/installation/installation.md)
+* [Installation](https://github.com/BrechtBa/homecon/blob/master/setup/installation.md)
 * [Configuration](https://github.com/BrechtBa/homecon/wiki/Configuration)
 * [Visualisation](https://github.com/BrechtBa/homecon/wiki/Visualisation)
 
