@@ -1,30 +1,38 @@
 #!/bin/bash
+
 username="homecon"
 password=$1
+
+# Get the setup directory
+setupdir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
+# Get the current working directory
+cwd=$(pwd)
 
 apt-get -y install python3 git
 easy_install3 pip
 pip3 install ephem
 pip3 install PyMySQL
-
+pip3 install sympy
 
 # generate a token
 token=$(date +%s | sha256sum | base64 | head -c 32)
 
-
 # Cloning HomeCon to it's default destination
-cd /home/$username
-rm -f homecon
-git clone git://github.com/brechtba/homecon.git
+# move the Homecon app to it's default destination
+cd $setupdir
+cd ..
+mv www /home/$username/www
 
 # Set permissions
-chown -R $username:$username /home/$username/homecon
-chmod -R 755 /home/$username/homecon
+chown -R $username:$username /home/$username/www
+chmod -R 755 /home/$username/www
+chown -R www-data:www-data /home/$username/www/pages
 
-chown -R www-data:www-data /home/$username/homecon/pages
-
+# Create the password hash to enter in the database
 temphash=$(echo -n "$password" | md5sum | cut -b-32)
 hash=$(echo -n "$temphash" | md5sum | cut -b-32)
+
 
 # MySQL
 ## Create MySQL database and user
@@ -41,6 +49,8 @@ echo "USE homecon;
 		PRIMARY KEY (id)) ENGINE=InnoDB DEFAULT CHARSET=latin1 AUTO_INCREMENT=1;" | mysql -u root -p$password
 
 
+# this line will be removed in the future, when no users are found a registration screen should be shown
+# this way passwords for database and admin user can be separated
 echo "USE homecon;
 	  INSERT IGNORE INTO users (id,username,password) VALUES (1,'homecon','$hash');" | mysql -u root -p$password
 
@@ -147,8 +157,7 @@ define(\"DATABASE\", \"homecon\");
 ?>" | tee /home/$username/homecon/pages/config.php
 
 
-# install sympy
-pip3 install sympy
+
 
 # install parsenlp
 # parsenlp is a helping module to define optimization problems in python
@@ -169,7 +178,7 @@ chown -R $username:$username /home/$username/smarthome
 chmod -R 755 //home/$username/smarthome
 
 # copy the init script and set permissions
-cp /home/$username/homecon/installation/initscripts/smarthome /etc/init.d/smarthome
+cp $setupdir/initscripts/smarthome /etc/init.d/smarthome
 
 sed -i -e "s%SH_UID=\"homecon\"%SH_UID=\"$username\"%g" \
 -e "s%DIR=/home/homecon/smarthome/bin%DIR=/home/$username/smarthome/bin%g" /etc/init.d/smarthome
@@ -189,5 +198,5 @@ update-rc.d smarthome defaults
 tail /home/$username/smarthome/var/log/smarthome.log
 
 
-
+cd $cwd
 

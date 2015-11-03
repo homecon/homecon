@@ -4,9 +4,11 @@
 # We will compile the program from source ourself as there is no suitable binary for Raspberry-pi. 
 # Documentation is found at http://www.coin-or.org/Ipopt/documentation/
 
-#Install prequisites
-apt-get -y install git gcc g++ gfortran subversion patch wget
+# Get the current working directory
+cwd=$(pwd)
 
+# Install prequisites
+apt-get -y install git gcc g++ gfortran subversion patch wget
 
 # Get ipopt from the repository
 cd /etc
@@ -53,7 +55,7 @@ apt-get -y install python3 python3-dev python3-setuptools python3-numpy
 # Download pyipopt I'v forked the repository and changed some things 
 cd /etc
 git clone https://github.com/BrechtBa/pyipopt.git
-installdir="/etc/pyipopt"
+installdir="/tmp/pyipopt"
 cd $installdir
 
 # Build and install
@@ -65,3 +67,5 @@ python3 setup.py install
 python3 $installdir/examples/hs071_PY3.py
 
 # You should see the same solution as above.
+
+cd $cwd

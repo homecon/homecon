@@ -4,12 +4,22 @@
 
 username="homecon"
 
-read -p "KNX Gateway ip adress: " knxip
-read -p "Enter a KNX group adress to test eibd: " testgroupadress
+# Get the setup file directory
+setupdir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
+# Get the current working directory
+cwd=$(pwd)
+
+# Get the knx gateway ip address and a group address to test eibd
+read -p "KNX Gateway ip address: " knxip
+read -p "Enter a KNX group address to test eibd: " testgroupadress
 
 # make sure we have essential build tools
 apt-get install build-essential gcc g++ gfortran unzip
 
+# Get the setup directory
+setupdir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+cd $setupdir
 
 # unpack and install pthsem
 tar zxvf pthsem_2.0.8.tar.gz
@@ -48,7 +58,7 @@ EIB_ADDR=\"0.0.255\"
 EIB_IF=\"ipt:$knxip\"" > /etc/default/eibd
 
 # copy the init script and set permissions
-cp initscripts/eibd /etc/init.d/eibd
+cp $setupdir/initscripts/eibd /etc/init.d/eibd
 
 sed -i -e "s/EIB_UID=\"homecon\"/EIB_UID=\"$username\"/g" /etc/init.d/eibd
 
@@ -63,4 +73,5 @@ update-rc.d eibd defaults
 groupswrite ip:localhost $testgroupadress 1
 groupswrite ip:localhost $testgroupadress 0
 
-
+# cd to the old working directory
+cd $cwd

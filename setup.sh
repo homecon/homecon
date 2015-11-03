@@ -1,8 +1,14 @@
 #!/bin/bash
-# HomeCon installation file
+# HomeCon setup file
+
+# a new user will be created with the folloing username
+# this username must be equal in all setup scripts
+username="homecon"
+
+# Get the setup file directory
+setupdir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 # get a password to use throughout the installation
-username="homecon"
 password="pass"
 password2=""
 
@@ -31,17 +37,16 @@ apt-get update
 apt-get -y install openntpd
 
 # networking
-./networking.sh
+$setupdir/setup/networking.sh
 
 # webserver
-./webserver.sh $password
+$setupdir/setup/webserver.sh $password
 
 # eibd
-./eibd.sh
+$setupdir/setup/eibd.sh
 
 # ipopt
-./ipopt.sh
+$setupdir/setup/ipopt.sh
 
 # homecon
-./homecon.sh $password
-
+$setupdir/setup/homecon.sh $password
