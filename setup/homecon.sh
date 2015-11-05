@@ -18,6 +18,14 @@ pip3 install sympy
 # generate a token
 token=$(date +%s | sha256sum | base64 | head -c 32)
 
+# generate a salt
+salt=$(date +%s | sha256sum | base64 | head -c 32)
+
+# generate a json web token key
+jwt_key=$(date +%s | sha256sum | base64 | head -c 32)
+
+
+
 # Cloning HomeCon to it's default destination
 # move the Homecon app to it's default destination
 cd $setupdir
@@ -28,11 +36,10 @@ mv www /home/$username/www
 chown -R $username:$username /home/$username/www
 chmod -R 755 /home/$username/www
 chown -R www-data:www-data /home/$username/www/pages
+chmod 005 /home/$username/www/requests/config.php
 
 # Create the password hash to enter in the database
-temphash=$(echo -n "$password" | md5sum | cut -b-32)
-hash=$(echo -n "$temphash" | md5sum | cut -b-32)
-
+hash=$(php -r "echo base64_encode(hash('sha256', '$password$salt', true));")
 
 # MySQL
 ## Create MySQL database and user
@@ -46,13 +53,14 @@ echo "USE homecon;
       	id int(11) NOT NULL AUTO_INCREMENT,
 		username varchar(255) NOT NULL,
 		password varchar(255) NOT NULL,
+		permission tinyint(4) NOT NULL DEFAULT '1',
 		PRIMARY KEY (id)) ENGINE=InnoDB DEFAULT CHARSET=latin1 AUTO_INCREMENT=1;" | mysql -u root -p$password
 
 
 # this line will be removed in the future, when no users are found a registration screen should be shown
 # this way passwords for database and admin user can be separated
 echo "USE homecon;
-	  INSERT IGNORE INTO users (id,username,password) VALUES (1,'homecon','$hash');" | mysql -u root -p$password
+	  INSERT IGNORE INTO users (id,username,password) VALUES (1,'homecon','$hash',9);" | mysql -u root -p$password
 
 ### data
 echo "USE homecon;
@@ -69,7 +77,7 @@ echo "USE homecon;
 		PRIMARY KEY (id) ) ENGINE=InnoDB DEFAULT CHARSET=latin1 AUTO_INCREMENT=1;" | mysql -u root -p$password
 
 echo "USE homecon;
-	  INSERT IGNORE INTO data (id,ip,port,web_ip,web_port,token,latitude,longitude,elevation) VALUES (1,'192.168.234.1','2424','mydomain.duckdns.org','9024','$token',51,5,70);" | mysql -u root -p$password
+	  INSERT IGNORE INTO data (id,ip,port,web_ip,web_port,token,latitude,longitude,elevation) VALUES (1,'192.168.234.1','9024','mydomain.duckdns.org','9024','$token',51,5,70);" | mysql -u root -p$password
 
 ### alarms
 echo "USE homecon;
@@ -154,6 +162,8 @@ define(\"HOST\", \"localhost\");
 define(\"USER\", \"homecon\");
 define(\"PASSWORD\", \"$password\");
 define(\"DATABASE\", \"homecon\");
+define(\"SALT\", \"homecon\");
+define(\"JWT_KEY\", \"$jwt_key\");
 ?>" | tee /home/$username/homecon/pages/config.php
 
 

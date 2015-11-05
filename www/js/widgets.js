@@ -1,19 +1,19 @@
 /*
     Copyright 2015 Brecht Baeten
-    This file is part of KNXControl.
+    This file is part of HomeCon.
 
-    KNXControl is free software: you can redistribute it and/or modify
+    HomeCon is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
     (at your option) any later version.
 
-    KNXControl is distributed in the hope that it will be useful,
+    HomeCon is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
 
     You should have received a copy of the GNU General Public License
-    along with KNXControl.  If not, see <http://www.gnu.org/licenses/>.
+    along with HomeCon.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 
@@ -100,7 +100,7 @@ $.widget("homecon.shading",{
 /*****************************************************************************/ 
 $.widget("homecon.weather_block",{
 	options: {
-		item: 'knxcontrol.weather.prediction.detailed',
+		item: 'homecon.weather.prediction.detailed',
 		item_temperature: '',
 		item_windspeed: '',
 		item_winddirection: '',
@@ -143,7 +143,7 @@ $.widget("homecon.weather_block",{
 	},
 	update: function(){
 		var item = this.options.item;
-		if(knxcontrol.item[item]){
+		if(homecon.item[item]){
 			if(this.options.daysahead>=0){
 				index = this.options.daysahead
 			}
@@ -151,14 +151,14 @@ $.widget("homecon.weather_block",{
 				index = 0;
 			}
 
-			if(index < knxcontrol.item[item].length){
-				this.element.find('img').attr('src','icons/weather/'+this.icons[knxcontrol.item[item][index].icon]);
+			if(index < homecon.item[item].length){
+				this.element.find('img').attr('src','icons/weather/'+this.icons[homecon.item[item][index].icon]);
 				var temperature = 0;
 				var windspeed = 0;
 				var winddirection = '';
 				var clouds = 0;
 				
-				date = new Date(knxcontrol.item[item][index].datetime*1000);
+				date = new Date(homecon.item[item][index].datetime*1000);
 				var weekday = (date.getDay()+6)%7;
 				var day = date.getDate();
 				var month = date.getMonth();
@@ -175,15 +175,15 @@ $.widget("homecon.weather_block",{
 				var date_string = language.weekday_short[weekday];
 				
 				
-				if(item =='knxcontrol.weather.prediction.detailed'){
-					temperature = knxcontrol.item[item][index].temperature;
+				if(item =='homecon.weather.prediction.detailed'){
+					temperature = homecon.item[item][index].temperature;
 				}
 				else{
-					temperature = knxcontrol.item[item][index].temperature_day;
+					temperature = homecon.item[item][index].temperature_day;
 				}
-				windspeed = knxcontrol.item[item][index].wind_speed;
-				winddirection = language.winddirection(knxcontrol.item[item][index].wind_direction)
-				clouds = knxcontrol.item[item][index].clouds;
+				windspeed = homecon.item[item][index].wind_speed;
+				winddirection = language.winddirection(homecon.item[item][index].wind_direction)
+				clouds = homecon.item[item][index].clouds;
 				
 				if(this.options.mini){
 					this.element.find('[data-field="date"]').html(date_string);
@@ -217,10 +217,21 @@ $.widget("homecon.weather_block",{
 		'10n': 'moon_7.png',
 		'11n': 'cloud_10.png',
 		'13n': 'cloud_13.png',
-		'50n': 'moon_6.png'
+		'50n': 'moon_6.png',
+		'clear-day': 'sun_1.png',
+		'clear-night': 'moon_1.png',
+		'rain': 'cloud_8.png',
+		'snow': 'cloud_13.png',
+		'sleet': 'cloud_15.png',
+		'wind': 'wind.png',
+		'fog': 'cloud_6.png' ,
+		'cloudy': 'cloud_4.png',
+		'partly-cloudy-day': 'sun_4.png',
+		'partly-cloudy-night': 'moon_4.png' ,
+		'hail': 'cloud_11.png',
+		'thunderstorm': 'cloud_10.png'
 	}
 });
-
 /*****************************************************************************/
 /*                     alarm                                                 */
 /*****************************************************************************/ 
@@ -232,12 +243,12 @@ $.widget("homecon.alarm",{
 		// enhance
 		this.element.prepend('<div class="alarm_list"></div><a class="add" data-role="button">'+language.capitalize(language.add_alarm)+'</a>');
 		that = this;
-		$.each(knxcontrol.alarm,function(index,alarm){
+		$.each(homecon.alarm,function(index,alarm){
 			if(typeof alarm == 'object'){
 				that.update(alarm.id);
 			}
 		});
-		$.each(knxcontrol.action,function(index,action){
+		$.each(homecon.action,function(index,action){
 			if(typeof action == 'object'){
 				that.update_action(action.id);
 			}
@@ -255,12 +266,12 @@ $.widget("homecon.alarm",{
 					time = $(event.target).val().split(':');
 					hour = time[0];
 					minute = time[1];
-					knxcontrol.alarm.update(id,'hour',hour);
-					knxcontrol.alarm.update(id,'minute',minute);
+					homecon.alarm.update(id,'hour',hour);
+					homecon.alarm.update(id,'minute',minute);
 				}
 				else if(field=='action_id'){
 					value = $(event.target).val();
-					knxcontrol.alarm.update(id,field,value);
+					homecon.alarm.update(id,field,value);
 				}
 				else{
 					if($(event.target).prop('checked')){
@@ -269,7 +280,7 @@ $.widget("homecon.alarm",{
 					else{
 						value = 0;
 					}
-					knxcontrol.alarm.update(id,field,value);
+					homecon.alarm.update(id,field,value);
 				}
 			},
 			'update': function(event,id){
@@ -279,18 +290,18 @@ $.widget("homecon.alarm",{
 				this.update_action(id);
 			},
 			'click a.add': function(event){
-				knxcontrol.alarm.add(this.options.section);
+				homecon.alarm.add(this.options.section);
 			},
 			'click a.delete': function(event){
-				knxcontrol.alarm.del($(event.target).parents('.alarm').attr('data-id'));
+				homecon.alarm.del($(event.target).parents('.alarm').attr('data-id'));
 			}
         });
 	},
 	update: function(id){
-		// check if the alarm exists in knxcontrol
-		if(knxcontrol.alarm[id]){
+		// check if the alarm exists in homecon
+		if(homecon.alarm[id]){
 			// check if the alarm belongs in this section
-			if(knxcontrol.alarm[id].section_id==this.options.section){
+			if(homecon.alarm[id].section_id==this.options.section){
 				// check if the alarm does not already exists in the DOM
 				if(this.element.find('.alarm_list').find('.alarm[data-id="'+id+'"]').length==0){
 					//add the alarm to the DOM
@@ -317,17 +328,17 @@ $.widget("homecon.alarm",{
 															'</div>').enhanceWithin();
 				}
 				// update the alarm time
-				var time = this.padtime(knxcontrol.alarm[id].hour) + ":" + this.padtime(knxcontrol.alarm[id].minute);
+				var time = this.padtime(homecon.alarm[id].hour) + ":" + this.padtime(homecon.alarm[id].minute);
 				this.element.find('.alarm[data-id="'+id+'"]').find('[data-field="time"]').val(time);
 
 				// update alarm days
-				this.element.find('.alarm[data-id="'+id+'"]').find('[data-field="mon"]').prop('checked', !!+knxcontrol.alarm[id].mon).checkboxradio('refresh');
-				this.element.find('.alarm[data-id="'+id+'"]').find('[data-field="tue"]').prop('checked', !!+knxcontrol.alarm[id].tue).checkboxradio('refresh');
-				this.element.find('.alarm[data-id="'+id+'"]').find('[data-field="wed"]').prop('checked', !!+knxcontrol.alarm[id].wed).checkboxradio('refresh');
-				this.element.find('.alarm[data-id="'+id+'"]').find('[data-field="thu"]').prop('checked', !!+knxcontrol.alarm[id].thu).checkboxradio('refresh');
-				this.element.find('.alarm[data-id="'+id+'"]').find('[data-field="fri"]').prop('checked', !!+knxcontrol.alarm[id].fri).checkboxradio('refresh');
-				this.element.find('.alarm[data-id="'+id+'"]').find('[data-field="sat"]').prop('checked', !!+knxcontrol.alarm[id].sat).checkboxradio('refresh');
-				this.element.find('.alarm[data-id="'+id+'"]').find('[data-field="sun"]').prop('checked', !!+knxcontrol.alarm[id].sun).checkboxradio('refresh');
+				this.element.find('.alarm[data-id="'+id+'"]').find('[data-field="mon"]').prop('checked', !!+homecon.alarm[id].mon).checkboxradio('refresh');
+				this.element.find('.alarm[data-id="'+id+'"]').find('[data-field="tue"]').prop('checked', !!+homecon.alarm[id].tue).checkboxradio('refresh');
+				this.element.find('.alarm[data-id="'+id+'"]').find('[data-field="wed"]').prop('checked', !!+homecon.alarm[id].wed).checkboxradio('refresh');
+				this.element.find('.alarm[data-id="'+id+'"]').find('[data-field="thu"]').prop('checked', !!+homecon.alarm[id].thu).checkboxradio('refresh');
+				this.element.find('.alarm[data-id="'+id+'"]').find('[data-field="fri"]').prop('checked', !!+homecon.alarm[id].fri).checkboxradio('refresh');
+				this.element.find('.alarm[data-id="'+id+'"]').find('[data-field="sat"]').prop('checked', !!+homecon.alarm[id].sat).checkboxradio('refresh');
+				this.element.find('.alarm[data-id="'+id+'"]').find('[data-field="sun"]').prop('checked', !!+homecon.alarm[id].sun).checkboxradio('refresh');
 			}
 		}
 		else{
@@ -337,17 +348,17 @@ $.widget("homecon.alarm",{
 	},
 	update_action: function(id){
 		// check if the action belongs in this widget
-		if(knxcontrol.action[id].section_id==0 || knxcontrol.action[id].section_id==this.options.section){
+		if(homecon.action[id].section_id==0 || homecon.action[id].section_id==this.options.section){
 			//loop through all alarms
 			$.each(this.element.find('.alarm'),function(index,alarm){
 				// check if the action option exists
 				if($(alarm).find('option[data-id="'+id+'"]').length==0){
 					// add the action to the select list
-					$(alarm).find('div.alarm_action select').append('<option class="action_select" value="'+id+'" data-id="'+id+'">'+knxcontrol.action[id].name+'</option>').selectmenu('refresh');
+					$(alarm).find('div.alarm_action select').append('<option class="action_select" value="'+id+'" data-id="'+id+'">'+homecon.action[id].name+'</option>').selectmenu('refresh');
 				}
 				// check the selected action
 				var alarm_id = $(alarm).attr('data-id');
-				$(alarm).find('div.alarm_action select').val( knxcontrol.alarm[alarm_id].action_id );
+				$(alarm).find('div.alarm_action select').val( homecon.alarm[alarm_id].action_id );
 				
 				$(alarm).find('div.alarm_action select').selectmenu('refresh');
 			});
@@ -389,35 +400,35 @@ $.widget('homecon.measurementchart',$.homecon.chart,{
 		var that = this;
 		$.each((''+this.options.signals).split(','),function(index,id){
 			if(that.options.period == 'quarterhour' || that.options.period == 'day'){
-				knxcontrol.measurement.get_quarterhourdata(id);
+				homecon.measurement.get_quarterhourdata(id);
 			}
 			else if(that.options.period == 'week'){
-				knxcontrol.measurement.get_weekdata(id);
+				homecon.measurement.get_weekdata(id);
 			}
 			else if(that.options.period == 'month'){
-				knxcontrol.measurement.get_monthdata(id);
+				homecon.measurement.get_monthdata(id);
 			}
 		});
 	},
 	get_series: function(id){
 		if( (''+this.options.signals).split(',').indexOf(id) > -1 ){
 			var series = {
-				name: knxcontrol.measurement[id].name,
+				name: homecon.measurement[id].name,
 				data: [],
-				unit: knxcontrol.measurement[id].unit,
+				unit: homecon.measurement[id].unit,
 				step: this.options.step
 			}
 			if(this.options.period == 'quarterhour'){
-				series.data = knxcontrol.measurement[id].quarterhourdata
+				series.data = homecon.measurement[id].quarterhourdata
 			}
 			else if(this.options.period == 'day'){
-				series.data = knxcontrol.measurement[id].daydata
+				series.data = homecon.measurement[id].daydata
 			}
 			else if(this.options.period == 'week'){
-				series.data = knxcontrol.measurement[id].weekdata
+				series.data = homecon.measurement[id].weekdata
 			}
 			else if(this.options.period == 'month'){
-				series.data = knxcontrol.measurement[id].monthdata
+				series.data = homecon.measurement[id].monthdata
 			}
 			this.update_series(series)
 		}
@@ -516,22 +527,22 @@ $.widget("homecon.settings",{
 				this.update();
 			},
 			'click a.save': function(event){
-				knxcontrol.settings.ip = this.element.find('[data-field="ip"]').val();
-				knxcontrol.settings.port = this.element.find('[data-field="port"]').val();
-				knxcontrol.settings.web_ip = this.element.find('[data-field="web_ip"]').val();
-				knxcontrol.settings.web_port = this.element.find('[data-field="web_port"]').val();
-				knxcontrol.settings.token = this.element.find('[data-field="token"]').val();
-				knxcontrol.settings.update();
+				homecon.settings.ip = this.element.find('[data-field="ip"]').val();
+				homecon.settings.port = this.element.find('[data-field="port"]').val();
+				homecon.settings.web_ip = this.element.find('[data-field="web_ip"]').val();
+				homecon.settings.web_port = this.element.find('[data-field="web_port"]').val();
+				homecon.settings.token = this.element.find('[data-field="token"]').val();
+				homecon.settings.update();
 				
 			}
 		});
 	},
 	update: function(){
-		this.element.find('[data-field="ip"]').val(knxcontrol.settings.ip);
-		this.element.find('[data-field="port"]').val(knxcontrol.settings.port);
-		this.element.find('[data-field="web_ip"]').val(knxcontrol.settings.web_ip);
-		this.element.find('[data-field="web_port"]').val(knxcontrol.settings.web_port);
-		this.element.find('[data-field="token"]').val(knxcontrol.settings.token);
+		this.element.find('[data-field="ip"]').val(homecon.settings.ip);
+		this.element.find('[data-field="port"]').val(homecon.settings.port);
+		this.element.find('[data-field="web_ip"]').val(homecon.settings.web_ip);
+		this.element.find('[data-field="web_port"]').val(homecon.settings.web_port);
+		this.element.find('[data-field="token"]').val(homecon.settings.token);
 	}
 });
 
@@ -559,7 +570,7 @@ $.widget("homecon.smarthome_log",{
 
 		that.element.empty();
 		
-		$.each(knxcontrol.smarthome_log.log,function(index,value){
+		$.each(homecon.smarthome_log.log,function(index,value){
 			var date = new Date(value.time);
 			var hour = date.getHours();
 			var minute = date.getMinutes();
@@ -594,7 +605,7 @@ $.widget("homecon.action_list",{
 		this.element.html('<div class="action_list"></div>'+
 		                  '<a href="#" class="add" data-role="button" data-rel="popup">'+language.capitalize(language.add_action)+'</a>');
 		that = this;
-		$.each(knxcontrol.action,function(index,action){
+		$.each(homecon.action,function(index,action){
 			if(typeof action == 'object'){
 				that.update(action.id);
 			}
@@ -609,40 +620,40 @@ $.widget("homecon.action_list",{
 			'click a.edit': function(event){
 				// populate the popup
 				id = $(event.target).parents('.action').attr('data-id');
-				$('#action_def_popup').find('input[data-field="name"]').val(knxcontrol.action[id].name);
-				$('#action_def_popup').find('input[data-field="section_id"]').val(knxcontrol.action[id].section_id);
+				$('#action_def_popup').find('input[data-field="name"]').val(homecon.action[id].name);
+				$('#action_def_popup').find('input[data-field="section_id"]').val(homecon.action[id].section_id);
 				
-				$('#action_def_popup').find('input[data-field="delay1"]').val(knxcontrol.action[id].actions[0].delay);
-				$('#action_def_popup').find('input[data-field="item1"]').val(knxcontrol.action[id].actions[0].item);
-				$('#action_def_popup').find('input[data-field="value1"]').val(knxcontrol.action[id].actions[0].value);
+				$('#action_def_popup').find('input[data-field="delay1"]').val(homecon.action[id].actions[0].delay);
+				$('#action_def_popup').find('input[data-field="item1"]').val(homecon.action[id].actions[0].item);
+				$('#action_def_popup').find('input[data-field="value1"]').val(homecon.action[id].actions[0].value);
 				
-				$('#action_def_popup').find('input[data-field="delay2"]').val(knxcontrol.action[id].actions[1].delay);
-				$('#action_def_popup').find('input[data-field="item2"]').val(knxcontrol.action[id].actions[1].item);
-				$('#action_def_popup').find('input[data-field="value2"]').val(knxcontrol.action[id].actions[1].value);
+				$('#action_def_popup').find('input[data-field="delay2"]').val(homecon.action[id].actions[1].delay);
+				$('#action_def_popup').find('input[data-field="item2"]').val(homecon.action[id].actions[1].item);
+				$('#action_def_popup').find('input[data-field="value2"]').val(homecon.action[id].actions[1].value);
 				
-				$('#action_def_popup').find('input[data-field="delay3"]').val(knxcontrol.action[id].actions[2].delay);
-				$('#action_def_popup').find('input[data-field="item3"]').val(knxcontrol.action[id].actions[2].item);
-				$('#action_def_popup').find('input[data-field="value3"]').val(knxcontrol.action[id].actions[2].value);
+				$('#action_def_popup').find('input[data-field="delay3"]').val(homecon.action[id].actions[2].delay);
+				$('#action_def_popup').find('input[data-field="item3"]').val(homecon.action[id].actions[2].item);
+				$('#action_def_popup').find('input[data-field="value3"]').val(homecon.action[id].actions[2].value);
 				
-				$('#action_def_popup').find('input[data-field="delay4"]').val(knxcontrol.action[id].actions[3].delay);
-				$('#action_def_popup').find('input[data-field="item4"]').val(knxcontrol.action[id].actions[3].item);
-				$('#action_def_popup').find('input[data-field="value4"]').val(knxcontrol.action[id].actions[3].value);
+				$('#action_def_popup').find('input[data-field="delay4"]').val(homecon.action[id].actions[3].delay);
+				$('#action_def_popup').find('input[data-field="item4"]').val(homecon.action[id].actions[3].item);
+				$('#action_def_popup').find('input[data-field="value4"]').val(homecon.action[id].actions[3].value);
 				
-				$('#action_def_popup').find('input[data-field="delay5"]').val(knxcontrol.action[id].actions[4].delay);
-				$('#action_def_popup').find('input[data-field="item5"]').val(knxcontrol.action[id].actions[4].item);
-				$('#action_def_popup').find('input[data-field="value5"]').val(knxcontrol.action[id].actions[4].value);
+				$('#action_def_popup').find('input[data-field="delay5"]').val(homecon.action[id].actions[4].delay);
+				$('#action_def_popup').find('input[data-field="item5"]').val(homecon.action[id].actions[4].item);
+				$('#action_def_popup').find('input[data-field="value5"]').val(homecon.action[id].actions[4].value);
 				
 				$('#action_def_popup').find('#action_def_popup_save').attr('data-id',id);
 				$('#action_def_popup').find('#action_def_popup_delete').attr('data-id',id);
 			},
 			'click a.add': function(event){
-				knxcontrol.action.add();
+				homecon.action.add();
 			}
 		});		
 	},
 	update: function(id){
-		// check if the action exists in knxcontrol
-		if(knxcontrol.action[id]){
+		// check if the action exists in homecon
+		if(homecon.action[id]){
 			
 			// check if the action does not already exists in the DOM
 			if(this.element.find('.action_list').find('.action[data-id="'+id+'"]').length==0){
@@ -654,7 +665,7 @@ $.widget("homecon.action_list",{
 														 '</div>').enhanceWithin();
 			}
 			// update the action
-			this.element.find('.action[data-id="'+id+'"]').find('[data-field="name"]').html(knxcontrol.action[id].name);
+			this.element.find('.action[data-id="'+id+'"]').find('[data-field="name"]').html(homecon.action[id].name);
 		}
 		else{
 			// remove the alarm from the DOM
@@ -689,13 +700,13 @@ $(document).on('click','#action_def_popup_save',function(event){
 			 $('#action_def_popup').find('input[data-field="item5"]').val(),
 			 $('#action_def_popup').find('input[data-field="value5"]').val()];
 			 
-	knxcontrol.action.update(id,data_field,value);
+	homecon.action.update(id,data_field,value);
 });
 $(document).on('click','#action_def_popup_delete',function(event){
 	id = $(this).attr('data-id');
 	$('#action_def_popup').popup('close');
 	
-	knxcontrol.action.del(id);
+	homecon.action.del(id);
 });
 
 /*****************************************************************************/
@@ -708,7 +719,7 @@ $.widget("homecon.measurement_list",{
 		// enhance
 		this.element.html('<div class="measurement_list"></div><a href="#" class="add" data-role="button" data-rel="popup">'+language.capitalize(language.add_measurement)+'</a>');
 		that = this;
-		$.each(knxcontrol.measurement,function(index,measurement){
+		$.each(homecon.measurement,function(index,measurement){
 			if(typeof measurement == 'object'){
 				that.update(measurement.id);
 			}
@@ -723,26 +734,26 @@ $.widget("homecon.measurement_list",{
 			'click a.edit': function(event){
 				// populate the popup
 				id = $(event.target).parents('.measurement').attr('data-id');
-				$('#measurement_def_popup').find('input[data-field="name"]').val(knxcontrol.measurement[id].name);
-				$('#measurement_def_popup').find('input[data-field="item"]').val(knxcontrol.measurement[id].item);
-				$('#measurement_def_popup').find('input[data-field="quantity"]').val(knxcontrol.measurement[id].quantity);
-				$('#measurement_def_popup').find('input[data-field="unit"]').val(knxcontrol.measurement[id].unit);
-				$('#measurement_def_popup').find('input[data-field="description"]').val(knxcontrol.measurement[id].description);
+				$('#measurement_def_popup').find('input[data-field="name"]').val(homecon.measurement[id].name);
+				$('#measurement_def_popup').find('input[data-field="item"]').val(homecon.measurement[id].item);
+				$('#measurement_def_popup').find('input[data-field="quantity"]').val(homecon.measurement[id].quantity);
+				$('#measurement_def_popup').find('input[data-field="unit"]').val(homecon.measurement[id].unit);
+				$('#measurement_def_popup').find('input[data-field="description"]').val(homecon.measurement[id].description);
 				
 				$('#measurement_def_popup').find('#measurement_def_popup_save').attr('data-id',id);
 			}
 		});
 	},
 	update: function(id){
-		// check if the measurement exists in knxcontrol
-		if(knxcontrol.measurement[id]){
+		// check if the measurement exists in homecon
+		if(homecon.measurement[id]){
 			
 			// check if the measurement does not already exists in the DOM
 			if(this.element.find('.measurement_list').find('.measurement[data-id="'+id+'"]').length==0){
 				//add the measurement to the DOM
 				this.element.find('.measurement_list').append('<div class="measurement" data-id="'+id+'">'+
 																'<div class="id" data-field="id">'+id+'</div>'+
-																'<div class="name" data-field="name">'+knxcontrol.measurement[id].name+'&nbsp;</div>'+
+																'<div class="name" data-field="name">'+homecon.measurement[id].name+'&nbsp;</div>'+
 																'<a href="#measurement_def_popup" class="edit" data-role="button" data-rel="popup" data-icon="grid" data-mini="true" data-iconpos="notext">Edit</a>'+
 															  '</div>').enhanceWithin();
 			}
@@ -763,7 +774,7 @@ $(document).on('click','#measurement_def_popup_save',function(event){
 			 $('#measurement_def_popup').find('input[data-field="unit"]').val(),
 			 $('#measurement_def_popup').find('input[data-field="description"]').val()].join();
 	console.log(id);
-	knxcontrol.measurement.update(id,data_field,value);
+	homecon.measurement.update(id,data_field,value);
 });
 
 /*****************************************************************************/
@@ -801,7 +812,7 @@ $.widget("homecon.user_list",{
 	_create: function(){
 		this.element.html('<div class="user_list"></div><a href="#" class="add" data-role="button" data-rel="popup">'+language.capitalize(language.add_user)+'</a>');
 		var that = this;
-		$.each(knxcontrol.user,function(index,user){
+		$.each(homecon.user,function(index,user){
 			if(typeof user == 'object'){
 				that.update(user.id);
 			}
@@ -816,28 +827,28 @@ $.widget("homecon.user_list",{
 			'click a.edit': function(event){
 				// populate the popup
 				id = $(event.target).parents('.user').attr('data-id');
-				$('#user_def_popup').find('input[data-field="name"]').val(knxcontrol.user[id].username);
+				$('#user_def_popup').find('input[data-field="name"]').val(homecon.user[id].username);
 				
 				$('#user_def_popup').find('#user_def_popup_save').attr('data-id',id);
 			}
 		});
 	},
 	update: function(id){
-		// check if the user exists in knxcontrol
-		if(knxcontrol.user[id]){
+		// check if the user exists in homecon
+		if(homecon.user[id]){
 			
 			// check if the user does not already exists in the DOM
 			if(this.element.find('.user_list').find('.user[data-id="'+id+'"]').length==0){
 				//add the user to the DOM
 				this.element.find('.user_list').append('<div class="user" data-id="'+id+'">'+
-															'<div class="name" data-field="name">'+knxcontrol.user[id].username+'&nbsp;</div>'+
+															'<div class="name" data-field="name">'+homecon.user[id].username+'&nbsp;</div>'+
 															'<a href="#user_def_popup" class="edit" data-role="button" data-rel="popup" data-icon="grid" data-mini="true" data-iconpos="notext">Edit</a>'+
 													   '</div>').enhanceWithin();
 			}
 			else{
 				// update the user in the DOM
 				this.element.find('.user_list').find('.user[data-id="'+id+'"]').html('<div class="user" data-id="'+id+'">'+
-																						'<div class="name" data-field="name">'+knxcontrol.user[id].username+'&nbsp;</div>'+
+																						'<div class="name" data-field="name">'+homecon.user[id].username+'&nbsp;</div>'+
 																						'<a href="#user_def_popup" class="edit" data-role="button" data-rel="popup" data-icon="grid" data-mini="true" data-iconpos="notext">Edit</a>'+
 																					 '</div>').enhanceWithin();
 			}
@@ -854,7 +865,7 @@ $(document).on('click','#user_def_popup_save',function(event){
 	field = ['username'];
 	value = [$('#user_def_popup').find('input[data-field="name"]').val()];
 	console.log(id);
-	knxcontrol.user.update(id,field,value);
+	homecon.user.update(id,field,value);
 });
 
 /*****************************************************************************/
@@ -864,9 +875,9 @@ $.widget("homecon.user_profile",{
 	options: {
 	},
 	_create: function(){
-		var id = knxcontrol.user_id;
+		var id = homecon.user_id;
 		this.element.html('<div class="user" data-id="'+id+'">'+
-							'<div class="name" data-field="name">'+knxcontrol.user[id].username+'&nbsp;</div>'+
+							'<div class="name" data-field="name">'+homecon.user[id].username+'&nbsp;</div>'+
 							'<a href="#user_def_popup" class="edit" data-role="button" data-rel="popup" data-icon="grid" data-mini="true" data-iconpos="notext">Edit</a>'+
 					     '</div><a href="#" class="delete" data-role="button" data-rel="popup">'+language.capitalize(language.delete_user)+'</a>');
 		this.element.enhanceWithin();	
@@ -878,19 +889,19 @@ $.widget("homecon.user_profile",{
 			},
 			'click a.edit': function(event){
 				// populate the popup
-				var id = knxcontrol.user_id;
-				$('#password_def_popup').find('input[data-field="name"]').val(knxcontrol.user[id].username);
+				var id = homecon.user_id;
+				$('#password_def_popup').find('input[data-field="name"]').val(homecon.user[id].username);
 				
 				$('#password_def_popup').find('#password_def_popup_save').attr('data-id',id);
 			}
 		});
 	},
 	update: function(){
-		// check if the user exists in knxcontrol
-		var id = knxcontrol.user_id;
+		// check if the user exists in homecon
+		var id = homecon.user_id;
 		if(id){
 			// update user to the DOM
-			this.element.find('.name').html(knxcontrol.user[id].username).enhanceWithin();
+			this.element.find('.name').html(homecon.user[id].username).enhanceWithin();
 		}
 		else{
 			// remove the user from the DOM
@@ -904,7 +915,7 @@ $(document).on('click','#password_def_popup_save',function(event){
 	field = ['username'];
 	value = [$('#user_def_popup').find('input[data-field="name"]').val()];
 	console.log(id);
-	//knxcontrol.user.update(id,field,value);
+	//homecon.user.update(id,field,value);
 });
 
 /*****************************************************************************/
@@ -917,7 +928,7 @@ $.widget('homecon.profile_list',{
 		// enhance
 		this.element.html('<div class="profile_list"></div><a href="#" class="add" data-role="button" data-rel="popup">'+language.capitalize(language.add)+'</a>');
 		that = this;
-		$.each(knxcontrol.profile,function(index,profile){
+		$.each(homecon.profile,function(index,profile){
 			if(typeof profile == 'object'){
 				that.update(profile.id);
 			}
@@ -930,16 +941,16 @@ $.widget('homecon.profile_list',{
 				this.update(id);
 			},
 			'click a.add': function(event){
-				knxcontrol.profile.add();
+				homecon.profile.add();
 				
 			},
 			'click a.edit': function(event){
 				// populate the popup
 				id = $(event.target).parents('.profile').attr('data-id');
-				$('#profile_def_popup').find('input[data-field="name"]').val(knxcontrol.profile[id].name);
-				$('#profile_def_popup').find('input[data-field="quantity"]').val(knxcontrol.profile[id].quantity);
-				$('#profile_def_popup').find('input[data-field="unit"]').val(knxcontrol.profile[id].unit);
-				$('#profile_def_popup').find('input[data-field="description"]').val(knxcontrol.profile[id].description);
+				$('#profile_def_popup').find('input[data-field="name"]').val(homecon.profile[id].name);
+				$('#profile_def_popup').find('input[data-field="quantity"]').val(homecon.profile[id].quantity);
+				$('#profile_def_popup').find('input[data-field="unit"]').val(homecon.profile[id].unit);
+				$('#profile_def_popup').find('input[data-field="description"]').val(homecon.profile[id].description);
 				
 				$('#profile_def_popup').find('#profile_def_popup_save').attr('data-id',id);
 				$('#profile_def_popup').find('#profile_def_popup_delete').attr('data-id',id);
@@ -947,7 +958,7 @@ $.widget('homecon.profile_list',{
 				// add data
 				$('#profile_def_popup').find('.profile_def_list').html('<div class="ui-block-a">Time:</div>'+
 																	   '<div class="ui-block-b">Value:</div>');
-				$.each(knxcontrol.profile[id].data,function(index,data){
+				$.each(homecon.profile[id].data,function(index,data){
 				
 					// convert timestamp to day of the week and time
 					var date = (data[0]-345600*1000)/1000;
@@ -978,8 +989,8 @@ $.widget('homecon.profile_list',{
 		});
 	},
 	update: function(id){
-		// check if the profile exists in knxcontrol
-		if(knxcontrol.profile[id]){
+		// check if the profile exists in homecon
+		if(homecon.profile[id]){
 			// check if the measurement does not already exists in the DOM
 			if(this.element.find('.profile_list').find('.profile[data-id="'+id+'"]').length==0){
 				//add the measurement to the DOM
@@ -990,16 +1001,16 @@ $.widget('homecon.profile_list',{
 			this.element.find('.profile[data-id="'+id+'"]').html('<div class="chart_container"></div>'+
 																 '<div class="data">'+
 																	'<div class="id" data-field="id">'+id+'</div>'+
-																	'<div class="name" data-field="name">'+knxcontrol.profile[id].name+'&nbsp;</div>'+
+																	'<div class="name" data-field="name">'+homecon.profile[id].name+'&nbsp;</div>'+
 																	'<a href="#profile_def_popup" class="edit" data-role="button" data-rel="popup" data-icon="grid">Edit</a>'+
 																 '</div>').enhanceWithin();
 			// update chart
-			var tempdata = knxcontrol.profile[id].data.slice();
-			if(knxcontrol.profile[id].data[0][0] > 0){
+			var tempdata = homecon.profile[id].data.slice();
+			if(homecon.profile[id].data[0][0] > 0){
 				// add last data point at time 0 to obtain a cyclic signal
 				tempdata.unshift([0,tempdata[tempdata.length-1][1]]);
 			}
-			if(knxcontrol.profile[id].data[knxcontrol.profile[id].data.length-1][0] < 604800*1000){
+			if(homecon.profile[id].data[homecon.profile[id].data.length-1][0] < 604800*1000){
 				tempdata.push([604800*1000,tempdata[tempdata.length-1][1]]);
 			}
 			// update time to start on monday 0h
@@ -1008,7 +1019,7 @@ $.widget('homecon.profile_list',{
 			});
 			
 			this.chart_options.series[0].data = tempdata;
-			this.chart_options.yAxis.title = {text: knxcontrol.profile[id].unit};
+			this.chart_options.yAxis.title = {text: homecon.profile[id].unit};
 			$(this.element).find('.profile[data-id="'+id+'"] div.chart_container').highcharts(this.chart_options);
 			
 		}
@@ -1071,7 +1082,7 @@ $(document).on('click','#profile_def_popup_save',function(event){
 			     $('#profile_def_popup').find('input[data-field="unit"]').val(),
 			     $('#profile_def_popup').find('input[data-field="description"]').val()].join(';');
 
-	knxcontrol.profile.update(id,field,value);
+	homecon.profile.update(id,field,value);
 		
 	
 	var time = [];
@@ -1094,7 +1105,7 @@ $(document).on('click','#profile_def_popup_save',function(event){
 	});
 	
 
-	knxcontrol.profile.update_data(id,time,value);
+	homecon.profile.update_data(id,time,value);
 });
 $(document).on('click','#profile_def_popup_addrow',function(event){
 	$('#profile_def_popup').find('.profile_def_list').append('<div class="ui-block-a"><input value="0" data-field="time"/></div>'+
@@ -1104,7 +1115,7 @@ $(document).on('click','#profile_def_popup_addrow',function(event){
 $(document).on('click','#profile_def_popup_delete',function(event){
 	id = $(this).attr('data-id');
 	$('#profile_def_popup').popup('close');
-	knxcontrol.profile.del(id);
+	homecon.profile.del(id);
 });
 
 /*****************************************************************************/
@@ -1115,10 +1126,10 @@ $.widget("homecon.system_identification",{
 	},
 	_create: function(){
 		this.element.html('<div class="buttons">'+
-						      '<div class="twocols"><div data-role="pushbutton" data-label="Identify" data-item="knxcontrol.mpc.model.identification" data-value=1></div></div>'+
-						      '<div class="twocols"><div data-role="pushbutton" data-label="Validate" data-item="knxcontrol.mpc.model.validation" data-value=1></div></div>'+
+						      '<div class="twocols"><div data-role="pushbutton" data-label="Identify" data-item="homecon.mpc.model.identification" data-value=1></div></div>'+
+						      '<div class="twocols"><div data-role="pushbutton" data-label="Validate" data-item="homecon.mpc.model.validation" data-value=1></div></div>'+
 						  '</div>'+
-						  '<div data-role="chart" data-item="knxcontrol.mpc.model.validation.result">'+
+						  '<div data-role="chart" data-item="homecon.mpc.model.validation.result">'+
 						  '</div>');
 
 		$('div[data-role="pushbutton"]').pushbutton();
@@ -1135,10 +1146,10 @@ $.widget("homecon.system_identification",{
 	update: function(){
 		var that = this;
 
-		if(knxcontrol.item['knxcontrol.mpc.model.validation.result'].hasOwnProperty('measured_states')){
-			//var time = knxcontrol.item['knxcontrol.mpc.model.validation.result']['time']
+		if(homecon.item['homecon.mpc.model.validation.result'].hasOwnProperty('measured_states')){
+			//var time = homecon.item['homecon.mpc.model.validation.result']['time']
 	
-			$.each((knxcontrol.item['knxcontrol.mpc.model.validation.result']['measured_states']),function(index,value){
+			$.each((homecon.item['homecon.mpc.model.validation.result']['measured_states']),function(index,value){
 			
 				//var i, data = [];
 				//for(i=0;i<time.length;i++){

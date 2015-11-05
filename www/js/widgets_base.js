@@ -58,7 +58,7 @@ $.widget('homecon.displayvalue',{
 		var item = this.options.item;
 		var rounding = Math.pow(10,this.options.digits);
 		
-		var value = Math.round(knxcontrol.item[item]*this.options.scale*rounding)/rounding;
+		var value = Math.round(homecon.item[item]*this.options.scale*rounding)/rounding;
 		
 		this.element.html(this.options.pre + value + this.options.app);
 	}
@@ -92,7 +92,7 @@ $.widget("homecon.inputvalue",{
 	},
 	update: function(){	
 		var item = this.options.item;
-		this.element.find('input').val(knxcontrol.item[item]);
+		this.element.find('input').val(homecon.item[item]);
 	}
 });
 
@@ -173,7 +173,7 @@ $.widget('homecon.toggleswitch',{
 		this._on(this.element, {
             'click a.switch': function(event){
 				// update the value in smarthome
-				if(knxcontrol.item[this.options.item] > this.options.val_off){
+				if(homecon.item[this.options.item] > this.options.val_off){
 					smarthome.write(this.options.item, this.options.val_off);
 				}
 				else{
@@ -186,7 +186,7 @@ $.widget('homecon.toggleswitch',{
         });
 	},
 	update: function(){
-		if(knxcontrol.item[this.options.item]>this.options.val_off){
+		if(homecon.item[this.options.item]>this.options.val_off){
 			this.element.find('img').attr('src',this.options.src_on);
 		}
 		else{
@@ -216,7 +216,7 @@ $.widget('homecon.checkbox',{
             'change input': function(event){
 				var item = this.options.item;
 				// update the value in smarthome
-				smarthome.write(item, (knxcontrol.item[item]+1)%2);
+				smarthome.write(item, (homecon.item[item]+1)%2);
 			},
 			'update': function(event){
 				this.update();
@@ -228,7 +228,7 @@ $.widget('homecon.checkbox',{
 	update: function(){
 		var item = this.options.item;
 				
-		if(knxcontrol.item[item]){
+		if(homecon.item[item]){
 			this.element.find('input').prop('checked', true).checkboxradio('refresh');
 		}
 		else{
@@ -268,7 +268,7 @@ $.widget("homecon.inputslider",{
         });
 	},
 	update: function(){
-		this.element.find('input').val(knxcontrol.item[this.options.item]).slider('refresh');
+		this.element.find('input').val(homecon.item[this.options.item]).slider('refresh');
 	}
 });
 

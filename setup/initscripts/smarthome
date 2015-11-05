@@ -29,7 +29,7 @@ DAEMON_ARGS="$SH_ARGS"
 do_start()
 {
     touch $PIDFILE
-    chown $SH_UID:$SH_UID $PIDFILE
+    chown $SH_UID $PIDFILE
     start-stop-daemon --start --user $SH_UID --group $SH_UID --chuid $SH_UID --pidfile $PIDFILE --startas $DAEMON --test > /dev/null || return 1
     start-stop-daemon --start --user $SH_UID --group $SH_UID --chuid $SH_UID --pidfile $PIDFILE --startas $DAEMON -- $DAEMON_ARGS || return 2
     ps ax | grep $DAEMON | grep -v grep | awk '{print $1}' > $PIDFILE

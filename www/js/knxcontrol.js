@@ -1,54 +1,93 @@
 /*
     Copyright 2015 Brecht Baeten
-    This file is part of KNXControl.
+    This file is part of HomeCon.
 
-    KNXControl is free software: you can redistribute it and/or modify
+    HomeCon is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
     (at your option) any later version.
 
-    KNXControl is distributed in the hope that it will be useful,
+    HomeCon is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
 
     You should have received a copy of the GNU General Public License
-    along with KNXControl.  If not, see <http://www.gnu.org/licenses/>.
+    along with HomeCon.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 /******************************************************************************/
 /*                     Main event handlers                                    */
 /******************************************************************************/
-// initialize
-$(document).on('authenticated',function(event,user_id){
-
-	// gather values for knxcontrol and make connection to smarthome.py
-	knxcontrol.user_id = user_id;
+$(document).on('pagebeforeshow','#login',function(event){
+	console.log('auto login');
+	$(document).trigger('setuser');
+});
+// form login
+$(document).on('submit','#login form',function(event){
+	console.log('form login');
+	event.preventDefault();
 	
-	knxcontrol.settings.get();
-	knxcontrol.location.get();
-	knxcontrol.alarm.get();
-	knxcontrol.measurement.get();
-	knxcontrol.user.get();
-	knxcontrol.profile.get();
+	$.post('requests/authenticate.php',{username:$(this).find('[name=username]').val(),password:$(this).find('[name=password]').val()},function(result){
+		result = JSON.parse(result);
+		if(result.status>0){
+			$(document).trigger('setuser',[result.token]);
+		}
+	});
+});
+$(document).on('setuser',function(event,token){
+	if( typeof token == 'undefined'){
+		try{
+			token = localStorage.getItem('token');
+		}
+		catch(e){
+			console.log(e);
+		}
+	}
+	else{
+		// store the token in webstorage
+		localStorage.setItem('token', token);
+	}
+	if( token != null){
+		// get the data from the token
+		var parts = token.split('.');
+		
+		var header = JSON.parse(atob(parts[0]));
+		var payload = JSON.parse(atob(parts[1]));
+		
+		console.log(header);
+		console.log(payload);
+		$(document).trigger('authenticated',[payload['id']]);
+	}
+	else{
+		$.mobile.navigate( "#login" );
+	}
+});
+// authenticated
+$(document).on('authenticated',function(event,user_id){
+	console.log('authenticated');
+	$.mobile.navigate( "#home_home" );
+
+	// gather values for homecon and make connection to smarthome.py
+	homecon.user_id = user_id;
+	
+	homecon.settings.get();
+	homecon.location.get();
+	homecon.alarm.get();
+	homecon.measurement.get();
+	homecon.user.get();
+	homecon.profile.get();
 });
 $(document).on('connect',function(event){
 	// initialize connection to smarthome.py
-	if((document.URL).indexOf(knxcontrol.settings.ip) > -1){
-		// the address is local if the smarthome.py ip is the same as the website ip
-		smarthome.init(knxcontrol.settings.ip,knxcontrol.settings.port,knxcontrol.settings.token);
-	}
-	else{
-		// we are on the www
-		smarthome.init(knxcontrol.settings.web_ip,knxcontrol.settings.web_port,knxcontrol.settings.token);
-	}
+	smarthome.init(homecon.settings.ip,homecon.settings.port,homecon.settings.token);
 });
 
 
 /******************************************************************************/
-/*                     KNXControl model                                       */
+/*                     homecon model                                       */
 /******************************************************************************/
-var knxcontrol = {
+var homecon = {
 	user_id: 0,
 /******************************************************************************/
 /*                     Settings                                               */
@@ -62,8 +101,8 @@ var knxcontrol = {
 				data = JSON.parse(result);
 				data = data[0];
 				
-				knxcontrol.location.latitude = data['latitude'];
-				knxcontrol.location.longitude = data['longitude'];
+				homecon.location.latitude = data['latitude'];
+				homecon.location.longitude = data['longitude'];
 			});
 		},
 		update: function(){
@@ -82,15 +121,15 @@ var knxcontrol = {
 		token: '',
 		get: function(){
 			$.post('requests/select_from_table.php',{table: 'data', column: '*', where: 'id=1'},function(result){
-
+				console.log(result);
 				data = JSON.parse(result);
 				data = data[0];
 				
-				knxcontrol.settings.ip = data['ip'];
-				knxcontrol.settings.port = data['port'];
-				knxcontrol.settings.web_ip = data['web_ip'];
-				knxcontrol.settings.web_port = data['web_port'];
-				knxcontrol.settings.token = data['token'];
+				homecon.settings.ip = data['ip'];
+				homecon.settings.port = data['port'];
+				homecon.settings.web_ip = data['web_ip'];
+				homecon.settings.web_port = data['web_port'];
+				homecon.settings.token = data['token'];
 				
 				$(document).trigger('connect');
 				$('[data-role="settings"]').trigger('update');
@@ -112,11 +151,11 @@ var knxcontrol = {
 		get: function(){
 			$('[data-item]').each(function(index){
 				var item = $(this).attr('data-item');
-				knxcontrol.item[item] = 0;
+				homecon.item[item] = 0;
 			});
 		},	
 		update: function(item,value){
-			knxcontrol.item[item] = value;
+			homecon.item[item] = value;
 			$('[data-item="'+item+'"]').trigger('update');
 		},
 	},
@@ -152,7 +191,7 @@ var knxcontrol = {
 			$.post('requests/select_from_table.php',{table: 'users', column: 'id,username', where: where},function(result){
 				var users = JSON.parse(result);
 				$.each(users,function(index,user){
-					knxcontrol.user[user.id] = {
+					homecon.user[user.id] = {
 						id: user.id,
 						username: user.username,
 					};
@@ -164,22 +203,22 @@ var knxcontrol = {
 		update: function(id,field,value){
 			// set the user in the database
 			$.post('requests/update_table.php',{table: 'users', column: field.join(';'), value: value.join(';'), where: 'id='+id},function(result){
-				// on success update knxcontrol
+				// on success update homecon
 				console.log(result);
-				knxcontrol.user.get(id);
+				homecon.user.get(id);
 			});
 		},
 		add: function(){
 			$.post('requests/insert_into_table.php',{table: 'users', column: ['name','password'].join(';'), value: ['New user','newpass'].join(';')},function(result){
 				id = JSON.parse(result);
 				id = id[0];
-				// add the action to knxcontrol
-				knxcontrol.user.get(id);
+				// add the action to homecon
+				homecon.user.get(id);
 			});
 		},
 		del: function(id){
 			$.post('requests/delete_from_table.php',{table: 'users', where: 'id='+id},function(result){
-				delete knxcontrol.user[id];
+				delete homecon.user[id];
 				$('[data-role="user_list"]').trigger('update',id);
 			});
 		}
@@ -198,7 +237,7 @@ var knxcontrol = {
 			$.post('requests/select_from_table.php',{table: 'alarms', column: '*', where: where},function(result){
 				var alarms = JSON.parse(result);
 				$.each(alarms,function(index,alarm){
-					knxcontrol.alarm[alarm.id] = {
+					homecon.alarm[alarm.id] = {
 						id: alarm.id,
 						section_id: alarm.sectionid,
 						hour: alarm.hour,
@@ -215,14 +254,14 @@ var knxcontrol = {
 					$('[data-role="alarm"][data-section="'+alarm.sectionid+'"]').trigger('update',alarm.id);
 				});
 				//??? here ???
-				knxcontrol.action.get();
+				homecon.action.get();
 			});
 		},
 		update: function(id,field,value){
 			// set the alarm in the database
 			$.post('requests/update_table.php',{table: 'alarms', column: field, value: value, where: 'id='+id},function(result){
-				// on success update knxcontrol
-				knxcontrol.alarm[id][field] = value;
+				// on success update homecon
+				homecon.alarm[id][field] = value;
 			});
 		},
 		add: function(section_id){
@@ -230,13 +269,13 @@ var knxcontrol = {
 				alarm_id = JSON.parse(result);
 				alarm_id = alarm_id[0];
 				
-				// add the alarm to knxcontrol
-				knxcontrol.alarm.get(alarm_id);
+				// add the alarm to homecon
+				homecon.alarm.get(alarm_id);
 			});
 		},
 		del: function(id){
 			$.post('requests/delete_from_table.php',{table: 'alarms', where: 'id='+id},function(result){
-				delete knxcontrol.alarm[id];
+				delete homecon.alarm[id];
 				$('[data-role="alarm"]').trigger('update',id);
 			});
 		}
@@ -255,7 +294,7 @@ var knxcontrol = {
 			$.post('requests/select_from_table.php',{table: 'actions', column: '*', where: where},function(result){
 				var actions = JSON.parse(result);
 				$.each(actions,function(index,action){
-					knxcontrol.action[action.id] = {
+					homecon.action[action.id] = {
 						id: action.id,
 						section_id: action.sectionid,
 						name: action.name,
@@ -275,22 +314,22 @@ var knxcontrol = {
 		update: function(id,data_field,value){
 			// set the alarm in the database
 			$.post('requests/update_table.php',{table: 'actions', column: data_field.join(';'), value: value.join(';'), where: 'id='+id},function(result){
-				// on success update knxcontrol
+				// on success update homecon
 				console.log(result);
-				knxcontrol.action.get(id);
+				homecon.action.get(id);
 			});
 		},
 		add: function(){
 			$.post('requests/insert_into_table.php',{table: 'actions', column: ['name','sectionid','delay1'].join(';'), value: ['Name',0,0].join(';')},function(result){
 				id = JSON.parse(result);
 				id = id[0];
-				// add the action to knxcontrol
-				knxcontrol.action.get(id);
+				// add the action to homecon
+				homecon.action.get(id);
 			});
 		},
 		del: function(id){
 			$.post('requests/delete_from_table.php',{table: 'actions', where: 'id='+id},function(result){
-				delete knxcontrol.action[id];
+				delete homecon.action[id];
 				$('[data-role="action_list"]').trigger('update',id);
 			});
 		}
@@ -513,7 +552,7 @@ var knxcontrol = {
 	getkeys: function(objectstring){
 		var ind = [];
 		
-		$.each(knxcontrol[objectstring],function(index,object){
+		$.each(homecon[objectstring],function(index,object){
 			if(typeof object == 'object' || typeof object == 'number'){
 				ind.push(index);
 			}

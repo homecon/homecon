@@ -1,8 +1,7 @@
 <?php
-	session_start();
-	include('../data/mysql.php');
+	include('../requests/mysql.php');
 
-	if($_SESSION['userid']>0){
+	if(1){
 
 		$table = $_POST['table'];
 		echo $table;

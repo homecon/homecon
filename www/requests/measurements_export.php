@@ -1,6 +1,5 @@
 <?php
-	session_start();
-	include('../data/mysql.php');
+	include('../requests/mysql.php');
 	
 	//ini_set('display_errors',1);
 	//ini_set('display_startup_errors',1);
@@ -8,7 +7,7 @@
 	
 	set_time_limit(600);  // 10 minutes maximum execution time
 	
-	if($_SESSION['user_id']>0){
+	if(1){
 		$content = '';
 		
 		$table = $_GET['table'];

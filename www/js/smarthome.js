@@ -1,10 +1,22 @@
-//
-// 
-// smarhome.js is part of KNXControl based on smartVISU - io_smarthome.py.js by Martin Gleiﬂ
-// @author: Brecht Baeten
-// @license: GNU GENERAL PUBLIC LICENSE
-// 
-//
+/*
+    Copyright 2015 Brecht Baeten
+    This file is part of HomeCon.
+
+	smarhome.js is part of HomeCon based on smartVISU - io_smarthome.py.js by Martin Gleiﬂ
+
+    HomeCon is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    HomeCon is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with HomeCon.  If not, see <http://www.gnu.org/licenses/>.
+*/
 
 
 /*****************************************************************************/
@@ -29,11 +41,11 @@ var smarthome = {
 // write an item to smarthome.py                                             //
     write: function(item, value){
 		smarthome.send({'cmd': 'item', 'id': item, 'val': value, 'token': smarthome.token});
-		knxcontrol.item.update(item, value);
+		homecon.item.update(item, value);
     },
 // Ask for item values over the websocket                                    //
     monitor: function(){
-		smarthome.send({'cmd': 'monitor', 'items': knxcontrol.getkeys('item'), 'token': smarthome.token});
+		smarthome.send({'cmd': 'monitor', 'items': homecon.getkeys('item'), 'token': smarthome.token});
 		smarthome.send({'cmd': 'log', 'name': 'env.core.log', 'max': 100, 'token': smarthome.token});
     },
 // private functions	
@@ -46,7 +58,7 @@ var smarthome = {
             console.log('connected to smarthome.py');
 			
 			// initialize widgets
-			knxcontrol.item.get();
+			homecon.item.get();
 			// request the values of all items and the log from smarthome.py
 			smarthome.monitor();
          };
@@ -69,12 +81,12 @@ var smarthome = {
                         if (value === true) value = 1;
 
 						// update widgets
-                        knxcontrol.item.update(item, value);
+                        homecon.item.update(item, value);
 
                     };
                     break;
 				case 'log':
-					knxcontrol.smarthome_log.update(data.log);
+					homecon.smarthome_log.update(data.log);
 					break;
                 case 'series':                   
                     data.sid = data.sid.substr(0, data.sid.length - 3) + '0';

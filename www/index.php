@@ -66,20 +66,13 @@
 	<body>
 
 <?php
-	include("data/authentication.php");
-	
-	if($_SESSION['user_id']>0){
-	
-		include("pages/pages.html");
-		include("pages/menu.html");
-		include("data/header.html");
-		include("data/settings.html");
-		include("data/pagebuilder.html");
+	include("data/login.html");
+	include("pages/pages.html");
+	include("pages/menu.html");
+	include("data/header.html");
+	include("data/settings.html");
+	include("data/pagebuilder.html");
 		
-	}
-	else{
-		include("data/login.php");
-	}
 ?>		
 
 	</body>
