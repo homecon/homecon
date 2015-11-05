@@ -23,6 +23,8 @@ import pymysql
 import threading
 import types
 
+import lib.item
+
 
 from plugins.homecon.mysql import *
 from plugins.homecon.alarms import *
@@ -41,6 +43,21 @@ class HomeCon:
 		
 		self._sh = smarthome
 		self._mysql_pass = mysql_pass
+
+		# test to add an item from within a plugin
+		parent = None
+		testpath = 'testitem'
+		testitem = lib.item.Item(smarthome, parent, testpath, {})
+		smarthome.add_item(testpath, testitem)
+		#parent.__children.append(testitem)
+
+		logger.warning(dir(testitem))		
+
+		childpath = 'testitem.child'
+		childitem = lib.item.Item(smarthome, testitem, childpath, {})
+		smarthome.add_item(childpath, childitem)
+		testitem._Item__children.append(childitem)
+
 
 		self.item = None
 
@@ -79,6 +96,11 @@ class HomeCon:
 
 
 	def run(self):
+
+		for item in self._sh.return_items():
+			print(item.id())
+
+
 		# called once after the items have been parsed
 		self.alive = True
 		
@@ -116,8 +138,7 @@ class HomeCon:
 		self._sh.scheduler.add('Measurements_average_month', self.measurements.month, prio=5, cron='2 0 1 *')
 		
 		# schedule forecast loading
-		self._sh.scheduler.add('Detailed_weater_forecast', self.weather.prediction_detailed_load, prio=5, cron='1 * * *')
-		self._sh.scheduler.add('Daily_weater_forecast', self.weather.prediction_daily_load, prio=5, cron='1 * * *')
+		self._sh.scheduler.add('Weater_forecast', self.weather.forecast, prio=5, cron='1 * * *')
 
 
 

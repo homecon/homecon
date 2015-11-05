@@ -245,10 +245,9 @@ class Measurements:
 		for measurement in legend:
 			try:
 				item = self._sh.return_item(measurement[1])
-	
-				query = query + "(%s,%s,%f)," % (measurement[0],timestamp,item())
+				query = query + "({0},{1},{2}),".format(measurement[0],timestamp,item())
 			except:
-				logger.warning( "legend entry "+measurement[0]+": "+measurement[1]+", is not an item")
+				logger.warning( "legend entry {0}: {1}, is not an item".format(measurement[0],measurement[1]) )
 			
 		query = query[:-1]
 

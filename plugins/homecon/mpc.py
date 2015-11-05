@@ -381,7 +381,7 @@ class Model:
 				start = -1
 
 		if ids==[]:
-			logger.warning('Could not find any mysql_id for in "{}"'.fromat(string))
+			logger.warning('Could not find any mysql_id for in "{}"'.format(string))
 	
 
 		# get the data from mysql and put them in a dictionary

@@ -97,10 +97,22 @@ class Weather():
 		# update the parent
 		self.homecon.weather = self
 
-		# load predictions
-		self.prediction_detailed_load()
-		self.prediction_daily_load()
+		# get the api key from the database
+		con,cur = self.homecon.mysql.create_cursor()
+		query = 'SELECT weatherforecastapikey FROM data WHERE id=1'
+		try:
+			cur.execute( query )
+			data = cur.fetchall()
+			if (data[0][0] is None):
+				self.forecastapikey = ''
+			else:
+				self.forecastapikey = data[0][0]
+		except:
+			self.forecastapikey = ''
+			logger.warning("Error reading weather forecast api key from the database")
 
+		# load forecast
+		self.forecast()
 		logger.warning('Weather initialized')
 
 
@@ -263,11 +275,75 @@ class Weather():
 		return I_t
 
 
+	def forecast(self):
+		# openweathermap.org
+		#self.openweathermap_prediction_detailed_load()
+		#self.openweathermap_prediction_daily_load()
+		
+		# forecast.io
+		self.forecastio_forecast()
 
-	def prediction_detailed_load(self):
+
+	def forecastio_forecast(self):
+		try:
+			# create a list of times to poll
+			now = datetime.datetime.utcnow().replace( second=0, microsecond=0)
+			timestamp = int( (now - datetime.datetime(1970,1,1)).total_seconds() )
+
+			timestamplist = [timestamp+i*24*3600 for i in range(7)]
+		
+		
+			hourlyweatherforecast = []
+			dailyweatherforecast = []	
+
+			for timestamp in timestamplist:
+
+				response = urllib.request.urlopen('https://api.forecast.io/forecast/{0}/{1},{2},{3}?units=si'.format(self.forecastapikey,self.homecon.lat,self.homecon.lon,timestamp))
+				response = json.loads(response.read().decode('utf-8'))
+			
+				# hourly values
+				for data in response['hourly']['data']:			
+					currentforecast = {}
+					currentforecast['datetime'] = data['time']
+					currentforecast['temperature'] = data['temperature']
+					currentforecast['pressure'] = data['pressure']
+					currentforecast['humidity'] = data['humidity']
+					currentforecast['icon'] = data['icon']
+					currentforecast['clouds'] = data['cloudCover']
+					currentforecast['wind_speed'] = data['windSpeed']
+					currentforecast['wind_directions'] = data['windBearing']
+					currentforecast['rain'] = data['precipIntensity']
+				
+					hourlyweatherforecast.append(currentforecast)
+			
+				# daily values
+				data = response['daily']['data'][0]
+				currentforecast = {}
+				currentforecast['datetime'] = data['time']
+				currentforecast['temperature_day'] = data['temperatureMax']
+				currentforecast['temperature_night'] = data['temperatureMin']
+				currentforecast['pressure'] = data['pressure']
+				currentforecast['humidity'] = data['humidity']
+				currentforecast['icon'] = data['icon']
+				currentforecast['clouds'] = data['cloudCover']
+				currentforecast['wind_speed'] = data['windSpeed']
+				currentforecast['wind_directions'] = data['windBearing']
+				currentforecast['rain'] = data['precipIntensity']
+
+				dailyweatherforecast.append(currentforecast)
+		
+			self.prediction_detailed(hourlyweatherforecast)
+			self.prediction_daily(dailyweatherforecast)
+
+			logger.warning('Weather forecast loaded')
+		except:
+			logger.warning('Error loading weather forecast')
+
+	def openweathermap_forecast_detailed(self):
 		"""
 		method to load a detailed weather forecast from openweathermap.org and set write it to the appropriate item
 		"""
+		
 		try:
 			weatherforecast = []
 
@@ -298,8 +374,9 @@ class Weather():
 		except:
 			logger.warning('Error loading detailed weatherforecast')
 
+		
 
-	def prediction_daily_load(self):
+	def openweathermap_forecast_daily(self):
 		"""
 		method to load a daily weather forecast from openweathermap.org and set write it to the appropriate item
 		"""
