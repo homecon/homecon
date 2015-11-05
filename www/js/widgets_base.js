@@ -389,6 +389,7 @@ $.widget('homecon.chart',{
 		this.create_chart()
 		this.chart = $(this.element).children('.chart_container').highcharts();
 		this.chart.reflow();
+		this.get_data();
 
 		// bind events
 		this._on(this.element, {

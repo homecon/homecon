@@ -55,8 +55,6 @@ $(document).on('setuser',function(event,token){
 		var header = JSON.parse(atob(parts[0]));
 		var payload = JSON.parse(atob(parts[1]));
 		
-		console.log(header);
-		console.log(payload);
 		$(document).trigger('authenticated',[payload['id']]);
 	}
 	else{
@@ -121,7 +119,6 @@ var homecon = {
 		token: '',
 		get: function(){
 			$.post('requests/select_from_table.php',{table: 'data', column: '*', where: 'id=1'},function(result){
-				console.log(result);
 				data = JSON.parse(result);
 				data = data[0];
 				
