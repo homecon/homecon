@@ -73,7 +73,7 @@ class Zone():
 
 		irradiation_set = self.irradiation.setpoint()
 
-		logger.warning( 'automatic shading control for zone: {0}, setpoint: {1:.1f}'.format( self.item.id(),self.irradiation.setpoint() )  )
+		#logger.warning( 'automatic shading control for zone: {0}, setpoint: {1:.1f}'.format( self.item.id(),self.irradiation.setpoint() )  )
 
 		# sort all windows based on their averaged open irradiation
 		windows = sorted(self.windows, key=lambda w: w.irradiation_open(average=True) , reverse=True)
@@ -136,21 +136,22 @@ class Zone():
 		if irradiation < tolerance:
 			# set all shades to their minimum value
 			pos_new = pos_min
-			logger.warning('go to minimum')
+			#logger.warning('go to minimum')
 		else:
 			if irradiation < irradiation_set-tolerance:
 				# raise more shades
 				raise_shading = True
 				irradiation_set_move = irradiation_set+0.75*tolerance
-				logger.warning('raising')
+				#logger.warning('raising')
 			elif irradiation > irradiation_set+tolerance:
 				# lower more shades
 				lower_shading = True
 				irradiation_set_move = irradiation_set-0.75*tolerance
-				logger.warning('lowering')
+				#logger.warning('lowering')
 			else: 
 				# do nothing
-				logger.warning('do nothing')
+				pass
+				#logger.warning('do nothing')
 
 			if lower_shading or raise_shading:
 				if lower_shading:
@@ -169,7 +170,7 @@ class Zone():
 						pos_new[i] = (irradiation_max-irradiation_set_move)/(irradiation_max-irradiation_min)
 						pos_new[i] = min(pos_max[i],max(pos_min[i],pos_new[i]))
 			
-					logger.warning('window: {0}, pos_old: {1:.1f}, irr: {2:.0f}, irr_max:{3:.0f}, irr_min:{4:.0f}, pos_new: {5:.1f}'.format(window.item.id(),pos_old[i],irradiation,irradiation_max,irradiation_min,pos_new[i]))
+					#logger.warning('window: {0}, pos_old: {1:.1f}, irr: {2:.0f}, irr_max:{3:.0f}, irr_min:{4:.0f}, pos_new: {5:.1f}'.format(window.item.id(),pos_old[i],irradiation,irradiation_max,irradiation_min,pos_new[i]))
 
 					# update the irradiation value
 					irradiation = irradiation - ((1-pos_old[i])*irradiation_open[i]+(pos_old[i])*irradiation_closed[i]) +  ((1-pos_new[i])*irradiation_open[i]+(pos_new[i])*irradiation_closed[i])
@@ -197,5 +198,5 @@ class Zone():
 		self.irradiation_est()
 
 		#logger.warning(  ', '.join(['{0} pos: {1:.1f} min: {2:.1f} max:{3:.1f} irr: {4:.1f}'.format(w.item.id(),p,pmin,pmax,w.irradiation_est()) for w,p,pmin,pmax in zip(windows,pos_new,pos_min,pos_max)])  )
-		logger.warning( 'estimate: {2:.1f}'.format( self.item.id(),self.irradiation.setpoint(),self.irradiation_est(average=True) )  )		
+		#logger.warning( 'estimate: {2:.1f}'.format( self.item.id(),self.irradiation.setpoint(),self.irradiation_est(average=True) )  )		
 
