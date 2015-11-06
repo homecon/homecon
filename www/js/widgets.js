@@ -91,6 +91,7 @@ $.widget("homecon.shading",{
 									'<div class="threecols"><div data-role="checkbox" data-label="Override" data-item="'+parent+'.override"></div></div>'+
 								'</div>');
 			$('div[data-role="checkbox"]').checkbox();
+			smarthome.monitor([parent+'.auto',parent+'.closed',parent+'.override']);
 		}
 	}
 });
@@ -119,7 +120,7 @@ $.widget("homecon.weather_block",{
 		else{
 			this.element.append( '<div data-role="displayvalue" data-item="'+this.options.item_temperature+'" data-app="&deg;C" data-digits="1"></div>');
 		}
-		this.element.append( '<div data-field="windd"></div>');
+		this.element.append( '<div data-field="wind"></div>');
 	
 		if(this.options.item_clouds == ''){
 			this.element.append( '<div data-field="clouds"></div>');
@@ -189,12 +190,12 @@ $.widget("homecon.weather_block",{
 					this.element.find('[data-field="date"]').html(date_string);
 					this.element.find('[data-field="temperature"]').html(Math.round(temperature*10)/10+'&deg;C');
 					this.element.find('[data-field="wind"]').html(Math.round(windspeed*1)/1+' m/s '+ winddirection);
-					this.element.find('[data-field="clouds"]').html(Math.round(clouds*1)/1+'%');
+					this.element.find('[data-field="clouds"]').html(Math.round(clouds*100*1)/1+'%');
 				}
 				else{
 					this.element.find('[data-field="temperature"]').html(language.capitalize(language.temperature)+': '+Math.round(temperature*10)/10+'&deg;C');
 					this.element.find('[data-field="wind"]').html(language.capitalize(language.wind)+': '+Math.round(windspeed*1)/1+' m/s '+ winddirection);
-					this.element.find('[data-field="clouds"]').html(language.capitalize(language.clouds)+': '+Math.round(clouds*1)/1+'%');
+					this.element.find('[data-field="clouds"]').html(language.capitalize(language.clouds)+': '+Math.round(clouds*100*1)/1+'%');
 				}
 			}
 		}

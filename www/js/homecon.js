@@ -19,9 +19,9 @@
 /******************************************************************************/
 /*                     Main event handlers                                    */
 /******************************************************************************/
-$(document).on('pagebeforeshow','#login',function(event){
+$(document).ready(function(event){
 	console.log('auto login');
-	$(document).trigger('setuser');
+	$(document).trigger('login');
 });
 // form login
 $(document).on('submit','#login form',function(event){
@@ -31,11 +31,12 @@ $(document).on('submit','#login form',function(event){
 	$.post('requests/authenticate.php',{username:$(this).find('[name=username]').val(),password:$(this).find('[name=password]').val()},function(result){
 		result = JSON.parse(result);
 		if(result.status>0){
-			$(document).trigger('setuser',[result.token]);
+			$(document).trigger('login',[result.token]);
+			$.mobile.navigate("#home_home");
 		}
 	});
 });
-$(document).on('setuser',function(event,token){
+$(document).on('login',function(event,token){
 	if( typeof token == 'undefined'){
 		try{
 			token = localStorage.getItem('token');
@@ -48,25 +49,24 @@ $(document).on('setuser',function(event,token){
 		// store the token in webstorage
 		localStorage.setItem('token', token);
 	}
-	if( token != null){
+	if(token != null){
 		// get the data from the token
 		var parts = token.split('.');
 		
 		var header = JSON.parse(atob(parts[0]));
 		var payload = JSON.parse(atob(parts[1]));
 		
-		$(document).trigger('authenticated',[payload['id']]);
+		console.log('authenticated');
+		$(document).trigger('authenticated',[payload['id']]);	
 	}
 	else{
-		$.mobile.navigate( "#login" );
+		$.mobile.navigate("#login");
 	}
 });
 // authenticated
 $(document).on('authenticated',function(event,user_id){
-	console.log('authenticated');
-	$.mobile.navigate( "#home_home" );
 
-	// gather values for homecon and make connection to smarthome.py
+	// gather values for homecon from the database
 	homecon.user_id = user_id;
 	
 	homecon.settings.get();
@@ -76,14 +76,35 @@ $(document).on('authenticated',function(event,user_id){
 	homecon.user.get();
 	homecon.profile.get();
 });
-$(document).on('connect',function(event){
-	// initialize connection to smarthome.py
+// settings loaded
+$(document).on('settings_loaded',function(event,user_id){
+	// make connection to smarthome.py
 	smarthome.init(homecon.settings.ip,homecon.settings.port,homecon.settings.token);
+});
+// connected to smarthome
+$(document).on('connected',function(event,user_id){
+	// initialize widgets and request the values of all items and the log from smarthome.py
+	homecon.item.get();
+	smarthome.monitor();
+});
+// logout
+$(document).on('click tap','[href="#login"]',function(event){
+	smarthome.close();
+	homecon.location.clear();
+	homecon.settings.clear();
+	homecon.alarm.clear();
+	homecon.measurement.clear();
+	homecon.user.clear();
+	homecon.profile.clear();
+	homecon.item.clear();
+	homecon.smarthome_log.clear();
+	localStorage.removeItem('token');
 });
 
 
+
 /******************************************************************************/
-/*                     homecon model                                       */
+/*                     homecon model                                          */
 /******************************************************************************/
 var homecon = {
 	user_id: 0,
@@ -93,7 +114,7 @@ var homecon = {
 	location: {
 		latitude: 0,
 		longitude: 0,
-		altitude: 80,
+		altitude: 0,
 		get: function(){
 			$.post('requests/select_from_table.php',{table: 'data', column: 'latitude,longitude', where: 'id=1'},function(result){
 				data = JSON.parse(result);
@@ -109,9 +130,14 @@ var homecon = {
 				$("#message_popup").popup('open');
 				setTimeout(function(){$("#message_popup").popup('close');}, 500);
 			});
+		},
+		clear: function(){
+			this.latitude = 0;
+			this.longitude = 0;
+			this.altitude = 0;
 		}
 	},
-	settings:{
+	settings: {
 		ip: '',
 		port: '',
 		web_ip: '',
@@ -127,8 +153,8 @@ var homecon = {
 				homecon.settings.web_ip = data['web_ip'];
 				homecon.settings.web_port = data['web_port'];
 				homecon.settings.token = data['token'];
-				
-				$(document).trigger('connect');
+
+				$(document).trigger('settings_loaded');
 				$('[data-role="settings"]').trigger('update');
 			});
 		},
@@ -137,7 +163,14 @@ var homecon = {
 				$("#message_popup").html('<h3>'+language.settings_saved+'</h3>');
 				$("#message_popup").popup('open');
 				setTimeout(function(){$("#message_popup").popup('close');}, 500);
+				$(document).trigger('settings_loaded');
 			});
+		},
+		clear: function(){
+			this.ip = '';
+			this.port = '';
+			this.web_ip = '';
+			this.token = '';
 		}
 	},
 /******************************************************************************/
@@ -145,16 +178,18 @@ var homecon = {
 /******************************************************************************/
 	item: {
 		// living.lights.light: 0
-		get: function(){
+		get: function(item){
 			$('[data-item]').each(function(index){
 				var item = $(this).attr('data-item');
 				homecon.item[item] = 0;
 			});
-		},	
+		},
 		update: function(item,value){
 			homecon.item[item] = value;
 			$('[data-item="'+item+'"]').trigger('update');
 		},
+		clear: function(){
+		}
 	},
 	smarthome_log: {
 		log: [],
@@ -173,6 +208,8 @@ var homecon = {
 			this.log = newlog
 
 			$('[data-role="smarthome_log"]').trigger('update');
+		},
+		clear: function(){
 		}
 	},
 /******************************************************************************/
@@ -218,6 +255,8 @@ var homecon = {
 				delete homecon.user[id];
 				$('[data-role="user_list"]').trigger('update',id);
 			});
+		},
+		clear: function(){
 		}
 	},
 
@@ -275,6 +314,8 @@ var homecon = {
 				delete homecon.alarm[id];
 				$('[data-role="alarm"]').trigger('update',id);
 			});
+		},
+		clear: function(){
 		}
 	},
 	
@@ -329,6 +370,8 @@ var homecon = {
 				delete homecon.action[id];
 				$('[data-role="action_list"]').trigger('update',id);
 			});
+		},
+		clear: function(){
 		}
 	},
 	
@@ -375,7 +418,6 @@ var homecon = {
 		},
 		get_quarterhourdata: function(id){
 			if(this[id]){
-				
 				var that = this[id];
 				// a loading variable as the load time is significant to not load double
 				if(that.loading_quarterhourdata==false){
@@ -457,6 +499,8 @@ var homecon = {
 					});
 				}
 			}
+		},
+		clear: function(){
 		}
 	},
 /******************************************************************************/
@@ -540,6 +584,8 @@ var homecon = {
 					});
 				});
 			}
+		},
+		clear: function(){
 		}
 	},
 	
@@ -555,5 +601,5 @@ var homecon = {
 			}
 		});
 		return ind;
-	}	
+	}
 }

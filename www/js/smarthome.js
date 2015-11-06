@@ -44,9 +44,14 @@ var smarthome = {
 		homecon.item.update(item, value);
     },
 // Ask for item values over the websocket                                    //
-    monitor: function(){
-		smarthome.send({'cmd': 'monitor', 'items': homecon.getkeys('item'), 'token': smarthome.token});
-		smarthome.send({'cmd': 'log', 'name': 'env.core.log', 'max': 100, 'token': smarthome.token});
+    monitor: function(items){
+		if(typeof items == 'undefined'){
+			smarthome.send({'cmd': 'monitor', 'items': homecon.getkeys('item'), 'token': smarthome.token});
+			smarthome.send({'cmd': 'log', 'name': 'env.core.log', 'max': 100, 'token': smarthome.token});
+		}
+		else{
+			smarthome.send({'cmd': 'monitor', 'items': items, 'token': smarthome.token});
+		}
     },
 // private functions	
 // Opens the connection and add some handlers                                //
@@ -56,11 +61,8 @@ var smarthome = {
         smarthome.socket.onopen = function(){
             smarthome.send({'cmd': 'proto', 'ver': smarthome.version, 'token': smarthome.token});
             console.log('connected to smarthome.py');
-			
-			// initialize widgets
-			homecon.item.get();
-			// request the values of all items and the log from smarthome.py
-			smarthome.monitor();
+
+			$(document).trigger('connected');
          };
 		
         smarthome.socket.onmessage = function(event){
