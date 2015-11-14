@@ -128,9 +128,6 @@ class HomeCon:
  		# schedule low_level_control
 		self._sh.scheduler.add('HomeCon_update', self.low_level_control, prio=2, cron='* * * *')
 
-		# schedule alarms
-		self._sh.scheduler.add('Alarm_run', self.alarms.run, prio=1, cron='* * * *')
-
 		# schedule measurements
 		self._sh.scheduler.add('Measurements_minute', self.measurements.minute, prio=2, cron='* * * *')
 		self._sh.scheduler.add('Measurements_average_quarterhour', self.measurements.quarterhour, prio=5, cron='1,16,31,46 * * *')
@@ -219,8 +216,12 @@ class HomeCon:
 		Update all values dependent on time
 		Run every minute
 		"""
-		logger.warning('low level control')
+		#logger.warning('low level control')
 		
+		# check for alarms
+		self.alarms.run()
+
+		# update weather calculations
 		self.weather.update()
 
 		# set controls

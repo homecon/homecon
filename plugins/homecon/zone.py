@@ -19,7 +19,9 @@
 
 import logging
 import numpy as np
+import time
 from plugins.homecon.window import *
+
 
 logger = logging.getLogger('')
 
@@ -78,7 +80,7 @@ class Zone():
 		# sort all windows based on their averaged open irradiation
 		windows = sorted(self.windows, key=lambda w: w.irradiation_open(average=True) , reverse=True)
 
-		tolerance = 100		
+		tolerance = 100
 
 
 		# rain countdown
@@ -192,7 +194,8 @@ class Zone():
 				condition3 = window.shading.auto() and (not window.shading.override()) and (abs(pos_new[i]-pos_old[i]) > 0.2 or pos_new[i]==0 or pos_new[i]==1)
 				if condition1 or condition2 or condition3:
 					window.shading.value( window.shading_pos2value(pos_new[i]) )
-
+					# wait for 0.05s as in my experience when executed on a fast computer eibd can't follow and some teleggrams dissappear
+					time.sleep(0.05)
 		
 		# estimate the new value for irradiation and set it
 		self.irradiation_est()
