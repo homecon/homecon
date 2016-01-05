@@ -36,7 +36,9 @@ mv www /home/$username/www
 chown -R $username:$username /home/$username/www
 chmod -R 755 /home/$username/www
 chown -R www-data:www-data /home/$username/www/pages
+chown -R www-data:www-data /home/$username/www/requests/exportfiles
 chmod 005 /home/$username/www/requests/config.php
+
 
 # Create the password hash to enter in the database
 hash=$(php -r "echo base64_encode(hash('sha256', '$password$salt', true));")
