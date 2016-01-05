@@ -11,7 +11,7 @@
 	
 		$path = 'exportfiles/';
 		$table = $_GET['table'];
-		
+
 		// parse dates 
 		if(strcmp("",$_GET['startdate'])==0 && strcmp("",$_GET['enddate'])==0){
 				$timequery = '';
@@ -19,7 +19,7 @@
 				$enddate = '';
 		}
 		elseif(strcmp("",$_GET['startdate'])==0){
-			$timequery = " AND time<=".strtotime($_GET['enddate']);
+			$timequery = " AND time<".strtotime($_GET['enddate']);
 			$startdate = '_'.'start';
 			$enddate   = '_'.$_GET['enddate'];
 		}
@@ -29,19 +29,25 @@
 			$enddate   = '_'.'end';
 		}
 		else{
-			$timequery = " AND time<".strtotime($_GET['enddate']);
+			$timequery = " AND time>=".strtotime($_GET['startdate'])." AND time<".strtotime($_GET['enddate']);
 			$startdate = '_'.$_GET['startdate'];
 			$enddate   = '_'.$_GET['enddate'];
 		}
 			
 		$filenames = [];	
 		$zipname = $path.'homecon_measurements'.str_replace('-','',$startdate ).str_replace('-','',$enddate).'.zip';
-		
+
+		// create a zip file
+		$zip = new ZipArchive;
+		if ($zip->open($zipname, ZipArchive::CREATE)!==TRUE) {
+    		exit("cannot open <$zipname>\n");
+		}
+
 		// run through all sensors found in the legend
 		$result = mysql_query("SELECT * FROM measurements_legend");
 		while($signal = mysql_fetch_array($result)){
 		
-			$filename = $path.$signal['item'].'.csv';
+			$filename = $signal['item'].'.csv';
 			
 			// start creating new content and add a header
 			$content = '';
@@ -51,37 +57,40 @@
 			$content .= 'quantity: '.$signal['quantity'].PHP_EOL;
 			$content .= 'unit: '.$signal['unit'].PHP_EOL;
 			$content .= 'description: '.$signal['description'].PHP_EOL;
-			$content .= PHP_EOL;
-			
-			$content .= 'DATA'.PHP_EOL;
-			$content .= 'utc unixtime,value'.PHP_EOL;
+			//$content .= 'starttime: '.strtotime($_GET['startdate']).PHP_EOL;
+			//$content .= 'endtime: '.strtotime($_GET['enddate']).PHP_EOL;
 			
 			// prepare data query
 			$query = "SELECT * FROM $table WHERE signal_id=".$signal['id'].$timequery;
 			
-			// rearange data
+			//$content .= 'query: '.$query.PHP_EOL;
+
+
+			$content .= PHP_EOL;
+			$content .= 'DATA'.PHP_EOL;
+			$content .= 'unixtime,value'.PHP_EOL;
+			
+			// write data
 			$data_result = mysql_query($query);
-			while($row = mysql_fetch_array($result)){
+			while($row = mysql_fetch_array($data_result)){
 				$content .= $row['time'].','.$row['value'].PHP_EOL;
 			}
 			
 			// create a temp file
-			$filenames[] = $filename;
-			file_put_contents( $filename , $content ) or die ("Unable to create file!");
+			//$filenames[] = $path.$filename;
+			//file_put_contents( $filename , $content ) or die ("Unable to create file!");
+			$zip->addFromString($filename, $content);
 		}
 		
-		// create a zip file
-		$zip = new ZipArchive;
-		$zip->open($zipname, ZipArchive::CREATE);
-		foreach ($filenames as $file) {
-			$zip->addFile($file);
-		}
 		$zip->close();
-
+		
 		// download the zip file
 		header('Content-Type: application/zip');
 		header('Content-disposition: attachment; filename='.$zipname);
 		header('Content-Length: ' . filesize($zipname));
 		readfile($zipname);
+
+		// delete the zip file
+		unlink($zipname);
 	}
 ?>
