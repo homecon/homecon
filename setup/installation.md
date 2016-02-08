@@ -182,6 +182,10 @@ $ sudo mount -a
 ```
 $ sudo apt-get install samba samba-common-bin
 ```
+add users to samba
+```
+$ sudo smbpasswd -a username
+```
 
 Create a backup of the conf file and edit the original file
 ```
@@ -192,11 +196,13 @@ Add
 ```
 [Home]
 	comment = Home network storage
-	path = /mnt/hdd
+	path = /mnt/hdd1/HomeServer
 	force user = admin
 	force group = admin
-	create mask = 0775
-	directory mask = 0775
+	create mask = 0774
+	force create mode = 0774
+	directory mask = 0774
+	force directory mode = 0774
 	read only = no
 ```
 
@@ -205,6 +211,43 @@ And restart Samba
 $ sudo /etc/init.d/samba restart
 ```
 
+Now go to another machine and install cifs-utils
+```
+$ sudo apt-get install cifs-utils
+```
+Create a .smbcredentials file in your home directory
+```
+$ echo "username=MyUsername
+password=MyPassword" > ~/.smbcredentials
+$ sudo chown root .smbcredentials
+$ sudo chmod 600 .smbcredentials
+```
+
+create a group for the share, add users and get the group id from the groups file
+```
+$ nano /etc/group
+```
+
+create a mount directory
+```
+$ sudo /mnt/HomeServer
+```
+Create a credentials file 
+
+
+And edit the fstab file to mount the network drive
+```
+$ sudo nano /etc/fstab
+```
+add
+```
+//192.168.1.234/harddrive //mnt/hdd1/HomeServer cifs credentials=//home//username//.smbcredentials,iocharset=utf8,sec=ntlm,gid=yourgroupid 0 0
+```
+
+and mount all drives
+```
+$ sudo mount -a
+```
 
 
 
@@ -353,8 +396,32 @@ You will get an error message at the end of the process but this doesn't matter 
 ## Laptop lid functions
 To keep a laptop from shutting down when you close the lid edit the logind.conf file
 ```
-sudo nano /etc/systemd/logind.conf
+$ sudo nano /etc/systemd/logind.conf
 ```
 
 Add a line `HandleLidSwitch=ignore`
+
+
+
+## Users and groups
+
+```
+$ sudo adduser username
+```
+
+Create a new group:
+```
+$ sudo groupadd groupname
+```
+
+Show all groups:
+```
+$ cut -d: -f1 /etc/group
+```
+
+
+Add a user to an existing group
+```
+$ sudo usermod -a -G groupname username
+```
 
