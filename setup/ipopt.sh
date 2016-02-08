@@ -53,7 +53,7 @@ make
 apt-get -y install python3 python3-dev python3-setuptools python3-numpy
 
 # Download pyipopt I'v forked the repository and changed some things 
-cd /etc
+cd /tmp
 git clone https://github.com/BrechtBa/pyipopt.git
 installdir="/tmp/pyipopt"
 cd $installdir
