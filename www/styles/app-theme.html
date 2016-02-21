@@ -1,43 +1,17 @@
 
 <style is="custom-style">
 
-	/*
-	Polymer includes a shim for CSS Custom Properties that we can use for application theming.
-	Below, you'll find the default palette for the Polymer Starter Kit layout. Feel free to play
-	with changing the colors used or generate your own palette of colours at MaterialPalette.com.
-
-	See https://www.polymer-project.org/1.0/docs/devguide/styling.html#xscope-styling-details
-	for further information on custom CSS properties.
-	*/
-
 	/* Application theme */
 
 	:root {
-		--dark-primary-color: #303F9F;
-		--default-primary-color: #ffffff;
-		--light-primary-color: #C5CAE9;
 		--text-primary-color: #ffffff;
 		--text-secondary-color: #222222;
-		--accent-color: #FF4081;
-		--background-primary-color: linear-gradient( #DD0000,#440000 );
+		--background-primary-color: #252525;
 		--background-secondary-color: #ffffff;
 		--disabled-text-color: #bdbdbd;
 		--divider-color: #B6B6B6;
 
     	/* Components */
-
-		/* paper-drawer-panel */
-		--drawer-background-color: #fafafa;
-		--drawer-text-color: #111111;
-		--drawer-border-color: 1px solid #ccc;
-		--drawer-toolbar-border-color: 1px solid rgba(0, 0, 0, 0.22);
-
-    	/* paper-menu */
-		--paper-menu-background-color: #ffffff;
-		--menu-link-color: #111111;
-		--menu-link-selected-color: #aaaaaa;
-
-
 		/* paper-button */
 		--button-background-color: #ffffff;
 		--button-text-color: #222222;
@@ -45,57 +19,13 @@
 		--button-text-primary-color: #ffffff;
 	}
 
+
 /* General styles */
 	body{
 		background: var(--background-primary-color);
 		font-family: 'Roboto', 'Helvetica Neue', Helvetica, Arial, sans-serif;
 		color: var(--text-primary-color);
 	}
-	#login{
-		position:fixed;
-		top: 0;
-		bottom: 0;
-		left: 0;
-		right: 0;
-		z-index:11;
-		background: var(--background-primary-color);
-		padding: 10px;
-		color: var(--text-primary-color);
-	}
-	#login > div{
-		width: 100%;
-		max-width: 400px;
-	}
-
-	#login login-form{
-		--login-paper-input-container-color: var(--text-primary-color);
-		--login-paper-input-container-focus-color: var(--text-primary-color);
-		--login-paper-input-container-input-color: var(--text-primary-color);
-	}
- 	section.page{
-		padding: 10px;
-	}
-	#mainToolbar{
-		color: var(--text-secondary-color);
-		background-color: var(--background-secondary-color);
-		box-shadow: 0px 2px 4px 2px rgba(0, 0, 0, 0.7);
-	}
-	#drawerToolbar {
-		color: var(--drawer-text-color);
-		background-color: var(--drawer-background-color);
-		border-bottom: var(--drawer-toolbar-border-color);
-	}
-
-	paper-scroll-header-panel{
-		height: 100%;
-
-		--paper-scroll-header-panel-shadow: {
-			height: 6px;
-			bottom: -6px;
-			/*box-shadow: inset 0px 5px 6px -3px rgba(0, 0, 0, 0.4);*/
-		};
-	}
-
 	paper-material{
 		border-radius: 2px;
 		height: 100%;
@@ -104,60 +34,6 @@
 		margin: 16px auto;
 		background: var(--background-secondary-color);
 		color: var(--text-secondary-color);
-	}
-
-	paper-menu iron-icon {
-		margin-right: 33px;
-		opacity: 0.54;
-	}
-
-	.paper-menu > .iron-selected {
-		color: var(--menu-link-selected-color);
-	}
-
-	paper-menu a {
-		@apply(--layout-horizontal);
-		@apply(--layout-center);
-		text-decoration: none;
-		color: var(--menu-link-color);
-		font-family: 'Roboto', 'Noto', sans-serif;
-		-webkit-font-smoothing: antialiased;
-		text-rendering: optimizeLegibility;
-		font-size: 14px;
-		font-weight: 400;
-		line-height: 24px;
-		min-height: 48px;
-		padding: 0 16px;
-	}
-
-	paper-toolbar.tall .app-name {
-		font-size: 40px;
-		font-weight: 300;
-		/* Required for main area's paper-scroll-header-panel custom condensing transformation */
-		-webkit-transform-origin: left center;
-		transform-origin: left center;
-	}
-
-	#mainToolbar .middle-container  {
-		height: 100%;
-		margin-left: 48px;
-	}
-
-	#mainToolbar:not(.tall) .middle {
-		font-size: 18px;
-		padding-bottom: 0;
-	}
-
-	#mainToolbar .bottom {
-		margin-left: 48px;
-		/* Required for main area's paper-scroll-header-panel custom condensing transformation */
-		-webkit-transform-origin: left center;
-		transform-origin: left center;
-	}
-
-	/* Height of the scroll area */
-	.content {
-		height: 900px;
 	}
 
 	#toast .toast-hide-button {
