@@ -1,0 +1,21 @@
+{
+  "name": "www",
+  "homepage": "https://github.com/BrechtBa/homecon",
+  "authors": [
+    "brecht <brecht.baeten@gmail.com>"
+  ],
+  "description": "",
+  "main": "",
+  "moduleType": [],
+  "license": "GPL v3",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "polymer": "Polymer/polymer#^1.2.0"
+  }
+}

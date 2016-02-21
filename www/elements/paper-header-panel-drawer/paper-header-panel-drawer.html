@@ -1,0 +1,71 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/iron-flex-layout/classes/iron-flex-layout.html">
+<link rel="import" href="../../bower_components/paper-drawer-panel/paper-drawer-panel.html">
+
+<dom-module is="paper-header-panel-drawer">
+	<template>
+		<style>
+			:host{
+				width: 100%;
+				height: 100%;
+			}
+			.header{
+				position: fixed;
+
+				-webkit-box-sizing: border-box;
+			   	-moz-box-sizing: border-box;
+				box-sizing: border-box;
+
+				width: 100%;
+				height: 60px;
+
+				background-color: #222;
+				z-index: 10;
+			}
+			.content{
+				position: absolute;
+
+				-webkit-box-sizing: border-box;
+			   	-moz-box-sizing: border-box;
+				box-sizing: border-box;
+
+				top: 60px;
+				left: 0;
+				right: 0;
+				bottom: 0;
+			}
+			.drawer{
+				background-color: #888;
+				overflow: scroll;
+			}
+			.main{
+				overflow: scroll;
+			}
+		</style>
+		
+		<div class="header">
+			<content select=".header"></content>
+		</div>
+		<div class="content">
+		    <paper-drawer-panel id="drawerPanel">
+      			<div drawer class="drawer">
+					<content select=".drawer"></content>
+				</div>
+      			<div main class="main">
+					<content select=".main"></content>
+				</div>
+   			</paper-drawer-panel>
+		</div>
+			
+	</template>
+	<script>
+		Polymer({
+			is: 'paper-header-panel-drawer',
+			properties: {
+			},
+			closeDrawer: function(){
+				drawerPanel.closeDrawer();
+			}
+		});
+	</script>
+</dom-module>

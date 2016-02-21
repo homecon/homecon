@@ -1,0 +1,126 @@
+<!doctype html>
+
+<html lang="">
+
+	<head>
+		<meta charset="utf-8">
+		<meta name="description" content="">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<meta name="generator" content="HomeCon"/>
+		<title>HomeCon</title>
+		<!-- Place favicon.ico in the `app/` directory -->
+
+		<!-- Chrome for Android theme color -->
+		<meta name="theme-color" content="#000000">
+
+		<!-- Web Application Manifest -->
+		<link rel="manifest" href="manifest.json">
+
+		<!-- Tile color for Win8 -->
+		<meta name="msapplication-TileColor" content="#000000">
+
+		<!-- Add to homescreen for Chrome on Android -->
+		<meta name="mobile-web-app-capable" content="yes">
+		<meta name="application-name" content="HomeCon">
+		<link rel="icon" sizes="144x144" href="images/icon/144.png">
+
+		<!-- Add to homescreen for Safari on iOS -->
+		<meta name="apple-mobile-web-app-capable" content="yes">
+		<meta name="apple-mobile-web-app-status-bar-style" content="black">
+		<meta name="apple-mobile-web-app-title" content="HomeCon">
+		<link rel="apple-touch-icon" href="images/icon/64.png">
+
+		<!-- Tile icon for Win8 (144x144) -->
+		<meta name="msapplication-TileImage" content="images/icon/144.png">
+
+		<!-- build:js bower_components/webcomponentsjs/webcomponents-lite.min.js -->
+		<script src="bower_components/webcomponentsjs/webcomponents-lite.js"></script>
+		<!-- endbuild -->
+
+		<!-- will be replaced with elements/elements.vulcanized.html -->
+		<link rel="import" href="elements/elements.html">
+		<!-- endreplace-->
+
+		<!-- For shared styles, shared-styles.html import in elements.html -->
+		<style is="custom-style" include="shared-styles"></style>
+
+	</head>
+
+	<body unresolved class="fullbleed layout vertical">
+		<span id="browser-sync-binding"></span>
+		<template is="dom-bind" id="app">
+			
+			<!--<section id="login" hidden="{{checkToken(token)}}" class="horizontal layout center-justified center">
+				<div>
+					<h2 class="page-title">Prono</h2>
+					<login-form token={{token}}></login-form>
+				</div>
+			</section>-->
+
+
+			<paper-header-panel-drawer id="main">
+				<div class="header">header</div>
+				<div class="drawer">drawer</div>
+				<div class="main">
+
+					<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam in nisi ac nulla eleifend hendrerit vel sed est. Duis semper auctor metus sed elementum. Donec eget magna ligula. Curabitur eu leo libero. Quisque dignissim auctor euismod. Vestibulum nec efficitur eros, id dignissim erat. Fusce a erat a mauris lobortis dapibus ut sed elit. Integer aliquam pulvinar sapien, ut facilisis nulla consequat rhoncus. Integer faucibus ornare velit, nec volutpat ligula molestie quis. Nulla et urna sit amet magna facilisis malesuada ac sit amet libero. Curabitur porta, quam sit amet sodales fringilla, libero augue commodo nunc, nec eleifend felis eros nec sem.</p>
+					<p>Sed pharetra condimentum lectus et cursus. Fusce at risus ipsum. Morbi tincidunt massa vitae quam volutpat, non venenatis risus ultrices. Nunc ac tincidunt arcu. Nunc massa ante, posuere convallis velit a, aliquam ullamcorper neque. Aenean ligula sapien, porta vel ex sit amet, euismod bibendum sapien. Nam suscipit metus dui, ut pulvinar ante aliquet vel.</p>
+					<p>Donec at finibus turpis, id faucibus dui. Donec id hendrerit urna, sed consectetur urna. Nunc mollis vel velit sit amet facilisis. Etiam non feugiat odio. Morbi ullamcorper facilisis nunc ac interdum. Pellentesque at ultricies risus. Suspendisse viverra massa a quam ultricies, vel mollis tellus maximus. Nunc sapien erat, bibendum eget faucibus nec, convallis nec nulla. Duis vitae vehicula nisi. Suspendisse condimentum, massa vitae vulputate rhoncus, ligula orci vulputate urna, in congue lorem est sodales nisi. Nam mattis eleifend augue ac finibus. Mauris augue est, finibus nec urna quis, egestas sagittis felis. Aliquam ultricies orci ac purus suscipit ullamcorper. Aliquam auctor luctus ipsum sit amet accumsan. Phasellus dui est, mattis et sapien sit amet, condimentum dictum lorem. Phasellus efficitur eget sapien nec scelerisque.</p>
+					<p>Sed imperdiet ante a metus fringilla pellentesque. Aliquam blandit dolor non varius commodo. Cras euismod tortor ante, eget auctor felis posuere eget. Nam luctus maximus quam. Pellentesque tristique efficitur turpis, id auctor est euismod nec. Morbi lorem elit, maximus sed fermentum sed, malesuada ac lacus. Nullam efficitur ipsum id dolor eleifend, id venenatis arcu ultrices. Cras consectetur felis mi, id pretium mi euismod sed. Praesent id justo non leo accumsan pretium.</p>
+					<p>Mauris ac nisi felis. Nam auctor in nunc et malesuada. Fusce quis mauris vel metus vehicula vulputate at quis lacus. Curabitur hendrerit, urna in placerat varius, elit nulla molestie magna, ut eleifend elit nibh id metus. Etiam a porttitor leo, eu pellentesque mauris. Duis efficitur tincidunt leo, a luctus nunc eleifend eget. Nulla ornare turpis in magna auctor, ac venenatis turpis porttitor. In dictum sapien ut ipsum scelerisque, ac eleifend tortor mollis. Quisque volutpat malesuada nisi, id sodales orci gravida quis. Duis ornare nunc id aliquam faucibus. Etiam quis sapien massa. Ut dui leo, rutrum vitae magna quis, placerat molestie felis. Phasellus sit amet risus nisl. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Etiam fermentum mauris purus, vitae aliquet libero semper sit amet. Aenean diam mauris, iaculis eget vestibulum a, ultricies eget est.</p>
+				</div>
+			</paper-header-panel-drawer>
+
+
+	<!--
+			<paper-header-panel id="headerPanel" class="flex">
+
+				<paper-toolbar id="mainToolbar">
+					<span class="flex"></span>
+					<paper-icon-button id="drawerToggle" icon="menu" paper-drawer-toggle></paper-icon-button>
+				</paper-toolbar>
+
+				<div content>
+					<paper-drawer-panel id="drawerPanel" responsive-width="1000px">
+
+						<div drawer class="drawer">
+							<paper-menu class="list" attr-for-selected="data-route" selected="[[route]]">
+								<a data-route="ranking" href="{{baseUrl}}" hidden="{{!checkRoute('ranking',token)}}">
+									<iron-icon icon="info"></iron-icon>
+									<span>Menu item</span>
+								</a>
+							</paper-menu>
+						</div>
+
+						<div main class="main" style="overflow-y: scroll;">
+							<iron-pages attr-for-selected="data-route" selected="{{route}}">
+
+								<section class="page" data-route="home">
+									<h1 class="page-title">Home</h1>
+									<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec a diam lectus. Sed sit amet ipsum mauris. Maecenas congue ligula ac quam viverra nec consectetur ante hendrerit. Donec et mollis dolor. Praesent et diam eget libero egestas mattis sit amet vitae augue. Nam tincidunt congue enim, ut porta lorem lacinia consectetur. Donec ut libero sed arcu vehicula ultricies a non tortor. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aenean ut gravida lorem. Ut turpis felis, pulvinar a semper sed, adipiscing id dolor. Pellentesque auctor nisi id magna consequat sagittis. Curabitur dapibus enim sit amet elit pharetra tincidunt feugiat nisl imperdiet. Ut convallis libero in urna ultrices accumsan. Donec sed odio eros. Donec viverra mi quis quam pulvinar at malesuada arcu rhoncus. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. In rutrum accumsan ultricies. Mauris vitae nisi at sem facilisis semper ac in est.</p>
+									<p>Vivamus fermentum semper porta. Nunc diam velit, adipiscing ut tristique vitae, sagittis vel odio. Maecenas convallis ullamcorper ultricies. Curabitur ornare, ligula semper consectetur sagittis, nisi diam iaculis velit, id fringilla sem nunc vel mi. Nam dictum, odio nec pretium volutpat, arcu ante placerat erat, non tristique elit urna et turpis. Quisque mi metus, ornare sit amet fermentum et, tincidunt et orci. Fusce eget orci a orci congue vestibulum. Ut dolor diam, elementum et vestibulum eu, porttitor vel elit. Curabitur venenatis pulvinar tellus gravida ornare. Sed et erat faucibus nunc euismod ultricies ut id justo. Nullam cursus suscipit nisi, et ultrices justo sodales nec. Fusce venenatis facilisis lectus ac semper. Aliquam at massa ipsum. Quisque bibendum purus convallis nulla ultrices ultricies. Nullam aliquam, mi eu aliquam tincidunt, purus velit laoreet tortor, viverra pretium nisi quam vitae mi. Fusce vel volutpat elit. Nam sagittis nisi dui.</p>
+									<p>Suspendisse lectus leo, consectetur in tempor sit amet, placerat quis neque. Etiam luctus porttitor lorem, sed suscipit est rutrum non. Curabitur lobortis nisl a enim congue semper. Aenean commodo ultrices imperdiet. Vestibulum ut justo vel sapien venenatis tincidunt. Phasellus eget dolor sit amet ipsum dapibus condimentum vitae quis lectus. Aliquam ut massa in turpis dapibus convallis. Praesent elit lacus, vestibulum at malesuada et, ornare et est. Ut augue nunc, sodales ut euismod non, adipiscing vitae orci. Mauris ut placerat justo. Mauris in ultricies enim. Quisque nec est eleifend nulla ultrices egestas quis ut quam. Donec sollicitudin lectus a mauris pulvinar id aliquam urna cursus. Cras quis ligula sem, vel elementum mi. Phasellus non ullamcorper urna.</p>
+									<p>Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos. In euismod ultrices facilisis. Vestibulum porta sapien adipiscing augue congue id pretium lectus molestie. Proin quis dictum nisl. Morbi id quam sapien, sed vestibulum sem. Duis elementum rutrum mauris sed convallis. Proin vestibulum magna mi. Aenean tristique hendrerit magna, ac facilisis nulla hendrerit ut. Sed non tortor sodales quam auctor elementum. Donec hendrerit nunc eget elit pharetra pulvinar. Suspendisse id tempus tortor. Aenean luctus, elit commodo laoreet commodo, justo nisi consequat massa, sed vulputate quam urna quis eros. Donec vel.</p>
+								</section>
+
+							</iron-pages>
+						</div>
+					</paper-drawer-panel>
+				</div>
+			</paper-header-panel>
+			
+-->
+
+
+			<paper-toast id="toast">
+				<span class="toast-hide-button" role="button" tabindex="0" onclick="app.$.toast.hide()">close</span>
+			</paper-toast>
+
+		</template>
+
+		<!-- build:js scripts/app.js -->
+		<script src="scripts/app.js"></script>
+		<!-- endbuild-->
+	</body>
+
+</html>
