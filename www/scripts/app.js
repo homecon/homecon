@@ -92,6 +92,41 @@
 		app.$.main.closeDrawer();
 	};
 
+	// temporary definition of pages
+	app.pages = {
+		'sections': [
+			{
+				'title': 'Centraal',
+				'pages': [
+					{
+						'title': 'Zonnewering',
+						'header': {},
+					},
+					{
+						'title': 'Energie'
+					},
+					{
+						'title': 'Zonnewering'
+					}
+				]
+			},
+			{
+				'title': 'Gelijkvloers',
+				'pages': [
+					{
+						'title': 'Living'
+					},
+					{
+						'title': 'Bureau',
+					},
+				]
+			},
+			{
+				'title': 'Verdieping',
+				'pages': [],
+			}
+		]
+	};
 
 
 })(document);

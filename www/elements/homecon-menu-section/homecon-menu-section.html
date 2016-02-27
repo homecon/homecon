@@ -1,0 +1,66 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/iron-flex-layout/classes/iron-flex-layout.html">
+<link rel="import" href="../../bower_components/iron-collapse/iron-collapse.html">
+
+<dom-module is="homecon-menu-section">
+	<template>
+		<style>
+			:host{
+				display: block;
+				width: 100%;
+			}
+			a.header{
+				display: block;
+				cursor: pointer;
+
+				padding: 12px 40px;
+
+				background-color: #ffffff;
+				border-top: solid 1px;
+				border-color: #ddd;
+
+				font-size: 16px;
+				font-family: sans-serif;
+				font-weight: 700;
+				color: #333333;
+				text-shadow: 0 1px 0 #f3f3f3;
+				text-decoration: none;
+			}
+			a.header:hover{
+				background-color: #eeeeee;
+			}
+		</style>
+		
+		<a class="header" on-click="changeState">{{title}}</a>
+		<iron-collapse opened="{{opened}}">
+			<content></content>
+		</iron-collapse>
+		
+			
+	</template>
+	<script>
+		Polymer({
+			is: 'homecon-menu-section',
+			properties: {
+				title: {
+					type: 'String',
+				},
+				opened: {
+					type: 'Boolean',
+				}
+			},
+			listeners:{
+				'menuChangeState':'menuChangeState'
+			},
+			changeState: function(){
+				this.opened = !this.opened;
+				this.fire('changeState');
+			},
+			menuChangeState: function(e,d){
+				if(d!=this){
+					this.opened = false;
+				}
+			}
+		});
+	</script>
+</dom-module>

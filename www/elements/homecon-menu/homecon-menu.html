@@ -1,0 +1,32 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/iron-flex-layout/classes/iron-flex-layout.html">
+
+<dom-module is="homecon-menu">
+	<template>
+		<style>
+			
+		</style>
+		
+		
+		<content id="menu-sections"></content>
+		
+		
+			
+	</template>
+	<script>
+		Polymer({
+			is: 'homecon-menu',
+			properties: {
+			},
+			listeners:{
+				'changeState':'changeState'
+			},
+			changeState : function(e){
+				children = this.getEffectiveChildren();
+				for(var i=0;i<children.length;i++){ 
+					children[i].fire('menuChangeState',e.target)
+				}
+			}
+		});
+	</script>
+</dom-module>

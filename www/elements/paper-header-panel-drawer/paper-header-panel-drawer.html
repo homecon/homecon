@@ -37,12 +37,31 @@
 				right: 0;
 				bottom: 0;
 			}
+			
 			.drawer{
 				background-color: #2a2a2a;
-				overflow: scroll;
+				overflow: hidden;
+			}
+			.drawer-content{
+				overflow-x: hidden;
+				overflow-y: scroll;
+				width: calc(100% + 15px);
+				height: 100%;
 			}
 			.main{
-				overflow: scroll;
+				overflow: hidden;
+			}
+			.main-content{
+				overflow-x: hidden;
+				overflow-y: scroll;
+
+				-webkit-box-sizing: border-box;
+			   	-moz-box-sizing: border-box;
+				box-sizing: border-box;
+
+				width: calc(100% + 15px);
+				height: 100%;
+				padding: 20px 35px 20px 20px;
 			}
 		</style>
 		
@@ -52,10 +71,14 @@
 		<div class="content">
 		    <paper-drawer-panel id="drawerPanel">
       			<div drawer class="drawer">
-					<content select=".drawer"></content>
+					<div class="drawer-content">
+						<content select=".drawer"></content>
+					</div>
 				</div>
       			<div main class="main">
-					<content select=".main"></content>
+					<div class="main-content">
+						<content select=".main"></content>
+					</div>
 				</div>
    			</paper-drawer-panel>
 		</div>
