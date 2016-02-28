@@ -99,14 +99,20 @@
 				'title': 'Centraal',
 				'pages': [
 					{
+						'id': 0,
 						'title': 'Zonnewering',
+						'icon': 'scene_livingroom',
 						'header': {},
 					},
 					{
-						'title': 'Energie'
+						'id': 1,
+						'title': 'Energie',
+						'icon': 'scene_livingroom'
 					},
 					{
-						'title': 'Zonnewering'
+						'id': 2,
+						'title': 'Zonnewering',
+						'icon': 'scene_livingroom'
 					}
 				]
 			},
@@ -114,10 +120,14 @@
 				'title': 'Gelijkvloers',
 				'pages': [
 					{
-						'title': 'Living'
+						'id': 3,
+						'title': 'Living',
+						'icon': 'scene_livingroom'
 					},
 					{
+						'id': 4,
 						'title': 'Bureau',
+						'icon': 'scene_office'
 					},
 				]
 			},
@@ -128,5 +138,7 @@
 		]
 	};
 
+	// set the starting page to home
+	app.page = 'home'
 
 })(document);

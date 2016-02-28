@@ -38,9 +38,9 @@
 			}
 		</style>
 		
-		<a class="item horizontal layout center">
-			<img class="icon" src="images/icons/ffffff/{{icon}}.png">
-			<h1 class="title">{{title}}</h1>
+		<a class="item horizontal layout center" on-click="changePage">
+			<img class="icon" src="images/icons/ffffff/{{page.icon}}.png">
+			<h1 class="title">{{page.title}}</h1>
 		</a>
 		
 			
@@ -49,13 +49,12 @@
 		Polymer({
 			is: 'homecon-menu-item',
 			properties: {
-				title: {
-					type: 'String',
+				page: {
+					type: 'Object',
 				},
-				icon: {
-					type: 'String',
-					value: 'scene_livingroom'
-				}
+			},
+			changePage: function(){
+				app.set('page',this.page.id);
 			}
 		});
 	</script>
