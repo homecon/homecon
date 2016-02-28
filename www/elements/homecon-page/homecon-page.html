@@ -1,28 +1,16 @@
 <link rel="import" href="../../bower_components/polymer/polymer.html">
 <link rel="import" href="../../bower_components/iron-flex-layout/classes/iron-flex-layout.html">
 
+<link rel="import" href="../../elements/homecon-page-header/homecon-page-header.html">
+
 <dom-module is="homecon-page">
 	<template>
 		<style>
 			:host{
-			}
-			.icon{
-				height: 60px;
-			}
-			.title{
-				margin: 5px 5px 5px 20px;
-				font-size: 2em;
-    			font-weight: 700;
 			}	
 		</style>
 		
-		<div class="header horizontal layout">
-			<img class="icon" src="images/icons/ffffff/{{page.icon}}.png">
-			<h1 class="title flex">{{page.title}}</h1>
-			<div class="value">
-				20°C
-			</div>
-		</div>
+		<homecon-page-header title="{{page.title}}" icon="{{page.icon}}" widget="{{page.headerwidget}}"></homecon-page-header>
 		
 			
 	</template>

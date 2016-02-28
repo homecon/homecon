@@ -111,7 +111,7 @@
 					},
 					{
 						'id': 2,
-						'title': 'Zonnewering',
+						'title': 'Binnenklimaat',
 						'icon': 'scene_livingroom'
 					}
 				]

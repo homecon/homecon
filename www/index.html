@@ -49,7 +49,8 @@
 
 			<paper-header-panel-drawer id="main">
 				<div class="header">
-					header
+					<homecon-header-item pageid="home" icon="homecon_home"></homecon-header-item>
+					<homecon-header-item pageid="settings" icon="homecon_gears"></homecon-header-item>
 				</div>
 				<div class="drawer">
 					<homecon-menu>
@@ -65,7 +66,6 @@
 				<div class="main">
 					<iron-pages attr-for-selected="pageid" selected="{{page}}">
 						<div pageid="home">
-							<h1>Home</h1>
 							<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam in nisi ac nulla eleifend hendrerit vel sed est. Duis semper auctor metus sed elementum. Donec eget magna ligula. Curabitur eu leo libero. Quisque dignissim auctor euismod. Vestibulum nec efficitur eros, id dignissim erat. Fusce a erat a mauris lobortis dapibus ut sed elit. Integer aliquam pulvinar sapien, ut facilisis nulla consequat rhoncus. Integer faucibus ornare velit, nec volutpat ligula molestie quis. Nulla et urna sit amet magna facilisis malesuada ac sit amet libero. Curabitur porta, quam sit amet sodales fringilla, libero augue commodo nunc, nec eleifend felis eros nec sem.</p>
 							<p>Sed pharetra condimentum lectus et cursus. Fusce at risus ipsum. Morbi tincidunt massa vitae quam volutpat, non venenatis risus ultrices. Nunc ac tincidunt arcu. Nunc massa ante, posuere convallis velit a, aliquam ullamcorper neque. Aenean ligula sapien, porta vel ex sit amet, euismod bibendum sapien. Nam suscipit metus dui, ut pulvinar ante aliquet vel.</p>
 							<p>Donec at finibus turpis, id faucibus dui. Donec id hendrerit urna, sed consectetur urna. Nunc mollis vel velit sit amet facilisis. Etiam non feugiat odio. Morbi ullamcorper facilisis nunc ac interdum. Pellentesque at ultricies risus. Suspendisse viverra massa a quam ultricies, vel mollis tellus maximus. Nunc sapien erat, bibendum eget faucibus nec, convallis nec nulla. Duis vitae vehicula nisi. Suspendisse condimentum, massa vitae vulputate rhoncus, ligula orci vulputate urna, in congue lorem est sodales nisi. Nam mattis eleifend augue ac finibus. Mauris augue est, finibus nec urna quis, egestas sagittis felis. Aliquam ultricies orci ac purus suscipit ullamcorper. Aliquam auctor luctus ipsum sit amet accumsan. Phasellus dui est, mattis et sapien sit amet, condimentum dictum lorem. Phasellus efficitur eget sapien nec scelerisque.</p>
@@ -73,7 +73,8 @@
 							<p>Mauris ac nisi felis. Nam auctor in nunc et malesuada. Fusce quis mauris vel metus vehicula vulputate at quis lacus. Curabitur hendrerit, urna in placerat varius, elit nulla molestie magna, ut eleifend elit nibh id metus. Etiam a porttitor leo, eu pellentesque mauris. Duis efficitur tincidunt leo, a luctus nunc eleifend eget. Nulla ornare turpis in magna auctor, ac venenatis turpis porttitor. In dictum sapien ut ipsum scelerisque, ac eleifend tortor mollis. Quisque volutpat malesuada nisi, id sodales orci gravida quis. Duis ornare nunc id aliquam faucibus. Etiam quis sapien massa. Ut dui leo, rutrum vitae magna quis, placerat molestie felis. Phasellus sit amet risus nisl. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Etiam fermentum mauris purus, vitae aliquet libero semper sit amet. Aenean diam mauris, iaculis eget vestibulum a, ultricies eget est.</p>						
 						</div>
 						<div pageid="settings">
-							<h1>Settings</h1>
+							<homecon-page-header title="Settings" icon="homecon_gears"></homecon-page-header>
+		
 						</div>
 						<template is="dom-repeat" items="{{pages.sections}}" as="section">
 							<template is="dom-repeat" items="{{section.pages}}" as="page">
