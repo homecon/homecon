@@ -62,10 +62,27 @@
 				height: 100%;
 				padding: 12px 27px 12px 12px;
 			}
+			a.menu{
+				position: absolute;
+				cursor: pointer;
+
+				right: 10px;
+				top: 0px;
+
+				width: 50px;
+				height: 50px;
+			}
+			a.menu img{
+				width: 100%;
+				height: 100%;
+			}
 		</style>
 		
 		<div class="header">
 			<content select=".header"></content>
+			<a class="menu" on-click="toggleDrawer" hidden="{{hideMenuButton}}">
+				<img src="../../images/icons/ffffff/homecon_bars.png">
+			</a>
 		</div>
 		<div class="content">
 		    <paper-drawer-panel id="drawerPanel" responsive-width="800px" drawer-width="500px">
@@ -88,8 +105,18 @@
 			is: 'paper-header-panel-drawer',
 			properties: {
 			},
+			ready: function(){
+				var that = this;
+				this.hideMenuButton = !this.$.drawerPanel.narrow;
+				this.$.drawerPanel.addEventListener("narrow-changed", function(e){
+					that.hideMenuButton = !e.detail.value
+				});
+			},
 			closeDrawer: function(){
 				drawerPanel.closeDrawer();
+			},
+			toggleDrawer: function(){
+				drawerPanel.togglePanel();
 			}
 		});
 	</script>
