@@ -4,12 +4,44 @@
 <dom-module is="homecon-menu-item">
 	<template>
 		<style>
-			
+			:host{
+				display: block;
+				width: 100%;
+			}
+			a.item{
+				display: block;
+				position: relative;
+				cursor: pointer;
+
+				background-color: #2a2a2a;
+				border-top: solid 1px;
+				border-color: #1d1d1d;
+
+				text-decoration: none;
+
+				height: 60px;
+			}
+			a.item:hover{
+				background-color: #373737;
+			}
+			a.item .icon{
+				height: 100%;
+			}
+			a.item .title{
+				font-size: 18px;
+				font-family: sans-serif;
+				font-weight: 700;
+				color: #ffffff;
+				text-shadow: 0 1px 0 #111111;
+				margin-left: 40px;
+				overflow: hidden;
+			}
 		</style>
 		
-		<div>
-			{{title}}
-		</div>
+		<a class="item horizontal layout center">
+			<img class="icon" src="images/icons/ffffff/{{icon}}.png">
+			<h1 class="title">{{title}}</h1>
+		</a>
 		
 			
 	</template>
@@ -22,7 +54,7 @@
 				},
 				icon: {
 					type: 'String',
-					value: 'blank.png'
+					value: 'scene_livingroom'
 				}
 			}
 		});

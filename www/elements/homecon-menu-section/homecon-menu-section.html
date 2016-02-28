@@ -13,11 +13,11 @@
 				display: block;
 				cursor: pointer;
 
-				padding: 12px 40px;
+				padding: 12px 12px 12px 40px;
 
 				background-color: #ffffff;
 				border-top: solid 1px;
-				border-color: #ddd;
+				border-color: #dddddd;
 
 				font-size: 16px;
 				font-family: sans-serif;
@@ -27,11 +27,13 @@
 				text-decoration: none;
 			}
 			a.header:hover{
-				background-color: #eeeeee;
+				background-color: #ededed;
 			}
 		</style>
 		
-		<a class="header" on-click="changeState">{{title}}</a>
+		<a class="header" on-click="changeState">			
+			{{title}}
+		</a>
 		<iron-collapse opened="{{opened}}">
 			<content></content>
 		</iron-collapse>
