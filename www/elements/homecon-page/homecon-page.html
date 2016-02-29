@@ -2,6 +2,7 @@
 <link rel="import" href="../../bower_components/iron-flex-layout/classes/iron-flex-layout.html">
 
 <link rel="import" href="../../elements/homecon-page-header/homecon-page-header.html">
+<link rel="import" href="../../elements/homecon-page-section/homecon-page-section.html">
 
 <dom-module is="homecon-page">
 	<template>
@@ -12,6 +13,14 @@
 		
 		<homecon-page-header title="{{page.title}}" icon="{{page.icon}}" widget="{{page.headerwidget}}"></homecon-page-header>
 		
+		<template is="dom-repeat" items="{{page.sections}}" as="section">
+			<homecon-page-section title="{{section.title}}">
+				<template is="dom-repeat" items="{{section.widgets}}" as="widget">
+					<div>{{widget.type}}</div>
+				</template>
+			</homecon-page-section>
+		</template>
+
 			
 	</template>
 	<script>

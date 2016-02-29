@@ -1,0 +1,82 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/iron-flex-layout/classes/iron-flex-layout.html">
+<link rel="import" href="../../bower_components/iron-collapse/iron-collapse.html">
+
+<dom-module is="homecon-page-section">
+	<template>
+		<style>
+			:host{
+				display: block;
+				width: 100%;
+				margin: 8px 0px;
+
+				border-radius: 5px;
+				box-shadow: 5px 5px 5px rgba(0,0,0,.15);
+			}
+			#header{
+				display: block;
+				cursor: pointer;
+				
+				padding: 12px 12px 12px 40px;
+
+				background-color: #ffffff;
+				border-color: #ddddddd;
+				border-style: solid;
+				border-width: 1px;
+				border-radius: 5px;
+
+				font-size: 16px;
+				font-family: sans-serif;
+				font-weight: 700;
+				color: #333333;
+				text-shadow: 0 1px 0 #f3f3f3;
+				text-decoration: none;
+			}
+			#header.opened{
+				border-radius: 5px 5px 0px 0px;
+			}
+			#header:hover{
+				background-color: #ededed;
+			}
+			#content{
+				background-color: #2a2a2a;
+				border-color: #1d1d1d;
+
+				border-style: solid;
+				border-width: 0px 1px 1px 1px;
+				border-radius: 0px 0px 5px 5px;
+
+				padding: 8px;
+			}
+		</style>
+		
+		<a id="header" class="header" on-click="changeState">			
+			{{title}}
+		</a>
+		<iron-collapse opened="{{opened}}">
+			<div id="content">
+				<content></content>
+			</div>
+		</iron-collapse>
+		
+			
+	</template>
+	<script>
+		Polymer({
+			is: 'homecon-page-section',
+			properties: {
+				title: {
+					type: 'String',
+				},
+				opened: {
+					type: 'Boolean',
+				}
+			},
+			changeState: function(){
+				this.opened = !this.opened;
+				 this.toggleClass("opened", this.opened, this.$.header);
+			},
+
+		});
+	</script>
+</dom-module>

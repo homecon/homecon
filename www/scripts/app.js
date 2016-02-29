@@ -103,6 +103,30 @@
 						'title': 'Zonnewering',
 						'icon': 'scene_livingroom',
 						'header': {},
+						'sections': [
+							{
+								'title': 'General',
+								'widgets':	[
+									{
+										'type': 'button',
+										'config': {'label':'test1'}
+									},
+									{
+										'type': 'button',
+										'config': {'label':'test2'}
+									},
+								]						 
+							},
+							{
+								'title': 'Advanced controls',
+								'widgets':	[
+									{
+										'type': 'shading',
+										'config': {}
+									}
+								]						 
+							},
+						]
 					},
 					{
 						'id': 1,
