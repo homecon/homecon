@@ -1,28 +1,67 @@
 <link rel="import" href="../../bower_components/polymer/polymer.html">
 <link rel="import" href="../../bower_components/iron-flex-layout/classes/iron-flex-layout.html">
+<link rel="import" href="../../bower_components/paper-button/paper-button.html">
+
+
+
+
+<link rel="import" href="../../elements/homecon-menu-section/homecon-menu-section.html">
+<link rel="import" href="../../elements/homecon-menu-item/homecon-menu-item.html">
 
 <dom-module is="homecon-menu">
 	<template>
 		<style>
-			
+			paper-button{
+				width: 90%;
+				margin: 8px;
+
+    			background-color: #333333;
+    			border-color: #1f1f1f;
+				border-width: 1px;
+    			border-style: solid;
+			}
+			paper-button:hover{
+				background-color: #373737;
+			}
 		</style>
 		
+		<template is="dom-repeat" items="{{pages.sections}}" as="section">
+			<homecon-menu-section title="{{section.title}}" edit="{{edit}}">
+				<template is="dom-repeat" items="{{section.pages}}" as="page">
+					<homecon-menu-item page="{{page}}" edit="{{edit}}"></homecon-menu-item>
+				</template>
+				<template is="dom-if" if="{{edit}}">
+					<div class="vertical layout center">
+						<paper-button noink="true">add page</paper-button>
+					</div>
+				</template>
+			</homecon-menu-section>
+		</template>
+
+		<template is="dom-if" if="{{edit}}">
+			<div class="vertical layout center">
+				<paper-button noink="true">add section</paper-button>
+			</div>
+		</template>
 		
-		<content id="menu-sections"></content>
-		
-		
-			
 	</template>
 	<script>
 		Polymer({
 			is: 'homecon-menu',
 			properties: {
+				pages: {
+					type: 'Object'
+				},
+				edit:{
+					type: 'Boolean',
+					value: false
+				}
 			},
 			listeners:{
 				'changeState':'changeState'
 			},
 			changeState : function(e){
-				children = this.getEffectiveChildren();
+				var children = this.querySelectorAll('homecon-menu-section');
 				for(var i=0;i<children.length;i++){ 
 					children[i].fire('menuChangeState',e.target)
 				}

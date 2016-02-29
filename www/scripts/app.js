@@ -163,6 +163,9 @@
 	};
 
 	// set the starting page to home
-	app.page = 'home'
+	app.page = 'home';
 
+	
+	// set pagebuilder to false
+	app.edit = false;
 })(document);

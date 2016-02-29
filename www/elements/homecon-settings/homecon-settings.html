@@ -1,0 +1,39 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/iron-flex-layout/classes/iron-flex-layout.html">
+
+<link rel="import" href="../../elements/homecon-page-header/homecon-page-header.html">
+<link rel="import" href="../../elements/homecon-page-section/homecon-page-section.html">
+
+<dom-module is="homecon-settings">
+	<template>
+		<style>
+			:host{
+			}	
+		</style>
+		
+		<homecon-page-header title="Settings" icon="homecon_gears"></homecon-page-header>
+		
+		<homecon-page-header title="Users" icon="homecon_users"></homecon-page-header>
+
+		<homecon-page-header title="pagebuilder" icon="pagebuilder_pagebuilder"></homecon-page-header>
+
+		<homecon-page-section title="Pagebuilder">
+			<paper-button noink="true" on-click="toggelPagebuilder">Edit mode</paper-button>
+		</homecon-page-section>
+		
+			
+	</template>
+	<script>
+		Polymer({
+			is: 'homecon-settings',
+			properties: {
+				page: {
+					type: 'Object',
+				},
+			},
+			toggelPagebuilder: function(){
+				app.edit = !app.edit;
+			}
+		});
+	</script>
+</dom-module>

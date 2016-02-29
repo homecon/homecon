@@ -54,15 +54,7 @@
 					<homecon-header-item pageid="logout" icon="homecon_logout"></homecon-header-item>
 				</div>
 				<div class="drawer">
-					<homecon-menu>
-						<template is="dom-repeat" items="{{pages.sections}}" as="section">
-							<homecon-menu-section title="{{section.title}}">
-								<template is="dom-repeat" items="{{section.pages}}" as="page">
-									<homecon-menu-item page="{{page}}"></homecon-menu-item>
-								</template>
-							</homecon-menu-section>
-						</template>
-					<homecon-menu>
+					<homecon-menu pages="{{pages}}" edit="{{edit}}"></homecon-menu>
 				</div>
 				<div class="main">
 					<iron-pages attr-for-selected="pageid" selected="{{page}}">
@@ -73,10 +65,9 @@
 							<p>Sed imperdiet ante a metus fringilla pellentesque. Aliquam blandit dolor non varius commodo. Cras euismod tortor ante, eget auctor felis posuere eget. Nam luctus maximus quam. Pellentesque tristique efficitur turpis, id auctor est euismod nec. Morbi lorem elit, maximus sed fermentum sed, malesuada ac lacus. Nullam efficitur ipsum id dolor eleifend, id venenatis arcu ultrices. Cras consectetur felis mi, id pretium mi euismod sed. Praesent id justo non leo accumsan pretium.</p>
 							<p>Mauris ac nisi felis. Nam auctor in nunc et malesuada. Fusce quis mauris vel metus vehicula vulputate at quis lacus. Curabitur hendrerit, urna in placerat varius, elit nulla molestie magna, ut eleifend elit nibh id metus. Etiam a porttitor leo, eu pellentesque mauris. Duis efficitur tincidunt leo, a luctus nunc eleifend eget. Nulla ornare turpis in magna auctor, ac venenatis turpis porttitor. In dictum sapien ut ipsum scelerisque, ac eleifend tortor mollis. Quisque volutpat malesuada nisi, id sodales orci gravida quis. Duis ornare nunc id aliquam faucibus. Etiam quis sapien massa. Ut dui leo, rutrum vitae magna quis, placerat molestie felis. Phasellus sit amet risus nisl. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Etiam fermentum mauris purus, vitae aliquet libero semper sit amet. Aenean diam mauris, iaculis eget vestibulum a, ultricies eget est.</p>						
 						</div>
-						<div pageid="settings">
-							<homecon-page-header title="Settings" icon="homecon_gears"></homecon-page-header>
-							<paper-button noink="true">Edit mode</paper-button>
-						</div>
+	
+						<homecon-settings pageid="settings"></homecon-settings>
+
 						<template is="dom-repeat" items="{{pages.sections}}" as="section">
 							<template is="dom-repeat" items="{{section.pages}}" as="page">
 								<homecon-page pageid="{{page.id}}" page="{{page}}"></homecon-page>
