@@ -8,7 +8,19 @@
 	<template>
 		<style>
 			:host{
-			}	
+			}
+			paper-button{
+				width: 90%;
+				margin: 8px;
+
+    			background-color: #333333;
+    			border-color: #1f1f1f;
+				border-width: 1px;
+    			border-style: solid;
+			}
+			paper-button:hover{
+				background-color: #373737;
+			}
 		</style>
 		
 		<homecon-page-header title="{{page.title}}" icon="{{page.icon}}" widget="{{page.headerwidget}}"></homecon-page-header>
@@ -21,6 +33,9 @@
 			</homecon-page-section>
 		</template>
 
+		<div class="vertical layout center" hidden="{{!edit}}">
+			<paper-button noink="true" on-click="addSection">add section</paper-button>
+		</div>
 			
 	</template>
 	<script>
@@ -30,7 +45,14 @@
 				page: {
 					type: 'Object',
 				},
-			}
+				edit:{
+					type: 'Boolean',
+					value: false
+				}
+			},
+			addSection: function(e){
+				this.push('page.sections',{'title':'','widgets':[]});
+			},
 		});
 	</script>
 </dom-module>

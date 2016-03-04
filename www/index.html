@@ -70,7 +70,7 @@
 
 						<template is="dom-repeat" items="{{pages.sections}}" as="section">
 							<template is="dom-repeat" items="{{section.pages}}" as="page">
-								<homecon-page pageid="{{page.id}}" page="{{page}}"></homecon-page>
+								<homecon-page pageid="{{page.id}}" page="{{page}}" edit="{{edit}}"></homecon-page>
 							</template>
 						</template>
 					</iron-pages>			
