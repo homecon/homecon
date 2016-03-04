@@ -1,6 +1,9 @@
 <link rel="import" href="../../bower_components/polymer/polymer.html">
 <link rel="import" href="../../bower_components/iron-flex-layout/classes/iron-flex-layout.html">
 
+<link rel="import" href="../../elements/homecon-edit-dialog/homecon-edit-dialog.html">
+<link rel="import" href="../../elements/homecon-icon-select/homecon-icon-select.html">
+
 <dom-module is="homecon-menu-item">
 	<template>
 		<style>
@@ -53,11 +56,15 @@
 			<img class="icon" src="images/icons/ffffff/{{page.icon}}.png">
 			<h1 class="title">{{page.title}}</h1>
 		</a>
-		<template is="dom-if" if="{{edit}}">
-			<paper-icon-button class="edit" icon="editor:mode-edit" noink="true"></paper-icon-button>
-		</template>
 		
-			
+		<paper-icon-button class="edit" icon="editor:mode-edit" noink="true" on-click="openEditDialog" hidden="{{!edit}}"></paper-icon-button>
+
+		
+		<homecon-edit-dialog id="editDialog" on-save="save">
+			<paper-input label="Title:" value="{{newTitle}}"></paper-input>
+			<homecon-icon-select icon="{{newIcon}}"></homecon-icon-select>
+		</homecon-edit-dialog>
+
 	</template>
 	<script>
 		Polymer({
@@ -74,7 +81,17 @@
 			changePage: function(){
 				app.set('page',this.page.id);
 				app.closeDrawer();
-			}
+			},
+			openEditDialog: function(){
+				this.set('newTitle',this.page.title);
+				this.set('newIcon',this.page.icon);
+				this.$.editDialog.open();
+			},
+			save: function(){
+				this.set('page.title',this.newTitle);
+				this.set('page.icon',this.newIcon);
+				this.$.editDialog.close();
+			},
 		});
 	</script>
 </dom-module>

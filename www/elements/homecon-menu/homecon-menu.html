@@ -26,23 +26,23 @@
 		</style>
 		
 		<template is="dom-repeat" items="{{pages.sections}}" as="section">
-			<homecon-menu-section title="{{section.title}}" edit="{{edit}}">
+			<homecon-menu-section section="{{section}}" edit="{{edit}}">
 				<template is="dom-repeat" items="{{section.pages}}" as="page">
 					<homecon-menu-item page="{{page}}" edit="{{edit}}"></homecon-menu-item>
 				</template>
-				<template is="dom-if" if="{{edit}}">
-					<div class="vertical layout center">
-						<paper-button noink="true">add page</paper-button>
-					</div>
-				</template>
+
+				<div class="vertical layout center" hidden="{{!edit}}">
+					<paper-button noink="true" on-click="addPage">add page</paper-button>
+				</div>
+
 			</homecon-menu-section>
 		</template>
 
-		<template is="dom-if" if="{{edit}}">
-			<div class="vertical layout center">
-				<paper-button noink="true">add section</paper-button>
-			</div>
-		</template>
+		
+		<div class="vertical layout center" hidden="{{!edit}}">
+			<paper-button noink="true" on-click="addSection">add section</paper-button>
+		</div>
+		
 		
 	</template>
 	<script>
@@ -65,6 +65,13 @@
 				for(var i=0;i<children.length;i++){ 
 					children[i].fire('menuChangeState',e.target)
 				}
+			},
+			addSection: function(e){
+				this.push('pages.sections',{'title':'','pages':[]});
+			},
+			addPage: function(e){
+				id = e.model.__data__.index +'_' + e.model.__data__.section.pages.length
+        		e.model.push('section.pages', {'id':id,'title':'','icon':'blank','header':{},'sections':[]});
 			}
 		});
 	</script>

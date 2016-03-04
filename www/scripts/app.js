@@ -93,6 +93,7 @@
 	};
 
 	// temporary definition of pages
+/*
 	app.pages = {
 		'sections': [
 			{
@@ -161,7 +162,7 @@
 			}
 		]
 	};
-
+*/
 	// set the starting page to home
 	app.page = 'home';
 

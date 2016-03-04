@@ -17,7 +17,7 @@ for file in os.listdir("."):
 		f1.close()
 		
 		# export
-		subprocess.call('inkscape '+file[0:-4]+'_tmp.svg --export-width=200 --export-png=../../www/icons/'+col[1:]+'/'+file[0:-4]+'.png')
+		subprocess.call('inkscape '+file[0:-4]+'_tmp.svg --export-width=200 --export-png=../../www/images/icons/'+col[1:]+'/'+file[0:-4]+'.png', shell=True)
 		
 		# remove tmp file
 		os.remove(file[0:-4]+'_tmp.svg')
