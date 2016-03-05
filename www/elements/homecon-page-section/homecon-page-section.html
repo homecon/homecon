@@ -2,12 +2,16 @@
 <link rel="import" href="../../bower_components/iron-flex-layout/classes/iron-flex-layout.html">
 <link rel="import" href="../../bower_components/iron-collapse/iron-collapse.html">
 
+<link rel="import" href="../../elements/homecon-edit-dialog/homecon-edit-dialog.html">
+
 <dom-module is="homecon-page-section">
 	<template>
 		<style>
 			:host{
 				display: block;
+				position: relative;
 				width: 100%;
+
 				margin: 8px 0px;
 
 				border-radius: 5px;
@@ -16,7 +20,8 @@
 			#header{
 				display: block;
 				cursor: pointer;
-				
+
+				min-height: 12px;
 				padding: 12px 12px 12px 40px;
 
 				background-color: #ffffff;
@@ -48,25 +53,36 @@
 
 				padding: 8px;
 			}
+			.edit{
+				position: absolute;
+				top: 0px;
+				right: 5px;
+				color: #000000;
+			}
 		</style>
 		
 		<a id="header" class="header" on-click="changeState">			
-			{{title}}
+			{{section.title}}
 		</a>
 		<iron-collapse opened="{{opened}}">
 			<div id="content">
 				<content></content>
 			</div>
 		</iron-collapse>
-		
 			
+		<paper-icon-button class="edit" icon="editor:mode-edit" noink="true" on-click="openEditDialog" hidden="{{!edit}}"></paper-icon-button>
+
+		<homecon-edit-dialog id="editDialog" on-save="save">
+			<paper-input label="Title:" value="{{newTitle}}"></paper-input>
+		</homecon-edit-dialog>
+
 	</template>
 	<script>
 		Polymer({
 			is: 'homecon-page-section',
 			properties: {
-				title: {
-					type: 'String',
+				section: {
+					type: 'Object',
 				},
 				opened: {
 					type: 'Boolean',
@@ -76,7 +92,14 @@
 				this.opened = !this.opened;
 				 this.toggleClass("opened", this.opened, this.$.header);
 			},
-
+			openEditDialog: function(){
+				this.set('newTitle',this.section.title);
+				this.$.editDialog.open();
+			},
+			save: function(){
+				this.set('section.title',this.newTitle);
+				this.$.editDialog.close();
+			},
 		});
 	</script>
 </dom-module>

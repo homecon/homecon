@@ -9,8 +9,8 @@
 		<style>
 			:host{
 				display: block;
-				width: 100%;
 				position: relative;
+				width: 100%;
 			}
 			a.item{
 				display: block;
@@ -58,7 +58,6 @@
 		</a>
 		
 		<paper-icon-button class="edit" icon="editor:mode-edit" noink="true" on-click="openEditDialog" hidden="{{!edit}}"></paper-icon-button>
-
 		
 		<homecon-edit-dialog id="editDialog" on-save="save">
 			<paper-input label="Title:" value="{{newTitle}}"></paper-input>

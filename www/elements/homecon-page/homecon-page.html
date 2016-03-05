@@ -26,7 +26,7 @@
 		<homecon-page-header title="{{page.title}}" icon="{{page.icon}}" widget="{{page.headerwidget}}"></homecon-page-header>
 		
 		<template is="dom-repeat" items="{{page.sections}}" as="section">
-			<homecon-page-section title="{{section.title}}">
+			<homecon-page-section section="{{section}}">
 				<template is="dom-repeat" items="{{section.widgets}}" as="widget">
 					<div>{{widget.type}}</div>
 				</template>
