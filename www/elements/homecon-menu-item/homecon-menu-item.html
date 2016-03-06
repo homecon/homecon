@@ -62,6 +62,7 @@
 		<homecon-edit-dialog id="editDialog" on-save="save">
 			<paper-input label="Title:" value="{{newTitle}}"></paper-input>
 			<homecon-icon-select icon="{{newIcon}}"></homecon-icon-select>
+			<paper-button on-click="delete">Delete</paper-button>
 		</homecon-edit-dialog>
 
 	</template>
@@ -91,6 +92,9 @@
 				this.set('page.icon',this.newIcon);
 				this.$.editDialog.close();
 			},
+			delete: function(){
+				this.fire('delete')
+			}
 		});
 	</script>
 </dom-module>

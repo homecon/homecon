@@ -17,10 +17,10 @@
 			}
 		</style>
 		
-		<template is="dom-repeat" items="{{pages.sections}}" as="section">
-			<homecon-menu-section section="{{section}}" edit="{{edit}}">
-				<template is="dom-repeat" items="{{section.pages}}" as="page">
-					<homecon-menu-item page="{{page}}" edit="{{edit}}"></homecon-menu-item>
+		<template is="dom-repeat" id="sections" items="{{pages.sections}}" as="section">
+			<homecon-menu-section section="{{section}}" edit="{{edit}}" on-delete="deleteSection">
+				<template is="dom-repeat" id="pages" items="{{section.pages}}" as="page">
+					<homecon-menu-item page="{{page}}" edit="{{edit}}" on-delete="deletePage"></homecon-menu-item>
 				</template>
 
 				<div class="vertical layout center" hidden="{{!edit}}">
@@ -62,8 +62,19 @@
 				this.push('pages.sections',{'title':'','pages':[]});
 			},
 			addPage: function(e){
-				id = e.model.__data__.index +'_' + e.model.__data__.section.pages.length
+				id = new Date().valueOf();
         		e.model.push('section.pages', {'id':id,'title':'','icon':'blank','header':{},'sections':[]});
+			},
+			deleteSection: function(e){
+				e.stopPropagation()
+				var section = this.$.sections.modelForElement(e.target).__data__.index;
+				this.splice('pages.sections',section,1)
+			},
+			deletePage: function(e){
+				e.stopPropagation()
+				var section = this.$.sections.modelForElement(e.target).__data__.index;
+				var page = e.model.__data__.index;
+				this.splice('pages.sections.'+section+'.pages',page,1)
 			}
 		});
 	</script>

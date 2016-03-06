@@ -5,6 +5,7 @@
 <link rel="import" href="../../bower_components/iron-icons/editor-icons.html">
 <link rel="import" href="../../bower_components/paper-icon-button/paper-icon-button.html">
 <link rel="import" href="../../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../../bower_components/paper-button/paper-button.html"
 
 <link rel="import" href="../../elements/homecon-edit-dialog/homecon-edit-dialog.html">
 
@@ -60,6 +61,7 @@
 
 		<homecon-edit-dialog id="editDialog" on-save="save">
 			<paper-input label="Title:" value="{{newTitle}}"></paper-input>
+			<paper-button on-click="delete">Delete</paper-button>
 		</homecon-edit-dialog>
 
 
@@ -99,6 +101,9 @@
 				this.set('section.title',this.newTitle);
 				this.$.editDialog.close();
 			},
+			delete: function(){
+				this.fire('delete')
+			}
 		});
 	</script>
 </dom-module>
