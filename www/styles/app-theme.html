@@ -1,39 +1,41 @@
-
 <style is="custom-style">
 
 	/* Application theme */
 
 	:root {
-		--text-primary-color: #ffffff;
-		--text-secondary-color: #222222;
-		--background-primary-color: #252525;
-		--background-secondary-color: #ffffff;
-		--disabled-text-color: #bdbdbd;
-		--divider-color: #B6B6B6;
+		--primary-background-color: #252525;
+		--secondary-background-color: #2a2a2a;
 
-    	/* Components */
-		/* paper-button */
-		--button-background-color: #ffffff;
-		--button-text-color: #222222;
-		--button-background-primary-color: #d8a031; 
-		--button-text-primary-color: #ffffff;
+		--toolbar-color: #1d1d1d;
+		--toolbar-border-color: #1b1b1b;
+
+		--primary-text-color: #ffffff;
+		--secondary-text-color: #aaaaaa;
+
+		--text-shadow-color: #111111;
+
+		--primary-color: #777777;
+
+		--header-background-color: #ffffff;
+		--header-background-color-hover: #ededed;
+		--header-text-color: #333333;
+		--header-text-shadow-color: #f3f3f3;
+		--header-border-color: #dddddd;
+
+		--button-background-color: #333333;
+		--button-background-color-hover: #373737;
+		--button-text-color: #ffffff;
+		--button-border-color: #1f1f1f;
+		
+		--section-border-color: #1d1d1d;
 	}
 
 
 /* General styles */
 	body{
-		background: var(--background-primary-color);
+		background: var(--primary-background-color);
 		font-family: 'Roboto', 'Helvetica Neue', Helvetica, Arial, sans-serif;
-		color: var(--text-primary-color);
-	}
-	paper-material{
-		border-radius: 2px;
-		height: 100%;
-		padding: 16px 0 16px 0;
-		width: calc(98.66% - 16px);
-		margin: 16px auto;
-		background: var(--background-secondary-color);
-		color: var(--text-secondary-color);
+		color: var(--primary-text-color);
 	}
 
 	#toast .toast-hide-button {
@@ -45,23 +47,12 @@
 
 	/* Small */
 	@media (max-width: 800px) {
-
 		paper-material {
 			--menu-container-display: none;
 			width: calc(97.33% - 32px);
 			padding-left: 16px;
 			padding-right: 16px;
 		}
-
-		paper-toolbar.tall .app-name {
-			font-size: 24px;
-			font-weight: 400;
-		}
-
-		#drawer .paper-toolbar {
-			margin-left: 16px;
-		}
-
 	}
 
 	/* Tablet+ */

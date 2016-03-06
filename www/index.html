@@ -47,11 +47,11 @@
 				</div>
 			</section>-->
 
-			<paper-header-panel-drawer id="main">
-				<div class="header">
-					<homecon-header-item pageid="home" icon="homecon_home"></homecon-header-item>
-					<homecon-header-item pageid="settings" icon="homecon_gears"></homecon-header-item>
-					<homecon-header-item pageid="logout" icon="homecon_logout"></homecon-header-item>
+			<paper-toolbar-drawer id="main">
+				<div class="toolbar">
+					<homecon-toolbar-item pageid="home" icon="homecon_home"></homecon-toolbar-item>
+					<homecon-toolbar-item pageid="settings" icon="homecon_gears"></homecon-toolbar-item>
+					<homecon-toolbar-item pageid="logout" icon="homecon_logout"></homecon-toolbar-item>
 				</div>
 				<div class="drawer">
 					<homecon-menu pages="{{pages}}" edit="{{edit}}"></homecon-menu>
@@ -75,7 +75,7 @@
 						</template>
 					</iron-pages>			
 				</div>
-			</paper-header-panel-drawer>
+			</paper-toolbar-drawer>
 
 			<paper-toast id="toast">
 				<span class="toast-hide-button" role="button" tabindex="0" onclick="app.$.toast.hide()">close</span>

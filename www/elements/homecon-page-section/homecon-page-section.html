@@ -4,8 +4,11 @@
 
 <link rel="import" href="../../elements/homecon-edit-dialog/homecon-edit-dialog.html">
 
+<link rel="import" href="../../styles/homecon-styles.html">
+
 <dom-module is="homecon-page-section">
 	<template>
+		<style include="homecon-styles"></style>
 		<style>
 			:host{
 				display: block;
@@ -24,8 +27,8 @@
 				min-height: 12px;
 				padding: 12px 12px 12px 40px;
 
-				background-color: #ffffff;
-				border-color: #ddddddd;
+				background-color: var(--header-background-color);
+				border-color: var(--header-border-color);
 				border-style: solid;
 				border-width: 1px;
 				border-radius: 5px;
@@ -33,19 +36,19 @@
 				font-size: 16px;
 				font-family: sans-serif;
 				font-weight: 700;
-				color: #333333;
-				text-shadow: 0 1px 0 #f3f3f3;
+				color: var(--header-text-color);
+				text-shadow: 0 1px 0 var(--header-text-shadow-color);
 				text-decoration: none;
 			}
 			#header.opened{
 				border-radius: 5px 5px 0px 0px;
 			}
 			#header:hover{
-				background-color: #ededed;
+				background-color: var(--header-background-color-hover);
 			}
 			#content{
-				background-color: #2a2a2a;
-				border-color: #1d1d1d;
+				background-color: var(--secondary-background-color);
+				border-color: var(--section-border-color);
 
 				border-style: solid;
 				border-width: 0px 1px 1px 1px;
@@ -57,7 +60,7 @@
 				position: absolute;
 				top: 0px;
 				right: 5px;
-				color: #000000;
+				color: var(--header-text-color);
 			}
 		</style>
 		
@@ -86,6 +89,10 @@
 				},
 				opened: {
 					type: 'Boolean',
+				},
+				edit:{
+					type: 'Boolean',
+					value: false
 				}
 			},
 			changeState: function(){

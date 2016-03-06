@@ -8,10 +8,11 @@
 
 <link rel="import" href="../../elements/homecon-edit-dialog/homecon-edit-dialog.html">
 
-
+<link rel="import" href="../../styles/homecon-styles.html">
 
 <dom-module is="homecon-menu-section">
 	<template>
+		<style include="homecon-styles"></style>
 		<style>
 			:host{
 				display: block;
@@ -24,28 +25,25 @@
 				min-height: 16px;
 				padding: 12px 12px 12px 40px;
 
-				background-color: #ffffff;
+				background-color: var(--header-background-color);
 				border-top: solid 1px;
-				border-color: #dddddd;
+				border-color: var(--header-border-color);
 
 				font-size: 16px;
 				font-family: sans-serif;
 				font-weight: 700;
-				color: #333333;
-				text-shadow: 0 1px 0 #f3f3f3;
+				color: var(--header-text-color);
+				text-shadow: 0 1px 0 var(--header-text-shadow-color);
 				text-decoration: none;
 			}
 			a.header:hover{
-				background-color: #ededed;
+				background-color: var(--header-background-color-hover);
 			}
 			.edit{
 				position: absolute;
 				top: 0px;
 				right: 5px;
-				color: #333333;
-			}
-			.edit:hover{
-				color: #373737;
+				color: var(--header-text-color);
 			}
 		</style>
 		

@@ -4,8 +4,11 @@
 <link rel="import" href="../../elements/homecon-edit-dialog/homecon-edit-dialog.html">
 <link rel="import" href="../../elements/homecon-icon-select/homecon-icon-select.html">
 
+<link rel="import" href="../../styles/homecon-styles.html">
+
 <dom-module is="homecon-menu-item">
 	<template>
+		<style include="homecon-styles"></style>
 		<style>
 			:host{
 				display: block;
@@ -17,16 +20,16 @@
 				position: relative;
 				cursor: pointer;
 
-				background-color: #333333;
+				background-color: var(--button-background-color);
 				border-bottom: solid 1px;
-				border-color: #1d1d1d;
+				border-color: var(--button-border-color);
 
 				text-decoration: none;
 
 				height: 60px;
 			}
 			a.item:hover{
-				background-color: #373737;
+				background-color: var(--button-background-color-hover);
 			}
 			a.item .icon{
 				height: 100%;
@@ -36,8 +39,8 @@
 				font-size: 18px;
 				font-family: sans-serif;
 				font-weight: 700;
-				color: #ffffff;
-				text-shadow: 0 1px 0 #111111;
+				color: var(--button-text-color);
+				text-shadow: 0 1px 0 var(--text-shadow-color);
 				margin-left: 40px;
 				overflow: hidden;
 			}
@@ -45,10 +48,7 @@
 				position: absolute;
 				top: 0px;
 				right: 5px;
-				color: #ffffff;
-			}
-			.edit:hover{
-				color: #ededed;
+				color: var(--button-text-color);
 			}
 		</style>
 		

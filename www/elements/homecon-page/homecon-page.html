@@ -4,29 +4,24 @@
 <link rel="import" href="../../elements/homecon-page-header/homecon-page-header.html">
 <link rel="import" href="../../elements/homecon-page-section/homecon-page-section.html">
 
+<link rel="import" href="../../styles/homecon-styles.html">
+
 <dom-module is="homecon-page">
 	<template>
+		<style include="homecon-styles"></style>
 		<style>
 			:host{
 			}
 			paper-button{
 				width: 90%;
 				margin: 8px;
-
-    			background-color: #333333;
-    			border-color: #1f1f1f;
-				border-width: 1px;
-    			border-style: solid;
-			}
-			paper-button:hover{
-				background-color: #373737;
 			}
 		</style>
 		
 		<homecon-page-header title="{{page.title}}" icon="{{page.icon}}" widget="{{page.headerwidget}}"></homecon-page-header>
 		
 		<template is="dom-repeat" items="{{page.sections}}" as="section">
-			<homecon-page-section section="{{section}}">
+			<homecon-page-section section="{{section}}" edit="{{edit}}">
 				<template is="dom-repeat" items="{{section.widgets}}" as="widget">
 					<div>{{widget.type}}</div>
 				</template>

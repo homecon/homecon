@@ -8,17 +8,23 @@
 <link rel="import" href="../../bower_components/neon-animation/animations/scale-up-animation.html">
 <link rel="import" href="../../bower_components/neon-animation/animations/fade-out-animation.html">
 
+<link rel="import" href="../../styles/homecon-styles.html">
+
 <dom-module is="homecon-edit-dialog">
 	<template>
+		<style include="homecon-styles"></style>
 		<style>
 			:host{
-			}	
+			}
 		</style>
 		
 		<paper-dialog id="dialog" entry-animation="scale-up-animation" exit-animation="fade-out-animation" with-backdrop="true">
 			<form id="form" is="iron-form" on-iron-form-submit="save" action="/">
 				<content></content>
-				<paper-button on-tap="formSubmit">save</paper-button>
+				<div class="horizontal layout">
+					<paper-button on-tap="formSubmit">save</paper-button>
+					<paper-button on-tap="close">cancel</paper-button>
+				</div>
 			</form>
 		</paper-dialog>	
 

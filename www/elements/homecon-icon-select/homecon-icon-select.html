@@ -9,8 +9,11 @@
 <link rel="import" href="../../bower_components/neon-animation/animations/scale-up-animation.html">
 <link rel="import" href="../../bower_components/neon-animation/animations/fade-out-animation.html">
 
+<link rel="import" href="../../styles/homecon-styles.html">
+
 <dom-module is="homecon-icon-select">
 	<template>
+		<style include="homecon-styles"></style>
 		<style>
 			:host{
 			}
@@ -24,7 +27,7 @@
 		</style>
 		
 		<div class="horizontal layout center" on-tap="open">
-			<img class="icon" src="images/icons/000000/{{icon}}.png">
+			<img class="icon" src="images/icons/{{color}}/{{icon}}.png">
 			<div>{{icon}}</div>
 		</div>
 
@@ -33,32 +36,32 @@
 
 				<h3>Scene</h3>
 				<template is="dom-repeat" items="{{sceneIcon}}" as="icon">
-					<img class="listIcon" src="images/icons/000000/{{icon}}.png" on-tap="select">
+					<img class="listIcon" src="images/icons/{{color}}/{{icon}}.png" on-tap="select">
 				</template>
 
 				<h3>light</h3>
 				<template is="dom-repeat" items="{{lightIcon}}" as="icon">
-					<img class="listIcon" src="images/icons/000000/{{icon}}.png" on-tap="select">
+					<img class="listIcon" src="images/icons/{{color}}/{{icon}}.png" on-tap="select">
 				</template>
 
 				<h3>fts</h3>
 				<template is="dom-repeat" items="{{ftsIcon}}" as="icon">
-					<img class="listIcon" src="images/icons/000000/{{icon}}.png" on-tap="select">
+					<img class="listIcon" src="images/icons/{{color}}/{{icon}}.png" on-tap="select">
 				</template>
 
 				<h3>Weather</h3>
 				<template is="dom-repeat" items="{{weatherIcon}}" as="icon">
-					<img class="listIcon" src="images/icons/000000/{{icon}}.png" on-tap="select">
+					<img class="listIcon" src="images/icons/{{color}}/{{icon}}.png" on-tap="select">
 				</template>
 
 				<h3>Sani</h3>
 				<template is="dom-repeat" items="{{saniIcon}}" as="icon">
-					<img class="listIcon" src="images/icons/000000/{{icon}}.png" on-tap="select">
+					<img class="listIcon" src="images/icons/{{color}}/{{icon}}.png" on-tap="select">
 				</template>
 
 				<h3>Vent</h3>
 				<template is="dom-repeat" items="{{ventIcon}}" as="icon">
-					<img class="listIcon" src="images/icons/000000/{{icon}}.png" on-tap="select">
+					<img class="listIcon" src="images/icons/{{color}}/{{icon}}.png" on-tap="select">
 				</template>
 
 			</paper-dialog-scrollable>
@@ -74,6 +77,10 @@
 					type: 'String',
 					value: 'blank',
 					notify: true
+				},
+				color: {
+					type: 'String',
+					value: 'ffffff',			
 				},
 				controlIcon: {
 					type: 'Array',

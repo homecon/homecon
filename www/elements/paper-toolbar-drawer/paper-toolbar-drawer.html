@@ -2,15 +2,15 @@
 <link rel="import" href="../../bower_components/iron-flex-layout/classes/iron-flex-layout.html">
 <link rel="import" href="../../bower_components/paper-drawer-panel/paper-drawer-panel.html">
 
-<dom-module is="paper-header-panel-drawer">
+<dom-module is="paper-toolbar-drawer">
 	<template>
 		<style>
 			:host{
 				width: 100%;
 				height: 100%;
-				background-color: #252525;
+				background-color: var(--primary-background-color);
 			}
-			.header{
+			.toolbar{
 				position: fixed;
 
 				-webkit-box-sizing: border-box;
@@ -20,9 +20,10 @@
 				width: 100%;
 				height: 60px;
 
-				background-color: #1d1d1d;
+				background-color: var(--toolbar-color);
 				border-bottom: solid 1px;
-				border-color: #1b1b1b;
+				border-color: var(--toolbar-border-color);
+				box-shadow: 2px 2px 2px rgba(0,0,0,.15);
 				z-index: 10;
 			}
 			.content{
@@ -38,7 +39,7 @@
 				bottom: 0;
 			}
 			.drawer{
-				background-color: #2a2a2a;
+				background-color: var(--secondary-background-color);
 				overflow: hidden;
 			}
 			.drawer-content{
@@ -78,8 +79,8 @@
 			}
 		</style>
 		
-		<div class="header">
-			<content select=".header"></content>
+		<div class="toolbar">
+			<content select=".toolbar"></content>
 			<a class="menu" on-click="toggleDrawer" hidden="{{hideMenuButton}}">
 				<img src="../../images/icons/ffffff/homecon_bars.png">
 			</a>
@@ -102,7 +103,7 @@
 	</template>
 	<script>
 		Polymer({
-			is: 'paper-header-panel-drawer',
+			is: 'paper-toolbar-drawer',
 			properties: {
 			},
 			ready: function(){
