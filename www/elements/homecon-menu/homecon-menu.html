@@ -17,9 +17,9 @@
 			}
 		</style>
 		
-		<template is="dom-repeat" id="sections" items="{{pages.sections}}" as="section">
-			<homecon-menu-section section="{{section}}" edit="{{edit}}" on-delete="deleteSection">
-				<template is="dom-repeat" id="pages" items="{{section.pages}}" as="page">
+		<template is="dom-repeat" id="sections" items="{{pages.sections}}" as="section" sort="_sortByOrder" observe="order">
+			<homecon-menu-section section="{{section}}" edit="{{edit}}" on-delete="deleteSection" on-move-up="moveUpSection" on-move-down="moveDownSection">
+				<template is="dom-repeat" id="pages" items="{{section.pages}}" as="page" sort="_sortByOrder" observe="order">
 					<homecon-menu-item page="{{page}}" edit="{{edit}}" on-delete="deletePage"></homecon-menu-item>
 				</template>
 
@@ -59,11 +59,19 @@
 				}
 			},
 			addSection: function(e){
-				this.push('pages.sections',{'title':'','pages':[]});
+				var order = -1;
+				this.pages.sections.forEach(function(section){
+					order = Math.max(section.order,order)
+				});
+				this.push('pages.sections',{'title':'','pages':[],'order':order+1});
 			},
 			addPage: function(e){
 				id = new Date().valueOf();
-        		e.model.push('section.pages', {'id':id,'title':'','icon':'blank','header':{},'sections':[]});
+				var order = -1;
+				e.model.section.pages.forEach(function(page){
+					order = Math.max(page.order,order)
+				});
+        		e.model.push('section.pages', {'id':id,'title':'','icon':'blank','header':{},'sections':[],'order':order+1});
 			},
 			deleteSection: function(e){
 				e.stopPropagation()
@@ -75,6 +83,116 @@
 				var section = this.$.sections.modelForElement(e.target).__data__.index;
 				var page = e.model.__data__.index;
 				this.splice('pages.sections.'+section+'.pages',page,1)
+			},
+			moveUpSection: function(e){
+				e.stopPropagation()
+
+				var sections = this.pages.sections
+				var section1 = sections.indexOf(this.$.sections.modelForElement(e.target).__data__.section);
+				var order1 = sections[section1].order;
+
+				// find the section index with order just lower
+				var section2 = -1;
+				
+				for(var i=0;i<sections.length;i++){
+					if(sections[i].order < order1){
+						if(section2 < 0 || sections[i].order>sections[section2].order){
+							section2 = i;
+						}
+					}
+				}
+				
+				if(section2>-1){
+					var order2 = sections[section2].order;
+					this.set('pages.sections.'+(section2)+'.order',order1);
+					this.set('pages.sections.'+(section1)+'.order',order2);
+				}
+			},
+			moveDownSection: function(e){
+				e.stopPropagation()
+
+				var sections = this.pages.sections
+				var section1 = sections.indexOf(this.$.sections.modelForElement(e.target).__data__.section);
+				var order1 = sections[section1].order;
+
+				// find the section index with order just higher
+				var section2 = -1;
+				
+				for(var i=0;i<sections.length;i++){
+					if(sections[i].order > order1){
+						if(section2 < 0 || sections[i].order<sections[section2].order){
+							section2 = i;
+						}
+					}
+				}
+				
+				if(section2>-1){
+					var order2 = sections[section2].order;
+					this.set('pages.sections.'+(section2)+'.order',order1);
+					this.set('pages.sections.'+(section1)+'.order',order2);
+				}
+			},
+			moveUpPage: function(e){
+				e.stopPropagation()
+				var section = this.$.sections.modelForElement(e.target).__data__.index;
+
+				var pages = this.pages.sections[section].pages;
+				var page1 = pages.indexOf(e.model.__data__.page);
+				var order1 = pages[page1].order;
+
+				// find the section index with order just lower
+				var page2 = -1;
+				
+				for(var i=0;i<pages.length;i++){
+					if(pages[i].order < order1){
+						if(page2 < 0 || pages[i].order>pages[page2].order){
+							page2 = i;
+						}
+					}
+				}
+				
+				if(page2>-1){
+					var order2 = pages[page2].order;
+					this.set('pages.sections.'+section+'.pages.'+(page2)+'.order',order1);
+					this.set('pages.sections.'+section+'.pages.'+(page1)+'.order',order2);
+				}
+			},
+			moveDownPage: function(e){
+				e.stopPropagation()
+
+				var sections = this.pages.sections
+				var section1 = sections.indexOf(this.$.sections.modelForElement(e.target).__data__.section);
+				var order1 = this.pages.sections[section1].order;
+
+				// find the section index with order just higher
+				var section2 = -1;
+				var found = false;
+				
+				for(var i=0;i<sections.length;i++){
+					if(sections[i].order > order1){
+						if(section2 < 0 || sections[i].order<sections[section2].order){
+							section2 = i;
+						}
+					}
+				}
+				
+				if(section2>-1){
+					var order2 = sections[section2].order;
+					this.set('pages.sections.'+(section2)+'.order',order1);
+					this.set('pages.sections.'+(section1)+'.order',order2);
+				}
+			},
+			_sortByOrder: function(a,b){
+				if(a.order>b.order){
+					return 1;
+				}
+				else if(a.order<b.order){
+					return -1;
+				}
+				else{
+					return 0;
+				}
+			
 			}
 		});
 	</script>
