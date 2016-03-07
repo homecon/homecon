@@ -3,8 +3,10 @@
 
 <link rel="import" href="../../elements/homecon-page-header/homecon-page-header.html">
 <link rel="import" href="../../elements/homecon-page-section/homecon-page-section.html">
+<link rel="import" href="../../elements/homecon-widget/homecon-widget.html">
 
 <link rel="import" href="../../styles/homecon-styles.html">
+
 
 <dom-module is="homecon-page">
 	<template>
@@ -20,11 +22,15 @@
 		
 		<homecon-page-header title="{{page.title}}" icon="{{page.icon}}" widget="{{page.headerwidget}}"></homecon-page-header>
 		
-		<template is="dom-repeat" items="{{page.sections}}" as="section">
+		<template is="dom-repeat" id="sections" items="{{page.sections}}" as="section">
 			<homecon-page-section section="{{section}}" edit="{{edit}}">
-				<template is="dom-repeat" items="{{section.widgets}}" as="widget">
-					<div>{{widget.type}}</div>
+
+				<template is="dom-repeat" id="widgets" items="{{section.widgets}}" as="widget">
+					<homecon-widget type="{{widget.type}}" config="{{widget.config}}" edit="{{edit}}"></homecon-widget>
 				</template>
+				<div class="vertical layout center" hidden="{{!edit}}">
+					<paper-button noink="true" on-click="addWidget">add widget</paper-button>
+				</div>
 			</homecon-page-section>
 		</template>
 
@@ -48,6 +54,12 @@
 			addSection: function(e){
 				this.push('page.sections',{'title':'','widgets':[]});
 			},
+			addWidget: function(e){
+				var section = this.$.sections.modelForElement(e.target).__data__.index;
+
+				this.push('page.sections.'+section+'.widgets',{'type':'homecon-widget-button','config':{}});
+				console.log(this.page.sections[section].widgets)
+			}
 		});
 	</script>
 </dom-module>

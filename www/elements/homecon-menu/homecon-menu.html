@@ -59,19 +59,11 @@
 				}
 			},
 			addSection: function(e){
-				var order = -1;
-				this.pages.sections.forEach(function(section){
-					order = Math.max(section.order,order)
-				});
-				this.push('pages.sections',{'title':'','pages':[],'order':order+1});
+				this.push('pages.sections',{'title':'','pages':[]});
 			},
 			addPage: function(e){
 				id = new Date().valueOf();
-				var order = -1;
-				e.model.section.pages.forEach(function(page){
-					order = Math.max(page.order,order)
-				});
-        		e.model.push('section.pages', {'id':id,'title':'','icon':'blank','header':{},'sections':[],'order':order+1});
+        		e.model.push('section.pages', {'id':id,'title':'','icon':'blank','header':{},'sections':[]});
 			},
 			deleteSection: function(e){
 				e.stopPropagation()
