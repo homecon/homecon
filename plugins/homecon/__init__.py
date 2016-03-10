@@ -23,9 +23,8 @@ import pymysql
 import threading
 import types
 
-import lib.item
 
-
+from . import items
 from plugins.homecon.mysql import *
 from plugins.homecon.alarms import *
 from plugins.homecon.measurements import *
@@ -41,34 +40,23 @@ class HomeCon:
 	def __init__(self, smarthome, mysql_pass='admin'):
 		logger.info('HomeCon started')
 		
+		# set basic attributes
 		self._sh = smarthome
-		self._mysql_pass = mysql_pass
-
-		# test to add an item from within a plugin
-		parent = None
-		testpath = 'testitem'
-		testitem = lib.item.Item(smarthome, parent, testpath, {})
-		smarthome.add_item(testpath, testitem)
-		#parent.__children.append(testitem)
-
-		logger.warning(dir(testitem))		
-
-		childpath = 'testitem.child'
-		childitem = lib.item.Item(smarthome, testitem, childpath, {})
-		smarthome.add_item(childpath, childitem)
-		testitem._Item__children.append(childitem)
+		self._mysql = Mysql(self,mysql_pass) 
+		
 
 
-		self.item = None
 
-		self.sh_listen_items = {}
+		#self.item = None
 
-		self.zones = []
-		self.weather = None
+		#self.sh_listen_items = {}
 
-		self.lat  = float(self._sh._lat)
-		self.lon  = float(self._sh._lon)
-		self.elev = float(self._sh._elev)
+		#self.zones = []
+		#self.weather = None
+
+		#self.lat  = float(self._sh._lat)
+		#self.lon  = float(self._sh._lon)
+		#self.elev = float(self._sh._elev)
 
 		#code for adding items for homecon and from mysql will come here
 		# 
@@ -97,52 +85,60 @@ class HomeCon:
 
 	def run(self):
 
+		# set general properties from the database
+
+
+		# set items from the database
+		items.set_items(self)
+
+		# for testing
 		for item in self._sh.return_items():
 			print(item.id())
+		
 
 
 		# called once after the items have been parsed
 		self.alive = True
 		
-		self.item = self._sh.homecon
+		#self.item = self._sh.homecon
 
-		self.energy = self.item.energy
-		self.ventilation = self.item.ventilation
-		self.heat_production = self.item.heat_production
+		#self.energy = self.item.energy
+		#self.ventilation = self.item.ventilation
+		#self.heat_production = self.item.heat_production
 	
 
 		# create objects
-		self.mysql = Mysql(self)
-		self.alarms = Alarms(self)
-		self.measurements = Measurements(self)
-		self.weather = Weather(self)
+		#self.mysql = Mysql(self)
+		#self.alarms = Alarms(self)
+		#self.measurements = Measurements(self)
+		#self.weather = Weather(self)
 
 		# zone objects
-		for item in self.find_item('zone'):
-			logger.warning(item)
-			self.zones.append( Zone(self,item) )
+		#for item in self.find_item('zone'):
+		#	logger.warning(item)
+		#	self.zones.append( Zone(self,item) )
 
-		logger.warning('New objects created')
+		#logger.warning('New objects created')
 
 
  		# schedule low_level_control
-		self._sh.scheduler.add('HomeCon_update', self.low_level_control, prio=2, cron='* * * *')
+		#self._sh.scheduler.add('HomeCon_update', self.low_level_control, prio=2, cron='* * * *')
 
 		# schedule measurements
-		self._sh.scheduler.add('Measurements_minute', self.measurements.minute, prio=2, cron='* * * *')
-		self._sh.scheduler.add('Measurements_average_quarterhour', self.measurements.quarterhour, prio=5, cron='1,16,31,46 * * *')
-		self._sh.scheduler.add('Measurements_average_week', self.measurements.week, prio=5, cron='2 0 * 0')
-		self._sh.scheduler.add('Measurements_average_month', self.measurements.month, prio=5, cron='2 0 1 *')
+		#self._sh.scheduler.add('Measurements_minute', self.measurements.minute, prio=2, cron='* * * *')
+		#self._sh.scheduler.add('Measurements_average_quarterhour', self.measurements.quarterhour, prio=5, cron='1,16,31,46 * * *')
+		#self._sh.scheduler.add('Measurements_average_week', self.measurements.week, prio=5, cron='2 0 * 0')
+		#self._sh.scheduler.add('Measurements_average_month', self.measurements.month, prio=5, cron='2 0 1 *')
 		
 		# schedule forecast loading
-		self._sh.scheduler.add('Weater_forecast', self.weather.forecast, prio=5, cron='1 * * *')
+		#self._sh.scheduler.add('Weater_forecast', self.weather.forecast, prio=5, cron='1 * * *')
 
 
 
 		# create the mpc objects
-		self.mpc = MPC(self)
-		self.mpc.model.identify()
-		self.mpc.model.validate()
+		#self.mpc = MPC(self)
+		#self.mpc.model.identify()
+		#self.mpc.model.validate()
 
 		logger.warning('Initialization Complete')
 
@@ -152,6 +148,7 @@ class HomeCon:
 
 
 	def parse_item(self, item):
+		logger.warning(item.id())
 		# called once while parsing the items
 		# find the items in sh_listen and
 		if 'sh_listen' in item.conf:
@@ -180,30 +177,33 @@ class HomeCon:
 
 		########################################################################
 		# check if shading override values need to be set
-		if item in self._sh.match_items('*.shading.set_override'):
-			window = item.return_parent().conf['homeconobject']
-			window.shading_override()
+		#if item in self._sh.match_items('*.shading.set_override'):
+		#	window = item.return_parent().conf['homeconobject']
+		#	window.shading_override()
 
-		if item in self._sh.match_items('*.shading.value'):
-			if caller!='KNX' and caller != 'Logic':
-				window = item.return_parent().conf['homeconobject']
-				window.shading_override()
+		#if item in self._sh.match_items('*.shading.value'):
+		#	if caller!='KNX' and caller != 'Logic':
+		#		window = item.return_parent().conf['homeconobject']
+		#		window.shading_override()
 
 		########################################################################
 		# check for rain
 		if item.id() == 'homecon.weather.current.precipitation':
-			for zone in self.zones:
-				zone.shading_control()
+			pass
+			#for zone in self.zones:
+			#	zone.shading_control()
 
 		########################################################################
 		# check for model identify
 		if item.id() == 'homecon.mpc.model.identification':
-			self.mpc.model.identify()
+			pass
+			#self.mpc.model.identify()
 
 		########################################################################
 		# check for model validation
 		if item.id() == 'homecon.mpc.model.validation':
-			self.mpc.model.validate()
+			pass
+			#self.mpc.model.validate()
 
 
 
@@ -216,20 +216,21 @@ class HomeCon:
 		Update all values dependent on time
 		Run every minute
 		"""
+		pass
 		#logger.warning('low level control')
 		
 		# check for alarms
-		self.alarms.run()
+		#self.alarms.run()
 
 		# update weather calculations
-		self.weather.update()
+		#self.weather.update()
 
 		# set controls
-		for zone in self.zones:
+		#for zone in self.zones:
 			#zone.irradiation.setpoint(500)
 			#zone.emission.setpoint(0)
 
-			zone.shading_control()
+		#	zone.shading_control()
 
 
 

@@ -8,7 +8,7 @@ logger = logging.getLogger('')
 
 class Mysql:
 
-	def __init__(self,homecon):
+	def __init__(self,homecon,mysql_pass):
 		"""
 		A mysql object is created
 		and mysql tables required for homecon are created
@@ -19,22 +19,21 @@ class Mysql:
 		"""
 
 		self.homecon = homecon
-		self._sh = homecon._sh
-		self._mysql_pass = homecon._mysql_pass
+		self._mysql_pass = mysql_pass
 
-		con,cur = self.create_cursor()
+		#con,cur = self.create_cursor()
 
 		# set location data
-		query = "UPDATE data SET latitude=%f,longitude=%f,elevation=%f WHERE id=1" % (float(self._sh._lat),float(self._sh._lon),float(self._sh._elev))
-		try:
-			cur.execute( query )
-		except:
-			logger.warning("Could not add location to database")
+		#uery = "UPDATE data SET latitude=%f,longitude=%f,elevation=%f WHERE id=1" % (float(self._sh._lat),float(self._sh._lon),float(self._sh._elev))
+		#try:
+		#	cur.execute( query )
+		#except:
+		#	logger.warning("Could not add location to database")
 
 
 		logger.warning("Database initialized")
-		con.commit()	
-		con.close()
+		#con.commit()	
+		#con.close()
 		
 
 	def create_cursor(self):
