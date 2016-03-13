@@ -22,103 +22,107 @@ import numpy as np
 import pymysql
 import threading
 import types
+import lib
+import os
+import dateutil.tz
 
 
 from . import items
-from plugins.homecon.mysql import *
-from plugins.homecon.alarms import *
-from plugins.homecon.measurements import *
-from plugins.homecon.weather import *
-from plugins.homecon.zone import *
-from plugins.homecon.mpc import *
+from . import mysql
+from . import alarms
+from . import measurements
+from . import weather
+from . import building
+from . import mpc
 
 
 logger = logging.getLogger('')
 
 class HomeCon:
 
-	def __init__(self, smarthome, mysql_pass='admin'):
+	def __init__(self, smarthome, mysql_pass='mysql_pass'):
 		logger.info('HomeCon started')
 		
 		# set basic attributes
 		self._sh = smarthome
-		self._mysql = Mysql(self,mysql_pass) 
+		self.mysql = mysql.Mysql(self,mysql_pass)
+		
+		# prepare other attributes
+		#self.item = None
+		self.alarms = None
+		self.weather = None
+		self.measurements = None
+		self.zones = []
 		
 
-
-
-		#self.item = None
-
-		#self.sh_listen_items = {}
-
-		#self.zones = []
-		#self.weather = None
-
-		#self.lat  = float(self._sh._lat)
-		#self.lon  = float(self._sh._lon)
-		#self.elev = float(self._sh._elev)
-
-		#code for adding items for homecon and from mysql will come here
-		# 
-        #for attr, value in config.items():
-        #    if isinstance(value, dict):
-        #        child_path = self._path + '.' + attr
-        #        try:
-        #            child = Item(smarthome, self, child_path, value)
-		#"""
-        #Arguments:
-        #smarthome: the smarthome object
-        #parent: the parent item
-        #config: a dict with key value pairs of config attributes or child items
-		#
-        #Example:
-        #item = Item(smarthome,parentitem,'sh.firstfloor.living.window.shading',{'transmittance':'0.3','move':{'type':'bool','knx_dpt':'1','knx_send':'2/1/5'}})
-        #"""
-        #        except Exception as e:
-        #            logger.error("Item {}: problem creating: {}".format(child_path, e))
-        #        else:
-        #            vars(self)[attr] = child
-        #            smarthome.add_item(child_path, child)
-        #            self.__children.append(child)
-
+		self.sh_listen_items = {}
 
 
 	def run(self):
-
-		# set general properties from the database
-
-
-		# set items from the database
-		items.set_items(self)
-
-		# for testing
-		for item in self._sh.return_items():
-			print(item.id())
-		
-
-
 		# called once after the items have been parsed
 		self.alive = True
+
+		########################################################################
+		# configure position from the database
+		########################################################################
+		self._sh._lat = 50.
+		self._sh._lon = 5.
+		self._sh._elev = 0.
+
+		self._sh.sun = lib.orb.Orb('sun', self._sh._lon, self._sh._lat, self._sh._elev)
+		self._sh.moon = lib.orb.Orb('moon', self._sh._lon, self._sh._lat, self._sh._elev)
+
+
+		########################################################################
+		# configure timezone from the database
+		########################################################################
+		tz = 'Europe/Brussels'
+		tzinfo = dateutil.tz.gettz(tz)
+		if tzinfo is not None:
+			TZ = tzinfo
+			self._sh._tz = tz
+			self._sh.tz = tz
+			os.environ['TZ'] = tz
+		else:
+			logger.warning("Problem parsing timezone: {}. Using UTC.".format(tz))
+
+
+		########################################################################
+		# configure items from the database
+		########################################################################
+		item_config =  self.mysql.GET('item_config')
+
+		# sort the items so parents come before children
+		item_config.sort( key=lambda config: len(config['path']) )
+
+		for config in item_config:
+			items.create_item(self._sh,config)
+			
+
+
+
+
+		# print all items for testing
+		for item in self._sh.return_items():
+			print(item)
+
+
+		########################################################################
+		# create objects after all items have been parsed
+		########################################################################
+		#self.alarms = alarms.Alarms(self)
+		#self.weather = weather.Weather(self)
+		#self.measurements = measurements.Measurements(self)
 		
-		#self.item = self._sh.homecon
-
-		#self.energy = self.item.energy
-		#self.ventilation = self.item.ventilation
-		#self.heat_production = self.item.heat_production
-	
-
-		# create objects
-		#self.mysql = Mysql(self)
-		#self.alarms = Alarms(self)
-		#self.measurements = Measurements(self)
-		#self.weather = Weather(self)
 
 		# zone objects
-		#for item in self.find_item('zone'):
-		#	logger.warning(item)
-		#	self.zones.append( Zone(self,item) )
+		for item in self.find_item('zone'):
+			logger.warning(item)
+			self.zones.append( building.Zone(self,item) )
 
-		#logger.warning('New objects created')
+		logger.warning('New objects created')
+
+		
 
 
  		# schedule low_level_control
@@ -239,12 +243,17 @@ class HomeCon:
 
 
 
-	def find_item(self,homeconitem):
+	def find_item(self,homeconitem,parent=None):
 		"""
 		function to find items with a certain homecon attribute
 		"""
 		items = []
-		for item in self._sh.find_items('homeconitem'):
+		if parent == None:
+			itemiterator = self._sh.find_items('homeconitem')
+		else:
+			itemiterator = self._sh.find_children(parent, 'homeconitem')
+
+		for item in itemiterator:
 			if item.conf['homeconitem'] == homeconitem:
 				items.append(item)
 

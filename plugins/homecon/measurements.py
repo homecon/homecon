@@ -26,11 +26,8 @@ class Measurements:
 		"""
 
 		self._sh = homecon._sh
-		self._mysql_pass = homecon._mysql_pass
 
-		con = pymysql.connect('localhost', 'homecon', self._mysql_pass, 'homecon')
-		cur = con.cursor()
-
+		con,cur = homecon.mysql.create_cursor()
 
 		# create tables
 		# measurements legend
@@ -107,6 +104,9 @@ class Measurements:
 			pass
 
 
+		con.commit()
+		con.close()
+
 			
 		# create measurements legend
 		# get the old legend
@@ -162,7 +162,7 @@ class Measurements:
 
 		
 		logger.warning('Measurements initialized')
-
+		
 		
 		
 	def get_legend(self):
@@ -231,8 +231,7 @@ class Measurements:
 		timestamp = int( (now - datetime.datetime(1970,1,1)).total_seconds() )-60
 
 		# connect to the mysql database
-		con = pymysql.connect('localhost', 'homecon', self._mysql_pass, 'homecon')
-		cur = con.cursor()
+		con,cur = homecon.mysql.create_cursor()
 
 		legend = con.cursor()
 		legend.execute("SELECT id,item FROM measurements_legend WHERE item <> ''")
@@ -323,8 +322,7 @@ class Measurements:
 		endtimestamp = int( (endddate - epoch).total_seconds() )
 
 		# connect to database
-		con = pymysql.connect('localhost', 'homecon', self._mysql_pass, 'homecon')
-		cur = con.cursor()
+		con,cur = homecon.mysql.create_cursor()
 
 		# build query
 		query = "INSERT INTO %s(signal_id,time,value) VALUES " % (table)

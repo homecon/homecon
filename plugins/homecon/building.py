@@ -20,10 +20,9 @@
 import logging
 import numpy as np
 import time
-from plugins.homecon.window import *
-
 
 logger = logging.getLogger('')
+
 
 class Zone():
 	def __init__(self,homecon,item):
@@ -31,16 +30,27 @@ class Zone():
 		self.item = item
 		self.item.conf['homeconobject'] = self
 
+		# add all zone windows
 		self.windows = []
-		self.emission = []
+		for item in self.homecon.find_item('window',parent=self.item):
+			self.windows.append( Window(homecon,self,item) )
 
-		for item in self.homecon._sh.find_children(self.item, 'homeconitem'):
-			if item.conf['homeconitem']== 'window':
-				self.windows.append( Window(homecon,self,item) )
+		# add all zone emission systems
+		self.emissionsystems = []
+		for item in self.homecon.find_item('emission',parent=self.item):
+			self.emissionsystems.append( Emission(homecon,self,item) )
 
+		# find all zone temperature measurement
+		self.temperaturemeasurements = []
+		for item in self.homecon.find_item('temperature',parent=self.item):
+			self.temperaturemeasurements.append(item)
+
+		# set the reference quantities
 		self.temperature = self.item.temperature
-		self.irradiation = self.item.irradiation
-		self.emission = self.item.emission
+		self.airquality = self.item.airquality
+		self.solargains = self.item.solargains
+		self.internalgains = self.item.internalgains
+
 
 		self.raincountdown = -1
 		
@@ -203,3 +213,114 @@ class Zone():
 		#logger.warning(  ', '.join(['{0} pos: {1:.1f} min: {2:.1f} max:{3:.1f} irr: {4:.1f}'.format(w.item.id(),p,pmin,pmax,w.irradiation_est()) for w,p,pmin,pmax in zip(windows,pos_new,pos_min,pos_max)])  )
 		#logger.warning( 'estimate: {2:.1f}'.format( self.item.id(),self.irradiation.setpoint(),self.irradiation_est(average=True) )  )		
 
+
+
+class Window():
+	def __init__(self,homecon,zone,item):
+		self.homecon = homecon
+		self.zone = zone
+		self.item = item
+		self.item.conf['homeconobject'] = self
+
+		self.shading = None
+		for item in self.homecon._sh.find_children(self.item, 'homeconitem'):
+			if item.conf['homeconitem']== 'shading':
+				self.shading = item
+				self.shading.conf['homeconobject'] = self
+		
+
+	def irradiation_open(self,average=False):
+		"""
+		Returns the irradiation through a window when the shading is open
+		"""
+		return float(self.item.conf['area'])*float(self.item.conf['transmittance'])*self.homecon.weather.incidentradiation(surface_azimuth=float(self.item.conf['orientation'])*np.pi/180,surface_tilt=float(self.item.conf['tilt'])*np.pi/180,average=average)
+
+
+	def irradiation_closed(self,average=False):
+		"""
+		Returns the irradiation through a window when the shading is closed if there is shading
+		"""
+		if self.shading != None:
+			shading = float(self.shading.conf['transmittance'])
+		else:
+			shading = 1.0
+		return self.irradiation_open(average=average)*shading
+
+	def irradiation_max(self,average=False):
+		"""
+		Returns the maximum amount of irradiation through the window
+		It checks the closed flag indicating the shading must be closed
+		And the override flag indicating the shading position is fixed
+		"""
+
+		if self.shading != None:
+			if self.shading.closed():
+				return self.irradiation_closed(average=average)
+			elif self.shading.override() or not self.shading.auto():
+				return self.irradiation_est(average=average)
+			else:
+				return self.irradiation_open(average=average)
+		else:
+			return self.irradiation_open(average=average)
+
+	def irradiation_min(self,average=False):
+		"""
+		Returns the minimum amount of irradiation through the window
+		It checks the closed flag indicating the shading must be closed
+		And the override flag indicating the shading position is fixed
+		"""
+		if self.shading != None:
+			if self.shading.override() or not self.shading.auto():
+				return self.irradiation_est(average=average)
+			else:
+				return self.irradiation_closed(average=average)
+		else:
+			return self.irradiation_open(average=average)
+
+	def irradiation_est(self,average=False):
+		"""
+		Returns the estimated actual irradiation through the window
+		"""
+		if self.shading != None:
+			shading = (self.shading.value()-float(self.shading.conf['open_value']))/(float(self.shading.conf['closed_value'])-float(self.shading.conf['open_value']))
+			return self.irradiation_open(average=average)*(1-shading) + self.irradiation_closed(average=average)*shading
+		else:
+			return self.irradiation_open(average=average)
+
+	def shading_override(self):
+		self.shading.override(True)
+		self.shading.closed(False)
+		logger.warning('Overriding %s control'%self.shading)
+
+		# release override after 4h
+		def release():
+			self.shading.override(False)
+			logger.warning('Override of %s control released'%self.shading)
+		
+		threading.Timer(4*3600,release).start()
+
+	def shading_value2pos(self,value=None):
+		
+		if self.shading != None:
+			if value==None:
+				value = self.shading.value()
+
+			return (value-float(self.shading.conf['open_value']))/(float(self.shading.conf['closed_value'])-float(self.shading.conf['open_value']))
+		else:
+			return 0
+
+	def shading_pos2value(self,pos):
+
+		if self.shading != None:
+			return float(self.shading.conf['open_value'])+pos*(float(self.shading.conf['closed_value'])-float(self.shading.conf['open_value']))
+		else:
+			return 0
+
+
+
+class Emission():
+	def __init__(self,homecon,zone,item):
+		self.homecon = homecon
+		self.zone = zone
+		self.item = item
+		self.item.conf['homeconobject'] = self
