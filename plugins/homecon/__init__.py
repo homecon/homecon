@@ -203,7 +203,15 @@ class HomeCon:
 		# called each time an item changes
 
 		########################################################################
+		# update the value in the database
+		########################################################################
+		self.mysql.PUT( 'items','path=\'{}\''.format(item.id()),{'value':str(item())} )
+
+
+
+		########################################################################
 		# evaluate expressions in sh_listen
+		########################################################################
 		if item.id() in self.sh_listen_items:
 			for dest_item in self.sh_listen_items[item.id()]:
 				try:
