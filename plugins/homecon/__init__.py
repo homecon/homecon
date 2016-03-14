@@ -25,7 +25,7 @@ import types
 import lib
 import os
 import dateutil.tz
-
+import json
 
 from . import items
 from . import mysql
@@ -62,12 +62,14 @@ class HomeCon:
 		# called once after the items have been parsed
 		self.alive = True
 
+		config = json.loads( self.mysql.GET( 'config','id=\'1\'' )[0]['config'] )
+		
 		########################################################################
 		# configure position from the database
 		########################################################################
-		self._sh._lat = 50.
-		self._sh._lon = 5.
-		self._sh._elev = 0.
+		self._sh._lat = config['lat']
+		self._sh._lon = config['lon']
+		self._sh._elev = config['elev']
 
 		self._sh.sun = lib.orb.Orb('sun', self._sh._lon, self._sh._lat, self._sh._elev)
 		self._sh.moon = lib.orb.Orb('moon', self._sh._lon, self._sh._lat, self._sh._elev)
@@ -76,7 +78,7 @@ class HomeCon:
 		########################################################################
 		# configure timezone from the database
 		########################################################################
-		tz = 'Europe/Brussels'
+		tz = config['tz']
 		tzinfo = dateutil.tz.gettz(tz)
 		if tzinfo is not None:
 			TZ = tzinfo
@@ -154,7 +156,9 @@ class HomeCon:
 	def parse_item(self, item):
 		# called once while parsing the items
 
+		########################################################################
 		# add default attributes to items
+		########################################################################
 		if not 'quantity' in item.conf:
 			item.conf['quantity'] = ''
 
@@ -170,7 +174,10 @@ class HomeCon:
 		if not 'persistent' in item.conf:
 			item.conf['persistent'] = '0'
 
-		# add or update the item in the database
+
+		########################################################################
+		# add or update the item to or from the database
+		########################################################################
 		db_items = self.mysql.GET( 'items','path=\'{}\''.format(item.id()) )
 		item_data = {'path':item.id(),'quantity':item.conf['quantity'],'unit':item.conf['unit'],'label':item.conf['label'],'description':item.conf['description'],'persistent':item.conf['persistent'],'value':str(item())}
 
@@ -186,7 +193,9 @@ class HomeCon:
 			self.mysql.PUT( 'items','path=\'{}\''.format(item.id()),item_data )
 
 
+		########################################################################
 		# find the items in sh_listen and
+		########################################################################
 		if 'sh_listen' in item.conf:
 			listenitems = self.find_items_in_str(item.conf['sh_listen'])
 			for listenitem in listenitems:
