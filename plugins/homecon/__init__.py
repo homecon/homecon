@@ -104,7 +104,7 @@ class HomeCon:
 
 		# print all items for testing
 		for item in self._sh.return_items():
-			print(item)
+			print(item.id())
 
 
 		########################################################################
@@ -152,8 +152,40 @@ class HomeCon:
 
 
 	def parse_item(self, item):
-		logger.warning(item.id())
 		# called once while parsing the items
+
+		# add default attributes to items
+		if not 'quantity' in item.conf:
+			item.conf['quantity'] = ''
+
+		if not 'unit' in item.conf:
+			item.conf['unit'] = ''
+
+		if not 'label' in item.conf:
+			item.conf['label'] = ''
+
+		if not 'description' in item.conf:
+			item.conf['description'] = ''
+
+		if not 'persistent' in item.conf:
+			item.conf['persistent'] = '0'
+
+		# add or update the item in the database
+		db_items = self.mysql.GET( 'items','path=\'{}\''.format(item.id()) )
+		item_data = {'path':item.id(),'quantity':item.conf['quantity'],'unit':item.conf['unit'],'label':item.conf['label'],'description':item.conf['description'],'persistent':item.conf['persistent'],'value':str(item())}
+
+		if db_items == []:
+			self.mysql.POST( 'items', item_data)
+		else:
+			if item.conf['persistent'] == '1':
+				# update the value
+				db_item = db_items[0]
+				item(db_item['value']) 
+				item_data['value'] = str(item())
+
+			self.mysql.PUT( 'items','path=\'{}\''.format(item.id()),item_data )
+
+
 		# find the items in sh_listen and
 		if 'sh_listen' in item.conf:
 			listenitems = self.find_items_in_str(item.conf['sh_listen'])

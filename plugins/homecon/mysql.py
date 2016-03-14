@@ -37,7 +37,6 @@ class Mysql:
 		
 
 	def create_cursor(self):
-		logger.warning(self._mysql_pass)
 		con = pymysql.connect('localhost', 'homecon', self._mysql_pass, 'homecon')
 		cur = con.cursor()
 
@@ -45,7 +44,6 @@ class Mysql:
 
 
 	def create_dict_cursor(self):
-		logger.warning(self._mysql_pass)
 		con = pymysql.connect('localhost', 'homecon', self._mysql_pass, 'homecon')
 		cur = con.cursor(pymysql.cursors.DictCursor)
 
@@ -53,10 +51,10 @@ class Mysql:
 
 
 	def POST(self,table,data):
-
 		keys = []
 		vals = []
-		for key,val in data.iteritems():
+
+		for key,val in data.items():
 			keys.append('`'+key+'`')
 			vals.append('\''+val+'\'')
 
@@ -64,18 +62,19 @@ class Mysql:
 		id_query = "SELECT LAST_INSERT_ID()"
 
 		con,cur = self.create_cursor()
+
 		try:
-			cur = self.execute_query(cur,query)
+			self.execute_query(cur,query)
 			cur = self.execute_query(cur,id_query)
 
-			for row in cur:
-				print(row)
-			id = 1
+			id = cur[0][0]
 		except:
 			id = None
 
-		return id
+		con.commit()
 		con.close()
+
+		return id
 
 
 	def GET(self,table,selector=None):
@@ -87,29 +86,32 @@ class Mysql:
 
 		con,cur = self.create_dict_cursor()
 		try:
-			cur = self.execute_query(cur,query)
-			values = cur.fetchall()
+			self.execute_query(cur,query)
+			values = list( cur.fetchall() )
 		except:
 			values = []
 
+		con.commit()
 		con.close()
+
 		return values
 
 
 	def PUT(self,table,selector,data):
 
 		keyvals = []
-		for key,val in data.iteritems():
+		for key,val in data.items():
 			keyvals.append(key+' = \''+val+'\'')
 
-		query = "UPDATE `{}` SET {} WHERE {}".format(table,keyvals,selector)
+		query = "UPDATE `{}` SET {} WHERE {}".format(table,','.join(keyvals),selector)
 
 		con,cur = self.create_cursor()
 		try:
-			cur = self.execute_query(cur,query)
+			self.execute_query(cur,query)
 		except:
 			pass
 
+		con.commit()
 		con.close()
 
 	def DELETE(self,table,selector):
@@ -118,10 +120,11 @@ class Mysql:
 
 		con,cur = self.create_cursor()
 		try:
-			cur = self.execute_query(cur,query)
+			self.execute_query(cur,query)
 		except:
 			pass
 
+		con.commit()
 		con.close()
 
 	def execute_query(self,cur,query):
@@ -129,8 +132,6 @@ class Mysql:
 			cur.execute( query )
 		except:
 			logger.warning('There was a problem executing query {}.'.format(query))
-		else:
-			return cur
 
 	def backup(self):
 		"""
