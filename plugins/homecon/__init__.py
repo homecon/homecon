@@ -19,13 +19,11 @@
 
 import logging
 import numpy as np
-import pymysql
 import threading
 import types
 import lib
 import os
 import dateutil.tz
-import json
 
 from . import items
 from . import mysql
@@ -45,7 +43,7 @@ class HomeCon:
 		
 		# set basic attributes
 		self._sh = smarthome
-		self.mysql = mysql.Mysql(self,mysql_pass)
+		self._db = mysql.Mysql(self,mysql_pass)
 		
 		# prepare other attributes
 		#self.item = None
@@ -62,7 +60,7 @@ class HomeCon:
 		# called once after the items have been parsed
 		self.alive = True
 
-		config = json.loads( self.mysql.GET( 'config','id=\'1\'' )[0]['config'] )
+		config = self._db.GET_JSON( 'config','id=\'1\'' )[0]['config'] )
 		
 		########################################################################
 		# configure position from the database
@@ -92,7 +90,7 @@ class HomeCon:
 		########################################################################
 		# configure items from the database
 		########################################################################
-		item_config =  self.mysql.GET('item_config')
+		item_config =  self._db.GET('item_config')
 
 		# sort the items so parents come before children
 		item_config.sort( key=lambda config: len(config['path']) )
@@ -178,11 +176,11 @@ class HomeCon:
 		########################################################################
 		# add or update the item to or from the database
 		########################################################################
-		db_items = self.mysql.GET( 'items','path=\'{}\''.format(item.id()) )
+		db_items = self._db.GET( 'items','path=\'{}\''.format(item.id()) )
 		item_data = {'path':item.id(),'quantity':item.conf['quantity'],'unit':item.conf['unit'],'label':item.conf['label'],'description':item.conf['description'],'persistent':item.conf['persistent'],'value':str(item())}
 
 		if db_items == []:
-			self.mysql.POST( 'items', item_data)
+			self._db.POST( 'items', item_data)
 		else:
 			if item.conf['persistent'] == '1':
 				# update the value
@@ -190,7 +188,7 @@ class HomeCon:
 				item(db_item['value']) 
 				item_data['value'] = str(item())
 
-			self.mysql.PUT( 'items','path=\'{}\''.format(item.id()),item_data )
+			self._db.PUT( 'items','path=\'{}\''.format(item.id()),item_data )
 
 
 		########################################################################
@@ -214,7 +212,7 @@ class HomeCon:
 		########################################################################
 		# update the value in the database
 		########################################################################
-		self.mysql.PUT( 'items','path=\'{}\''.format(item.id()),{'value':str(item())} )
+		self._db.PUT( 'items','path=\'{}\''.format(item.id()),{'value':str(item())} )
 
 
 

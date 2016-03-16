@@ -96,6 +96,10 @@ class Mysql:
 
 		return values
 
+	def GET_JSON(self,table,selector=None):
+		values = self.GET(table,selector=None)
+
+		return json.loads( values )
 
 	def PUT(self,table,selector,data):
 
