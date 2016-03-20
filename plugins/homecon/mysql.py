@@ -3,6 +3,7 @@
 import logging
 import pymysql
 import datetime
+import json
 
 logger = logging.getLogger('')
 
@@ -99,7 +100,12 @@ class Mysql:
 	def GET_JSON(self,table,selector=None):
 		values = self.GET(table,selector=None)
 
-		return json.loads( values )
+		for value in values:
+			for key,val in value.items():
+				if isinstance(val, str):
+					value[key] = json.loads( val )
+
+		return values
 
 	def PUT(self,table,selector,data):
 

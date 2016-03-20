@@ -27,51 +27,210 @@ logger = logging.getLogger('')
 
 
 
-def create_item(smarthome,config_string):
+def update_item(sh,db,config_string):
 	"""
-	Adds a items to smarthome from a configuration string
+	Updates or creates an item from a configuration string and adds it to the database
+
+	Arguments:
+	sh: the smarthome object
+	db: the database object
+	item_config: string, item configuration string
+	
+	Example:
+	update_item(sh,db,'{"path":"firstfloor.living.window","type":"window","config": '{"area":"2.1","transmittance":"0.6","children":{"shading":{"transmittance":"0.3","move":{"knx_dpt":"1","knx_send":"2/1/5"}}}}')
+	"""
+	# parse the config string
+	config = json.loads(config_string)
+	item_path = item_config['path']
+	item_type = item_config['type']
+	item_config = json.loads(item_config['config'])
+
+	# check if the item exists in the database
+	db_items = db.GET('item_config','path={}'.format(item_path))
+	db_added = False
+	if len(db_items)==0:
+		# add the item to the database
+		db.POST('item_config',{'path':json.dumps(item_path),'type':json.dumps(item_type),'config':json.dumps(item_config)})
+		db_added = True
+
+
+	# update the item in smarthome
+	if not item.conf['type'] == item_type:
+		# delete the item and re add it
+		_delete_item(item)
+
+	update_smarthome_item(sh,item_path,item_type,item_config)
+
+
+	# update the item in the database
+	if not db_added:
+		db.PUT('item_config','path={}'.format(item_path),{'path':json.dumps(item_path),'type':json.dumps(item_type),'config':json.dumps(item_config)})
+
+
+
+
+def update_smarthome_item(sh,item_path,item_type,item_config):
+	"""
+	Adds a items to smarthome from a configuration dictionary
 	Throws an exception when the item parent does not exist
 
 	Arguments:
-	smarthome: the smarthome object
-	config_string: json string configuring the item
+	sh: the smarthome object
+	item_path: string
+	item_type: string
+	item_config: dict of json string, item configuration  as retrieved from the database
 	
 	Example:
-	create_item(smarthome,'{"path":"firstfloor.living.window","type":"window","config": {"area":"2.1","transmittance":"0.6","shading":{"transmittance":"0.3","move":{"knx_dpt":"1","knx_send":"2/1/5"}}})	
+	create_item(smarthome,'firstfloor.living.window','window','{"area":"2.1","transmittance":"0.6","children":{"shading":{"transmittance":"0.3","children":{"move":{"knx_dpt":"1","knx_send":"2/1/5"}}}}}')	
 	"""
-	path = config_string['path']
-	item_type = config_string['type']
-	config = json.loads(config_string['config'])
+
+	# parse item_config
+	if isinstance(item_config, str):
+		item_config = json.loads(item_config)
+		
+
+	# get the item children configuration
+	item_children = {}
+	if 'children' in item_config:
+		item_children = item_config['children']
+		del item_config['children']
+
+
+	# add the type to config
+	if item_type != '':
+		item_config['type'] = item_type
+
+
+	# check if the item exists in smarthome
+	item = sh.return_item(item_path)
+	if item == None:
+		# create the item
+		item = _add_item(sh,item_path,config=item_config)
+
 
 	# parse special types
-	if item_type == 'zone': 
+	default_config = {}
+	if item_type == 'heatedzone':
+		########################################################################
 		# a zone item
-		pass
-
-
+		########################################################################
+		# default config attributes
+		default_config = {'floor_area': '100.0', 'exterior_wall_area':'300.0', 'volume':'250.0'}
+		
 
 
 	elif item_type == 'window':
+		########################################################################
 		# a window item
-		pass
+		########################################################################
+		# default config attributes
+		default_config = {'area': '1.0', 'orientation':'0.0', 'tilt':'90.0', 'transmittance':'0.6'}
+		
+		# add a shading item
+		child_config = {}
+		if 'shading' in item_children:
+			child_config = item_children['shading']
+			
+		update_smarthome_item(sh,item_path+'.shading','shading',child_config)
+
+
+	elif item_type == 'shading':
+		########################################################################
+		# a shading item
+		########################################################################
+		# default config attributes
+		default_config = {'transmittance':'0.3'}
+
+		# add a move item
+		child_config = {}
+		if 'move' in item_children:
+			child_config = item_children['move']
+
+		update_smarthome_item(sh,item_path+'.move','',child_config)
+
+		# add a stop item
+		child_config = {}
+		if 'stop' in item_children:
+			child_config = item_children['stop']
+
+		update_smarthome_item(sh,item_path+'.stop','',child_config)
+
+		# add a value item
+		child_config = {}
+		if 'value' in item_children:
+			child_config = item_children['value']
+
+		update_smarthome_item(sh,item_path+'.value','',child_config)
+
+		# add a value_status item
+		child_config = {}
+		if 'value_status' in item_children:
+			child_config = item_children['value_status']
+
+		update_smarthome_item(sh,item_path+'.value_status','',child_config)
+
+		# add a auto item
+		child_config = {}
+		if 'auto' in item_children:
+			child_config = item_children['auto']
+
+		update_smarthome_item(sh,item_path+'.auto','',child_config)
+
+		# add a override item
+		child_config = {}
+		if 'override' in item_children:
+			child_config = item_children['override']
+
+		update_smarthome_item(sh,item_path+'.override','',child_config)
+
+		# add a closed item
+		child_config = {}
+		if 'closed' in item_children:
+			child_config = item_children['closed']
+
+		update_smarthome_item(sh,item_path+'.closed','',child_config)
+
+
+
+	########################################################################
+	# set the conf values
+	########################################################################
+
+	for key,val in default_config.items():
+		if not key in item_config:
+			item_config[key] = val
+
+	# update the item conf dictionary
+	for key in item_config:
+		item.conf[key] = item_config[key]
 
 
 
 
+		
+		
+def _delete_item(item):
+	"""
+	Deletes a low level item and its children from smarthome
+	"""
+	_sh = item._sh
+	path = item.id()
 
-	else:
-		if item_type != '':
-			# add the type to config
-			config['type'] = item_type
+	# run through all children and delete them
+	for child in item.return_children():
+		_delete_item(child)
 
-		# it is a default item
-		_add_item(smarthome,path,config)
+	# delete the item itself
+	ind = _sh.__items.index(path)
+	del _sh.__items[ind]  # path list
+	del _sh.__item_dict[path]  # key = path
+
+	ind = _sh.__children.index(item) 
+	del _sh.__children[ind] # item list
 
 
 
-
-
-def _add_item(smarthome,path,config={}):
+def _add_item(sh,path,config={}):
 	"""
 	Adds a low level item to smarthome.
 	Throws an exception when the item parent does not exist
@@ -91,13 +250,15 @@ def _add_item(smarthome,path,config={}):
 	if parentpath == '':
 		parent = None
 	else:
-		parent = smarthome.return_item(parentpath)
+		parent = sh.return_item(parentpath)
 		if parent == None:
 			raise Exception( 'Error: parent does not exist. {}'.format(path) )
 
-	item = lib.item.Item(smarthome, parent, path, config)
-	smarthome.add_item(path, item)
+	item = lib.item.Item(sh, parent, path, config)
+	sh.add_item(path, item)
 
 	if parent != None:
 		parent._Item__children.append(item)
+
+	return item
 

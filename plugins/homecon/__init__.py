@@ -39,6 +39,10 @@ logger = logging.getLogger('')
 class HomeCon:
 
 	def __init__(self, smarthome, mysql_pass='mysql_pass'):
+		"""
+		initialize
+		"""
+
 		logger.info('HomeCon started')
 		
 		# set basic attributes
@@ -57,10 +61,13 @@ class HomeCon:
 
 
 	def run(self):
-		# called once after the items have been parsed
+		"""
+		called once after the items have been parsed
+		"""
+
 		self.alive = True
 
-		config = self._db.GET_JSON( 'config','id=\'1\'' )[0]['config'] )
+		config = self._db.GET_JSON( 'config','id=\'1\'' )[0]['config']
 		
 		########################################################################
 		# configure position from the database
@@ -90,21 +97,20 @@ class HomeCon:
 		########################################################################
 		# configure items from the database
 		########################################################################
-		item_config =  self._db.GET('item_config')
+		logger.debug('Adding items from database')
+		db_item_config =  self._db.GET('item_config')
+		db_item_config.sort( key=lambda item_config: len(item_config['path']) )
 
-		# sort the items so parents come before children
-		item_config.sort( key=lambda config: len(config['path']) )
-
-		for config in item_config:
-			items.create_item(self._sh,config)
+		for item in db_item_config:
+			items.update_smarthome_item(self._sh,item['path'],item['type'],item['config'])
 			
-
-
+		# test
+		#self._sh.scheduler.add('sync_items', self.sync_items, prio=2, cycle='100')
 
 
 		# print all items for testing
-		for item in self._sh.return_items():
-			print(item.id())
+		#for item in self._sh.return_items():
+		#	print(item.id())
 
 
 		########################################################################
@@ -148,12 +154,17 @@ class HomeCon:
 
 
 	def stop(self):
+		"""
+		stop
+		"""
+
 		self.alive = False
 
 
 	def parse_item(self, item):
-		# called once while parsing the items
-
+		"""
+		called once while parsing the items
+		"""
 		########################################################################
 		# add default attributes to items
 		########################################################################
@@ -207,7 +218,9 @@ class HomeCon:
 
 
 	def update_item(self, item, caller=None, source=None, dest=None):
-		# called each time an item changes
+		"""
+		called each time an item changes
+		"""
 
 		########################################################################
 		# update the value in the database
