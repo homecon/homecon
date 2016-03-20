@@ -112,7 +112,15 @@ def update_smarthome_item(sh,item_path,item_type,item_config):
 	default_config = {}
 	if item_type == 'heatedzone':
 		########################################################################
-		# a zone item
+		# a heated zone item
+		########################################################################
+		# default config attributes
+		default_config = {'floor_area': '100.0', 'exterior_wall_area':'300.0', 'volume':'250.0'}
+		
+
+	elif item_type == 'unheatedzone':
+		########################################################################
+		# a unheated zone item
 		########################################################################
 		# default config attributes
 		default_config = {'floor_area': '100.0', 'exterior_wall_area':'300.0', 'volume':'250.0'}
