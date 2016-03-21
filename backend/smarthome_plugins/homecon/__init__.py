@@ -98,10 +98,13 @@ class HomeCon:
 		# configure homeconitems
 		#######################################################################
 		items.update_smarthome_item(self._sh,'homecon','',{})
+
 		# controls
 		items.update_smarthome_item(self._sh,'homecon.controls','',{})
 		items.update_smarthome_item(self._sh,'homecon.controls.update_item','bool',{})
+		items.update_smarthome_item(self._sh,'homecon.controls.update_item.config','str',{})
 		items.update_smarthome_item(self._sh,'homecon.controls.delete_item','bool',{})
+		items.update_smarthome_item(self._sh,'homecon.controls.delete_item.path','str',{})
 
 		# alarms
 		items.update_smarthome_item(self._sh,'homecon.alarms','',{})
@@ -125,6 +128,7 @@ class HomeCon:
 		# mpc
 		items.update_smarthome_item(self._sh,'homecon.mpc','',{})
 		items.update_smarthome_item(self._sh,'homecon.mpc.model','',{})
+		items.update_smarthome_item(self._sh,'homecon.mpc.model.type','str',{})
 		items.update_smarthome_item(self._sh,'homecon.mpc.model.identification','bool',{})
 		items.update_smarthome_item(self._sh,'homecon.mpc.model.identification.result','dict',{})
 

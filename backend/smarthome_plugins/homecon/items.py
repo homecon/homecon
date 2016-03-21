@@ -218,6 +218,16 @@ def update_smarthome_item(sh,item_path,item_type,item_config):
 			child_config = item_children['closed']
 
 		update_smarthome_item(sh,item_path+'.closed','',child_config)
+	
+	elif item_type == 'alarm':
+		########################################################################
+		# an alarm item
+		########################################################################
+		# default config attributes
+		default_config = {}
+		# create the item
+		item = _add_item(sh,item_path,config=default_config.update(item_config))
+
 
 	else:
 		########################################################################
