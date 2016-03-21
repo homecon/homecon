@@ -55,10 +55,6 @@ def update_item(sh,db,config_string):
 
 
 	# update the item in smarthome
-	if not item.conf['type'] == item_type:
-		# delete the item and re add it
-		_delete_item(item)
-
 	update_smarthome_item(sh,item_path,item_type,item_config)
 
 
@@ -88,13 +84,11 @@ def update_smarthome_item(sh,item_path,item_type,item_config):
 	if isinstance(item_config, str):
 		item_config = json.loads(item_config)
 		
-
 	# get the item children configuration
 	item_children = {}
 	if 'children' in item_config:
 		item_children = item_config['children']
 		del item_config['children']
-
 
 	# add the type to config
 	if item_type != '':
@@ -103,20 +97,24 @@ def update_smarthome_item(sh,item_path,item_type,item_config):
 
 	# check if the item exists in smarthome
 	item = sh.return_item(item_path)
-	if item == None:
-		# create the item
-		item = _add_item(sh,item_path,config=item_config)
+	if not item == None:
+		# delete the item and re add it
+		# deleting the item is required to reconfigure the plugin_method_triggers
+		# of all plugins
+		_delete_item(item)
+
 
 
 	# parse special types
-	default_config = {}
 	if item_type == 'heatedzone':
 		########################################################################
 		# a heated zone item
 		########################################################################
 		# default config attributes
 		default_config = {'floor_area': '100.0', 'exterior_wall_area':'300.0', 'volume':'250.0'}
-		
+		# create the item
+		item = _add_item(sh,item_path,config=default_config.update(item_config))
+
 
 	elif item_type == 'unheatedzone':
 		########################################################################
@@ -124,7 +122,8 @@ def update_smarthome_item(sh,item_path,item_type,item_config):
 		########################################################################
 		# default config attributes
 		default_config = {'floor_area': '100.0', 'exterior_wall_area':'300.0', 'volume':'250.0'}
-		
+		# create the item
+		item = _add_item(sh,item_path,config=default_config.update(item_config))
 
 
 	elif item_type == 'window':
@@ -133,7 +132,9 @@ def update_smarthome_item(sh,item_path,item_type,item_config):
 		########################################################################
 		# default config attributes
 		default_config = {'area': '1.0', 'orientation':'0.0', 'tilt':'90.0', 'transmittance':'0.6'}
-		
+		# create the item
+		item = _add_item(sh,item_path,config=default_config.update(item_config))
+
 		# add a shading item
 		child_config = {}
 		if 'shading' in item_children:
@@ -148,6 +149,8 @@ def update_smarthome_item(sh,item_path,item_type,item_config):
 		########################################################################
 		# default config attributes
 		default_config = {'transmittance':'0.3'}
+		# create the item
+		item = _add_item(sh,item_path,config=default_config.update(item_config))
 
 		# add a move item
 		child_config = {}
@@ -200,20 +203,6 @@ def update_smarthome_item(sh,item_path,item_type,item_config):
 
 
 
-	########################################################################
-	# set the conf values
-	########################################################################
-
-	for key,val in default_config.items():
-		if not key in item_config:
-			item_config[key] = val
-
-	# update the item conf dictionary
-	for key in item_config:
-		item.conf[key] = item_config[key]
-
-
-
 
 		
 		
@@ -229,12 +218,14 @@ def _delete_item(item):
 		_delete_item(child)
 
 	# delete the item itself
-	ind = _sh.__items.index(path)
-	del _sh.__items[ind]  # path list
-	del _sh.__item_dict[path]  # key = path
+	# as the items are protected in the smarthome class this hacky construction is required
+	ind = _sh._SmartHome__items.index(path)
+	del _sh._SmartHome__items[ind]  # path list
+	del _sh._SmartHome__item_dict[path]  # key = path
 
-	ind = _sh.__children.index(item) 
-	del _sh.__children[ind] # item list
+	if item in _sh._SmartHome__children:
+		ind = _sh._SmartHome__children.index(item) 
+		del _sh._SmartHome__children[ind] # item list
 
 
 
