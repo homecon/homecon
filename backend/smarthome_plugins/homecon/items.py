@@ -51,16 +51,34 @@ def update_item(sh,db,config_string):
 	if len(db_items)==0:
 		# add the item to the database
 		db.POST('item_config',{'path':json.dumps(item_path),'type':json.dumps(item_type),'config':json.dumps(item_config)})
-		db_added = True
-
+	else:
+		db.PUT('item_config','path={}'.format(item_path),{'path':json.dumps(item_path),'type':json.dumps(item_type),'config':json.dumps(item_config)})
 
 	# update the item in smarthome
 	update_smarthome_item(sh,item_path,item_type,item_config)
 
 
-	# update the item in the database
-	if not db_added:
-		db.PUT('item_config','path={}'.format(item_path),{'path':json.dumps(item_path),'type':json.dumps(item_type),'config':json.dumps(item_config)})
+def delete_item(sh,db,path):
+	"""
+	Deletes an item from a configuration string from smarthome and the database
+
+	Arguments:
+	sh: the smarthome object
+	db: the database object
+	path: string, item path
+	
+	Example:
+	delete_item(sh,db,'firstfloor.living.window')
+	"""
+
+	# remove the item from the database
+	db.DELETE('item_config','path={}'.format(path))
+
+	# remove the item from smarthome if it exists
+	item = sh.return_item(path)
+	if not item == None:
+		_delete_item(item)
+
 
 
 
@@ -74,7 +92,7 @@ def update_smarthome_item(sh,item_path,item_type,item_config):
 	sh: the smarthome object
 	item_path: string
 	item_type: string
-	item_config: dict of json string, item configuration  as retrieved from the database
+	item_config: dict or json string, item configuration  as retrieved from the database
 	
 	Example:
 	create_item(smarthome,'firstfloor.living.window','window','{"area":"2.1","transmittance":"0.6","children":{"shading":{"transmittance":"0.3","children":{"move":{"knx_dpt":"1","knx_send":"2/1/5"}}}}}')	
@@ -201,7 +219,11 @@ def update_smarthome_item(sh,item_path,item_type,item_config):
 
 		update_smarthome_item(sh,item_path+'.closed','',child_config)
 
-
+	else:
+		########################################################################
+		# some other item type
+		########################################################################
+		item = _add_item(sh,item_path,config=item_config)
 
 
 		

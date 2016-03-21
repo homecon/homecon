@@ -91,7 +91,42 @@ class HomeCon:
 			self._sh.tz = tz
 			os.environ['TZ'] = tz
 		else:
-			logger.warning("Problem parsing timezone: {}. Using UTC.".format(tz))
+			logger.warning('Problem parsing timezone: {}. Using UTC.'.format(tz))
+
+
+		########################################################################
+		# configure homeconitems
+		#######################################################################
+		items.update_smarthome_item(self._sh,'homecon','',{})
+		# controls
+		items.update_smarthome_item(self._sh,'homecon.controls','',{})
+		items.update_smarthome_item(self._sh,'homecon.controls.update_item','bool',{})
+		items.update_smarthome_item(self._sh,'homecon.controls.delete_item','bool',{})
+
+		# alarms
+		items.update_smarthome_item(self._sh,'homecon.alarms','',{})
+
+		# weather
+		items.update_smarthome_item(self._sh,'homecon.weather','',{})
+		items.update_smarthome_item(self._sh,'homecon.weather.current','',{})
+		items.update_smarthome_item(self._sh,'homecon.weather.current.temperature','num',{'quantity':'Temperature','unit':'degC','label':'Ambient','description':'ambient temperature'})
+		items.update_smarthome_item(self._sh,'homecon.weather.current.humidity','num',{'quantity':'Percentage','unit':'pct','label':'Ambient','description':'ambient relative humidity'})
+		items.update_smarthome_item(self._sh,'homecon.weather.current.irradiation','',{})
+		items.update_smarthome_item(self._sh,'homecon.weather.current.irradiation.horizontal','num',{'quantity':'Heat flux','unit':'W/m2','label':'global horizontal','description':'global horizontal irradiation'})
+		items.update_smarthome_item(self._sh,'homecon.weather.current.irradiation.clouds','num',{'quantity':'Percentage','unit':'pct','label':'Clouds','description':'cloud cover'})
+		items.update_smarthome_item(self._sh,'homecon.weather.current.precipitation','num',{'quantity':'Boolean','unit':'-','label':'Rain','description':'rain'})
+		items.update_smarthome_item(self._sh,'homecon.weather.current.wind','',{})
+		items.update_smarthome_item(self._sh,'homecon.weather.current.wind.speed','num',{'quantity':'Velocity magnitude','unit':'m/s','label':'Speed','description':'wind speed'})
+		items.update_smarthome_item(self._sh,'homecon.weather.current.wind.direction','num',{'quantity':'Angle','unit':'deg','label':'Direction','description':'wind direction'})
+		items.update_smarthome_item(self._sh,'homecon.weather.prediction','',{})		
+		items.update_smarthome_item(self._sh,'homecon.weather.prediction.detailed','list',{})
+		items.update_smarthome_item(self._sh,'homecon.weather.prediction.daily','list',{})
+
+		# mpc
+		items.update_smarthome_item(self._sh,'homecon.mpc','',{})
+		items.update_smarthome_item(self._sh,'homecon.mpc.model','',{})
+		items.update_smarthome_item(self._sh,'homecon.mpc.model.identification','bool',{})
+		items.update_smarthome_item(self._sh,'homecon.mpc.model.identification.result','dict',{})
 
 
 		########################################################################
@@ -109,8 +144,8 @@ class HomeCon:
 
 
 		# print all items for testing
-		#for item in self._sh.return_items():
-		#	print(item.id())
+		for item in self._sh.return_items():
+			print(item.id())
 
 
 		########################################################################
