@@ -218,23 +218,48 @@ def update_smarthome_item(sh,item_path,item_type,item_config):
 			child_config = item_children['closed']
 
 		update_smarthome_item(sh,item_path+'.closed','',child_config)
-	
+
+	elif item_type == 'action':
+		########################################################################
+		# an alarm item
+		########################################################################
+		# default config attributes
+		default_config = {'item':'[]','delay':'[]','value':'[]'}
+		# create the item
+		item = _add_item(sh,item_path,config=default_config.update(item_config))
+
+
 	elif item_type == 'alarm':
 		########################################################################
 		# an alarm item
 		########################################################################
 		# default config attributes
-		default_config = {}
+		default_config = {'section':'home'}
 		# create the item
 		item = _add_item(sh,item_path,config=default_config.update(item_config))
 
+		update_smarthome_item(sh,item_path+'.hour','num',{})
+		update_smarthome_item(sh,item_path+'.minute','num',{})
+
+		update_smarthome_item(sh,item_path+'.sunrise','bool',{})
+		update_smarthome_item(sh,item_path+'.sunset','bool',{})
+		update_smarthome_item(sh,item_path+'.offset','num',{})
+		
+		update_smarthome_item(sh,item_path+'.mon','bool',{})
+		update_smarthome_item(sh,item_path+'.tue','bool',{})
+		update_smarthome_item(sh,item_path+'.wed','bool',{})
+		update_smarthome_item(sh,item_path+'.thu','bool',{})
+		update_smarthome_item(sh,item_path+'.fri','bool',{})
+		update_smarthome_item(sh,item_path+'.sat','bool',{})
+		update_smarthome_item(sh,item_path+'.sun','bool',{})
+
+		update_smarthome_item(sh,item_path+'.action','action',{})
 
 	else:
 		########################################################################
 		# some other item type
 		########################################################################
 		item = _add_item(sh,item_path,config=item_config)
-
 
 		
 		

@@ -106,21 +106,24 @@ class HomeCon:
 		items.update_smarthome_item(self._sh,'homecon.controls.delete_item','bool',{})
 		items.update_smarthome_item(self._sh,'homecon.controls.delete_item.path','str',{})
 
+		# actions
+		items.update_smarthome_item(self._sh,'homecon.actions','',{})
+
 		# alarms
 		items.update_smarthome_item(self._sh,'homecon.alarms','',{})
 
 		# weather
 		items.update_smarthome_item(self._sh,'homecon.weather','',{})
 		items.update_smarthome_item(self._sh,'homecon.weather.current','',{})
-		items.update_smarthome_item(self._sh,'homecon.weather.current.temperature','num',{'quantity':'Temperature','unit':'degC','label':'Ambient','description':'ambient temperature'})
-		items.update_smarthome_item(self._sh,'homecon.weather.current.humidity','num',{'quantity':'Percentage','unit':'pct','label':'Ambient','description':'ambient relative humidity'})
+		items.update_smarthome_item(self._sh,'homecon.weather.current.temperature','num',{'quantity':'Temperature','unit':'degC','label':'Ambient','description':'ambient temperature','measurement':True})
+		items.update_smarthome_item(self._sh,'homecon.weather.current.humidity','num',{'quantity':'Percentage','unit':'pct','label':'Ambient','description':'ambient relative humidity','measurement':True})
 		items.update_smarthome_item(self._sh,'homecon.weather.current.irradiation','',{})
 		items.update_smarthome_item(self._sh,'homecon.weather.current.irradiation.horizontal','num',{'quantity':'Heat flux','unit':'W/m2','label':'global horizontal','description':'global horizontal irradiation'})
-		items.update_smarthome_item(self._sh,'homecon.weather.current.irradiation.clouds','num',{'quantity':'Percentage','unit':'pct','label':'Clouds','description':'cloud cover'})
-		items.update_smarthome_item(self._sh,'homecon.weather.current.precipitation','num',{'quantity':'Boolean','unit':'-','label':'Rain','description':'rain'})
+		items.update_smarthome_item(self._sh,'homecon.weather.current.irradiation.clouds','num',{'quantity':'Percentage','unit':'pct','label':'Clouds','description':'cloud cover','measurement':True})
+		items.update_smarthome_item(self._sh,'homecon.weather.current.precipitation','num',{'quantity':'Boolean','unit':'-','label':'Rain','description':'rain','measurement':True})
 		items.update_smarthome_item(self._sh,'homecon.weather.current.wind','',{})
-		items.update_smarthome_item(self._sh,'homecon.weather.current.wind.speed','num',{'quantity':'Velocity magnitude','unit':'m/s','label':'Speed','description':'wind speed'})
-		items.update_smarthome_item(self._sh,'homecon.weather.current.wind.direction','num',{'quantity':'Angle','unit':'deg','label':'Direction','description':'wind direction'})
+		items.update_smarthome_item(self._sh,'homecon.weather.current.wind.speed','num',{'quantity':'Velocity magnitude','unit':'m/s','label':'Speed','description':'wind speed','measurement':True})
+		items.update_smarthome_item(self._sh,'homecon.weather.current.wind.direction','num',{'quantity':'Angle','unit':'deg','label':'Direction','description':'wind direction','measurement':True})
 		items.update_smarthome_item(self._sh,'homecon.weather.prediction','',{})		
 		items.update_smarthome_item(self._sh,'homecon.weather.prediction.detailed','list',{})
 		items.update_smarthome_item(self._sh,'homecon.weather.prediction.daily','list',{})
@@ -205,7 +208,7 @@ class HomeCon:
 		called once while parsing the items
 		"""
 		########################################################################
-		# add default attributes to items
+		# add default attributes to all items
 		########################################################################
 		if not 'quantity' in item.conf:
 			item.conf['quantity'] = ''
@@ -260,13 +263,22 @@ class HomeCon:
 		"""
 		called each time an item changes
 		"""
-
 		########################################################################
 		# update the value in the database
 		########################################################################
 		self._db.PUT( 'items','path=\'{}\''.format(item.id()),{'value':str(item())} )
 
+		########################################################################
+		# update the value in the measurement database
+		########################################################################	
+		if 'measurement' in item.conf and item.conf['measurement']:
+			now = datetime.datetime.utcnow()
+			timestamp = int( (now - datetime.datetime(1970,1,1)).total_seconds() )
+			# get the item id from the database
+			item_id = self._db.GET( 'items','path=\'{}\''.format(item.id()) )['id']
 
+			self._db.POST( 'measurements',{'item_id':item_id,'time':timestamp,'value':item()} )
+ 
 
 		########################################################################
 		# evaluate expressions in sh_listen
