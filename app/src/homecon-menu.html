@@ -1,0 +1,224 @@
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout-classes.html">
+<link rel="import" href="../bower_components/paper-button/paper-button.html">
+
+<link rel="import" href="homecon-menu-section.html">
+<link rel="import" href="homecon-menu-item.html">
+
+<dom-module is="homecon-menu">
+	<template>
+		<style>
+			paper-button{
+				width: 90%;
+				margin: 8px;
+			}
+		</style>
+		
+		<template is="dom-repeat" id="sections" items="{{sections}}" as="section" filter="_filterHome" sort="_sortByOrder" observe="order">
+			<homecon-menu-section section="{{section}}" on-change-state="changeState" edit="{{edit}}" on-delete="deleteSection" on-move-up="moveUpSection" on-move-down="moveDownSection">
+				
+				<template is="dom-repeat" id="pages" items="{{pages}}" as="page" filter="{{_sectionPages(section.id)}}" sort="_sortByOrder" observe="order">
+					<homecon-menu-item page="{{page}}" edit="{{edit}}" on-delete="deletePage" on-move-up="moveUpPage" on-move-down="moveDownPage"></homecon-menu-item>
+				</template>
+
+				<div class="vertical layout center" hidden="{{!edit}}">
+					<paper-button noink="true" on-click="addPage">add page</paper-button>
+				</div>
+
+			</homecon-menu-section>
+		</template>
+
+		
+		<div class="vertical layout center" hidden="{{!edit}}">
+			<paper-button noink="true" on-click="addSection">add section</paper-button>
+		</div>
+		
+		
+	</template>
+	<script>
+		Polymer({
+			is: 'homecon-menu',
+			properties: {
+				sections: {
+					type: 'Array',
+					notify: true
+				},
+				pages: {
+					type: 'Array',
+					notify: true
+				},
+				edit:{
+					type: 'Boolean',
+					value: true
+				}
+			},
+			changeState : function(e){
+				var children = Polymer.dom(this.root).querySelectorAll('homecon-menu-section');
+				for(var i=0;i<children.length;i++){ 
+					children[i].fire('menuChangeState',e.target)
+				}
+			},
+			addSection: function(e){
+				var id = new Date().valueOf();
+				var order = this._getNextOrder(this.sections);
+
+				this.push('sections',{'id':id, 'title':'','order':order});
+			},
+			deleteSection: function(e){
+				e.stopPropagation()
+				var sectionindex = parseInt(e.model.__data__.__key__.substr(1));
+				this.splice('sections',sectionindex,1);
+			},
+			addPage: function(e){
+				var id = new Date().valueOf();
+
+				var sectionindex = parseInt(this.$.sections.modelForElement(e.target).__data__.__key__.substr(1));
+				var sectionid = this.sections[sectionindex].id;
+				
+				var pages = this.pages.filter(function(page){
+					return page.section == sectionid;
+				});
+				var order = this._getNextOrder(pages);
+
+				this.push('pages',{'id':id,'section':sectionid,'title':'','icon':'blank','header':{},'pagesections':[],'order':order})
+			},
+			deletePage: function(e){
+				e.stopPropagation()
+				var pageindex = parseInt(e.model.__data__.__key__.substr(1));
+				this.splice('pages',pageindex,1)
+			},
+			moveUpSection: function(e){
+				e.stopPropagation()
+
+				// get the index and order of the current section
+				var index1 = parseInt(e.model.__data__.__key__.substr(1));
+				var order1 = this.sections[index1].order;
+				
+				// find the page which has the highest order lower than order1
+				var index2 = -1;
+				var order2 = -1;
+
+				this.sections.forEach(function(section,index){
+					if(section.id != 'home' && section.order < order1 && section.order > order2){
+						order2 = section.order;
+						index2 = index;
+					}
+				});
+
+				console.log(index1)
+				console.log(index2)
+				
+				// swap the order and do not swap with the home page
+				if(index2>-1){
+					this.set('sections.'+index1+'.order',order2);
+					this.set('sections.'+index2+'.order',order1);
+				}
+				console.log(this.sections)
+			},
+			moveDownSection: function(e){
+				e.stopPropagation()
+
+				// get the index and order of the current section
+				var index1 = parseInt(e.model.__data__.__key__.substr(1));
+				var order1 = this.sections[index1].order;
+				
+				// find the page which has the highest order lower than order1
+				var index2 = 1000;
+				var order2 = 1000000;
+
+				this.sections.forEach(function(section,index){
+					if(section.id != 'home' && section.order > order1 && section.order < order2){
+						order2 = section.order;
+						index2 = index;
+					}
+				});
+
+				// swap the order
+				if(index2<1000){
+					this.set('sections.'+index1+'.order',order2);
+					this.set('sections.'+index2+'.order',order1);
+				}
+			},
+			moveUpPage: function(e){
+				e.stopPropagation()
+
+				var sectionindex = parseInt(this.$.sections.modelForElement(e.target).__data__.__key__.substr(1));
+				var sectionid = this.sections[sectionindex].id;
+
+				// get the index and order of the current page
+				var index1 = parseInt(e.model.__data__.__key__.substr(1));
+				var order1 = this.pages[index1].order;
+				
+				// find the page which has the highest order lower than order1
+				var index2 = -1;
+				var order2 = -1;
+
+				this.pages.forEach(function(page,index){
+					if(page.section == sectionid && page.order < order1 && page.order > order2){
+						order2 = page.order;
+						index2 = index;
+					}
+				});
+
+				// swap the order
+				if(index2>-1){
+					this.set('pages.'+index1+'.order',order2);
+					this.set('pages.'+index2+'.order',order1);
+				}
+			},
+			moveDownPage: function(e){
+				e.stopPropagation()
+
+				var sectionindex = parseInt(this.$.sections.modelForElement(e.target).__data__.__key__.substr(1));
+				var sectionid = this.sections[sectionindex].id;
+
+				// get the index and order of the current page
+				var index1 = parseInt(e.model.__data__.__key__.substr(1));
+				var order1 = this.pages[index1].order;
+				
+				// find the page which has the highest order lower than order1
+				var index2 = 1000;
+				var order2 = 1000000;
+
+				this.pages.forEach(function(page,index){
+					if(page.section == sectionid && page.order > order1 && page.order < order2){
+						order2 = page.order;
+						index2 = index;
+					}
+				});
+
+				// swap the order
+				if(index2<1000){
+					this.set('pages.'+index1+'.order',order2);
+					this.set('pages.'+index2+'.order',order1);
+				}
+			},
+			_sectionPages: function(sectionid){
+				return function(page){
+					return page.section == sectionid;
+				};
+			},
+			_filterHome: function(item){
+				return item.id != 'home';
+			},
+			_sortByOrder: function(a,b){
+				if(a.order>b.order){
+					return 1;
+				}
+				else if(a.order<b.order){
+					return -1;
+				}
+				else{
+					return 0;
+				}
+			},
+			_getNextOrder(items){
+				var order = 0;
+				items.forEach(function(item){
+					order = Math.max(order,item.order+1);
+				});
+				return order;
+			},
+		});
+	</script>
+</dom-module>

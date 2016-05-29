@@ -1,0 +1,215 @@
+<!--
+@license
+Copyright (c) 2016 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/iron-localstorage/iron-localstorage.html">
+<link rel="import" href="../bower_components/iron-pages/iron-pages.html">
+
+<link rel="import" href="homecon-page.html">
+<link rel="import" href="homecon-page-header.html">
+<link rel="import" href="homecon-page-section.html">
+<link rel="import" href="homecon-widget.html">
+
+<dom-module id="homecon-pages">
+
+	<template>
+
+		<style>
+			:host {
+				display: block;
+				padding: 20px;
+				color: var(--primary-text-color);
+			}
+			.card {
+				box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.14), 0 1px 5px 0 rgba(0, 0, 0, 0.12), 0 3px 1px -2px rgba(0, 0, 0, 0.2);
+				padding: 16px;
+				margin: 24px;
+				border-radius: 5px;
+				background-color: var(--secondary-background-color);
+				color: #757575;
+			}
+
+			h1 {
+				font-size: 22px;
+				margin: 16px 0;
+				color: #212121;
+			}
+		</style>
+
+		<iron-localstorage name="sections" value="{{sections}}" on-iron-localstorage-load-empty="_initializeSections"></iron-localstorage>
+		<iron-localstorage name="pages" value="{{pages}}" on-iron-localstorage-load-empty="_initializePages"></iron-localstorage>
+
+		<app-route route="{{route}}" pattern="/:page" data="{{routeData}}" tail="{{subroute}}"></app-route>
+
+		<iron-pages selected="[[pageid]]" attr-for-selected="pageid">
+
+			<template is="dom-repeat" id="pages" items="{{pages}}" as="page">
+				<homecon-page pageid="[[page.id]]">
+					
+					<template is="dom-if" if="[[_filterHome(page)]]">
+						<homecon-page-header title="[[page.title]]" icon="[[page.icon]]"></homecon-page-header>
+					</template>
+
+					<template is="dom-repeat" id="pagesections" items="{{page.pagesections}}" as="pagesection">
+						<homecon-page-section title="{{pagesection.title}}" edit="[[edit]]">
+
+							<template is="dom-repeat" id="widgets" items="{{pagesection.widgets}}" as="widget">
+								<homecon-widget type="{{widget.type}}" config="{{widget.config}}" edit="[[edit]]"></homecon-widget>
+							</template>
+							<div class="vertical layout center" hidden="[[!edit]]">
+								<paper-button raised noink="true" on-tap="addWidget">add widget</paper-button>
+							</div>
+						</homecon-page-section>
+					</template>
+
+					<div class="vertical layout center" hidden="[[!edit]]">
+						<paper-button raised noink="true" on-tap="addSection">add section</paper-button>
+					</div>
+				</homecon-page>
+			</template>
+
+		</iron-pages>
+
+
+
+
+		<div class="card">
+			<h1>[[page.title]]</h1>
+		</div>
+		<div class="card">
+			<h1>[[page.title]]</h1>
+		</div>
+		<div class="card">
+			<h1>[[page.title]]</h1>
+		</div>
+		<div class="card">
+			<h1>[[page.title]]</h1>
+		</div>
+		
+		<paper-button raised noink="true" on-tap="_initialize">Initialize</paper-button>
+
+	</template>
+
+	<script>
+		Polymer({
+			is: 'homecon-pages',
+			properties: {
+				route: {
+					type: 'Object',
+				},
+				pageid: {
+					type: 'String',
+					notify: true,
+				},
+				sections: {
+					type: 'Array',
+					notify: true,
+				},
+				pages: {
+					type: 'Array',
+					notify: true,
+				},
+			},
+			observers: [
+				'_routePageChanged(routeData.page,pages)',
+				'_pagesChanged(pages.*)',
+			],
+			ready: function(){
+			},
+			publish: function(){
+
+			},
+			load: function(){
+
+			},
+			addSection: function(e){
+				var pageindex = parseInt(e.model.__data__.__key__.substr(1));
+
+				var pagesections = this.pages[pageindex].pagesections;
+				var order = this._getNextOrder(pagesections);
+
+				this.push('pages.'+pageindex+'.pagesections',{'title':'','widgets':[],'order':order});
+			},
+			addWidget: function(e){
+				var pageindex = this.$.pages.modelForElement(e.target).__data__.index;
+				var pagesectionindex = parseInt(e.model.__data__.__key__.substr(1));
+
+				var widgets = this.pages[pageindex].pagesections[pagesectionindex];
+				var order = this._getNextOrder(widgets);
+
+				this.push('pages.'+pageindex+'.pagesections.'+sectionindex+'.widgets',{'type':'homecon-widget-button','config':{},'order':order});
+			},
+			_routePageChanged: function(pageid,pages){
+				this.pageid = pageid || 'home';
+			},
+			_pagesChanged: function(changeRecord){
+				if(changeRecord.path != 'pages'){
+					//this.pages = JSON.parse(JSON.stringify(this.pages));
+				}
+			},
+			_getPages: function(pages){
+				var allpages = [];
+				pages.forEach(function(section){
+					section.pages.forEach(function(page){
+						allpages.push(page);
+					});
+				});
+				return allpages;
+			},
+			_initialize: function(){
+				this._initializeSections();
+				this._initializePages();
+			},
+			_initializeSections: function(){
+				// create a home section
+				this.sections = [{
+					'id': 'home',
+					'title': 'Home',
+					'order': 0
+				}];
+			},
+			_initializePages: function(){
+				// create the home page
+				this.pages = [{
+					'id':'home',
+					'section': 'home',
+					'title':'Home',
+					'icon':'',
+					'order': 0,
+					'pagesections':[{
+						'widgets': []
+					}]
+				}];
+			},
+			_filterHome: function(item){
+				return item.id != 'home';
+			},
+			_sortByOrder: function(a,b){
+				if(a.order>b.order){
+					return 1;
+				}
+				else if(a.order<b.order){
+					return -1;
+				}
+				else{
+					return 0;
+				}
+			},
+			_getNextOrder(items){
+				var order = 0;
+				items.forEach(function(item){
+					order = Math.max(order,item.order+1);
+				});
+				return order;
+			},
+		});
+	</script>
+
+</dom-module>

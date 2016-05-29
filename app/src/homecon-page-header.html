@@ -1,0 +1,52 @@
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout-classes.html">
+
+<dom-module is="homecon-page-header">
+	<template>
+		<style include="iron-flex iron-flex-alignment">
+			:host{
+				color: var(--primary-text-color);
+			}
+			.icon{
+				height: 60px;
+			}
+			.title{
+				margin: 5px 5px 5px 20px;
+				font-size: 2em;
+    			font-weight: 700;
+			}	
+		</style>
+		
+		<div class="horizontal layout">
+			<img class="icon" src="/images/widget/ffffff/[[icon]].png">
+			<h1 class="title flex">[[title]]</h1>
+			<template is="dom-if" if="[[hasWidget]]">
+				<div class="widget">
+					20°C
+				</div>
+			</template>
+		</div>
+		
+			
+	</template>
+	<script>
+		Polymer({
+			is: 'homecon-page-header',
+			properties: {
+				icon: {
+					type: 'String',
+				},
+				title: {
+					type: 'String',
+				},
+				widget: {
+					type: 'Object',
+					value: {}
+				},
+			},
+			hasWidget: function(){
+				return !(this.widget=={})
+			}
+		});
+	</script>
+</dom-module>

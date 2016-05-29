@@ -1,0 +1,51 @@
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout-classes.html">
+<link rel="import" href="../bower_components/iron-form/iron-form.html">
+
+<link rel="import" href="../bower_components/paper-dialog/paper-dialog.html">
+<link rel="import" href="../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../bower_components/neon-animation/animations/scale-up-animation.html">
+<link rel="import" href="../bower_components/neon-animation/animations/fade-out-animation.html">
+
+
+<dom-module is="homecon-edit-dialog">
+	<template>
+		<style>
+			:host{
+			}
+		</style>
+		
+		<paper-dialog id="dialog" entry-animation="scale-up-animation" exit-animation="fade-out-animation">
+			<form id="form" is="iron-form" on-iron-form-submit="save" action="/">
+				<content></content>
+				<div class="horizontal layout">
+					<paper-button on-tap="formSubmit">save</paper-button>
+					<paper-button on-tap="close">cancel</paper-button>
+				</div>
+			</form>
+		</paper-dialog>	
+
+			
+	</template>
+	<script>
+		Polymer({
+			is: 'homecon-edit-dialog',
+			properties: {
+			},
+			open: function(){
+				this.$.dialog.open();
+			},
+			close: function(){
+				this.$.dialog.close();
+			},
+			formSubmit: function(){
+				this.$.form.submit();
+			},
+			save: function(){
+				this.fire('save');
+			},
+			
+
+		});
+	</script>
+</dom-module>

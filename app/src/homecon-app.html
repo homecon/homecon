@@ -1,0 +1,196 @@
+<!--
+@license
+Copyright (c) 2016 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/app-route/app-location.html">
+<link rel="import" href="../bower_components/app-route/app-route.html">
+<link rel="import" href="../bower_components/app-layout/app-drawer-layout/app-drawer-layout.html">
+<link rel="import" href="../bower_components/app-layout/app-drawer/app-drawer.html">
+<link rel="import" href="../bower_components/app-layout/app-scroll-effects/app-scroll-effects.html">
+<link rel="import" href="../bower_components/app-layout/app-header/app-header.html">
+<link rel="import" href="../bower_components/app-layout/app-header-layout/app-header-layout.html">
+<link rel="import" href="../bower_components/app-layout/app-toolbar/app-toolbar.html">
+<link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../bower_components/iron-pages/iron-pages.html">
+<link rel="import" href="../bower_components/iron-selector/iron-selector.html">
+
+<link rel="import" href="homecon-menu.html">
+
+<dom-module id="homecon-app">
+
+	<template>
+
+		<style>
+			:host{
+				display: block;
+				--toolbar-background-color: #000000;
+				--primary-background-color: #080808;
+				--secondary-background-color: #0b0b0b;
+
+				--primary-text-color: #ffffff;
+				--secondary-text-color: #aaaaaa;
+
+				--text-shadow-color: #111111;
+
+				--primary-color: #f79a1f;
+
+				--button-background-color: #333333;
+				--button-background-color-hover: #373737;
+				--button-text-color: #ffffff;
+				--button-border-color: #1f1f1f;
+
+				--header-background-color: #ffffff;
+				--header-background-color-hover: #ededed;
+				--header-text-color: #333333;
+				--header-text-shadow-color: #f3f3f3;
+				--header-border-color: #dddddd;
+
+
+				--paper-dialog-background-color: var(--secondary-background-color);
+				--paper-dialog-color: var(--primary-text-color);
+			}
+			app-header{
+				background-color: var(--toolbar-background-color);
+				color: var(--primary-text-color);
+			}
+			app-header paper-icon-button {
+				--paper-icon-button-ink-color: white;
+			}
+			app-drawer{
+			
+			}
+			app-toolbar{
+				box-shadow: 0px 2px 2px 0px rgba(0, 0, 0, 0.5);
+			}
+			.drawer-content{
+				width: 100%;
+				height: 100%;
+				margin-top: 64px;
+				background-color: var(--secondary-background-color);
+				color: #fff;
+				box-shadow: 2px 2px 2px 0px rgba(0, 0, 0, 0.3);
+			}
+			.main-content{
+				background-color: var(--primary-background-color);
+			}
+			.drawer-list a {
+				display: block;
+				padding: 0 16px;
+				line-height: 40px;
+				text-decoration: none;
+			}
+			.drawer-list a.iron-selected {
+				color: black;
+				font-weight: bold;
+			}
+			.drawer-list a.subroute {
+				padding-left: 32px;
+			}
+			.hidden{
+				display: none;
+			}
+		</style>
+
+
+		<app-location route="{{route}}"></app-location>
+		<app-route route="{{route}}" pattern="/:page" data="{{routeData}}" tail="{{subroute}}"></app-route>
+		<app-header-layout fullbleed>
+
+			<app-header fixed class$="[[menuClass]]">
+				<app-toolbar>
+					<paper-icon-button icon="menu" on-tap="toggleDrawer" class$="[[menuButtonClass]]"></paper-icon-button>
+					<div title>Homecon</div>
+				</app-toolbar>
+			</app-header>
+
+			<app-drawer-layout id="pagesDrawerLayout">
+
+				<!-- Drawer -->
+				<app-drawer id="pagesDrawer" class$="[[menuClass]]">
+					<div class=drawer-content>
+
+						<!-- Pages menu -->
+						<homecon-menu sections="{{homeconSections}}" pages="{{homeconPages}}"></homecon-menu>
+
+					</div>
+				</app-drawer>
+
+
+
+				<!-- Main -->
+				<div class="main-content">
+					<iron-pages selected="[[page]]" attr-for-selected="name">
+						<homecon-login name="login"></homecon-login>
+						<homecon-pages name="pages" route="[[subroute]]" sections="{{homeconSections}}" pages="{{homeconPages}}" pageid="{{pageid}}"></homecon-pages>
+						<homecon-settings name="settings"></homecon-settings>
+						<homecon-users name="users"></homecon-users>
+					</iron-pages>
+				</div>
+
+			</app-drawer-layout>
+		</app-header-layout>
+	</template>
+
+	<script>
+	Polymer({
+		is: 'homecon-app',
+		properties: {
+			page: {
+				type: String,
+				reflectToAttribute: true,
+				observer: '_pageChanged'
+			},
+		},
+		observers: [
+			'_routePageChanged(routeData.page)'
+		],
+		ready: function(){
+
+			// hide the menu button when the drawer is persistent
+			var that = this;
+			this.$.pagesDrawer.addEventListener('opened-changed',function(e){
+				if(!that.$.pagesDrawer.persistent){
+					that.menuButtonClass = '';
+				}
+				else{
+					that.menuButtonClass = 'hidden';
+				}
+			});
+		},
+		toggleDrawer: function(){
+			if(!this.$.pagesDrawer.persistent){
+				this.$.pagesDrawer.toggle();
+			}
+		},
+		_routePageChanged: function(page){
+			this.page = page || 'pages';
+			if(this.page=='login'){
+				this.menuClass = 'hidden'
+			}
+			else{
+				this.menuClass = ''
+			}
+			// close the pagesdrawer if it is not persistent
+			if(!this.$.pagesDrawer.persistent){
+				this.$.pagesDrawer.close();
+			}
+
+		},
+		_pageChanged: function(page){
+			// load page import on demand.
+			this.importHref( this.resolveUrl('homecon-' + page + '.html'), null, null, true );
+		},
+		_sectionFilter: function(section){
+			return function(page){
+				return (page.section==section)
+			}
+		},
+	});
+	</script>
+</dom-module>

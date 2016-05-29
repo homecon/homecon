@@ -1,0 +1,10 @@
+{
+  "entrypoint": "index.html",
+  "shell": "src/homecon-app.html",
+  "fragments": [
+    "src/homecon-login.html",
+    "src/homecon-pages.html",
+    "src/homecon-settings.html",
+	"src/homecon-users.html"
+  ]
+}

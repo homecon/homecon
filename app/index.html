@@ -1,90 +1,62 @@
 <!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
 
-<html lang="">
+  <title>Homecon</title>
 
-	<head>
-		<meta charset="utf-8">
-		<meta name="description" content="">
-		<meta name="viewport" content="width=device-width, initial-scale=1">
-		<meta name="generator" content="HomeCon"/>
-		<title>HomeCon</title>
-		
-		<meta name="theme-color" content="#000000">
+  <link rel="shortcut icon" sizes="32x32" href="/images/icon/32.png">
 
-		<link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#000000">
+  <link rel="manifest" href="/manifest.json">
 
-		<meta name="msapplication-TileColor" content="#000000">
+  <script>
 
-		<!-- Add to homescreen for Chrome on Android -->
-		<meta name="mobile-web-app-capable" content="yes">
-		<meta name="application-name" content="HomeCon">
-		<link rel="icon" sizes="144x144" href="images/icon/144.png">
+    // setup Polymer options
+    window.Polymer = {lazyRegister: true, dom: 'shadow'};
 
-		<!-- Add to homescreen for Safari on iOS -->
-		<meta name="apple-mobile-web-app-capable" content="yes">
-		<meta name="apple-mobile-web-app-status-bar-style" content="black">
-		<meta name="apple-mobile-web-app-title" content="HomeCon">
-		<link rel="apple-touch-icon" href="images/icon/64.png">
+    // load webcomponents polyfills
+    (function() {
+      if ('registerElement' in document
+          && 'import' in document.createElement('link')
+          && 'content' in document.createElement('template')) {
+        // browser has web components
+      } else {
+        // polyfill web components
+        var e = document.createElement('script');
+        e.src = '/bower_components/webcomponentsjs/webcomponents-lite.min.js';
+        document.head.appendChild(e);
+      }
+    })();
 
-		<!-- Tile icon for Win8 (144x144) -->
-		<meta name="msapplication-TileImage" content="images/icon/144.png">
+    // load pre-caching service worker
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', function() {
+        navigator.serviceWorker.register('/service-worker.js');
+      });
+    }
 
+  </script>
 
-		<script src="bower_components/webcomponentsjs/webcomponents-lite.js"></script>
+  <link rel="import" href="/src/homecon-app.html">
 
-		<link rel="import" href="elements/elements.html">
+  <style>
 
-	</head>
+    body {
+      margin: 0;
+      font-family: 'Roboto', 'Noto', sans-serif;
+      line-height: 1.5;
+      min-height: 100vh;
+      background-color: #080808;
+    }
 
-	<body unresolved class="fullbleed layout vertical">
-		<span id="browser-sync-binding"></span>
-		<template is="dom-bind" id="app">
-			
-			<!--<section id="login" hidden="{{checkToken(token)}}" class="horizontal layout center-justified center">
-				<div>
-					<h2 class="page-title">Prono</h2>
-					<login-form token={{token}}></login-form>
-				</div>
-			</section>-->
+  </style>
 
-			<paper-toolbar-drawer id="main">
-				<div class="toolbar">
-					<homecon-toolbar-item pageid="home" icon="homecon_home"></homecon-toolbar-item>
-					<homecon-toolbar-item pageid="settings" icon="homecon_gears"></homecon-toolbar-item>
-					<homecon-toolbar-item pageid="logout" icon="homecon_logout"></homecon-toolbar-item>
-				</div>
-				<div class="drawer">
-					<homecon-menu pages="{{pages}}" edit="{{edit}}"></homecon-menu>
-				</div>
-				<div class="main">
-					<iron-pages attr-for-selected="pageid" selected="{{page}}">
-						<div pageid="home">
-							<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam in nisi ac nulla eleifend hendrerit vel sed est. Duis semper auctor metus sed elementum. Donec eget magna ligula. Curabitur eu leo libero. Quisque dignissim auctor euismod. Vestibulum nec efficitur eros, id dignissim erat. Fusce a erat a mauris lobortis dapibus ut sed elit. Integer aliquam pulvinar sapien, ut facilisis nulla consequat rhoncus. Integer faucibus ornare velit, nec volutpat ligula molestie quis. Nulla et urna sit amet magna facilisis malesuada ac sit amet libero. Curabitur porta, quam sit amet sodales fringilla, libero augue commodo nunc, nec eleifend felis eros nec sem.</p>
-							<p>Sed pharetra condimentum lectus et cursus. Fusce at risus ipsum. Morbi tincidunt massa vitae quam volutpat, non venenatis risus ultrices. Nunc ac tincidunt arcu. Nunc massa ante, posuere convallis velit a, aliquam ullamcorper neque. Aenean ligula sapien, porta vel ex sit amet, euismod bibendum sapien. Nam suscipit metus dui, ut pulvinar ante aliquet vel.</p>
-							<p>Donec at finibus turpis, id faucibus dui. Donec id hendrerit urna, sed consectetur urna. Nunc mollis vel velit sit amet facilisis. Etiam non feugiat odio. Morbi ullamcorper facilisis nunc ac interdum. Pellentesque at ultricies risus. Suspendisse viverra massa a quam ultricies, vel mollis tellus maximus. Nunc sapien erat, bibendum eget faucibus nec, convallis nec nulla. Duis vitae vehicula nisi. Suspendisse condimentum, massa vitae vulputate rhoncus, ligula orci vulputate urna, in congue lorem est sodales nisi. Nam mattis eleifend augue ac finibus. Mauris augue est, finibus nec urna quis, egestas sagittis felis. Aliquam ultricies orci ac purus suscipit ullamcorper. Aliquam auctor luctus ipsum sit amet accumsan. Phasellus dui est, mattis et sapien sit amet, condimentum dictum lorem. Phasellus efficitur eget sapien nec scelerisque.</p>
-							<p>Sed imperdiet ante a metus fringilla pellentesque. Aliquam blandit dolor non varius commodo. Cras euismod tortor ante, eget auctor felis posuere eget. Nam luctus maximus quam. Pellentesque tristique efficitur turpis, id auctor est euismod nec. Morbi lorem elit, maximus sed fermentum sed, malesuada ac lacus. Nullam efficitur ipsum id dolor eleifend, id venenatis arcu ultrices. Cras consectetur felis mi, id pretium mi euismod sed. Praesent id justo non leo accumsan pretium.</p>
-							<p>Mauris ac nisi felis. Nam auctor in nunc et malesuada. Fusce quis mauris vel metus vehicula vulputate at quis lacus. Curabitur hendrerit, urna in placerat varius, elit nulla molestie magna, ut eleifend elit nibh id metus. Etiam a porttitor leo, eu pellentesque mauris. Duis efficitur tincidunt leo, a luctus nunc eleifend eget. Nulla ornare turpis in magna auctor, ac venenatis turpis porttitor. In dictum sapien ut ipsum scelerisque, ac eleifend tortor mollis. Quisque volutpat malesuada nisi, id sodales orci gravida quis. Duis ornare nunc id aliquam faucibus. Etiam quis sapien massa. Ut dui leo, rutrum vitae magna quis, placerat molestie felis. Phasellus sit amet risus nisl. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Etiam fermentum mauris purus, vitae aliquet libero semper sit amet. Aenean diam mauris, iaculis eget vestibulum a, ultricies eget est.</p>						
-						</div>
-	
-						<homecon-settings pageid="settings"></homecon-settings>
+</head>
+<body>
 
-						<template is="dom-repeat" items="{{pages.sections}}" as="section">
-							<template is="dom-repeat" items="{{section.pages}}" as="page">
-								<homecon-page pageid="{{page.id}}" page="{{page}}" edit="{{edit}}"></homecon-page>
-							</template>
-						</template>
-					</iron-pages>			
-				</div>
-			</paper-toolbar-drawer>
+  <homecon-app>Homecon</homecon-app>
 
-			<paper-toast id="toast">
-				<span class="toast-hide-button" role="button" tabindex="0" onclick="app.$.toast.hide()">close</span>
-			</paper-toast>
-
-			<homecon-pages pages="{{pages}}"></homecon-pages>
-		</template>
-		
-		<script src="scripts/app.js"></script>
-	</body>
-
+</body>
 </html>
