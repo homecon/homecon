@@ -2,10 +2,10 @@
 <link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout-classes.html">
 <link rel="import" href="../bower_components/paper-button/paper-button.html">
 
-<link rel="import" href="homecon-menu-section.html">
-<link rel="import" href="homecon-menu-item.html">
+<link rel="import" href="homecon-pages-menu-section.html">
+<link rel="import" href="homecon-pages-menu-item.html">
 
-<dom-module is="homecon-menu">
+<dom-module is="homecon-pages-menu">
 	<template>
 		<style>
 			paper-button{
@@ -15,17 +15,17 @@
 		</style>
 		
 		<template is="dom-repeat" id="sections" items="{{sections}}" as="section" filter="_filterHome" sort="_sortByOrder" observe="order">
-			<homecon-menu-section section="{{section}}" on-change-state="changeState" edit="{{edit}}" on-delete="deleteSection" on-move-up="moveUpSection" on-move-down="moveDownSection">
+			<homecon-pages-menu-section section="{{section}}" on-change-state="changeState" edit="{{edit}}" on-delete="deleteSection" on-move-up="moveUpSection" on-move-down="moveDownSection">
 				
 				<template is="dom-repeat" id="pages" items="{{pages}}" as="page" filter="{{_sectionPages(section.id)}}" sort="_sortByOrder" observe="order">
-					<homecon-menu-item page="{{page}}" edit="{{edit}}" on-delete="deletePage" on-move-up="moveUpPage" on-move-down="moveDownPage"></homecon-menu-item>
+					<homecon-pages-menu-item page="{{page}}" edit="{{edit}}" on-delete="deletePage" on-move-up="moveUpPage" on-move-down="moveDownPage"></homecon-menu-item>
 				</template>
 
 				<div class="vertical layout center" hidden="{{!edit}}">
 					<paper-button noink="true" on-click="addPage">add page</paper-button>
 				</div>
 
-			</homecon-menu-section>
+			</homecon-pages-menu-section>
 		</template>
 
 		
@@ -37,7 +37,7 @@
 	</template>
 	<script>
 		Polymer({
-			is: 'homecon-menu',
+			is: 'homecon-pages-menu',
 			properties: {
 				sections: {
 					type: 'Array',
@@ -53,7 +53,7 @@
 				}
 			},
 			changeState : function(e){
-				var children = Polymer.dom(this.root).querySelectorAll('homecon-menu-section');
+				var children = Polymer.dom(this.root).querySelectorAll('homecon-pages-menu-section');
 				for(var i=0;i<children.length;i++){ 
 					children[i].fire('menuChangeState',e.target)
 				}
