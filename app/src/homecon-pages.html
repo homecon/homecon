@@ -58,7 +58,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 					</template>
 
 					<template is="dom-repeat" id="pagesections" items="{{page.pagesections}}" as="pagesection">
-						<homecon-page-section title="{{pagesection.title}}" edit="[[edit]]">
+						<homecon-page-section title="{{pagesection.title}}" on-delete="deletePageSection" on-move-up="moveUpPageSection" on-move-down="moveDownPageSection" edit="[[edit]]">
 
 							<template is="dom-repeat" id="widgets" items="{{pagesection.widgets}}" as="widget">
 								<homecon-widget type="{{widget.type}}" config="{{widget.config}}" edit="[[edit]]"></homecon-widget>
@@ -70,7 +70,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 					</template>
 
 					<div class="vertical layout center" hidden="[[!edit]]">
-						<paper-button raised noink="true" on-tap="addSection">add section</paper-button>
+						<paper-button raised noink="true" on-tap="addPageSection">add section</paper-button>
 					</div>
 				</homecon-page>
 			</template>
@@ -129,13 +129,29 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 			load: function(){
 
 			},
-			addSection: function(e){
+			addPageSection: function(e){
 				var pageindex = parseInt(e.model.__data__.__key__.substr(1));
 
 				var pagesections = this.pages[pageindex].pagesections;
 				var order = this._getNextOrder(pagesections);
 				
 				this.push('pages.'+pageindex+'.pagesections',{'title':'','widgets':[],'order':order});
+			},
+			deletePageSection: function(e){
+				e.stopPropagation()
+
+				var pageindex = parseInt(this.$.pages.modelForElement(e.target).__data__.__key__.substr(1));
+				var pagesectionindex = parseInt(e.model.__data__.index);
+
+				this.splice('pages.'+pageindex+'.pagesections',pagesectionindex,1);
+			},
+			moveUpPageSection: function(e){
+				e.stopPropagation()
+
+			},
+			moveDownPageSection: function(e){
+				e.stopPropagation()
+
 			},
 			addWidget: function(e){
 				var pageindex = this.$.pages.modelForElement(e.target).__data__.index;

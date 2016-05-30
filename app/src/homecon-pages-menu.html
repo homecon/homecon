@@ -69,26 +69,9 @@
 				var sectionindex = parseInt(e.model.__data__.__key__.substr(1));
 				this.splice('sections',sectionindex,1);
 			},
-			addPage: function(e){
-				var id = new Date().valueOf();
-
-				var sectionindex = parseInt(this.$.sections.modelForElement(e.target).__data__.__key__.substr(1));
-				var sectionid = this.sections[sectionindex].id;
-				
-				var pages = this.pages.filter(function(page){
-					return page.section == sectionid;
-				});
-				var order = this._getNextOrder(pages);
-
-				this.push('pages',{'id':id,'section':sectionid,'title':'','icon':'blank','header':{},'pagesections':[],'order':order})
-			},
-			deletePage: function(e){
-				e.stopPropagation()
-				var pageindex = parseInt(e.model.__data__.__key__.substr(1));
-				this.splice('pages',pageindex,1)
-			},
 			moveUpSection: function(e){
 				e.stopPropagation()
+
 
 				// get the index and order of the current section
 				var index1 = parseInt(e.model.__data__.__key__.substr(1));
@@ -138,6 +121,24 @@
 					this.set('sections.'+index1+'.order',order2);
 					this.set('sections.'+index2+'.order',order1);
 				}
+			},
+			addPage: function(e){
+				var id = new Date().valueOf();
+
+				var sectionindex = parseInt(this.$.sections.modelForElement(e.target).__data__.__key__.substr(1));
+				var sectionid = this.sections[sectionindex].id;
+				
+				var pages = this.pages.filter(function(page){
+					return page.section == sectionid;
+				});
+				var order = this._getNextOrder(pages);
+
+				this.push('pages',{'id':id,'section':sectionid,'title':'','icon':'blank','header':{},'pagesections':[],'order':order})
+			},
+			deletePage: function(e){
+				e.stopPropagation()
+				var pageindex = parseInt(e.model.__data__.__key__.substr(1));
+				this.splice('pages',pageindex,1)
 			},
 			moveUpPage: function(e){
 				e.stopPropagation()
