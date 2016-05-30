@@ -22,9 +22,16 @@
 				height: 40px;
 			}
 			paper-dialog{
-				top: 180px;
-				bottom: 100px;
+				top: 180px;	
 			}
+			paper-dialog paper-dialog-scrollable {
+				--paper-dialog-scrollable: {
+					box-sizing: border-box;
+					width: 300px;
+					height: 600px;
+				}
+	  		}
+
 		</style>
 		
 		<div class="horizontal layout center" on-tap="open">

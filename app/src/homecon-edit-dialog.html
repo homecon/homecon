@@ -10,7 +10,7 @@
 
 <dom-module is="homecon-edit-dialog">
 	<template>
-		<style>
+		<style include="iron-flex iron-flex-alignment">
 			:host{
 			}
 		</style>
@@ -19,8 +19,8 @@
 			<form id="form" is="iron-form" on-iron-form-submit="save" action="/">
 				<content></content>
 				<div class="horizontal layout">
-					<paper-button on-tap="formSubmit">save</paper-button>
-					<paper-button on-tap="close">cancel</paper-button>
+					<paper-button raised on-tap="formSubmit">save</paper-button>
+					<paper-button raised on-tap="close">cancel</paper-button>
 				</div>
 			</form>
 		</paper-dialog>	
