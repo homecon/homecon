@@ -62,7 +62,7 @@
 		</style>
 		
 		<a id="header" class="header" on-click="changeState">			
-			{{title}}
+			{{pagesection.title}}
 		</a>
 		<iron-collapse opened="{{opened}}">
 			<div id="content">
@@ -82,7 +82,7 @@
 		Polymer({
 			is: 'homecon-page-section',
 			properties: {
-				title: {
+				pagesection: {
 					type: 'String',
 					notify: true
 				},
@@ -95,30 +95,21 @@
 					value: false
 				}
 			},
-			ready: function(){
-				this.toggleClass("opened", this.opened, this.$.header);
-			},
 			changeState: function(){
 				this.opened = !this.opened;
 		    	this.toggleClass("opened", this.opened, this.$.header);
 			},
 			openEditDialog: function(){
-				this.newTitle = this.title;
+				this.newTitle = this.pagesection.title;
 				this.$.editDialog.open();
 			},
 			save: function(e){
-				this.title = this.newTitle;
+				this.set('pagesection.title',this.newTitle);
 				this.$.editDialog.close();
 			},
 			delete: function(){
 				this.fire('delete')
 			},
-			moveUp: function(){
-				this.fire('move-up')
-			},
-			moveDown: function(){
-				this.fire('move-down')
-			}
 		});
 	</script>
 </dom-module>

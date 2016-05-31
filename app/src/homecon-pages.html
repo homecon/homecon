@@ -57,13 +57,16 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 					<template is="dom-if" if="[[_filterHome(page)]]">
 						<homecon-page-header title="[[page.title]]" icon="[[page.icon]]"></homecon-page-header>
 					</template>
-					<sortable-js>
-						<template is="dom-repeat" id="pagesections" items="{{page.pagesections}}" as="pagesection">
-							<homecon-page-section title="{{pagesection.title}}" on-delete="deletePageSection" on-move-up="moveUpPageSection" on-move-down="moveDownPageSection" edit="[[edit]]">
+					<sortable-js on-update="_updatePageSectionsOrder">
+						<template is="dom-repeat" id="pagesections" items="{{page.pagesections}}" as="pagesection" sort="_sortByOrder">
+							<homecon-page-section pagesection="{{pagesection}}" on-delete="deletePageSection" on-move-up="moveUpPageSection" on-move-down="moveDownPageSection" edit="[[edit]]">
 
-								<template is="dom-repeat" id="widgets" items="{{pagesection.widgets}}" as="widget">
-									<homecon-widget type="{{widget.type}}" config="{{widget.config}}" edit="[[edit]]"></homecon-widget>
-								</template>
+								<sortable-js on-update="_updateWidgetsOrder">	
+									<template is="dom-repeat" id="widgets" items="{{pagesection.widgets}}" as="widget" sort="_sortByOrder">
+										<homecon-widget widget="{{widget}}" edit="[[edit]]"></homecon-widget>
+									</template>
+								</sortable-js>
+
 								<div class="vertical layout center" hidden="[[!edit]]">
 									<paper-button raised noink="true" on-tap="addWidget">add widget</paper-button>
 								</div>
@@ -118,6 +121,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 					type: 'Array',
 					notify: true,
 				},
+				edit: {
+					type: 'Boolean',
+					value: true,
+					observer: 'editChanged'
+				},
 			},
 			observers: [
 				'_routePageChanged(routeData.page,pages)',
@@ -147,22 +155,38 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
 				this.splice('pages.'+pageindex+'.pagesections',pagesectionindex,1);
 			},
-			moveUpPageSection: function(e){
-				e.stopPropagation()
+			_updatePageSectionsOrder: function(e){
+				if(typeof e.from != 'undefined'){
 
-			},
-			moveDownPageSection: function(e){
-				e.stopPropagation()
+					var list = e.from.children;
+					for(var i=0; i<list.length; i++){
 
+						if(typeof list[i].pagesection != 'undefined'){
+							list[i].pagesection.order = i;
+						}
+					}
+				}
 			},
 			addWidget: function(e){
 				var pageindex = this.$.pages.modelForElement(e.target).__data__.index;
 				var pagesectionindex = parseInt(e.model.__data__.__key__.substr(1));
 
-				var widgets = this.pages[pageindex].pagesections[pagesectionindex];
+				var widgets = this.pages[pageindex].pagesections[pagesectionindex].widgets;
 				var order = this._getNextOrder(widgets);
 
-				this.push('pages.'+pageindex+'.pagesections.'+sectionindex+'.widgets',{'type':'homecon-widget-button','config':{},'order':order});
+				this.push('pages.'+pageindex+'.pagesections.'+pagesectionindex+'.widgets',{'type':'homecon-widget-button','config':{},'order':order});
+			},
+			_updateWidgetsOrder: function(e){
+				if(typeof e.from != 'undefined'){
+
+					var list = e.from.children;
+					for(var i=0; i<list.length; i++){
+
+						if(typeof list[i].pagesection != 'undefined'){
+							list[i].widget.order = i;
+						}
+					}
+				}
 			},
 			_routePageChanged: function(pageid,pages){
 				this.pageid = pageid || 'home';
@@ -222,9 +246,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 			},
 			_getNextOrder(items){
 				var order = 0;
-				items.forEach(function(item){
-					order = Math.max(order,item.order+1);
-				});
+				if(typeof items != 'undefined'){
+					items.forEach(function(item){
+						order = Math.max(order,item.order+1);
+					});
+				}
 				return order;
 			},
 		});

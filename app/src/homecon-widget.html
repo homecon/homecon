@@ -6,9 +6,7 @@
 
 <link rel="import" href="../bower_components/paper-button/paper-button.html">
 
-<link rel="import" href="homecon-edit-dialog.html">
-
-<link rel="import" href="homecon-widget-button.html">
+<link rel="import" href="widgets/homecon-widget-button.html">
 
 <dom-module is="homecon-widget">
 	<template>
@@ -25,42 +23,34 @@
 			}
 		</style>
 		
-		<div id="container"><div></div></div>
+		<div id="container" on-save="save"><div></div></div>
 
 	</template>
 	<script>
 		Polymer({
 			is: 'homecon-widget',
 			properties: {
-				type: {
-					type: 'String',
-					value: 'homecon-widget-button'
-				},
-				config: {
+				widget: {
 					type: 'Object',
+					value: {'type':'homecon-widget-button','config':{}}
 				},
 				edit: {
 					type: 'Boolean',
 					value: false,
 					observer: 'editChanged'
 				},
-				widget: {
-					type: 'Object',
-					value: {}
-				}
 			},
 			observers: [
-				'updateWidget(type, config)'
+				'updateWidget(widget.type,widget.config)'
 			],
 			updateWidget: function(type,config){
 				var container = this.$.container;
 
 				var widget = document.createElement(type);
-				widget.config = this.config;
+				widget.config = this.widget.config;
 				widget.edit = this.edit;
 
-				this.set('widget',widget);
-				console.log( widget )
+				this.set('widgetinstance',widget);
 				
 				// import the widget
 				//this.importHref( this.resolveUrl(type+'.html'), null, null, true );
@@ -69,11 +59,13 @@
 				container.removeChild(container.firstChild)
 				container.appendChild(widget);
 			},
+			save: function(e,d){
+				e.stopPropagation();
+				this.set('widget.config',d);
+			},
 			editChanged: function(newValue) {
-				console.log(newValue);
-				if(typeof this.widget != 'undefined' && this.widget != {}){	
-					console.log(this.widget)
-					this.widget.edit = newValue;
+				if(typeof this.widgetinstance != 'undefined' && this.widgetinstance != {}){	
+					this.widgetinstance.edit = newValue;
 				}
 			}
 		});
