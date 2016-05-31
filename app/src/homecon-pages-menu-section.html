@@ -52,8 +52,6 @@
 		</a>
 
 		<div class="edit" hidden="{{!edit}}">
-			<paper-icon-button icon="icons:arrow-drop-up" noink="true" on-tap="moveUp"></paper-icon-button>
-			<paper-icon-button icon="icons:arrow-drop-down" noink="true" on-tap="moveDown"></paper-icon-button>
 			<paper-icon-button icon="editor:mode-edit" noink="true" on-tap="openEditDialog"></paper-icon-button>
 		</div>
 
@@ -107,12 +105,6 @@
 			delete: function(){
 				this.fire('delete')
 			},
-			moveUp: function(){
-				this.fire('move-up')
-			},
-			moveDown: function(){
-				this.fire('move-down')
-			}
 		});
 	</script>
 </dom-module>

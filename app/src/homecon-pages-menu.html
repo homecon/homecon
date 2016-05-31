@@ -15,22 +15,23 @@
 			}
 		</style>
 		
-		<template is="dom-repeat" id="sections" items="{{sections}}" as="section" filter="_filterHome" sort="_sortByOrder" observe="order">
-			<homecon-pages-menu-section section="{{section}}" on-change-state="changeState" edit="{{edit}}" on-delete="deleteSection" on-move-up="moveUpSection" on-move-down="moveDownSection">
+		<sortable-js on-update="_updateSectionsOrder" disabled="{{!edit}}">
+			<template is="dom-repeat" id="sections" items="{{sections}}" as="section" filter="_filterHome" sort="_sortByOrder" observe="order">
+				<homecon-pages-menu-section section="{{section}}" on-change-state="changeState" edit="{{edit}}" on-delete="deleteSection">
 
-				<sortable-js on-update="_updatePagesOrder" disabled="{{!edit}}">
-					<template is="dom-repeat" id="pages" items="{{pages}}" as="page" filter="{{_sectionPages(section.id)}}" sort="_sortByOrder" observe="order">
-						<homecon-pages-menu-item page="{{page}}" edit="{{edit}}" on-delete="deletePage"></homecon-menu-item>
-					</template>
-				</sortable-js>
+					<sortable-js on-update="_updatePagesOrder" disabled="{{!edit}}">
+						<template is="dom-repeat" id="pages" items="{{pages}}" as="page" filter="{{_sectionPages(section.id)}}" sort="_sortByOrder" observe="order">
+							<homecon-pages-menu-item page="{{page}}" edit="{{edit}}" on-delete="deletePage"></homecon-menu-item>
+						</template>
+					</sortable-js>
 
-				<div class="vertical layout center" hidden="{{!edit}}">
-					<paper-button raised noink="true" on-click="addPage">add page</paper-button>
-				</div>
+					<div class="vertical layout center" hidden="{{!edit}}">
+						<paper-button raised noink="true" on-click="addPage">add page</paper-button>
+					</div>
 
-			</homecon-pages-menu-section>
-		</template>
-
+				</homecon-pages-menu-section>
+			</template>
+		</sortable-js>
 		
 		<div class="vertical layout center" hidden="{{!edit}}">
 			<paper-button raised noink="true" on-click="addSection">add section</paper-button>
@@ -72,57 +73,16 @@
 				var sectionindex = parseInt(e.model.__data__.__key__.substr(1));
 				this.splice('sections',sectionindex,1);
 			},
-			moveUpSection: function(e){
-				e.stopPropagation()
+			_updateSectionsOrder: function(e){
+				if(typeof e.from != 'undefined'){
 
+					var list = e.from.children;
+					for(var i=0; i<list.length; i++){
 
-				// get the index and order of the current section
-				var index1 = parseInt(e.model.__data__.__key__.substr(1));
-				var order1 = this.sections[index1].order;
-				
-				// find the page which has the highest order lower than order1
-				var index2 = -1;
-				var order2 = -1;
-
-				this.sections.forEach(function(section,index){
-					if(section.id != 'home' && section.order < order1 && section.order > order2){
-						order2 = section.order;
-						index2 = index;
+						if(typeof list[i].section != 'undefined'){
+							list[i].section.order = i;
+						}
 					}
-				});
-
-				console.log(index1)
-				console.log(index2)
-				
-				// swap the order and do not swap with the home page
-				if(index2>-1){
-					this.set('sections.'+index1+'.order',order2);
-					this.set('sections.'+index2+'.order',order1);
-				}
-				console.log(this.sections)
-			},
-			moveDownSection: function(e){
-				e.stopPropagation()
-
-				// get the index and order of the current section
-				var index1 = parseInt(e.model.__data__.__key__.substr(1));
-				var order1 = this.sections[index1].order;
-				
-				// find the page which has the highest order lower than order1
-				var index2 = 1000;
-				var order2 = 1000000;
-
-				this.sections.forEach(function(section,index){
-					if(section.id != 'home' && section.order > order1 && section.order < order2){
-						order2 = section.order;
-						index2 = index;
-					}
-				});
-
-				// swap the order
-				if(index2<1000){
-					this.set('sections.'+index1+'.order',order2);
-					this.set('sections.'+index2+'.order',order1);
 				}
 			},
 			addPage: function(e){
