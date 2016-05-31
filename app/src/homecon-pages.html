@@ -11,6 +11,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="../bower_components/polymer/polymer.html">
 <link rel="import" href="../bower_components/iron-localstorage/iron-localstorage.html">
 <link rel="import" href="../bower_components/iron-pages/iron-pages.html">
+<link rel="import" href="../bower_components/Sortable/Sortable.html">
 
 <link rel="import" href="homecon-page.html">
 <link rel="import" href="homecon-page-header.html">
@@ -56,18 +57,19 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 					<template is="dom-if" if="[[_filterHome(page)]]">
 						<homecon-page-header title="[[page.title]]" icon="[[page.icon]]"></homecon-page-header>
 					</template>
+					<sortable-js>
+						<template is="dom-repeat" id="pagesections" items="{{page.pagesections}}" as="pagesection">
+							<homecon-page-section title="{{pagesection.title}}" on-delete="deletePageSection" on-move-up="moveUpPageSection" on-move-down="moveDownPageSection" edit="[[edit]]">
 
-					<template is="dom-repeat" id="pagesections" items="{{page.pagesections}}" as="pagesection">
-						<homecon-page-section title="{{pagesection.title}}" on-delete="deletePageSection" on-move-up="moveUpPageSection" on-move-down="moveDownPageSection" edit="[[edit]]">
-
-							<template is="dom-repeat" id="widgets" items="{{pagesection.widgets}}" as="widget">
-								<homecon-widget type="{{widget.type}}" config="{{widget.config}}" edit="[[edit]]"></homecon-widget>
-							</template>
-							<div class="vertical layout center" hidden="[[!edit]]">
-								<paper-button raised noink="true" on-tap="addWidget">add widget</paper-button>
-							</div>
-						</homecon-page-section>
-					</template>
+								<template is="dom-repeat" id="widgets" items="{{pagesection.widgets}}" as="widget">
+									<homecon-widget type="{{widget.type}}" config="{{widget.config}}" edit="[[edit]]"></homecon-widget>
+								</template>
+								<div class="vertical layout center" hidden="[[!edit]]">
+									<paper-button raised noink="true" on-tap="addWidget">add widget</paper-button>
+								</div>
+							</homecon-page-section>
+						</template>
+					</sortable-js>
 
 					<div class="vertical layout center" hidden="[[!edit]]">
 						<paper-button raised noink="true" on-tap="addPageSection">add section</paper-button>

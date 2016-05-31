@@ -1,6 +1,7 @@
 <link rel="import" href="../bower_components/polymer/polymer.html">
 <link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout-classes.html">
 <link rel="import" href="../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../bower_components/Sortable/Sortable.html">
 
 <link rel="import" href="homecon-pages-menu-section.html">
 <link rel="import" href="homecon-pages-menu-item.html">
@@ -16,10 +17,12 @@
 		
 		<template is="dom-repeat" id="sections" items="{{sections}}" as="section" filter="_filterHome" sort="_sortByOrder" observe="order">
 			<homecon-pages-menu-section section="{{section}}" on-change-state="changeState" edit="{{edit}}" on-delete="deleteSection" on-move-up="moveUpSection" on-move-down="moveDownSection">
-				
-				<template is="dom-repeat" id="pages" items="{{pages}}" as="page" filter="{{_sectionPages(section.id)}}" sort="_sortByOrder" observe="order">
-					<homecon-pages-menu-item page="{{page}}" edit="{{edit}}" on-delete="deletePage" on-move-up="moveUpPage" on-move-down="moveDownPage"></homecon-menu-item>
-				</template>
+
+				<sortable-js on-update="_updatePagesOrder" disabled="{{!edit}}">
+					<template is="dom-repeat" id="pages" items="{{pages}}" as="page" filter="{{_sectionPages(section.id)}}" sort="_sortByOrder" observe="order">
+						<homecon-pages-menu-item page="{{page}}" edit="{{edit}}" on-delete="deletePage"></homecon-menu-item>
+					</template>
+				</sortable-js>
 
 				<div class="vertical layout center" hidden="{{!edit}}">
 					<paper-button raised noink="true" on-click="addPage">add page</paper-button>
@@ -140,58 +143,16 @@
 				var pageindex = parseInt(e.model.__data__.__key__.substr(1));
 				this.splice('pages',pageindex,1)
 			},
-			moveUpPage: function(e){
-				e.stopPropagation()
+			_updatePagesOrder: function(e){
+				if(typeof e.from != 'undefined'){
 
-				var sectionindex = parseInt(this.$.sections.modelForElement(e.target).__data__.__key__.substr(1));
-				var sectionid = this.sections[sectionindex].id;
+					var list = e.from.children;
+					for(var i=0; i<list.length; i++){
 
-				// get the index and order of the current page
-				var index1 = parseInt(e.model.__data__.__key__.substr(1));
-				var order1 = this.pages[index1].order;
-				
-				// find the page which has the highest order lower than order1
-				var index2 = -1;
-				var order2 = -1;
-
-				this.pages.forEach(function(page,index){
-					if(page.section == sectionid && page.order < order1 && page.order > order2){
-						order2 = page.order;
-						index2 = index;
+						if(typeof list[i].page != 'undefined'){
+							list[i].page.order = i;
+						}
 					}
-				});
-
-				// swap the order
-				if(index2>-1){
-					this.set('pages.'+index1+'.order',order2);
-					this.set('pages.'+index2+'.order',order1);
-				}
-			},
-			moveDownPage: function(e){
-				e.stopPropagation()
-
-				var sectionindex = parseInt(this.$.sections.modelForElement(e.target).__data__.__key__.substr(1));
-				var sectionid = this.sections[sectionindex].id;
-
-				// get the index and order of the current page
-				var index1 = parseInt(e.model.__data__.__key__.substr(1));
-				var order1 = this.pages[index1].order;
-				
-				// find the page which has the highest order lower than order1
-				var index2 = 1000;
-				var order2 = 1000000;
-
-				this.pages.forEach(function(page,index){
-					if(page.section == sectionid && page.order > order1 && page.order < order2){
-						order2 = page.order;
-						index2 = index;
-					}
-				});
-
-				// swap the order
-				if(index2<1000){
-					this.set('pages.'+index1+'.order',order2);
-					this.set('pages.'+index2+'.order',order1);
 				}
 			},
 			_sectionPages: function(sectionid){
