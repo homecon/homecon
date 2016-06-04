@@ -58,12 +58,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 						<homecon-page-header title="[[page.title]]" icon="[[page.icon]]"></homecon-page-header>
 					</template>
 					<sortable-js on-update="_updatePageSectionsOrder">
-						<template is="dom-repeat" id="pagesections" items="{{page.pagesections}}" as="pagesection" sort="_sortByOrder">
-							<homecon-page-section pagesection="{{pagesection}}" on-delete="deletePageSection" on-move-up="moveUpPageSection" on-move-down="moveDownPageSection" edit="[[edit]]">
+						<template is="dom-repeat" id="pagesections" items="{{page.pagesections}}" as="pagesection" sort="_sortByOrder" index-as="pagesectionIndex">
+							<homecon-page-section pagesection="{{pagesection}}" on-delete="deletePageSection" edit="[[edit]]">
 
 								<sortable-js on-update="_updateWidgetsOrder">	
-									<template is="dom-repeat" id="widgets" items="{{pagesection.widgets}}" as="widget" sort="_sortByOrder">
-										<homecon-widget widget="{{widget}}" edit="[[edit]]"></homecon-widget>
+									<template is="dom-repeat" id="widgets" items="{{pagesection.widgets}}" as="widget" sort="_sortByOrder" pagesection-index="[[pagesectionIndex]]">
+										<homecon-widget widget="{{widget}}" on-delete="deleteWidget" edit="[[edit]]"></homecon-widget>
 									</template>
 								</sortable-js>
 
@@ -151,7 +151,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 				e.stopPropagation()
 
 				var pageindex = parseInt(this.$.pages.modelForElement(e.target).__data__.__key__.substr(1));
-				var pagesectionindex = parseInt(e.model.__data__.index);
+				var pagesectionindex = e.model.__data__.pagesectionIndex;
 
 				this.splice('pages.'+pageindex+'.pagesections',pagesectionindex,1);
 			},
@@ -168,14 +168,22 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 				}
 			},
 			addWidget: function(e){
-				
 				var pageindex = this.$.pages.modelForElement(e.target).__data__.index;
-				var pagesectionindex = parseInt(e.model.__data__.index);
+				var pagesectionindex = e.model.__data__.pagesectionIndex;
 
 				var widgets = this.pages[pageindex].pagesections[pagesectionindex].widgets;
 				var order = this._getNextOrder(widgets);
 
 				this.push('pages.'+pageindex+'.pagesections.'+pagesectionindex+'.widgets',{'type':'homecon-widget-button','config':{},'order':order});
+			},
+			deleteWidget: function(e){
+				e.stopPropagation()
+
+				var pageindex = parseInt(this.$.pages.modelForElement(e.target).__data__.__key__.substr(1));
+				var pagesectionindex = e.model.dataHost.pagesectionIndex;
+				var widgetindex = e.model.__data__.index;
+
+				this.splice('pages.'+pageindex+'.pagesections.'+pagesectionindex+'.widgets',widgetindex,1);
 			},
 			_updateWidgetsOrder: function(e){
 				if(typeof e.from != 'undefined'){
@@ -183,7 +191,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 					var list = e.from.children;
 					for(var i=0; i<list.length; i++){
 
-						if(typeof list[i].pagesection != 'undefined'){
+						if(typeof list[i].widget != 'undefined'){
 							list[i].widget.order = i;
 						}
 					}
