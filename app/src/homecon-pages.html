@@ -168,8 +168,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 				}
 			},
 			addWidget: function(e){
+				
 				var pageindex = this.$.pages.modelForElement(e.target).__data__.index;
-				var pagesectionindex = parseInt(e.model.__data__.__key__.substr(1));
+				var pagesectionindex = parseInt(e.model.__data__.index);
 
 				var widgets = this.pages[pageindex].pagesections[pagesectionindex].widgets;
 				var order = this._getNextOrder(widgets);
