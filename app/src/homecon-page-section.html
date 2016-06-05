@@ -59,7 +59,7 @@
 			    box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.14), 0 1px 5px 0 rgba(0, 0, 0, 0.12), 0 3px 1px -2px rgba(0, 0, 0, 0.2);
 				border-radius: 5px;
 			}
-			.hideheader{
+			.hidden{
 				display: none !important;
 			}
 			.edit{
@@ -68,29 +68,31 @@
 				right: 5px;
 				color: var(--primary-text-color);
 			}
-			.edit.collapsible{
+			.edit .collapsible{
 				color: var(--header-text-color);
 			}
 		</style>
 
-		<a id="header" class$="header {{_collapsibleClass(pagesection.type)}} {{_openedClass(opened)}}" on-click="changeState">			
-			{{pagesection.title}}
+		<a id="header" class$="header {{_collapsibleClass(type)}} {{_openedClass(opened)}}" on-click="changeState">			
+			{{title}}
 		</a>
 
 		<iron-collapse opened="{{opened}}">
-			<div id="content" class$="{{pagesection.type}}">
+			<div id="content" class$="{{type}}">
 				<content></content>
 			</div>
 		</iron-collapse>
 		
-		<paper-icon-button class$="edit {{pagesection.type}}" icon="editor:mode-edit" noink="true" on-click="openEditDialog" hidden="{{!edit}}"></paper-icon-button>
+		<div class="edit" hidden="{{!edit}}">
+			<paper-icon-button class$="{{type}}" icon="editor:mode-edit" noink="true" on-click="openEditDialog"></paper-icon-button>
+		</div>
 
 		<homecon-edit-dialog id="editDialog" on-save="save">
 			<paper-dropdown-menu label="page section type">
 				<paper-menu class="dropdown-content" attr-for-selected="value" selected="{{newType}}">
 					<paper-item value="collapsible">collapsible</paper-item>
 					<paper-item value="raised">raised</paper-item>
-					<paper-item value="hidden">hidden</paper-item>
+					<paper-item value="transparent">transparent</paper-item>
 				</paper-menu>
 			</paper-dropdown-menu>
 			<paper-input label="Title:" value="{{newTitle}}"></paper-input>
@@ -102,11 +104,18 @@
 		Polymer({
 			is: 'homecon-page-section',
 			properties: {
-				pagesection: {
+				title:{
 					type: 'String',
 					notify: true
 				},
-				opened: {
+				type:{
+					type: 'String',
+					notify: true
+				},
+				pagesection:{
+					type: 'Object',
+				},
+				opened:{
 					type: 'Boolean',
 					value: true,
 				},
@@ -119,13 +128,13 @@
 				this.opened = !this.opened;
 			},
 			openEditDialog: function(){
-				this.newType = this.pagesection.type;
-				this.newTitle = this.pagesection.title;
+				this.newType = this.type;
+				this.newTitle = this.title;
 				this.$.editDialog.open();
 			},
 			save: function(e){
-				this.set('pagesection.type',this.newType);
-				this.set('pagesection.title',this.newTitle);
+				this.set('type',this.newType);
+				this.set('title',this.newTitle);
 				this.$.editDialog.close();
 			},
 			delete: function(){
@@ -139,10 +148,18 @@
 					return "";
 				}
 			},
+			_hiddenClass: function(x){
+				if(x){
+					return "hidden"
+				}
+				else{
+					return "";
+				}
+			},
 			_collapsibleClass: function(type){
 				if(type!='collapsible'){
 					this.opened = true;
-					return "hideheader"
+					return "hidden"
 				}
 				else{
 					return "";

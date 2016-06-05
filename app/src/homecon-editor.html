@@ -9,11 +9,13 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 -->
 
 <link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/paper-toggle-button/paper-toggle-button.html">
 
 <link rel="import" href="homecon-page.html">
 <link rel="import" href="homecon-page-header.html">
+<link rel="import" href="homecon-page-section.html">
 
-<dom-module id="homecon-settings">
+<dom-module id="homecon-editor">
 
 	<template>
 
@@ -24,15 +26,27 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 		</style>
 
 		<homecon-page>
-			<homecon-page-header title="Settings" icon="homecon_gears"></homecon-page-header>
-	
+			<homecon-page-header title="Editor" icon="pagebuilder_pagebuilder"></homecon-page-header>
+			<homecon-page-section type="raised">
+
+				<paper-toggle-button active={{edit}}>Edit pages</paper-toggle-button>
+
+				
+			</homecon-page-section>
 		</homecon-page>
 
 	</template>
 
 	<script>
 		Polymer({
-			is: 'homecon-settings'
+			is: 'homecon-editor',
+			properties: {
+				edit: {
+					type: 'Boolean',
+					value: false,
+					notify: true
+				},
+			},
 		});
 	</script>
 

@@ -25,7 +25,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 		<style>
 			:host {
 				display: block;
-				padding: 20px;
 				color: var(--primary-text-color);
 			}
 			.card {
@@ -59,7 +58,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 					</template>
 					<sortable-js on-update="_updatePageSectionsOrder">
 						<template is="dom-repeat" id="pagesections" items="{{page.pagesections}}" as="pagesection" sort="_sortByOrder" index-as="pagesectionIndex">
-							<homecon-page-section pagesection="{{pagesection}}" on-delete="deletePageSection" edit="[[edit]]">
+							<homecon-page-section title="{{pagesection.title}}" type="{{pagesection.type}}" pagesection="{{pagesection}}" edit="[[edit]]" on-delete="deletePageSection" >
 
 								<sortable-js on-update="_updateWidgetsOrder">	
 									<template is="dom-repeat" id="widgets" items="{{pagesection.widgets}}" as="widget" sort="_sortByOrder" pagesection-index="[[pagesectionIndex]]">
@@ -81,24 +80,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 			</template>
 
 		</iron-pages>
-
-
-
-
-		<div class="card">
-			<h1>[[page.title]]</h1>
-		</div>
-		<div class="card">
-			<h1>[[page.title]]</h1>
-		</div>
-		<div class="card">
-			<h1>[[page.title]]</h1>
-		</div>
-		<div class="card">
-			<h1>[[page.title]]</h1>
-		</div>
-		
-		<paper-button raised noink="true" on-tap="_initialize">Initialize</paper-button>
 
 	</template>
 
@@ -123,7 +104,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 				},
 				edit: {
 					type: 'Boolean',
-					value: true,
+					value: false,
 					observer: 'editChanged'
 				},
 			},

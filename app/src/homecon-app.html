@@ -20,7 +20,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="../bower_components/iron-pages/iron-pages.html">
 <link rel="import" href="../bower_components/iron-selector/iron-selector.html">
 
+<link rel="import" href="homecon-pages.html">
 <link rel="import" href="homecon-pages-menu.html">
+<link rel="import" href="homecon-menu-item.html">
 
 <dom-module id="homecon-app">
 
@@ -110,11 +112,13 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 					<div class=drawer-content>
 
 						<!-- Pages menu -->
-						<homecon-pages-menu sections="{{homeconSections}}" pages="{{homeconPages}}"></homecon-menu>
+						<homecon-pages-menu sections="{{homeconSections}}" pages="{{homeconPages}}" edit="[[edit]]"></homecon-pages-menu>
 
 						<!-- Menu -->
-						
-
+						<homecon-menu-item title="Settings" icon="homecon_gears" href="/settings"></homecon-menu-item>
+						<homecon-menu-item title="Users" icon="homecon_users" href="/users"></homecon-menu-item>
+						<homecon-menu-item title="Editor" icon="pagebuilder_pagebuilder" href="/editor"></homecon-menu-item>
+						<homecon-menu-item title="Logout" icon="homecon_logout" href="/logout"></homecon-menu-item>
 
 					</div>
 				</app-drawer>
@@ -125,8 +129,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 				<div class="main-content">
 					<iron-pages selected="[[page]]" attr-for-selected="name">
 						<homecon-login name="login"></homecon-login>
-						<homecon-pages name="pages" route="[[subroute]]" sections="{{homeconSections}}" pages="{{homeconPages}}" pageid="{{pageid}}"></homecon-pages>
+						<homecon-pages name="pages" route="[[subroute]]" sections="{{homeconSections}}" pages="{{homeconPages}}" pageid="{{pageid}}" edit="[[edit]]"></homecon-pages>
 						<homecon-settings name="settings"></homecon-settings>
+						<homecon-editor name="editor" edit="{{edit}}"></homecon-editor>
 						<homecon-users name="users"></homecon-users>
 					</iron-pages>
 				</div>
