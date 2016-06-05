@@ -1,0 +1,23 @@
+{
+  "name": "homecon",
+  "version": "",
+  "description": "",
+  "main": "",
+  "dependencies": {
+    "polymer-cli": "^0.11.1"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": ""
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/BrechtBa/homecon.git"
+  },
+  "author": "Brecht Baeten",
+  "license": "GPL-3.0",
+  "bugs": {
+    "url": "https://github.com/BrechtBa/homecon/issues"
+  },
+  "homepage": "https://github.com/BrechtBa/homecon"
+}
