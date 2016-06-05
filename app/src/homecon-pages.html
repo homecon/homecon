@@ -147,7 +147,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 				var order = this._getNextOrder(pagesections);
 				var id = new Date().valueOf();
 
-				this.push('pages.'+pageindex+'.pagesections',{'id': id,'page':pageid,'title':'','widgets':[],'order':order});
+				this.push('pages.'+pageindex+'.pagesections',{'id': id,'page':pageid,'type':'collapsible','title':'','widgets':[],'order':order});
 			},
 			deletePageSection: function(e){
 				e.stopPropagation()
