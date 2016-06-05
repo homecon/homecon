@@ -141,20 +141,23 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 			},
 			addPageSection: function(e){
 				var pageindex = parseInt(e.model.__data__.__key__.substr(1));
+				var pageid = this.pages[pageindex].id;
 
 				var pagesections = this.pages[pageindex].pagesections;
 				var order = this._getNextOrder(pagesections);
-				var dbid = new Date().valueOf();
+				var id = new Date().valueOf();
 
-				this.push('pages.'+pageindex+'.pagesections',{'dbid': dbid,'title':'','widgets':[],'order':order});
+				this.push('pages.'+pageindex+'.pagesections',{'id': id,'page':pageid,'title':'','widgets':[],'order':order});
 			},
 			deletePageSection: function(e){
 				e.stopPropagation()
 
-				var pageindex = parseInt(this.$.pages.modelForElement(e.target).__data__.__key__.substr(1));
-				var pagesectionindex = e.model.__data__.pagesectionIndex;
-
-				this.splice('pages.'+pageindex+'.pagesections',pagesectionindex,1);
+				var pageindex = this._indexFromId(this.pages,e.target.pagesection.page);
+				var pagesectionindex = this._indexFromId(this.pages[pageindex].pagesections,e.target.pagesection.id);
+				
+				if(pagesectionindex>-1){
+					this.splice('pages.'+pageindex+'.pagesections',pagesectionindex,1);
+				}
 			},
 			_updatePageSectionsOrder: function(e){
 				if(typeof e.from != 'undefined'){
@@ -171,22 +174,27 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 			addWidget: function(e){
 				var pageindex = this.$.pages.modelForElement(e.target).__data__.index;
 				var pagesectionindex = e.model.__data__.pagesectionIndex;
+				var pagesectionid = this.pages[pageindex].pagesections[pagesectionindex].id;
+
+				
 
 				var widgets = this.pages[pageindex].pagesections[pagesectionindex].widgets;
 				var order = this._getNextOrder(widgets);
-				var dbid = new Date().valueOf();
+				var id = new Date().valueOf();
 
-				this.push('pages.'+pageindex+'.pagesections.'+pagesectionindex+'.widgets',{'dbid':dbid,'type':'homecon-widget-button','config':{},'order':order});
+				this.push('pages.'+pageindex+'.pagesections.'+pagesectionindex+'.widgets',{'id':id,'pagesection':pagesectionid,'type':'homecon-widget-button','config':{},'order':order});
 			},
 			deleteWidget: function(e){
 				e.stopPropagation()
 				
 				var pageindex = parseInt(this.$.pages.modelForElement(e.target).__data__.__key__.substr(1));
-				var pagesectionindex = e.model.dataHost.pagesectionIndex;
+				var pagesectionindex = this._indexFromId(this.pages[pageindex].pagesections,e.target.widget.pagesection);
 
-				var widgetindex = this._indexFromDbid(this.pages[pageindex].pagesections[pagesectionindex].widgets,e.target.widget.dbid);
-
-				this.splice('pages.'+pageindex+'.pagesections.'+pagesectionindex+'.widgets',widgetindex,1);
+				var widgetindex = this._indexFromId(this.pages[pageindex].pagesections[pagesectionindex].widgets,e.target.widget.id);
+				
+				if(widgetindex>-1){
+					this.splice('pages.'+pageindex+'.pagesections.'+pagesectionindex+'.widgets',widgetindex,1);
+				}
 			},
 			_updateWidgetsOrder: function(e){
 				if(typeof e.from != 'undefined'){
@@ -242,10 +250,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 					}]
 				}];
 			},
-			_indexFromDbid: function(items,dbid){
+			_indexFromId: function(items,id){
 				var index = -1;
 				items.forEach(function(item,tempindex){
-					if(item.dbid==dbid){
+					if(item.id==id){
 						index = tempindex;
 					}
 				});
