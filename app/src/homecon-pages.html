@@ -144,8 +144,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
 				var pagesections = this.pages[pageindex].pagesections;
 				var order = this._getNextOrder(pagesections);
-				
-				this.push('pages.'+pageindex+'.pagesections',{'title':'','widgets':[],'order':order});
+				var dbid = new Date().valueOf();
+
+				this.push('pages.'+pageindex+'.pagesections',{'dbid': dbid,'title':'','widgets':[],'order':order});
 			},
 			deletePageSection: function(e){
 				e.stopPropagation()
@@ -173,15 +174,17 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
 				var widgets = this.pages[pageindex].pagesections[pagesectionindex].widgets;
 				var order = this._getNextOrder(widgets);
+				var dbid = new Date().valueOf();
 
-				this.push('pages.'+pageindex+'.pagesections.'+pagesectionindex+'.widgets',{'type':'homecon-widget-button','config':{},'order':order});
+				this.push('pages.'+pageindex+'.pagesections.'+pagesectionindex+'.widgets',{'dbid':dbid,'type':'homecon-widget-button','config':{},'order':order});
 			},
 			deleteWidget: function(e){
 				e.stopPropagation()
-
+				
 				var pageindex = parseInt(this.$.pages.modelForElement(e.target).__data__.__key__.substr(1));
 				var pagesectionindex = e.model.dataHost.pagesectionIndex;
-				var widgetindex = e.model.__data__.index;
+
+				var widgetindex = this._indexFromDbid(this.pages[pageindex].pagesections[pagesectionindex].widgets,e.target.widget.dbid);
 
 				this.splice('pages.'+pageindex+'.pagesections.'+pagesectionindex+'.widgets',widgetindex,1);
 			},
@@ -238,6 +241,15 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 						'widgets': []
 					}]
 				}];
+			},
+			_indexFromDbid: function(items,dbid){
+				var index = -1;
+				items.forEach(function(item,tempindex){
+					if(item.dbid==dbid){
+						index = tempindex;
+					}
+				});
+				return index;
 			},
 			_filterHome: function(item){
 				return item.id != 'home';
