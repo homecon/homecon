@@ -121,7 +121,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
 			},
 			addPageSection: function(e){
-				var pageindex = parseInt(e.model.__data__.__key__.substr(1));
+				var pageindex = parseInt(e.model.__data__.index);
 				var pageid = this.pages[pageindex].id;
 
 				var pagesections = this.pages[pageindex].pagesections;
@@ -168,7 +168,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 			deleteWidget: function(e){
 				e.stopPropagation()
 				
-				var pageindex = parseInt(this.$.pages.modelForElement(e.target).__data__.__key__.substr(1));
+				var pageindex = parseInt(e.model.__data__.index);
 				var pagesectionindex = this._indexFromId(this.pages[pageindex].pagesections,e.target.widget.pagesection);
 
 				var widgetindex = this._indexFromId(this.pages[pageindex].pagesections[pagesectionindex].widgets,e.target.widget.id);
