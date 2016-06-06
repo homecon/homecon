@@ -41,11 +41,14 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 				--text-shadow-color: #111111;
 
 				--primary-color: #f79a1f;
+				
+				--menu-item-background-color: #333333;
+				--menu-item-text-color: #ffffff;
+				--menu-item-border-color: #1f1f1f;
+				--menu-item-background-color-hover: #373737;
 
-				--button-background-color: #333333;
-				--button-background-color-hover: #373737;
+				--button-background-color: #141414;
 				--button-text-color: #ffffff;
-				--button-border-color: #1f1f1f;
 
 				--header-background-color: #ffffff;
 				--header-background-color-hover: #ededed;
@@ -85,6 +88,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 			.main-content{
 				background-color: var(--primary-background-color);
 			}
+			div.menu{
+				margin-top: 30px;
+			}
 			img.logo{
 				height: 20px;
 			}
@@ -115,10 +121,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 						<homecon-pages-menu sections="{{homeconSections}}" pages="{{homeconPages}}" edit="[[edit]]"></homecon-pages-menu>
 
 						<!-- Menu -->
-						<homecon-menu-item title="Settings" icon="homecon_gears" href="/settings"></homecon-menu-item>
-						<homecon-menu-item title="Users" icon="homecon_users" href="/users"></homecon-menu-item>
-						<homecon-menu-item title="Editor" icon="pagebuilder_pagebuilder" href="/editor"></homecon-menu-item>
-						<homecon-menu-item title="Logout" icon="homecon_logout" href="/logout"></homecon-menu-item>
+						<div class="menu">
+							<homecon-menu-item title="Settings" icon="homecon_gears" href="/settings"></homecon-menu-item>
+							<homecon-menu-item title="Users" icon="homecon_users" href="/users"></homecon-menu-item>
+							<homecon-menu-item title="Editor" icon="pagebuilder_pagebuilder" href="/editor"></homecon-menu-item>
+							<homecon-menu-item title="Logout" icon="homecon_logout" href="/logout"></homecon-menu-item>
+						</div>
 
 					</div>
 				</app-drawer>
