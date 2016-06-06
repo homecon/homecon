@@ -56,11 +56,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 					<template is="dom-if" if="[[_filterHome(page)]]">
 						<homecon-page-header title="[[page.title]]" icon="[[page.icon]]"></homecon-page-header>
 					</template>
-					<sortable-js on-update="_updatePageSectionsOrder">
+					<sortable-js on-update="_updatePageSectionsOrder" disabled="{{!edit}}">
 						<template is="dom-repeat" id="pagesections" items="{{page.pagesections}}" as="pagesection" sort="_sortByOrder" index-as="pagesectionIndex">
 							<homecon-page-section title="{{pagesection.title}}" type="{{pagesection.type}}" pagesection="{{pagesection}}" edit="[[edit]]" on-delete="deletePageSection" >
 
-								<sortable-js on-update="_updateWidgetsOrder">	
+								<sortable-js on-update="_updateWidgetsOrder" disabled="{{!edit}}">	
 									<template is="dom-repeat" id="widgets" items="{{pagesection.widgets}}" as="widget" sort="_sortByOrder" pagesection-index="[[pagesectionIndex]]">
 										<homecon-widget widget="{{widget}}" on-delete="deleteWidget" edit="[[edit]]"></homecon-widget>
 									</template>
