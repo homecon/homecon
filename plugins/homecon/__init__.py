@@ -23,7 +23,7 @@ import types
 import lib
 import os
 
-
+from . import database
 
 """
 import numpy as np
@@ -42,17 +42,19 @@ logger = logging.getLogger('')
 
 class HomeCon:
 
-    def __init__(self, smarthome, mysql_pass='mysql_pass'):
+    def __init__(self,smarthome,db='homecon',db_user='homecon',db_pass='homecon'):
         """
         initialize
         """
 
         logger.info('HomeCon started')
-        """
+
         # set basic attributes
         self._sh = smarthome
-        self._db = mysql.Mysql(self,mysql_pass)
+        self._db = database.Mysql(self,db=db,db_user=db_user,db_pass=db_pass)
         
+
+        """
         # prepare other attributes
         #self.item = None
         self.alarms = None
