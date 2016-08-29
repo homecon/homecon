@@ -1,5 +1,4 @@
 # Unit tests
-
 To run the unit tests for the homecon plugin several steps need to be taken.
 
 Create a project folder and clone the HomeCon and Smarthome.py projects into this folder
