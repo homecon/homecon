@@ -22,12 +22,16 @@ import subprocess
 import time
 import os
 import shutil
+import pymysql
+import sys
 
+# allow imports from the parent folder
+sys.path.insert(0, os.path.abspath('..'))
 
 class HomeConTestCase(unittest.TestCase):
     
-    smarthomedir = '../../../smarthome'
-    homecondir = '../homecon'
+    smarthomedir = '../../../../smarthome'
+    homecondir = '..'
     logfile = os.path.join(smarthomedir,'var/log/smarthome.log')
 
     if not os.path.exists('log'):
@@ -68,7 +72,7 @@ class HomeConTestCase(unittest.TestCase):
         Return smarthome to its original state
         """
         print('\nTearing down test environment')
-        
+
         # undo changes to the smarthome repo
         os.remove(os.path.join(cls.smarthomedir,'etc/smarthome.conf'))
         os.remove(os.path.join(cls.smarthomedir,'etc/plugin.conf'))
@@ -76,6 +80,39 @@ class HomeConTestCase(unittest.TestCase):
 
         shutil.rmtree(os.path.join(cls.smarthomedir,'plugins','homecon'))
 
+
+    def create_database_connection(self):
+        con = pymysql.connect('localhost', 'homecon_test', 'passwordusedfortesting', 'homecon_test')
+        cur = con.cursor()
+
+        return con,cur
+
+
+    def clear_database(self):
+        con,cur = self.create_database_connection()
+        cur.execute('SHOW TABLES')
+        result = cur.fetchall()
+
+        for table in result:
+            cur.execute('DROP TABLE {}'.format(table[0]))
+
+        con.commit()
+        con.close()
+
+    def start_smarthome(self):
+        """
+        starts smarthome
+        """
+        self.fnull = open(os.devnull, 'w')
+        self.sh_process = subprocess.Popen(['python', os.path.join(self.smarthomedir,'bin/smarthome.py'), '-d'], stdout=self.fnull, stderr=subprocess.STDOUT)
+
+    def stop_smarthome(self):
+        """
+        stop smarthome
+        """
+        self.sh_process.terminate()
+        time.sleep(1) # stopping smarthome takes some time
+        self.fnull.close()
 
 
     def setUp(self):
@@ -89,10 +126,8 @@ class HomeConTestCase(unittest.TestCase):
         # clear the log file
         open(self.logfile, 'w').close()
 
-        # start smarthome
-        self.fnull = open(os.devnull, 'w')
-        self.sh_process = subprocess.Popen(['python', os.path.join(self.smarthomedir,'bin/smarthome.py'), '-d'], stdout=self.fnull, stderr=subprocess.STDOUT)
-
+        # clear the database
+        self.clear_database()
 
     def tearDown(self):
         """
@@ -103,13 +138,17 @@ class HomeConTestCase(unittest.TestCase):
         check the log file for errors
         """
         
-        # stop smarthome
-        self.sh_process.terminate()
-        time.sleep(1) # stopping smarthome takes some time
-        self.fnull.close()
+        # stop smarthome if it is still running
+        try:
+            self.stop_smarthome()
+        except:
+            pass
 
         # copy the log file
         shutil.copyfile(self.logfile, 'log/{}_{}_smarthome.log'.format(self.__class__.__name__,self._testMethodName))
+
+        # clear the database
+        self.clear_database()
 
         # check if there are errors in the log file
         with open(self.logfile) as f:
@@ -119,4 +158,6 @@ class HomeConTestCase(unittest.TestCase):
                     errors.append(l)
 
             self.assertEqual(len(errors),0,msg='\n' + '\n'.join(errors))
+
+
 

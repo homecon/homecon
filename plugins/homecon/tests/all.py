@@ -1,7 +1,9 @@
 
 import unittest
-from homecon import *
+
+from database import *
 from items import *
+from smarthome import *
 
 
 

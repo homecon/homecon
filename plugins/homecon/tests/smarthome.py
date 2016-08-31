@@ -24,9 +24,12 @@ from common import HomeConTestCase
 
 
 
-class HomeconTests(HomeConTestCase):
+class SmarthomeTests(HomeConTestCase):
+
     def test_run_smarthome(self):
+        self.start_smarthome()
         time.sleep(1)
+        self.stop_smarthome()
 
 
 
