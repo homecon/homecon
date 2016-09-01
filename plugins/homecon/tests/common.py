@@ -59,7 +59,7 @@ class HomeConTestCase(unittest.TestCase):
         f.close()
 
         f = open(os.path.join(cls.smarthomedir,'etc/plugin.conf'), 'w')
-        f.write('[homecon]\n    class_name = HomeCon\n    class_path = plugins.homecon\n    db = homecon_test\n    db_user=homecon_test\n    db_pass=passwordusedfortesting')
+        f.write('[homecon]\n    class_name = HomeCon\n    class_path = plugins.homecon\n    db_name = homecon_test\n    db_user=homecon_test\n    db_pass=passwordusedfortesting')
         f.close()
 
         f = open(os.path.join(cls.smarthomedir,'etc/logic.conf'), 'w').close()

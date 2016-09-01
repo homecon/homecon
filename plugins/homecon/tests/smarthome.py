@@ -28,7 +28,7 @@ class SmarthomeTests(HomeConTestCase):
 
     def test_run_smarthome(self):
         self.start_smarthome()
-        time.sleep(1)
+        time.sleep(5)
         self.stop_smarthome()
 
 

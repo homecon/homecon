@@ -24,6 +24,7 @@ Install python dependencies:
 pip install ephem
 pip install PyMySQL
 pip install passlib
+pip install PyJWT
 ```
 
 Set up a mysql database. Somewhere on the way you'll be asked to enter a mysql root password 

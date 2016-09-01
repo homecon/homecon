@@ -24,6 +24,8 @@ import lib
 import os
 
 from . import database
+from . import authentication
+from . import items
 
 """
 import numpy as np
@@ -35,14 +37,15 @@ from . import alarms
 from . import measurements
 from . import weather
 from . import building
-from . import mpc"""
+from . import mpc
+"""
 
 
 logger = logging.getLogger('')
 
 class HomeCon:
 
-    def __init__(self,smarthome,db='homecon',db_user='homecon',db_pass='homecon'):
+    def __init__(self,smarthome,jwt_secret='jwt_secret',db_name='homecon',db_user='homecon',db_pass='db_pass'):
         """
         initialize
         """
@@ -51,8 +54,10 @@ class HomeCon:
 
         # set basic attributes
         self._sh = smarthome
-        self._db = database.Mysql(self,db=db,db_user=db_user,db_pass=db_pass)
-        
+        self._db = database.Mysql(db_name,db_user,db_pass)
+        self._auth = authentication.Authentication(self._db,jwt_secret)
+        self._items = items.Items(self._sh,self._db)
+
 
         """
         # prepare other attributes
@@ -73,6 +78,12 @@ class HomeCon:
 
         self.alive = True
 
+
+        self._items.add_item('homecon')
+        logger.warning(self._sh.return_item('homecon'))
+
+        self._items.add_item('homecon.test')
+        logger.warning(self._sh.return_item('homecon.test'))
 
         """
         config = self._db.GET_JSON( 'config','id=\'1\'' )[0]['config']
