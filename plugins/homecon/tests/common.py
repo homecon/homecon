@@ -114,7 +114,10 @@ class HomeConTestCase(unittest.TestCase):
         time.sleep(1) # stopping smarthome takes some time
         self.fnull.close()
 
+    def save_smarthome_log(self):
+        shutil.copyfile(self.logfile, 'log/{}_{}_smarthome.log'.format(self.__class__.__name__,self._testMethodName))
 
+    
     def setUp(self):
         """
         Executed before every test
@@ -143,9 +146,6 @@ class HomeConTestCase(unittest.TestCase):
             self.stop_smarthome()
         except:
             pass
-
-        # copy the log file
-        shutil.copyfile(self.logfile, 'log/{}_{}_smarthome.log'.format(self.__class__.__name__,self._testMethodName))
 
         # clear the database
         self.clear_database()

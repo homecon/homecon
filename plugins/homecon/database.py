@@ -192,7 +192,12 @@ class Mysql(object):
         con.commit()
         con.close()
 
-
+    def get_items(self):
+        con,cur = self._create_dict_cursor()
+        self._execute_query(cur,'SELECT * FROM items')
+        return cur.fetchall()
+        con.commit()
+        con.close()
 
 ################################################################################
 # private

@@ -26,6 +26,7 @@ import os
 from . import database
 from . import authentication
 from . import items
+from . import websocket
 
 """
 import numpy as np
@@ -56,7 +57,9 @@ class HomeCon:
         self._sh = smarthome
         self._db = database.Mysql(db_name,db_user,db_pass)
         self._auth = authentication.Authentication(self._db,jwt_secret)
-        self._items = items.Items(self._sh,self._db)
+
+
+        self._ws = websocket.WebSocket(self._sh,self._auth,ip='127.0.0.1', port=9024)
 
 
         """
@@ -78,12 +81,12 @@ class HomeCon:
 
         self.alive = True
 
+        self._ws.run()
+        
 
-        self._items.add_item('homecon')
-        logger.warning(self._sh.return_item('homecon'))
+        # initialize the dynamic items
+        self._items = items.Items(self._sh,self._db)
 
-        self._items.add_item('homecon.test')
-        logger.warning(self._sh.return_item('homecon.test'))
 
         """
         config = self._db.GET_JSON( 'config','id=\'1\'' )[0]['config']
@@ -220,12 +223,19 @@ class HomeCon:
         """
 
         self.alive = False
-
+        self._ws.stop()
 
     def parse_item(self, item):
         """
         called once while parsing the items
         """
+        
+        logger.warning(item)
+
+
+        self._ws.parse_item(item)
+
+
 
         """
         ########################################################################
@@ -278,7 +288,6 @@ class HomeCon:
         """
         return self.update_item
     
-
 
     def update_item(self, item, caller=None, source=None, dest=None):
         """
@@ -346,7 +355,10 @@ class HomeCon:
 
 
     def parse_logic(self, logic):
-        pass
+
+
+        self._ws.parse_logic(logic)
+
 
 
     def low_level_control(self):

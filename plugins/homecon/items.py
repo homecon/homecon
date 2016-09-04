@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 ######################################################################################
-#    Copyright 2015 Brecht Baeten
+#    Copyright 2016 Brecht Baeten
 #    This file is part of HomeCon.
 #
 #    HomeCon is free software: you can redistribute it and/or modify
@@ -33,11 +33,14 @@ class Items(object):
         self._sh = sh
         self._db = db
 
-    def load_items(self):
-        """
-        loads all items from the database
-        """
-        pass
+
+        # add homecon default items
+        self._add_item_to_smarthome('homecon',{})
+        self._add_item_to_smarthome('homecon.items',{})
+
+        # add homecon items from the database
+        self._add_items_from_database_to_smarthome()
+
 
 
     def add_item(self,path,conf={},persist=1,label='',description='',unit=''):
@@ -45,14 +48,7 @@ class Items(object):
         adds an item to the database and smarthome
         """
 
-        # check if the item parent exists
-        split_path = path.split('.')
-        parent_path = '.'.join(split_path[:-1])
-
-        if parent_path=='':
-            parent = self._sh
-        else:
-            parent = self._sh.return_item(parent_path)
+        parent = self._get_parent(path)
 
         if not parent==None:
             # add the item to the database
@@ -60,7 +56,7 @@ class Items(object):
 
             if success:
                 # add the item to smarthome
-                self._add_item_to_smarthome(parent,path,conf)
+                self._add_item_to_smarthome(path,conf,parent=parent)
 
             else:
                 logger.warning('The item {} could not be added to the database'.format(item_path))
@@ -68,7 +64,27 @@ class Items(object):
             logger.warning('The item parent {} does not exist'.format(parent_path))
 
 
-    def _add_item_to_smarthome(self,parent,path,conf):
+    def delete_item(self,path):
+        """
+        Deletes an item from smarthome and the database
+
+        Parameters:
+            path:   string, item path
+
+        """
+        pass
+        """
+        fixme
+        # remove the item from the database
+        self._db.DELETE('item_conf','path={}'.format(path))
+
+        # remove the item from smarthome if it exists
+        item = self._sh.return_item(path)
+        if not item == None:
+            _delete_item(item)
+        """
+
+    def _add_item_to_smarthome(self,path,conf,parent=None):
         """
         Adds a low level item to smarthome.
         Throws an exception when the item parent does not exist
@@ -79,6 +95,10 @@ class Items(object):
             path:       string, the item path
             conf:     dict, key value pairs of conf attributes or child items
         """
+
+        if parent == None:
+            parent = self._get_parent(path)
+
         try:
             item = lib.item.Item(self._sh, parent, path, conf)
         except Exception as e:
@@ -91,6 +111,58 @@ class Items(object):
         else:
             parent._Item__children.append(item)
 
+
+    def _delete_item_from_smarthome(item):
+        """
+        Deletes a low level item and its children from smarthome
+        """
+        pass
+        """
+        path = item.id()
+
+        # run through all children and delete them
+        for child in item.return_children():
+            _delete_item(child)
+
+        # delete the item itself
+        # as the items are protected in the smarthome class this hacky construction is required
+        ind = self._sh._SmartHome__items.index(path)
+        del self._sh._SmartHome__items[ind]  # path list
+        del self._sh._SmartHome__item_dict[path]  # key = path
+
+        if item in self._sh._SmartHome__children:
+            ind = self._sh._SmartHome__children.index(item) 
+            del self._sh._SmartHome__children[ind] # item list
+        """
+
+    def _add_items_from_database_to_smarthome(self):
+        """
+        """
+        items = self._db.get_items()
+        for item in items:
+
+            path = item['path']
+            parent = self._get_parent(self,path)
+            conf = item['conf']
+
+            self._add_item_to_smarthome(parent,path,conf)
+
+
+
+    def _get_parent(self,path):
+        """
+        returns the parent item from a path string.
+        return None if the parent does not exist
+        """
+        split_path = path.split('.')
+        parent_path = '.'.join(split_path[:-1])
+
+        if parent_path=='':
+            parent = self._sh
+        else:
+            parent = self._sh.return_item(parent_path)
+
+        return parent
 
 
 
@@ -125,28 +197,6 @@ def update_item(sh,db,conf_string):
 
     # update the item in smarthome
     update_smarthome_item(sh,item_path,item_type,item_conf)
-
-
-def delete_item(sh,db,path):
-    """
-    Deletes an item from a confuration string from smarthome and the database
-
-    Arguments:
-    sh: the smarthome object
-    db: the database object
-    path: string, item path
-    
-    Example:
-    delete_item(sh,db,'firstfloor.living.window')
-    """
-
-    # remove the item from the database
-    db.DELETE('item_conf','path={}'.format(path))
-
-    # remove the item from smarthome if it exists
-    item = sh.return_item(path)
-    if not item == None:
-        _delete_item(item)
 
 
 
@@ -332,26 +382,7 @@ def update_smarthome_item(sh,item_path,item_type,item_conf):
 
         
         
-def _delete_item(item):
-    """
-    Deletes a low level item and its children from smarthome
-    """
-    _sh = item._sh
-    path = item.id()
 
-    # run through all children and delete them
-    for child in item.return_children():
-        _delete_item(child)
-
-    # delete the item itself
-    # as the items are protected in the smarthome class this hacky construction is required
-    ind = _sh._SmartHome__items.index(path)
-    del _sh._SmartHome__items[ind]  # path list
-    del _sh._SmartHome__item_dict[path]  # key = path
-
-    if item in _sh._SmartHome__children:
-        ind = _sh._SmartHome__children.index(item) 
-        del _sh._SmartHome__children[ind] # item list
 
 
 

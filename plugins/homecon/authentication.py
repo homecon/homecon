@@ -69,13 +69,15 @@ class Authentication(object):
         else:
             return False
 
+    def check_token(self,token):
+        return self._decode(self,token)
 
     def _encode(self,payload):
         """
         Parameters:
             payload:        dict
         """
-        return jwt.encode(payload, self._secret, self._algorithm)
+        return jwt.encode(payload, self._secret, self._algorithm).decode("utf-8")
 
     def _decode(self,token):
         """
