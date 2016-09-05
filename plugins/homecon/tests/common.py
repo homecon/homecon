@@ -21,12 +21,14 @@ import unittest
 import subprocess
 import time
 import os
+import importlib.machinery
 import shutil
 import pymysql
-import sys
 
-# allow imports from the parent folder
-sys.path.insert(0, os.path.abspath('..'))
+
+def import_homecon_module(module):
+    return importlib.machinery.SourceFileLoader(module,os.path.abspath('../{}.py'.format(module))).load_module()
+
 
 class HomeConTestCase(unittest.TestCase):
     
@@ -37,7 +39,6 @@ class HomeConTestCase(unittest.TestCase):
     if not os.path.exists('log'):
         os.mkdir('log')
 
-    
 
     @classmethod
     def setUpClass(cls):

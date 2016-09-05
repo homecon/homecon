@@ -19,47 +19,25 @@
 
 import unittest
 import time
-import sys
-import os
-import _thread
+import json
+from websocket import create_connection
 
 from common import HomeConTestCase
 
-sys.path.insert(0, os.path.abspath('../../../../smarthome'))
-import lib.connection
-
 
 class WebsocketTests(HomeConTestCase):
-
-    def create_client(self):
-        self.connections = lib.connection.Connections()
-        self.client = lib.connection.Client('127.0.0.1',9024)
-        self.client.connect()
-
-        self.client.send(b'Sec-WebSocket-Version: 13\n'+b'Sec-WebSocket-Key: abcd'+b'\r\n\r\n')
-        self.connections.poll()
-
-    def send_message(self,message):
-        message = '0' + chr(len(message)) + message
-        self.client.send(message.encode('utf-8'))
-        self.connections.poll()
-        time.sleep(0.01)
-
-    def close_client(self):
-        self.client.close()
-        self.connections.close()
 
     def test_send_message(self):
         
         self.start_smarthome()
         time.sleep(3)
 
-        self.create_client()
-        self.send_message('{"somekey":"somevalue"}')
-        self.close_client()
+        
+        client = create_connection("ws://127.0.0.1:9024")
+        client.send('{"somekey":"somevalue"}')
+        client.close()
 
         self.stop_smarthome()
-
         self.save_smarthome_log()
 
         # check for success in the log
@@ -76,23 +54,40 @@ class WebsocketTests(HomeConTestCase):
         self.start_smarthome()
         time.sleep(3)
 
-        self.create_client()
-        self.send_message('{"cmd":"requesttoken","username":"admin","password":"homecon"}')
+        client = create_connection("ws://127.0.0.1:9024")
+        client.send('{"cmd":"requesttoken","username":"admin","password":"homecon"}')
         time.sleep(1)
-        self.close_client()
+
+        result = json.loads( client.recv() )
+        client.close()
 
         self.stop_smarthome()
 
         self.save_smarthome_log()
+        
+        self.assertIn(result['cmd'],'token')
+        self.assertNotEqual(result['token'],False)
 
-        # check for success in the log
-        with open(self.logfile) as f:
-            success = False
-            for l in f:
-                if 'recieved token:' in l:
-                    success = True
 
-            self.assertEqual(success,True)
+    def test_request_token_invalid(self):
+        self.start_smarthome()
+        time.sleep(3)
+
+        client = create_connection("ws://127.0.0.1:9024")
+        client.send('{"cmd":"requesttoken","username":"admin","password":"test"}')
+        time.sleep(1)
+
+        result = json.loads( client.recv() )
+        client.close()
+
+        self.stop_smarthome()
+
+        self.save_smarthome_log()
+        
+        self.assertIn(result['cmd'],'token')
+        self.assertEqual(result['token'],False)
+
+
 
 
 if __name__ == '__main__':

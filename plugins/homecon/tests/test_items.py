@@ -20,9 +20,7 @@
 import unittest
 import time
 
-from common import HomeConTestCase
-
-
+from common import HomeConTestCase,import_homecon_module
 
 class ItemsTests(HomeConTestCase):
     pass

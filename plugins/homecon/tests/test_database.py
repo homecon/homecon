@@ -20,8 +20,10 @@
 import unittest
 import time
 
-from common import HomeConTestCase
-import database
+from common import HomeConTestCase,import_homecon_module
+
+database = import_homecon_module('database')
+
 
 
 class DatabaseTests(HomeConTestCase):
