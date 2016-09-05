@@ -47,14 +47,11 @@ class Mysql(object):
         con,cur = self._create_cursor()
         
         self._execute_query(cur,'CREATE TABLE IF NOT EXISTS settings (id int(11) NOT NULL AUTO_INCREMENT,setting varchar(255)  NOT NULL,value varchar(255) NOT NULL,PRIMARY KEY (id)) ENGINE=InnoDB DEFAULT CHARSET=latin1 AUTO_INCREMENT=1')
+        self._execute_query(cur,'CREATE TABLE IF NOT EXISTS groups (id int(11) NOT NULL AUTO_INCREMENT,groupname varchar(255) NOT NULL,permission tinyint(4) NOT NULL DEFAULT \'1\',PRIMARY KEY (id)) ENGINE=InnoDB DEFAULT CHARSET=latin1 AUTO_INCREMENT=1')
         self._execute_query(cur,'CREATE TABLE IF NOT EXISTS users (id int(11) NOT NULL AUTO_INCREMENT,username varchar(255) NOT NULL,password varchar(255) NOT NULL,permission tinyint(4) NOT NULL DEFAULT \'1\',PRIMARY KEY (id)) ENGINE=InnoDB DEFAULT CHARSET=latin1 AUTO_INCREMENT=1')
+        self._execute_query(cur,'CREATE TABLE IF NOT EXISTS group_users (id int(11) NOT NULL AUTO_INCREMENT,`group` int(11) NOT NULL,user int(11) NOT NULL,PRIMARY KEY (id)) ENGINE=InnoDB DEFAULT CHARSET=latin1 AUTO_INCREMENT=1')
         self._execute_query(cur,'CREATE TABLE IF NOT EXISTS items (id int(11) NOT NULL AUTO_INCREMENT,path varchar(255) NOT NULL,conf varchar(255),persist tinyint(4) NOT NULL DEFAULT \'1\',label varchar(63),description varchar(255),unit varchar(63),PRIMARY KEY (id)) ENGINE=InnoDB DEFAULT CHARSET=latin1 AUTO_INCREMENT=1')
         
-
-        # add the admin user if required
-        self._execute_query(cur,'INSERT IGNORE INTO users (id,username,password,permission) VALUES (1,\'admin\',\'{}\',9)'.format(self.encrypt_password('homecon')))
-
-
 
         # set location data
         #query = "UPDATE data SET latitude=%f,longitude=%f,elevation=%f WHERE id=1" % (float(self._sh._lat),float(self._sh._lon),float(self._sh._elev))
@@ -98,6 +95,30 @@ class Mysql(object):
         else:
             return False
 
+    def get_user(self,username):
+
+        con,cur = self._create_dict_cursor()
+
+        self._execute_query(cur,'SELECT id,username,permission FROM users WHERE username=\'{}\''.format(username))
+        result = cur.fetchone()
+
+        con.commit()
+        con.close()
+        return result
+
+
+    def get_users(self):
+
+        con,cur = self._create_dict_cursor()
+
+        self._execute_query(cur,'SELECT id,username,permission FROM users')
+        result = cur.fetchall()
+
+        con.commit()
+        con.close()
+        return result
+
+
     def change_user_password(self,username,oldpassword,newpassword):
 
         user = self.verify_user(username,oldpassword)
@@ -107,7 +128,7 @@ class Mysql(object):
             con.commit()
             con.close()
 
-    def update_user(self,permission):
+    def update_user(self,username,permission):
         pass
 
 
@@ -138,6 +159,87 @@ class Mysql(object):
         return pbkdf2_sha256.verify(password, hash)
 
 
+################################################################################
+# groups
+################################################################################
+    def add_group(self,groupname,permission=1):
+        con,cur = self._create_cursor()
+
+        self._execute_query(cur,'SELECT * FROM groups WHERE groupname=\'{}\''.format(groupname))
+
+        if cur.fetchone() == None:
+            self._execute_query(cur,'INSERT INTO groups (groupname,permission) VALUES (\'{}\',{})'.format(groupname,permission))
+            success = True
+        else:
+            logger.warning('groupname {} allready exists'.format(groupname))
+            success = False
+
+        con.commit()
+        con.close()
+
+        return success
+
+
+    def get_group(self,groupname):
+
+        con,cur = self._create_dict_cursor()
+
+        self._execute_query(cur,'SELECT id,groupname,permission FROM groups WHERE groupname=\'{}\''.format(groupname))
+        result = cur.fetchone()
+
+        con.commit()
+        con.close()
+
+        return result
+
+
+    def get_groups(self):
+
+        con,cur = self._create_dict_cursor()
+
+        self._execute_query(cur,'SELECT id,groupname,permission FROM groups')
+        result = cur.fetchall()
+
+        con.commit()
+        con.close()
+
+        return result
+
+
+    def update_group(self,groupname,permission):
+        pass
+
+
+    def add_user_to_group(self,user_id,group_id):
+        con,cur = self._create_cursor()
+
+        self._execute_query(cur,'SELECT * FROM group_users WHERE `group`={} AND `user`={}'.format(group_id,user_id))
+        if cur.fetchone() == None:
+            self._execute_query(cur,'INSERT INTO group_users (`group`,`user`) VALUES ({},{})'.format(group_id,user_id))
+            success = True
+        else:
+            logger.warning('user {} is allready in group {}'.format(user_id,group_id))
+            success = False
+
+        con.commit()
+        con.close()
+
+        return success
+
+    def remove_user_from_group(self,user,group):
+        pass
+
+    def get_group_users(self):
+
+        con,cur = self._create_dict_cursor()
+
+        self._execute_query(cur,'SELECT id,`group`,`user` FROM group_users')
+        result = cur.fetchall()
+
+        con.commit()
+        con.close()
+
+        return result
 
 ################################################################################
 # settings

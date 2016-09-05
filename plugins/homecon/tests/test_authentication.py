@@ -27,34 +27,58 @@ authentication = import_homecon_module('authentication')
 
 class AuthenticationTests(HomeConTestCase):
 
-    def test_initialize_token(self):
+    def test_initialize_authentication(self):
         db = database.Mysql('homecon_test','homecon_test','passwordusedfortesting')
         auth  = authentication.Authentication(db,'SLSJDNIZZ03J24SDSOZS923JSLD92L')
+
+        self.assertEqual(auth.groups,{'admin': {'id':1,'groupname':'admin','permission':9} })
+        self.assertEqual(auth.users,{'admin': {'id':1,'username':'admin','permission':9} })
+        self.assertEqual(auth.group_users,{1:[1]})
+
+
+    def test_reinitialize_authentication(self):
+        db = database.Mysql('homecon_test','homecon_test','passwordusedfortesting')
+        auth  = authentication.Authentication(db,'SLSJDNIZZ03J24SDSOZS923JSLD92L')
+        auth  = authentication.Authentication(db,'SLSJDNIZZ03J24SDSOZS923JSLD92L')
+
+        self.assertEqual(auth.groups,{'admin': {'id':1,'groupname':'admin','permission':9} })
+        self.assertEqual(auth.users,{'admin': {'id':1,'username':'admin','permission':9} })
+        self.assertEqual(auth.group_users,{1:[1]})
+
+
+    def test_add_user(self):
+        db = database.Mysql('homecon_test','homecon_test','passwordusedfortesting')
+        auth  = authentication.Authentication(db,'SLSJDNIZZ03J24SDSOZS923JSLD92L')
+
+        auth.add_user('someusername','somepassword')
+        self.assertIn('someusername',auth.users)
 
 
     def test_request_token(self):
         db = database.Mysql('homecon_test','homecon_test','passwordusedfortesting')
         auth  = authentication.Authentication(db,'SLSJDNIZZ03J24SDSOZS923JSLD92L')
 
-        db.add_user('someusername','somepassword')
+        auth.add_user('someusername','somepassword')
         
         token = auth.request_token('someusername','somepassword')
         self.assertNotEqual(token, False)
+
 
     def test_request_token_wrong_password(self):
         db = database.Mysql('homecon_test','homecon_test','passwordusedfortesting')
         auth  = authentication.Authentication(db,'SLSJDNIZZ03J24SDSOZS923JSLD92L')
 
-        db.add_user('someusername','somepassword')
+        auth.add_user('someusername','somepassword')
         
         token = auth.request_token('someusername','somepassword2')
         self.assertEqual(token, False)
+
 
     def test_request_token_wrong_username(self):
         db = database.Mysql('homecon_test','homecon_test','passwordusedfortesting')
         auth  = authentication.Authentication(db,'SLSJDNIZZ03J24SDSOZS923JSLD92L')
 
-        db.add_user('someusername','somepassword')
+        auth.add_user('someusername','somepassword')
         
         token = auth.request_token('someusername2','somepassword')
         self.assertEqual(token, False)
@@ -64,7 +88,7 @@ class AuthenticationTests(HomeConTestCase):
         db = database.Mysql('homecon_test','homecon_test','passwordusedfortesting')
         auth  = authentication.Authentication(db,'SLSJDNIZZ03J24SDSOZS923JSLD92L')
 
-        db.add_user('someusername','somepassword')
+        auth.add_user('someusername','somepassword')
         
         token = auth.request_token('someusername','somepassword')
         token = auth.renew_token(token)

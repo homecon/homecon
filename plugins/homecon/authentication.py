@@ -26,7 +26,7 @@ logger = logging.getLogger('')
 
 
 class Authentication(object):
-    def __init__(self,db,secret,algorithm='HS256',token_exp=30*24*3600):
+    def __init__(self,database,secret,algorithm='HS256',token_exp=30*24*3600):
         """
         Parameters:
             db:             the database instance
@@ -34,11 +34,65 @@ class Authentication(object):
             algorithm:      string
         """
 
-        self._db = db
+        self._db = database
         self._secret = secret
         self._algorithm = algorithm
 
         self._token_exp = token_exp
+
+        # load the groups and users from the database
+
+        self.groups = {group['groupname']: group for group in self._db.get_groups()}
+        self.users = {user['username']: user for user in self._db.get_users()}
+        self.group_users = {}
+
+        for gu in self._db.get_group_users():
+            try:
+                self.group_users[gu['group']].append(gu['user'])
+            except:
+                self.group_users[gu['group']] = [ gu['user'] ]
+
+
+        # add the admin group and user if they do not exist
+
+        self.add_group('admin',permission=9)
+        self.add_user('admin','homecon',permission=9)
+        self.add_user_to_group(self.users['admin'],self.groups['admin'])
+
+
+    def add_user(self,username,password,permission=1):
+        success = self._db.add_user(username,password,permission=permission)
+        
+        if success:
+            user = self._db.get_user(username)
+            success = False
+            if not user == None:
+                success = True
+                self.users[user['username']] = user
+
+        return success
+
+    def add_group(self,groupname,permission=1):
+        success = self._db.add_group(groupname,permission=permission)
+        
+        if success:
+            group = self._db.get_group(groupname)
+            success = False
+            if not group == None:
+                success = True
+                self.groups[group['groupname']] = group
+
+        return success
+
+    def add_user_to_group(self,user,group):
+        success = self._db.add_user_to_group(user['id'],group['id'])
+        if success:
+            try:
+                self.group_users[group['id']].append(user['id'])
+            except:
+                self.group_users[group['id']] = [user['id']]
+
+        return success
 
     def request_token(self,username,password):
         user = self._db.verify_user(username,password)
