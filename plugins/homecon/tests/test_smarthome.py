@@ -26,11 +26,27 @@ from common import HomeConTestCase
 
 class SmarthomeTests(HomeConTestCase):
 
-    def test_run_smarthome(self):
+    def test_start_smarthome(self):
         self.start_smarthome()
         time.sleep(5)
         self.stop_smarthome()
 
+        self.save_smarthome_log()
+
+
+    def test_restart_smarthome(self):
+        self.start_smarthome()
+        time.sleep(5)
+        self.stop_smarthome()
+
+        self.save_smarthome_log('_1')
+
+
+        self.start_smarthome()
+        time.sleep(5)
+        self.stop_smarthome()
+
+        self.save_smarthome_log('_2')
 
 
 if __name__ == '__main__':

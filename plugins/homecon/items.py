@@ -27,20 +27,20 @@ logger = logging.getLogger('')
 
 
 class Items(object):
-    def __init__(self,sh,db):
+    def __init__(self,smarthome,database):
         """
         """
-        self._sh = sh
-        self._db = db
+        self._sh = smarthome
+        self._db = database
 
 
-        # add homecon default items
-        self._add_item_to_smarthome('homecon',{})
-        self._add_item_to_smarthome('homecon.items',{})
 
         # add homecon items from the database
         self._add_items_from_database_to_smarthome()
 
+        # add homecon default items if they are not added yet
+        self.add_item('homecon',{})
+        self.add_item('homecon.items',{})
 
 
     def add_item(self,path,conf={},persist=1,label='',description='',unit=''):
@@ -59,9 +59,9 @@ class Items(object):
                 self._add_item_to_smarthome(path,conf,parent=parent)
 
             else:
-                logger.warning('The item {} could not be added to the database'.format(item_path))
+                logger.debug('The item {} could not be added to the database'.format(path))
         else:
-            logger.warning('The item parent {} does not exist'.format(parent_path))
+            logger.debug('The item {} does not have a parent'.format(path))
 
 
     def delete_item(self,path):
@@ -142,10 +142,10 @@ class Items(object):
         for item in items:
 
             path = item['path']
-            parent = self._get_parent(self,path)
-            conf = item['conf']
+            parent = self._get_parent(path)
+            conf = json.loads( item['conf'] )
 
-            self._add_item_to_smarthome(parent,path,conf)
+            self._add_item_to_smarthome(path,conf,parent=parent)
 
 
 

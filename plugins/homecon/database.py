@@ -178,7 +178,7 @@ class Mysql(object):
             self._execute_query(cur,'INSERT INTO `items` (`path`,`conf`,`persist`,`label`,`description`,`unit`) VALUES (\'{}\',\'{}\',{},\'{}\',\'{}\',\'{}\')'.format(path,conf,persist,label,description,unit))
             success = True
         else:
-            logger.warning('item {} allready exists'.format(path))
+            logger.debug('item {} allready exists'.format(path))
             success = False
         con.commit()
         con.close()

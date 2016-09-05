@@ -122,6 +122,15 @@ class HomeConTestCase(unittest.TestCase):
         """
         shutil.copyfile(self.logfile, 'log/{}_{}{}_smarthome.log'.format(self.__class__.__name__,self._testMethodName,append))
 
+        # check if there are errors in the log file
+        with open(self.logfile) as f:
+            errors = []
+            for l in f:
+                if ' ERROR ' in l:
+                    errors.append(l)
+
+            self.assertEqual(len(errors),0,msg='\n' + '\n'.join(errors))
+
     def setUp(self):
         """
         Executed before every test
@@ -153,15 +162,5 @@ class HomeConTestCase(unittest.TestCase):
 
         # clear the database
         self.clear_database()
-
-        # check if there are errors in the log file
-        with open(self.logfile) as f:
-            errors = []
-            for l in f:
-                if ' ERROR ' in l:
-                    errors.append(l)
-
-            self.assertEqual(len(errors),0,msg='\n' + '\n'.join(errors))
-
 
 

@@ -82,11 +82,10 @@ class HomeCon:
         self.alive = True
 
         self._ws.run()
-        
 
         # initialize the dynamic items
         self._items = items.Items(self._sh,self._db)
-
+        logger.debug('HomeCon items created')
 
         """
         config = self._db.GET_JSON( 'config','id=\'1\'' )[0]['config']
