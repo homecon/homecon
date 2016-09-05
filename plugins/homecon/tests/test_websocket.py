@@ -44,7 +44,7 @@ class WebsocketTests(HomeConTestCase):
         with open(self.logfile) as f:
             success = False
             for l in f:
-                if 'sent \'{"somekey":"somevalue"}\'' in l:
+                if 'sent {\'somekey\': \'somevalue\'}' in l:
                     success = True
 
             self.assertEqual(success,True)
@@ -65,7 +65,7 @@ class WebsocketTests(HomeConTestCase):
 
         self.save_smarthome_log()
         
-        self.assertIn(result['cmd'],'token')
+        self.assertEqual(result['cmd'],'requesttoken')
         self.assertNotEqual(result['token'],False)
 
 
@@ -84,9 +84,63 @@ class WebsocketTests(HomeConTestCase):
 
         self.save_smarthome_log()
         
-        self.assertIn(result['cmd'],'token')
+        self.assertEqual(result['cmd'],'requesttoken')
         self.assertEqual(result['token'],False)
 
+
+    def test_authenticate(self):
+        self.start_smarthome()
+        time.sleep(3)
+
+        client = create_connection("ws://127.0.0.1:9024")
+        client.send('{"cmd":"requesttoken","username":"admin","password":"homecon"}')
+        time.sleep(1)
+        result = json.loads( client.recv() )
+
+        client.send('{{"cmd":"authenticate","token":"{}"}}'.format(result['token']) )
+        time.sleep(1)
+        result = json.loads( client.recv() )
+
+
+        client.close()
+
+        self.stop_smarthome()
+
+        self.save_smarthome_log()
+
+        self.assertEqual(result['cmd'],'authenticate')
+        self.assertEqual(result['authenticated'],True)
+
+
+    def test_authenticate_after_restart(self):
+        self.start_smarthome()
+        time.sleep(3)
+
+        client = create_connection("ws://127.0.0.1:9024")
+        client.send('{"cmd":"requesttoken","username":"admin","password":"homecon"}')
+        time.sleep(1)
+        result = json.loads( client.recv() )
+        client.close()
+
+        self.stop_smarthome()
+        self.save_smarthome_log('_1')
+
+        self.start_smarthome()
+        time.sleep(3)
+
+        client = create_connection("ws://127.0.0.1:9024")
+        client.send('{{"cmd":"authenticate","token":"{}"}}'.format(result['token']) )
+        time.sleep(1)
+        result = json.loads( client.recv() )
+
+        client.close()
+
+        self.stop_smarthome()
+
+        self.save_smarthome_log('_2')
+
+        self.assertEqual(result['cmd'],'authenticate')
+        self.assertEqual(result['authenticated'],True)
 
 
 

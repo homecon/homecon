@@ -100,10 +100,11 @@ class HomeConTestCase(unittest.TestCase):
         con.commit()
         con.close()
 
-    def start_smarthome(self):
+    def start_smarthome(self,clear_log=True):
         """
         starts smarthome
         """
+
         self.fnull = open(os.devnull, 'w')
         self.sh_process = subprocess.Popen(['python', os.path.join(self.smarthomedir,'bin/smarthome.py'), '-d'], stdout=self.fnull, stderr=subprocess.STDOUT)
 
@@ -115,10 +116,12 @@ class HomeConTestCase(unittest.TestCase):
         time.sleep(1) # stopping smarthome takes some time
         self.fnull.close()
 
-    def save_smarthome_log(self):
-        shutil.copyfile(self.logfile, 'log/{}_{}_smarthome.log'.format(self.__class__.__name__,self._testMethodName))
+    def save_smarthome_log(self,append=''):
+        """
+        save the smarthome log into the tests direcory
+        """
+        shutil.copyfile(self.logfile, 'log/{}_{}{}_smarthome.log'.format(self.__class__.__name__,self._testMethodName,append))
 
-    
     def setUp(self):
         """
         Executed before every test
@@ -128,7 +131,7 @@ class HomeConTestCase(unittest.TestCase):
         """
 
         # clear the log file
-        open(self.logfile, 'w').close()
+        #open(self.logfile, 'w').close()
 
         # clear the database
         self.clear_database()

@@ -70,14 +70,14 @@ class Authentication(object):
             return False
 
     def check_token(self,token):
-        return self._decode(self,token)
+        return self._decode(token)
 
     def _encode(self,payload):
         """
         Parameters:
             payload:        dict
         """
-        return jwt.encode(payload, self._secret, self._algorithm).decode("utf-8")
+        return jwt.encode(payload, self._secret, self._algorithm).decode('utf-8')
 
     def _decode(self,token):
         """
@@ -85,7 +85,7 @@ class Authentication(object):
             token:          string
         """
         try:
-            return jwt.decode(token, self._secret, algorithms=[self._algorithm])
+            return jwt.decode(token.encode('utf-8'), self._secret, algorithms=[self._algorithm])
         except:
             return False
 

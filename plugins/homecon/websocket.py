@@ -235,7 +235,16 @@ class WebSocketHandler(lib.connection.Stream):
         return list(set(b).difference(set(a)))
 
     def json_parse(self, data):
-        logger.debug("{0} sent {1}".format(self.addr, repr(data)))
+
+        # avoid logging passwords
+        try:
+            logdata = json.loads(data)
+            if 'password' in logdata:
+                logdata['password'] = '***'
+            logger.debug("{0} sent {1}".format(self.addr, repr(logdata)))
+        except:
+            logger.debug("Problem decoding {0} from {1}: {2}".format(repr(data), self.addr, e))
+
         try:
             data = json.loads(data)
         except Exception as e:
@@ -244,26 +253,29 @@ class WebSocketHandler(lib.connection.Stream):
 
         command = data['cmd']
 
+        # a client must request a token using their username and password
         if command == 'requesttoken':
             token = self._auth.request_token(data['username'],data['password'])
 
-            self.json_send({'cmd': 'token', 'token': token})
-            logger.debug("Client {0} recieved token: {1}".format(self.addr, token))
-    
+            self.json_send({'cmd': 'requesttoken', 'token': token})
+            logger.debug("Client {0} recieved a token".format(self.addr))
 
+
+        # a client must supply a token to smarthome to recieve incomming messages
         elif command == 'authenticate':
-            logger.debug("authenticating")
-            # to subscribe to items a client must authenticate itself using a valid jwt
+
             payload = self._auth.check_token(data['token'])
             self._user = payload
 
-            self.json_send({'authenticated': True})
-            logger.debug("Client {0} is authenticating with token: {1}".format(self.addr, token))
+            self.json_send({'cmd':'authenticate', 'authenticated': True})
+            logger.debug("Client {0} authenticated with a valid token".format(self.addr))
 
 
+        # a client must supply a token with every request to change an item
         elif command == 'item':
             path = data['id']
             value = data['val']
+            token = data['token']
             if path in self.items:
                 if not self.items[path]['acl'] == 'ro':
                     self.items[path]['item'](value, 'Visu', self.addr)
