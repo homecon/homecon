@@ -41,23 +41,31 @@ class Authentication(object):
         self._token_exp = token_exp
 
         # load the groups and users from the database
+        self.groups = {group['id']: group for group in self._db.get_groups()}
+        self.users = {user['id']: user for user in self._db.get_users()}
 
-        self.groups = {group['groupname']: group for group in self._db.get_groups()}
-        self.users = {user['username']: user for user in self._db.get_users()}
+        self.usernames = {user['username']: user['id'] for key,user in self.users.items()}
+        self.groupnames = {group['groupname']: group['id'] for key,group in self.groups.items()}
+
+        # initialize dictionaries with the users in a group and the groups a user is in
         self.group_users = {}
+        for group in self.groups:
+            self.group_users[group] = []
+
+        self.user_groups = {}
+        for user in self.users:
+            self.user_groups[user] = []
 
         for gu in self._db.get_group_users():
-            try:
-                self.group_users[gu['group']].append(gu['user'])
-            except:
-                self.group_users[gu['group']] = [ gu['user'] ]
-
+            self.group_users[gu['group']].append(gu['user'])
+            self.user_groups[gu['user']].append(gu['group'])
+            
 
         # add the admin group and user if they do not exist
 
         self.add_group('admin',permission=9)
         self.add_user('admin','homecon',permission=9)
-        self.add_user_to_group(self.users['admin'],self.groups['admin'])
+        self.add_user_to_group(self.users[self.usernames['admin']],self.groups[self.groupnames['admin']])
 
 
     def add_user(self,username,password,permission=1):
@@ -68,7 +76,9 @@ class Authentication(object):
             success = False
             if not user == None:
                 success = True
-                self.users[user['username']] = user
+                self.users[user['id']] = user
+                self.usernames[user['username']] = user['id']
+                self.user_groups[user['id']] = []
 
         return success
 
@@ -80,17 +90,17 @@ class Authentication(object):
             success = False
             if not group == None:
                 success = True
-                self.groups[group['groupname']] = group
+                self.groups[group['id']] = group
+                self.groupnames[group['groupname']] = group['id']
+                self.group_users[group['id']] = []
 
         return success
 
     def add_user_to_group(self,user,group):
         success = self._db.add_user_to_group(user['id'],group['id'])
         if success:
-            try:
-                self.group_users[group['id']].append(user['id'])
-            except:
-                self.group_users[group['id']] = [user['id']]
+            self.group_users[group['id']].append(user['id'])
+            self.user_groups[user['id']].append(group['id'])
 
         return success
 
@@ -102,7 +112,7 @@ class Authentication(object):
             iat = datetime.datetime.utcnow()
             exp = iat + datetime.timedelta(seconds=self._token_exp)
 
-            payload = {'id': user[0], 'username':user[1], 'permission':user[2], 'exp':exp, 'iat':iat}
+            payload = {'userid': user[0], 'groupids': self.user_groups[user[0]], 'username':user[1], 'permission':user[2], 'exp':exp, 'iat':iat}
 
             return self._encode(payload)
         else:

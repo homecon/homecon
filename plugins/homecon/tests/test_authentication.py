@@ -31,9 +31,10 @@ class AuthenticationTests(HomeConTestCase):
         db = database.Mysql('homecon_test','homecon_test','passwordusedfortesting')
         auth  = authentication.Authentication(db,'SLSJDNIZZ03J24SDSOZS923JSLD92L')
 
-        self.assertEqual(auth.groups,{'admin': {'id':1,'groupname':'admin','permission':9} })
-        self.assertEqual(auth.users,{'admin': {'id':1,'username':'admin','permission':9} })
+        self.assertEqual(auth.groups,{1: {'id':1,'groupname':'admin','permission':9} })
+        self.assertEqual(auth.users,{1: {'id':1,'username':'admin','permission':9} })
         self.assertEqual(auth.group_users,{1:[1]})
+        self.assertEqual(auth.user_groups,{1:[1]})
 
 
     def test_reinitialize_authentication(self):
@@ -41,9 +42,10 @@ class AuthenticationTests(HomeConTestCase):
         auth  = authentication.Authentication(db,'SLSJDNIZZ03J24SDSOZS923JSLD92L')
         auth  = authentication.Authentication(db,'SLSJDNIZZ03J24SDSOZS923JSLD92L')
 
-        self.assertEqual(auth.groups,{'admin': {'id':1,'groupname':'admin','permission':9} })
-        self.assertEqual(auth.users,{'admin': {'id':1,'username':'admin','permission':9} })
+        self.assertEqual(auth.groups,{1: {'id':1,'groupname':'admin','permission':9} })
+        self.assertEqual(auth.users,{1: {'id':1,'username':'admin','permission':9} })
         self.assertEqual(auth.group_users,{1:[1]})
+        self.assertEqual(auth.user_groups,{1:[1]})
 
 
     def test_add_user(self):
@@ -51,7 +53,7 @@ class AuthenticationTests(HomeConTestCase):
         auth  = authentication.Authentication(db,'SLSJDNIZZ03J24SDSOZS923JSLD92L')
 
         auth.add_user('someusername','somepassword')
-        self.assertIn('someusername',auth.users)
+        self.assertIn('someusername',[user['username'] for key,user in auth.users.items()])
 
 
     def test_request_token(self):
