@@ -41,22 +41,6 @@ class DatabaseTests(HomeConTestCase):
         self.assertIn(('users',),result)
         self.assertIn(('items',),result)
 
-    def test_change_admin_password(self):
-
-        db = database.Mysql('homecon_test','homecon_test','passwordusedfortesting')
-        user = db.verify_user('admin','homecon')
-        self.assertEqual(user,(1,'admin',9))
-
-        db.change_user_password('admin','homecon','test123')
-
-        # delete the db object and see if admin is still present
-        del db
-        db = database.Mysql('homecon_test','homecon_test','passwordusedfortesting')
-        
-        user = db.verify_user('admin','test123')
-
-        self.assertEqual(user,(1,'admin',9))
-
     def test_add_user(self):
 
         db = database.Mysql('homecon_test','homecon_test','passwordusedfortesting')
@@ -76,6 +60,25 @@ class DatabaseTests(HomeConTestCase):
         result = db.add_user('someusername','someotherpassword')
         
         self.assertEqual(result,False)
+
+
+    def test_change_user_password(self):
+
+        db = database.Mysql('homecon_test','homecon_test','passwordusedfortesting')
+        
+        db.add_user('someusername','somepassword')
+        user = db.verify_user('someusername','somepassword')
+        self.assertEqual(user[1],'someusername')
+
+        db.change_user_password('someusername','somepassword','test123')
+
+        # delete the db object and see if admin is still present
+        del db
+        db = database.Mysql('homecon_test','homecon_test','passwordusedfortesting')
+        
+        user = db.verify_user('someusername','test123')
+        self.assertEqual(user[1],'someusername')
+
 
     def test_delete_user(self):
 
@@ -156,7 +159,7 @@ class DatabaseTests(HomeConTestCase):
 
         db = database.Mysql('homecon_test','homecon_test','passwordusedfortesting')
 
-        db.add_item('someitem','{someconf}',1,'somelabel','somedescription','°C')
+        db.add_item('someitem','{someconf}',1,'somelabel','somedescription','degC')
         db.update_item('someitem','{someconf}',1,'somelabel','somedescription','someunit')
 
         con,cur = self.create_database_connection()

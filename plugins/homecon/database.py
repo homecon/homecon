@@ -71,9 +71,9 @@ class Mysql(object):
     def add_user(self,username,password,permission=1):
         con,cur = self._create_cursor()
 
-        self._execute_query(cur,'SELECT * FROM users WHERE username=\'{}\''.format(username))
+        self._execute_query(cur,'SELECT * FROM users WHERE username=%s', (username,))
         if cur.fetchone() == None:
-            self._execute_query(cur,'INSERT INTO users (username,password,permission) VALUES (\'{}\',\'{}\',{})'.format(username,self.encrypt_password(password),permission))
+            self._execute_query(cur,'INSERT INTO users (username,password,permission) VALUES (%s,%s,%s)', (username,self.encrypt_password(password),permission,))
             success = True
         else:
             logger.warning('username {} allready exists'.format(username))
@@ -88,7 +88,7 @@ class Mysql(object):
 
         if not username == 'admin':
             con,cur = self._create_cursor()
-            self._execute_query(cur,"DELETE FROM `users` WHERE username=\'{}\'".format(username))
+            self._execute_query(cur,"DELETE FROM `users` WHERE username=%s", (username,))
             con.commit()
             con.close()
             return True
@@ -99,7 +99,7 @@ class Mysql(object):
 
         con,cur = self._create_dict_cursor()
 
-        self._execute_query(cur,'SELECT id,username,permission FROM users WHERE username=\'{}\''.format(username))
+        self._execute_query(cur,'SELECT id,username,permission FROM users WHERE username=%s', (username,))
         result = cur.fetchone()
 
         con.commit()
@@ -124,7 +124,7 @@ class Mysql(object):
         user = self.verify_user(username,oldpassword)
         if user:
             con,cur = self._create_cursor()
-            self._execute_query(cur,'UPDATE `users` SET password=\'{}\' WHERE id=\'{}\''.format(self.encrypt_password(newpassword),user[0]))
+            self._execute_query(cur,'UPDATE `users` SET password=%s WHERE id=%s', (self.encrypt_password(newpassword),user[0],))
             con.commit()
             con.close()
 
@@ -137,7 +137,7 @@ class Mysql(object):
         """
         con,cur = self._create_dict_cursor()
         
-        self._execute_query(cur,'SELECT * FROM users WHERE username=\'{}\''.format(username))
+        self._execute_query(cur,'SELECT * FROM users WHERE username=%s', (username,))
         result = cur.fetchone()
         con.commit()
         con.close()
@@ -165,10 +165,10 @@ class Mysql(object):
     def add_group(self,groupname,permission=1):
         con,cur = self._create_cursor()
 
-        self._execute_query(cur,'SELECT * FROM groups WHERE groupname=\'{}\''.format(groupname))
+        self._execute_query(cur,'SELECT * FROM groups WHERE groupname=%s', (groupname,))
 
         if cur.fetchone() == None:
-            self._execute_query(cur,'INSERT INTO groups (groupname,permission) VALUES (\'{}\',{})'.format(groupname,permission))
+            self._execute_query(cur,'INSERT INTO groups (groupname,permission) VALUES (%s,%s)', (groupname,permission,))
             success = True
         else:
             logger.warning('groupname {} allready exists'.format(groupname))
@@ -184,7 +184,7 @@ class Mysql(object):
 
         con,cur = self._create_dict_cursor()
 
-        self._execute_query(cur,'SELECT id,groupname,permission FROM groups WHERE groupname=\'{}\''.format(groupname))
+        self._execute_query(cur,'SELECT id,groupname,permission FROM groups WHERE groupname=%s', (groupname,))
         result = cur.fetchone()
 
         con.commit()
@@ -213,9 +213,9 @@ class Mysql(object):
     def add_user_to_group(self,user_id,group_id):
         con,cur = self._create_cursor()
 
-        self._execute_query(cur,'SELECT * FROM group_users WHERE `group`={} AND `user`={}'.format(group_id,user_id))
+        self._execute_query(cur,'SELECT * FROM group_users WHERE `group`=%s AND `user`=%s', (group_id,user_id,))
         if cur.fetchone() == None:
-            self._execute_query(cur,'INSERT INTO group_users (`group`,`user`) VALUES ({},{})'.format(group_id,user_id))
+            self._execute_query(cur,'INSERT INTO group_users (`group`,`user`) VALUES (%s,%s)', (group_id,user_id,))
             success = True
         else:
             logger.warning('user {} is allready in group {}'.format(user_id,group_id))
@@ -233,7 +233,7 @@ class Mysql(object):
 
         con,cur = self._create_dict_cursor()
 
-        self._execute_query(cur,'SELECT id,`group`,`user` FROM group_users')
+        self._execute_query(cur,'SELECT `id`,`group`,`user` FROM group_users')
         result = cur.fetchall()
 
         con.commit()
@@ -248,9 +248,9 @@ class Mysql(object):
         """
         """
         con,cur = self._create_cursor()
-        self._execute_query(cur,'SELECT * FROM settings WHERE setting=\'{}\''.format(setting))
+        self._execute_query(cur,'SELECT * FROM settings WHERE setting=%s', (setting,))
         if cur.fetchone() == None:
-            self._execute_query(cur,'INSERT INTO `settings` (`setting`,`value`) VALUES (\'{}\',\'{}\')'.format(setting,value))
+            self._execute_query(cur,'INSERT INTO `settings` (`setting`,`value`) VALUES (%s,%s)', (setting,value,))
             success = True
         else:
             logger.warning('setting {} allready exists'.format(setting))
@@ -263,7 +263,7 @@ class Mysql(object):
         """
         """
         con,cur = self._create_cursor()
-        self._execute_query(cur,'UPDATE `settings` SET value=\'{}\' WHERE setting=\'{}\''.format(value,setting))
+        self._execute_query(cur,'UPDATE `settings` SET value=%s WHERE setting=%s', (value,setting,))
         con.commit()
         con.close()
 
@@ -275,9 +275,9 @@ class Mysql(object):
         """
         """
         con,cur = self._create_cursor()
-        self._execute_query(cur,'SELECT * FROM items WHERE path=\'{}\''.format(path))
+        self._execute_query(cur,'SELECT * FROM items WHERE path=%s', (path,))
         if cur.fetchone() == None:
-            self._execute_query(cur,'INSERT INTO `items` (`path`,`conf`,`persist`,`label`,`description`,`unit`) VALUES (\'{}\',\'{}\',{},\'{}\',\'{}\',\'{}\')'.format(path,conf,persist,label,description,unit))
+            self._execute_query(cur,'INSERT INTO `items` (`path`,`conf`,`persist`,`label`,`description`,`unit`) VALUES (%s,%s,%s,%s,%s,%s)', (path,conf,persist,label,description,unit,))
             success = True
         else:
             logger.debug('item {} allready exists'.format(path))
@@ -290,7 +290,7 @@ class Mysql(object):
         """
         """
         con,cur = self._create_cursor()
-        self._execute_query(cur,'UPDATE `items` SET conf=\'{}\', persist={}, label=\'{}\', description=\'{}\', unit=\'{}\' WHERE path=\'{}\''.format(conf,persist,label,description,unit,path))
+        self._execute_query(cur,'UPDATE `items` SET conf=%s, persist=%s, label=%s, description=%s, unit=%s WHERE path=%s', (conf,persist,label,description,unit,path,))
         con.commit()
         con.close()
 
@@ -317,9 +317,9 @@ class Mysql(object):
 
         return con,cur
 
-    def _execute_query(self,cur,query):
+    def _execute_query(self,cur,query,insert=()):
         try:
-            cur.execute( query )
+            cur.execute(query,insert)
         except:
             logger.error('There was a problem executing query: {}'.format(query))
 
