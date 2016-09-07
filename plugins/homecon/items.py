@@ -1,5 +1,5 @@
 #!/usr/bin/python3
-######################################################################################
+################################################################################
 #    Copyright 2016 Brecht Baeten
 #    This file is part of HomeCon.
 #
@@ -15,7 +15,7 @@
 #
 #    You should have received a copy of the GNU General Public License
 #    along with HomeCon.  If not, see <http://www.gnu.org/licenses/>.
-######################################################################################
+################################################################################
 
 import logging
 import json
@@ -33,7 +33,10 @@ class Items(object):
         self._sh = smarthome
         self._db = database
 
-
+        self.ws_commands = {
+            'add_item': self._ws_add_item,
+            '_ws_set_item': self._ws_set_item,
+        }
 
         # add homecon items from the database
         self._add_items_from_database_to_smarthome()
@@ -48,21 +51,24 @@ class Items(object):
         adds an item to the database and smarthome
         """
 
-        parent = self._get_parent(path)
+        success = False
 
+        parent = self._get_parent(path)
+        
         if not parent==None:
             # add the item to the database
             success = self._db.add_item(path,json.dumps(conf),persist,label,description,unit)
 
             if success:
                 # add the item to smarthome
-                self._add_item_to_smarthome(path,conf,parent=parent)
+                success = self._add_item_to_smarthome(path,conf,parent=parent)
 
             else:
                 logger.debug('The item {} could not be added to the database'.format(path))
         else:
             logger.debug('The item {} does not have a parent'.format(path))
-
+        
+        return success
 
     def delete_item(self,path):
         """
@@ -103,13 +109,17 @@ class Items(object):
             item = lib.item.Item(self._sh, parent, path, conf)
         except Exception as e:
             logger.error("Item {}: problem creating: {}".format(path, e))
+            return False
 
-        self._sh.add_item(path, item)
-
-        if parent == self._sh:
-            parent._SmartHome__children.append(item)
         else:
-            parent._Item__children.append(item)
+            self._sh.add_item(path, item)
+
+            if parent == self._sh:
+                parent._SmartHome__children.append(item)
+            else:
+                parent._Item__children.append(item)
+
+            return True
 
 
     def _delete_item_from_smarthome(item):
@@ -163,6 +173,84 @@ class Items(object):
             parent = self._sh.return_item(parent_path)
 
         return parent
+
+
+    ############################################################################
+    # websocket commands
+    ############################################################################
+
+    def _ws_add_item(self,client,data,tokenpayload):
+
+        success = False
+
+        if tokenpayload and tokenpayload['permission']>=5:
+            success = self.add_item(data['path'],conf=data['conf'],persist=1,label='',description='',unit='')
+
+        if success:
+            logger.debug("Client {0} added an item {1}".format(client.addr,data['path']))
+            return {'cmd':'add_user', 'user':user}
+        else:
+            logger.debug("Client {0} tried to add an item using {1}".format(client.addr,data))
+            return {'cmd':'add_user', 'user':None}
+
+    def _ws_set_item(self,client,data,tokenpayload):
+
+        success = False
+
+        if tokenpayload and tokenpayload['permission']>=1:
+
+            if 'path' in data and 'val' in data:
+
+                item = self._sh.return_item(data['path'])
+                            
+                # check if the user is in the item write users list
+                permitted = False
+                if 'write_users' in item.conf:
+                    if tokenpayload['userid'] in item.conf['write_users']:
+                        permitted = True
+
+                if not permitted and 'write_groups' in item.conf:
+                    for group in item.conf['write_groups']:
+                        if group in tokenpayload['groupids']
+                            permitted = True
+                            break
+
+                if not permitted and 'visu_acl' in item.conf:
+                    if item.conf['visu_acl'] == 'rw':
+                        permitted = True
+                
+                if permitted:
+                    item(data['val'])
+
+        if success:
+            logger.debug("Client {0} added an item {1}".format(client.addr,data['path']))
+            return {'cmd':'add_user', 'user':user}
+        else:
+            logger.debug("Client {0} tried to add an item using {1}".format(client.addr,data))
+            return {'cmd':'add_user', 'user':None}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -187,24 +187,30 @@ class Authentication(object):
         An admin must verify the user
         """
 
+        success = False
+
         if data['password']==data['repeatpassword']:
 
-            success = self.add_user(data['username'],data['password'],permission=0)
+            user = self.add_user(data['username'],data['password'],permission=0)
 
             if not user==False:
                 success = self.add_user_to_group(self.users[self.usernames[data['username']]],self.groups[self.groupnames['default']])
-            
-            if success:
-                logger.debug("Client {0} added a user {1}".format(client.addr,user))
-                return {'cmd':'register', 'user':user}
-            else:
-                return {'cmd':'register', 'user':None}
+        
+        if success:
+            logger.debug("Client {0} registerd as {1}".format(client.addr,user))
+            return {'cmd':'register', 'user':user}
+        else:
+            logger.debug("Client {0} tried to register".format(client.addr))
+            return {'cmd':'register', 'user':None}
+
 
 
     def _ws_add_user(self,client,data,tokenpayload):
         """
         An admin can add users with permission 1
         """
+
+        success = False
 
         if tokenpayload and tokenpayload['permission']>=9:
             if data['password']==data['repeatpassword']:
@@ -214,11 +220,12 @@ class Authentication(object):
                 if not user==False:
                     success = self.add_user_to_group(self.users[self.usernames[data['username']]],self.groups[self.groupnames['default']])
                 
-                if success:
-                    logger.debug("Client {0} added a user {1}".format(client.addr,user))
-                    return {'cmd':'add_user', 'user':user}
-                else:
-                    return {'cmd':'add_user', 'user':None}
+        if success:
+            logger.debug("Client {0} added a user {1}".format(client.addr,user))
+            return {'cmd':'add_user', 'user':user}
+        else:
+            logger.debug("Client {0} tried to add a user".format(client.addr))
+            return {'cmd':'add_user', 'user':None}
 
 
     def _ws_request_token(self,client,data,tokenpayload):
@@ -227,9 +234,8 @@ class Authentication(object):
         """
         logger.debug(data)
         token = self.request_token(data['username'],data['password'])
-        logger.debug(token)
-        logger.debug("Client {0} recieved a token".format(client.addr))
 
+        logger.debug("Client {0} recieved a token".format(client.addr))
         return {'cmd': 'request_token', 'token': token}
 
 
@@ -243,6 +249,7 @@ class Authentication(object):
             logger.debug("Client {0} authenticated with a valid token".format(client.addr))
             return {'cmd':'authenticate', 'authenticated': True}
         else:
+            logger.debug("Client {0} tried to authenticate with an invalid token".format(client.addr))
             return {'cmd':'authenticate', 'authenticated': False}
             
 
