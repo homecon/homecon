@@ -28,10 +28,20 @@ logger = logging.getLogger('')
 class Authentication(object):
     def __init__(self,database,secret,algorithm='HS256',token_exp=30*24*3600):
         """
-        Parameters:
-            db:             the database instance
-            secret:         string
-            algorithm:      string
+
+        Parameters
+        ----------
+            database : database object
+                the homecon database instance
+
+            secret : string
+                the secret key used to encode json web tokens signatures
+
+            algorithm: string
+                the algorithm used to encode json web tokens signatures
+
+            token_exp: number
+                duration of validity of supplied tokens in seconds
         """
 
         self._db = database
@@ -62,25 +72,39 @@ class Authentication(object):
             
 
         # add the admin group and user if they do not exist
-
         self.add_group('admin',permission=9)
         self.add_user('admin','homecon',permission=9)
         self.add_user_to_group(self.users[self.usernames['admin']],self.groups[self.groupnames['admin']])
 
+        # add the default group and add the admin user to it
+        self.add_group('default',permission=1)
+        self.add_user_to_group(self.users[self.usernames['admin']],self.groups[self.groupnames['default']])
 
-    def add_user(self,username,password,permission=1):
+
+
+        # create a dict of websocket commands
+        self.ws_commands = {
+            'register': self._ws_register,
+            'add_user': self._ws_add_user,
+            'request_token': self._ws_request_token,
+            'authenticate': self._ws_authenticate,
+        }
+
+
+    def add_user(self,username,password,permission=0):
         success = self._db.add_user(username,password,permission=permission)
         
         if success:
             user = self._db.get_user(username)
-            success = False
+
             if not user == None:
-                success = True
                 self.users[user['id']] = user
                 self.usernames[user['username']] = user['id']
                 self.user_groups[user['id']] = []
 
-        return success
+                return user
+
+        return False
 
     def add_group(self,groupname,permission=1):
         success = self._db.add_group(groupname,permission=permission)
@@ -152,5 +176,80 @@ class Authentication(object):
             return jwt.decode(token.encode('utf-8'), self._secret, algorithms=[self._algorithm])
         except:
             return False
+
+
+    ############################################################################
+    # websocket commands
+    ############################################################################
+    def _ws_register(self,client,data,tokenpayload):
+        """
+        An aspirant user can register themselves but recieve permission 0.
+        An admin must verify the user
+        """
+
+        if data['password']==data['repeatpassword']:
+
+            success = self.add_user(data['username'],data['password'],permission=0)
+
+            if not user==False:
+                success = self.add_user_to_group(self.users[self.usernames[data['username']]],self.groups[self.groupnames['default']])
+            
+            if success:
+                logger.debug("Client {0} added a user {1}".format(client.addr,user))
+                return {'cmd':'register', 'user':user}
+            else:
+                return {'cmd':'register', 'user':None}
+
+
+    def _ws_add_user(self,client,data,tokenpayload):
+        """
+        An admin can add users with permission 1
+        """
+
+        if tokenpayload and tokenpayload['permission']>=9:
+            if data['password']==data['repeatpassword']:
+
+                success = self.add_user(data['username'],data['password'],permission=1)
+
+                if not user==False:
+                    success = self.add_user_to_group(self.users[self.usernames[data['username']]],self.groups[self.groupnames['default']])
+                
+                if success:
+                    logger.debug("Client {0} added a user {1}".format(client.addr,user))
+                    return {'cmd':'add_user', 'user':user}
+                else:
+                    return {'cmd':'add_user', 'user':None}
+
+
+    def _ws_request_token(self,client,data,tokenpayload):
+        """
+        a client must request a token using their username and password
+        """
+        logger.debug(data)
+        token = self.request_token(data['username'],data['password'])
+        logger.debug(token)
+        logger.debug("Client {0} recieved a token".format(client.addr))
+
+        return {'cmd': 'request_token', 'token': token}
+
+
+    def _ws_authenticate(self,client,data,tokenpayload):
+        """
+        a client must supply a token to smarthome to recieve incomming messages
+        """
+
+        client.user = tokenpayload
+        if not client.user == False:
+            logger.debug("Client {0} authenticated with a valid token".format(client.addr))
+            return {'cmd':'authenticate', 'authenticated': True}
+        else:
+            return {'cmd':'authenticate', 'authenticated': False}
+            
+
+
+
+
+    
+
 
 

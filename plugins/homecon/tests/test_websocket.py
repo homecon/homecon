@@ -29,9 +29,7 @@ class WebsocketTests(HomeConTestCase):
 
     def test_send_message(self):
         
-        self.start_smarthome()
-        time.sleep(3)
-
+        self.start_smarthome(sleep=5)
         
         client = create_connection("ws://127.0.0.1:9024")
         client.send('{"somekey":"somevalue"}')
@@ -51,11 +49,10 @@ class WebsocketTests(HomeConTestCase):
 
 
     def test_request_token(self):
-        self.start_smarthome()
-        time.sleep(3)
+        self.start_smarthome(sleep=5)
 
         client = create_connection("ws://127.0.0.1:9024")
-        client.send('{"cmd":"requesttoken","username":"admin","password":"homecon"}')
+        client.send('{"cmd":"request_token","username":"admin","password":"homecon"}')
         time.sleep(1)
 
         result = json.loads( client.recv() )
@@ -64,17 +61,16 @@ class WebsocketTests(HomeConTestCase):
         self.stop_smarthome()
 
         self.save_smarthome_log()
-        
-        self.assertEqual(result['cmd'],'requesttoken')
+
+        self.assertEqual(result['cmd'],'request_token')
         self.assertNotEqual(result['token'],False)
 
 
     def test_request_token_invalid(self):
-        self.start_smarthome()
-        time.sleep(3)
+        self.start_smarthome(sleep=5)
 
         client = create_connection("ws://127.0.0.1:9024")
-        client.send('{"cmd":"requesttoken","username":"admin","password":"test"}')
+        client.send('{"cmd":"request_token","username":"admin","password":"test"}')
         time.sleep(1)
 
         result = json.loads( client.recv() )
@@ -84,16 +80,15 @@ class WebsocketTests(HomeConTestCase):
 
         self.save_smarthome_log()
         
-        self.assertEqual(result['cmd'],'requesttoken')
+        self.assertEqual(result['cmd'],'request_token')
         self.assertEqual(result['token'],False)
 
 
     def test_authenticate(self):
-        self.start_smarthome()
-        time.sleep(3)
+        self.start_smarthome(sleep=5)
 
         client = create_connection("ws://127.0.0.1:9024")
-        client.send('{"cmd":"requesttoken","username":"admin","password":"homecon"}')
+        client.send('{"cmd":"request_token","username":"admin","password":"homecon"}')
         time.sleep(1)
         result = json.loads( client.recv() )
 
@@ -113,11 +108,10 @@ class WebsocketTests(HomeConTestCase):
 
 
     def test_authenticate_after_restart(self):
-        self.start_smarthome()
-        time.sleep(3)
+        self.start_smarthome(sleep=5)
 
         client = create_connection("ws://127.0.0.1:9024")
-        client.send('{"cmd":"requesttoken","username":"admin","password":"homecon"}')
+        client.send('{"cmd":"request_token","username":"admin","password":"homecon"}')
         time.sleep(1)
         result = json.loads( client.recv() )
         client.close()
@@ -125,8 +119,7 @@ class WebsocketTests(HomeConTestCase):
         self.stop_smarthome()
         self.save_smarthome_log('_1')
 
-        self.start_smarthome()
-        time.sleep(3)
+        self.start_smarthome(5)
 
         client = create_connection("ws://127.0.0.1:9024")
         client.send('{{"cmd":"authenticate","token":"{}"}}'.format(result['token']) )

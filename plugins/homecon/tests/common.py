@@ -100,13 +100,18 @@ class HomeConTestCase(unittest.TestCase):
         con.commit()
         con.close()
 
-    def start_smarthome(self,clear_log=True):
+    def start_smarthome(self,sleep=3,clear_log=True,print_log=False):
         """
         starts smarthome
         """
 
-        self.fnull = open(os.devnull, 'w')
-        self.sh_process = subprocess.Popen(['python', os.path.join(self.smarthomedir,'bin/smarthome.py'), '-d'], stdout=self.fnull, stderr=subprocess.STDOUT)
+        if print_log:
+            self.sh_process = subprocess.Popen(['python', os.path.join(self.smarthomedir,'bin/smarthome.py'), '-d'])
+        else:
+            self.fnull = open(os.devnull, 'w')
+            self.sh_process = subprocess.Popen(['python', os.path.join(self.smarthomedir,'bin/smarthome.py'), '-d'], stdout=self.fnull, stderr=subprocess.STDOUT)
+        
+        time.sleep(sleep)
 
     def stop_smarthome(self):
         """
@@ -114,7 +119,11 @@ class HomeConTestCase(unittest.TestCase):
         """
         self.sh_process.terminate()
         time.sleep(1) # stopping smarthome takes some time
-        self.fnull.close()
+
+        try:
+            self.fnull.close()
+        except:
+            pass
 
     def save_smarthome_log(self,append=''):
         """

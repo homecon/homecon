@@ -31,7 +31,7 @@ class AuthenticationTests(HomeConTestCase):
         db = database.Mysql('homecon_test','homecon_test','passwordusedfortesting')
         auth  = authentication.Authentication(db,'SLSJDNIZZ03J24SDSOZS923JSLD92L')
 
-        self.assertEqual(auth.groups,{1: {'id':1,'groupname':'admin','permission':9} })
+        self.assertEqual(auth.groups,{1: {'id':1,'groupname':'admin','permission':9}, 2: {'id':2,'default':'admin','permission':1} })
         self.assertEqual(auth.users,{1: {'id':1,'username':'admin','permission':9} })
         self.assertEqual(auth.group_users,{1:[1]})
         self.assertEqual(auth.user_groups,{1:[1]})
@@ -42,7 +42,7 @@ class AuthenticationTests(HomeConTestCase):
         auth  = authentication.Authentication(db,'SLSJDNIZZ03J24SDSOZS923JSLD92L')
         auth  = authentication.Authentication(db,'SLSJDNIZZ03J24SDSOZS923JSLD92L')
 
-        self.assertEqual(auth.groups,{1: {'id':1,'groupname':'admin','permission':9} })
+        self.assertEqual(auth.groups,{1: {'id':1,'groupname':'admin','permission':9}, 2: {'id':2,'default':'admin','permission':1} })
         self.assertEqual(auth.users,{1: {'id':1,'username':'admin','permission':9} })
         self.assertEqual(auth.group_users,{1:[1]})
         self.assertEqual(auth.user_groups,{1:[1]})

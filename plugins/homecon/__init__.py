@@ -53,13 +53,14 @@ class HomeCon:
 
         logger.info('HomeCon started')
 
+        self.ws_commands = {}
+
         # set basic attributes
         self._sh = smarthome
         self._db = database.Mysql(db_name,db_user,db_pass)
         self._auth = authentication.Authentication(self._db,jwt_secret)
-
-
-        self._ws = websocket.WebSocket(self._sh,self._auth,ip='127.0.0.1', port=9024)
+        
+        self._ws = websocket.WebSocket(self._sh, self._auth, ip='127.0.0.1', port=9024)
 
 
         """
@@ -80,13 +81,19 @@ class HomeCon:
         """
 
         self.alive = True
-
-        self._ws.run()
+        self._ws.run() # not needed?
 
         # initialize the dynamic items
         self._items = items.Items(self._sh,self._db)
         logger.debug('HomeCon items created')
 
+
+        # add the websocket commands from the different modules
+        self._ws.add_commands(self._auth.ws_commands)
+
+
+
+        
         """
         config = self._db.GET_JSON( 'config','id=\'1\'' )[0]['config']
         

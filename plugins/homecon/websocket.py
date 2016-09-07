@@ -46,18 +46,23 @@ class JSONEncoder(json.JSONEncoder):
 class WebSocket(lib.connection.Server):
 
     def __init__(self, smarthome, authentication, ip='127.0.0.1', port=9024, tls='no', acl='ro'):
+        """
+        """
+
         lib.connection.Server.__init__(self, ip, port)
 
         self._sh = smarthome
         self._auth = authentication
-
+        self._commands = {}
         self.__acl = acl
+
         smarthome.add_event_listener(['log'], self._send_event)
 
         self.clients = []
 
         self.visu_items = {}
         self.visu_logics = {}
+
 
         if tls == 'no':
             self.tls = False
@@ -66,7 +71,9 @@ class WebSocket(lib.connection.Server):
         self.tls_crt = '/usr/local/smarthome/etc/home.crt'
         self.tls_key = '/usr/local/smarthome/etc/home.key'
         self.tls_ca = '/usr/local/smarthome/etc/ca.crt'
-
+        
+    def add_commands(self,commands):
+        self._commands.update(commands)
 
     def handle_connection(self):
         sock, address = self.accept()
@@ -82,7 +89,8 @@ class WebSocket(lib.connection.Server):
             except Exception as e:
                 logger.exception(e)
                 return
-        client = WebSocketHandler(self._sh, self, self._auth, sock, address, self.visu_items, self.visu_logics)
+
+        client = WebSocketHandler(self._sh, self, self._auth, sock, address, self.visu_items, self.visu_logics, self._commands)
         self.clients.append(client)
 
     def run(self):
@@ -158,12 +166,17 @@ class WebSocket(lib.connection.Server):
 
 class WebSocketHandler(lib.connection.Stream):
 
-    def __init__(self, smarthome, dispatcher, authentication, sock, addr, items, logics):
+    def __init__(self, smarthome, dispatcher, authentication, sock, addr, items, logics, commands):
+        """
+        """
+
         lib.connection.Stream.__init__(self, sock, addr)
         self.terminator = b"\r\n\r\n"
         self._sh = smarthome
         self._dp = dispatcher
         self._auth = authentication
+        self._commands = commands
+
         self.found_terminator = self.parse_header
         self.addr = addr
         self.header = {}
@@ -177,7 +190,8 @@ class WebSocketHandler(lib.connection.Stream):
         self._series_lock = threading.Lock()
         self.logics = logics
         self.proto = 3
-        self._user = None
+        self.user = None
+
 
     def send_event(self, event, data):
         data = data.copy()  # don't filter the orignal data dict
@@ -199,9 +213,9 @@ class WebSocketHandler(lib.connection.Stream):
             pass
 
     def update(self, path, data, source):
-        if not self._user == None:
+        if not self.user == None:
             if path in self.monitor['item']:
-                if self._user['id'] in self.items[path]['read_users']:
+                if self.user['id'] in self.items[path]['read_users']:
                     if self.addr != source:
                         self.json_send(data)
                 else:
@@ -234,6 +248,7 @@ class WebSocketHandler(lib.connection.Stream):
     def difference(self, a, b):
         return list(set(b).difference(set(a)))
 
+
     def json_parse(self, data):
 
         # avoid logging passwords
@@ -253,26 +268,9 @@ class WebSocketHandler(lib.connection.Stream):
 
         command = data['cmd']
 
-        # a client must request a token using their username and password
-        if command == 'requesttoken':
-            token = self._auth.request_token(data['username'],data['password'])
-
-            self.json_send({'cmd': 'requesttoken', 'token': token})
-            logger.debug("Client {0} recieved a token".format(self.addr))
-
-
-        # a client must supply a token to smarthome to recieve incomming messages
-        elif command == 'authenticate':
-
-            payload = self._auth.check_token(data['token'])
-            self._user = payload
-
-            self.json_send({'cmd':'authenticate', 'authenticated': True})
-            logger.debug("Client {0} authenticated with a valid token".format(self.addr))
-
 
         # a client must supply a token with every request to change an item
-        elif command == 'item':
+        if command == 'item':
             path = data['id']
             value = data['val']
             token = data['token']
@@ -357,6 +355,23 @@ class WebSocketHandler(lib.connection.Stream):
             elif proto < self.proto:
                 logger.warning("WebSocket: protocol mismatch. Update your client: {0}".format(self.addr))
             self.json_send({'cmd': 'proto', 'ver': self.proto, 'time': self._sh.now()})
+        
+        # commands from other modules
+        elif command in self._commands:
+            try:
+                if 'token' in data:
+                    tokenpayload = self._auth.check_token(data['token'])
+                else:
+                    tokenpayload = False
+
+                callback = self._commands[command]
+                result = callback(self,data,tokenpayload)
+
+                self.json_send(result)
+            except:
+                self.json_send({'cmd':command,'error':True})
+
+
 
     def parse_header(self, data):
         data = bytes(data)
