@@ -27,6 +27,9 @@ from passlib.hash import pbkdf2_sha256
 logger = logging.getLogger('')
 
 class Mysql(object):
+    """
+    low level database functions
+    """
 
     def __init__(self,db_name,db_user,db_pass):
         """
@@ -65,92 +68,138 @@ class Mysql(object):
         con.close()
         logger.info("HomeCon database initialized")
 
+
 ################################################################################
 # users
 ################################################################################
-    def add_user(self,username,password,permission=1):
-        con,cur = self._create_cursor()
+    def user_POST(self,**kwargs):
+        """
+        post to the users table
+        """
+        success = False
 
-        self._execute_query(cur,'SELECT * FROM users WHERE username=%s', (username,))
-        if cur.fetchone() == None:
-            self._execute_query(cur,'INSERT INTO users (username,password,permission) VALUES (%s,%s,%s)', (username,self.encrypt_password(password),permission,))
-            success = True
-        else:
-            logger.warning('username {} allready exists'.format(username))
-            success = False
+        if 'username' in kwargs and 'password' in kwargs and 'permission' in kwargs:
+            con,cur = self._create_cursor()
+            self._execute_query(cur,'SELECT * FROM users WHERE username=%s', (kwargs['username'],))
+            if cur.fetchone() == None:
+                self._execute_query(cur,'INSERT INTO users (username,password,permission) VALUES (%s,%s,%s)', (kwargs['username'],self.encrypt_password(kwargs['password']),kwargs['permission'],))
+                success = True
+            else:
+                logger.warning('username {} allready exists'.format(kwargs['username']))
+                success = False
 
-        con.commit()
-        con.close()
+            con.commit()
+            con.close()
 
         return success
 
-    def delete_user(self,username):
 
-        if not username == 'admin':
-            con,cur = self._create_cursor()
-            self._execute_query(cur,"DELETE FROM `users` WHERE username=%s", (username,))
+    def user_GET(self,**kwargs):
+        """
+        get a user or all users
+        """
+
+        result = False
+        if 'id' in kwargs:
+            con,cur = self._create_dict_cursor()
+            self._execute_query(cur,'SELECT id,username,permission FROM users WHERE id=%s', (kwargs['id'],))
+            result = cur.fetchone()
             con.commit()
             con.close()
-            return True
+
+        elif 'username' in kwargs:
+            con,cur = self._create_dict_cursor()
+            self._execute_query(cur,'SELECT id,username,permission FROM users WHERE username=%s', (kwargs['username'],))
+            result = cur.fetchone()
+            con.commit()
+            con.close()
         else:
-            return False
-
-    def get_user(self,username):
-
-        con,cur = self._create_dict_cursor()
-
-        self._execute_query(cur,'SELECT id,username,permission FROM users WHERE username=%s', (username,))
-        result = cur.fetchone()
-
-        con.commit()
-        con.close()
-        return result
-
-
-    def get_users(self):
-
-        con,cur = self._create_dict_cursor()
-
-        self._execute_query(cur,'SELECT id,username,permission FROM users')
-        result = cur.fetchall()
-
-        con.commit()
-        con.close()
-        return result
-
-
-    def change_user_password(self,username,oldpassword,newpassword):
-
-        user = self.verify_user(username,oldpassword)
-        if user:
-            con,cur = self._create_cursor()
-            self._execute_query(cur,'UPDATE `users` SET password=%s WHERE id=%s', (self.encrypt_password(newpassword),user[0],))
+            con,cur = self._create_dict_cursor()
+            self._execute_query(cur,'SELECT id,username,permission FROM users')
+            result = cur.fetchall()
             con.commit()
             con.close()
 
-    def update_user(self,username,permission):
-        pass
+        return result
 
 
-    def verify_user(self,username,password):
+    def user_PUT(self,**kwargs):
         """
+        edit a user
         """
+        success = False
+
+        user = self.user_GET(**kwargs)
+        if not user == None:
+            fields = []
+            data = [] 
+            if 'username' in kwargs:
+                fields.append('username')
+                data.append(kwargs['username'])
+
+            if 'password' in kwargs:
+                fields.append('password')
+                data.append(self.encrypt_password(kwargs['password']))
+
+            if 'permission' in kwargs:
+                fields.append('permission')
+                data.append(kwargs['permission'])
+
+            data.append(user['id'])
+
+            con,cur = self._create_cursor()
+            self._execute_query(cur,'UPDATE `users` SET {} WHERE id=%s'.format(', '.join(['{}=%s'.format(f) for f in fields])), tuple(data) )
+            con.commit()
+            con.close()
+            success = True
+
+        return success
+
+
+    def user_DELETE(self,**kwargs):
+        """
+        delete a user
+        """
+        success = False
+
+        user = self.user_GET(**kwargs)
+        if not user == None:
+
+            con,cur = self._create_cursor()
+            self._execute_query(cur,"DELETE FROM `users` WHERE id=%s", (user['id'],))
+            con.commit()
+            con.close()
+
+            success = True
+
+        return success
+
+
+    def user_VERIFY(self,username,password):
+        """
+        verify a username - password combination
+        """
+        result = False
+
         con,cur = self._create_dict_cursor()
-        
-        self._execute_query(cur,'SELECT * FROM users WHERE username=%s', (username,))
-        result = cur.fetchone()
+        self._execute_query(cur,'SELECT id,username,permission,password FROM users WHERE username=%s', (username,))
+        user = cur.fetchone()
         con.commit()
         con.close()
 
-        if result:
-            if self.verify_password(password, result['password']):
-                return (result['id'],result['username'],result['permission'])
+        if not user == None:
+            
+            if self.verify_password(password, user['password']):
+                result = {'id':user['id'],'username':user['username'],'permission':user['permission']}
             else:
                 logger.warning('Failed login attempt detected for user {}'.format(username))
-                return False
+                result = False
         else:
             logger.warning('User {} does not exist'.format(username))
-            return False
+            result = False
+
+        return result
+
 
     def encrypt_password(self,password):
         return pbkdf2_sha256.encrypt(password, rounds=10, salt_size=16)
@@ -162,16 +211,119 @@ class Mysql(object):
 ################################################################################
 # groups
 ################################################################################
-    def add_group(self,groupname,permission=1):
+    def group_POST(self,**kwargs):
+        """
+        post to the groups table
+        """
+        success = False
+
+        if 'groupname' in kwargs and 'permission' in kwargs:
+            con,cur = self._create_cursor()
+            self._execute_query(cur,'SELECT * FROM groups WHERE groupname=%s', (kwargs['groupname'],))
+            if cur.fetchone() == None:
+                self._execute_query(cur,'INSERT INTO groups (groupname,permission) VALUES (%s,%s)', (kwargs['groupname'],kwargs['permission'],))
+                success = True
+            else:
+                logger.warning('groupname {} allready exists'.format(kwargs['groupname']))
+                success = False
+
+            con.commit()
+            con.close()
+
+        return success
+
+
+    def group_GET(self,**kwargs):
+        """
+        get a group or all groups
+        """
+
+        result = False
+        if 'id' in kwargs:
+            con,cur = self._create_dict_cursor()
+            self._execute_query(cur,'SELECT id,groupname,permission FROM groups WHERE id=%s', (kwargs['id'],))
+            result = cur.fetchone()
+            con.commit()
+            con.close()
+
+        elif 'username' in kwargs:
+            con,cur = self._create_dict_cursor()
+            self._execute_query(cur,'SELECT id,groupname,permission FROM groups WHERE groupname=%s', (kwargs['groupname'],))
+            result = cur.fetchone()
+            con.commit()
+            con.close()
+        else:
+            con,cur = self._create_dict_cursor()
+            self._execute_query(cur,'SELECT id,groupname,permission FROM groups')
+            result = cur.fetchall()
+            con.commit()
+            con.close()
+
+        return result
+
+
+    def group_PUT(self,**kwargs):
+        """
+        edit a group
+        """
+        success = False
+
+        group = self.group_GET(**kwargs)
+        if not group == None:
+            fields = []
+            data = [] 
+            if 'groupname' in kwargs:
+                fields.append('groupname')
+                data.append(kwargs['groupname'])
+
+            if 'permission' in kwargs:
+                fields.append('permission')
+                data.append(kwargs['permission'])
+
+            data.append(group['id'])
+
+            con,cur = self._create_cursor()
+            self._execute_query(cur,'UPDATE `groups` SET {} WHERE id=%s'.format(', '.join(['{}=%s'.format(f) for f in fields])), tuple(data) )
+            con.commit()
+            con.close()
+            success = True
+
+        return success
+
+
+    def group_DELETE(self,**kwargs):
+        """
+        delete a group
+        """
+        success = False
+
+        group = self.group_GET(**kwargs)
+        if not group == None:
+
+            con,cur = self._create_cursor()
+            self._execute_query(cur,"DELETE FROM `groups` WHERE id=%s", (group['id'],))
+            con.commit()
+            con.close()
+
+            success = True
+
+        return success
+
+
+
+    def group_users_POST(self,userid,groupid):
+        """
+        add a user to a group
+        """
+        success = False
+
         con,cur = self._create_cursor()
-
-        self._execute_query(cur,'SELECT * FROM groups WHERE groupname=%s', (groupname,))
-
+        self._execute_query(cur,'SELECT * FROM group_users WHERE `group`=%s AND `user`=%s', (groupid,userid,))
         if cur.fetchone() == None:
-            self._execute_query(cur,'INSERT INTO groups (groupname,permission) VALUES (%s,%s)', (groupname,permission,))
+            self._execute_query(cur,'INSERT INTO group_users (`group`,`user`) VALUES (%s,%s)', (groupid,userid,))
             success = True
         else:
-            logger.warning('groupname {} allready exists'.format(groupname))
+            logger.warning('user {} is allready in group {}'.format(userid,groupid))
             success = False
 
         con.commit()
@@ -180,126 +332,252 @@ class Mysql(object):
         return success
 
 
-    def get_group(self,groupname):
+    def group_users_GET(self,**kwargs):
 
-        con,cur = self._create_dict_cursor()
+        result = False
+        if 'userid' in kwargs:
+            con,cur = self._create_dict_cursor()
+            self._execute_query(cur,'SELECT `id`,`group`,`user` FROM group_users WHERE user=%s', (kwargs['userid'],))
+            result = cur.fetchone()
+            con.commit()
+            con.close()
 
-        self._execute_query(cur,'SELECT id,groupname,permission FROM groups WHERE groupname=%s', (groupname,))
-        result = cur.fetchone()
-
-        con.commit()
-        con.close()
-
-        return result
-
-
-    def get_groups(self):
-
-        con,cur = self._create_dict_cursor()
-
-        self._execute_query(cur,'SELECT id,groupname,permission FROM groups')
-        result = cur.fetchall()
-
-        con.commit()
-        con.close()
-
-        return result
-
-
-    def update_group(self,groupname,permission):
-        pass
-
-
-    def add_user_to_group(self,user_id,group_id):
-        con,cur = self._create_cursor()
-
-        self._execute_query(cur,'SELECT * FROM group_users WHERE `group`=%s AND `user`=%s', (group_id,user_id,))
-        if cur.fetchone() == None:
-            self._execute_query(cur,'INSERT INTO group_users (`group`,`user`) VALUES (%s,%s)', (group_id,user_id,))
-            success = True
+        elif 'groupid' in kwargs:
+            con,cur = self._create_dict_cursor()
+            self._execute_query(cur,'SELECT `id`,`group`,`user` FROM group_users WHERE group=%s', (kwargs['groupid'],))
+            result = cur.fetchone()
+            con.commit()
+            con.close()
         else:
-            logger.warning('user {} is allready in group {}'.format(user_id,group_id))
-            success = False
-
-        con.commit()
-        con.close()
-
-        return success
-
-    def remove_user_from_group(self,user,group):
-        pass
-
-    def get_group_users(self):
-
-        con,cur = self._create_dict_cursor()
-
-        self._execute_query(cur,'SELECT `id`,`group`,`user` FROM group_users')
-        result = cur.fetchall()
-
-        con.commit()
-        con.close()
+            con,cur = self._create_dict_cursor()
+            self._execute_query(cur,'SELECT `id`,`group`,`user` FROM group_users')
+            result = cur.fetchall()
+            con.commit()
+            con.close()
 
         return result
+
+
+    def group_users_DELETE(self,user,group):
+        return False
+
+
 
 ################################################################################
 # settings
 ################################################################################
-    def add_setting(self,setting,value):
+    def setting_POST(self,**kwargs):
         """
+        post to the settings table
         """
-        con,cur = self._create_cursor()
-        self._execute_query(cur,'SELECT * FROM settings WHERE setting=%s', (setting,))
-        if cur.fetchone() == None:
-            self._execute_query(cur,'INSERT INTO `settings` (`setting`,`value`) VALUES (%s,%s)', (setting,value,))
-            success = True
-        else:
-            logger.warning('setting {} allready exists'.format(setting))
-            success = False
-        con.commit()
-        con.close()
+        success = False
+
+        if 'setting' in kwargs and 'value' in kwargs:
+            con,cur = self._create_cursor()
+            self._execute_query(cur,'SELECT * FROM settings WHERE setting=%s', (kwargs['setting'],))
+            if cur.fetchone() == None:
+                self._execute_query(cur,'INSERT INTO settings (setting,value) VALUES (%s,%s)', (kwargs['setting'],kwargs['value'],))
+                success = True
+            else:
+                logger.warning('setting {} allready exists'.format(kwargs['setting']))
+                success = False
+
+            con.commit()
+            con.close()
+
         return success
 
-    def update_setting(self,setting,value):
+
+    def setting_GET(self,**kwargs):
         """
+        get a setting or all settings
         """
-        con,cur = self._create_cursor()
-        self._execute_query(cur,'UPDATE `settings` SET value=%s WHERE setting=%s', (value,setting,))
-        con.commit()
-        con.close()
+
+        result = False
+        if 'id' in kwargs:
+            con,cur = self._create_dict_cursor()
+            self._execute_query(cur,'SELECT id,setting,value FROM settings WHERE id=%s', (kwargs['id'],))
+            result = cur.fetchone()
+            con.commit()
+            con.close()
+
+        elif 'setting' in kwargs:
+            con,cur = self._create_dict_cursor()
+            self._execute_query(cur,'SELECT id,setting,value FROM settings WHERE setting=%s', (kwargs['setting'],))
+            result = cur.fetchone()
+            con.commit()
+            con.close()
+        else:
+            con,cur = self._create_dict_cursor()
+            self._execute_query(cur,'SELECT id,setting,value FROM settings')
+            result = cur.fetchall()
+            con.commit()
+            con.close()
+
+        return result
+
+
+    def setting_PUT(self,**kwargs):
+        """
+        edit a setting
+        """
+        success = False
+
+        setting = self.setting_GET(**kwargs)
+        if not setting == None:
+            fields = []
+            data = [] 
+            if 'value' in kwargs:
+                fields.append('value')
+                data.append(kwargs['value'])
+
+            data.append(setting['id'])
+
+            con,cur = self._create_cursor()
+            self._execute_query(cur,'UPDATE `settings` SET {} WHERE id=%s'.format(', '.join(['{}=%s'.format(f) for f in fields])), tuple(data) )
+            con.commit()
+            con.close()
+            success = True
+
+        return success
+
+
+    def setting_DELETE(self,**kwargs):
+        """
+        delete a setting
+        """
+        success = False
+
+        setting = self.setting_GET(**kwargs)
+        if not setting == None:
+
+            con,cur = self._create_cursor()
+            self._execute_query(cur,"DELETE FROM `settings` WHERE id=%s", (setting['id'],))
+            con.commit()
+            con.close()
+
+            success = True
+
+        return success
 
 
 ################################################################################
 # items
 ################################################################################
-    def add_item(self,path,conf,persist,label,description,unit):
+
+    def item_POST(self,**kwargs):
         """
+        post to the items table
         """
-        con,cur = self._create_cursor()
-        self._execute_query(cur,'SELECT * FROM items WHERE path=%s', (path,))
-        if cur.fetchone() == None:
-            self._execute_query(cur,'INSERT INTO `items` (`path`,`conf`,`persist`,`label`,`description`,`unit`) VALUES (%s,%s,%s,%s,%s,%s)', (path,conf,persist,label,description,unit,))
-            success = True
-        else:
-            logger.debug('item {} allready exists'.format(path))
-            success = False
-        con.commit()
-        con.close()
+        success = False
+
+        if 'path' in kwargs and 'conf' in kwargs and 'persist' in kwargs and 'label' in kwargs and 'description' in kwargs and 'unit' in kwargs:
+            con,cur = self._create_cursor()
+            self._execute_query(cur,'SELECT `id` FROM items WHERE path=%s', (kwargs['path'],))
+            if cur.fetchone() == None:
+                self._execute_query(cur,'INSERT INTO `items` (`path`,`conf`,`persist`,`label`,`description`,`unit`) VALUES (%s,%s,%s,%s,%s,%s)', (kwargs['path'],kwargs['conf'],kwargs['persist'],kwargs['label'],kwargs['description'],kwargs['unit'],))
+                success = True
+            else:
+                logger.warning('item {} allready exists'.format(kwargs['path']))
+                success = False
+
+            con.commit()
+            con.close()
+
         return success
 
-    def update_item(self,path,conf,persist,label,description,unit):
-        """
-        """
-        con,cur = self._create_cursor()
-        self._execute_query(cur,'UPDATE `items` SET conf=%s, persist=%s, label=%s, description=%s, unit=%s WHERE path=%s', (conf,persist,label,description,unit,path,))
-        con.commit()
-        con.close()
 
-    def get_items(self):
-        con,cur = self._create_dict_cursor()
-        self._execute_query(cur,'SELECT * FROM items')
-        return cur.fetchall()
-        con.commit()
-        con.close()
+    def item_GET(self,**kwargs):
+        """
+        get an item or all items
+        """
+
+        result = False
+        if 'id' in kwargs:
+            con,cur = self._create_dict_cursor()
+            self._execute_query(cur,'SELECT `id`,`path`,`conf`,`persist`,`label`,`description`,`unit` FROM items WHERE id=%s', (kwargs['id'],))
+            result = cur.fetchone()
+            con.commit()
+            con.close()
+
+        elif 'path' in kwargs:
+            con,cur = self._create_dict_cursor()
+            self._execute_query(cur,'SELECT `id`,`path`,`conf`,`persist`,`label`,`description`,`unit` FROM items WHERE path=%s', (kwargs['path'],))
+            
+            result = cur.fetchone()
+            con.commit()
+            con.close()
+
+        else:
+            con,cur = self._create_dict_cursor()
+            self._execute_query(cur,'SELECT `id`,`path`,`conf`,`persist`,`label`,`description`,`unit` FROM items')
+            result = cur.fetchall()
+            con.commit()
+            con.close()
+
+        if result == None:
+            result = False
+
+        return result
+
+
+    def item_PUT(self,**kwargs):
+        """
+        edit an item
+        """
+        success = False
+
+        item = self.item_GET(**kwargs)
+        if not item == None:
+            fields = []
+            data = [] 
+            if 'conf' in kwargs:
+                fields.append('conf')
+                data.append(kwargs['conf'])
+            if 'persist' in kwargs:
+                fields.append('persist')
+                data.append(kwargs['persist'])
+            if 'label' in kwargs:
+                fields.append('label')
+                data.append(kwargs['label'])
+            if 'description' in kwargs:
+                fields.append('description')
+                data.append(kwargs['description'])
+            if 'unit' in kwargs:
+                fields.append('unit')
+                data.append(kwargs['unit'])
+
+            data.append(item['id'])
+
+            con,cur = self._create_cursor()
+            self._execute_query(cur,'UPDATE `items` SET {} WHERE id=%s'.format(', '.join(['{}=%s'.format(f) for f in fields])), tuple(data) )
+            con.commit()
+            con.close()
+            success = True
+
+        return success
+
+
+    def item_DELETE(self,**kwargs):
+        """
+        delete an item
+        """
+        success = False
+
+        item = self.item_GET(**kwargs)
+        if not item == None:
+
+            con,cur = self._create_cursor()
+            self._execute_query(cur,"DELETE FROM `items` WHERE id=%s", (item['id'],))
+            con.commit()
+            con.close()
+
+            success = True
+
+        return success
+
+
+
 
 ################################################################################
 # private
@@ -331,6 +609,115 @@ class Mysql(object):
 
 
 
+################################################################################
+# generic functions, fixme
+################################################################################
+
+    def _POST(self,table,required_fields,unique_fields,**kwargs):
+        """
+        post
+        """
+        success = False
+
+        # check if the required fields are present
+        for field in required_fields:
+            if not field in kwargs:
+                return False
+
+        for field in unique_fields:
+            if not field in kwargs:
+                return False
+
+        # check if the value allredy exists in the database
+        con,cur = self._create_cursor()
+        self._execute_query(cur,'SELECT * FROM {} WHERE {}'.format(table,' OR '.join(['{}=%s'.format(field) for field in unique_fields])), tuple([kwargs[field] for field in unique_fields]))
+
+        if cur.fetchone() == None:
+
+            # execute the querry
+            self._execute_query(cur,'INSERT INTO {} ({}) VALUES ({})'.format(table,','.join(required_fields), ','.join(['%s' for field in required_fields]) ), tuple([kwargs[field] for field in required_fields]))
+            success = True
+
+        con.commit()
+        con.close()
+
+        return success
+
+
+    def _GET(self,table,selector_fields,return_fields,**kwargs):
+        """
+        get
+        """
+
+        result = False
+        if 'id' in kwargs:
+            con,cur = self._create_dict_cursor()
+            self._execute_query(cur,'SELECT id,groupname,permission FROM groups WHERE id=%s', (kwargs['id'],))
+            result = cur.fetchone()
+            con.commit()
+            con.close()
+
+        elif 'username' in kwargs:
+            con,cur = self._create_dict_cursor()
+            self._execute_query(cur,'SELECT id,groupname,permission FROM groups WHERE groupname=%s', (kwargs['groupname'],))
+            result = cur.fetchone()
+            con.commit()
+            con.close()
+        else:
+            con,cur = self._create_dict_cursor()
+            self._execute_query(cur,'SELECT id,groupname,permission FROM groups')
+            result = cur.fetchall()
+            con.commit()
+            con.close()
+
+        return result
+
+
+    def _PUT(self,**kwargs):
+        """
+        put
+        """
+        success = False
+
+        group = self.group_GET(**kwargs)
+        if not group == None:
+            fields = []
+            data = [] 
+            if 'groupname' in kwargs:
+                fields.append('groupname')
+                data.append(kwargs['groupname'])
+
+            if 'permission' in kwargs:
+                fields.append('permission')
+                data.append(kwargs['permission'])
+
+            data.append(group['id'])
+
+            self._execute_query(cur,'UPDATE `groups` SET {} WHERE id=%s'.format(', '.join(['{}=%s'.format(f) for f in fields])), tuple(data) )
+            con.commit()
+            con.close()
+            success = True
+
+        return success
+
+
+    def _DELETE(self,**kwargs):
+        """
+        delete
+        """
+        success = False
+
+        group = self.group_GET(**kwargs)
+        if not group == None:
+
+            con,cur = self._create_cursor()
+            self._execute_query(cur,"DELETE FROM `groups` WHERE id=%s", (group['id'],))
+            con.commit()
+            con.close()
+
+            success = True
+
+        return success
 
 
 
@@ -341,6 +728,7 @@ class Mysql(object):
 
 
 
+# old
 
     def POST(self,table,data):
         keys = []

@@ -41,150 +41,147 @@ class DatabaseTests(HomeConTestCase):
         self.assertIn(('users',),result)
         self.assertIn(('items',),result)
 
-    def test_add_user(self):
+    def test_user_POST(self):
 
         db = database.Mysql('homecon_test','homecon_test','passwordusedfortesting')
 
-        db.add_user('someusername','somepassword')
-        user = db.verify_user('someusername','somepassword')
+        db.user_POST(username='someusername',password='somepassword',permission=1)
+        user = db.user_VERIFY('someusername','somepassword')
 
-        self.assertEqual(user[1],'someusername')
-        self.assertEqual(user[2],1)
+        self.assertEqual(user['username'],'someusername')
+        self.assertEqual(user['permission'],1)
 
 
-    def test_add_user_double(self):
+    def test_user_POST_double(self):
 
         db = database.Mysql('homecon_test','homecon_test','passwordusedfortesting')
 
-        db.add_user('someusername','somepassword')
-        result = db.add_user('someusername','someotherpassword')
+        db.user_POST(username='someusername',password='somepassword',permission=1)
+        success = db.user_POST(username='someusername',password='somepassword',permission=1)
         
-        self.assertEqual(result,False)
+        self.assertEqual(success,False)
 
 
-    def test_change_user_password(self):
+    def test_user_PUT_password(self):
 
         db = database.Mysql('homecon_test','homecon_test','passwordusedfortesting')
         
-        db.add_user('someusername','somepassword')
-        user = db.verify_user('someusername','somepassword')
-        self.assertEqual(user[1],'someusername')
+        db.user_POST(username='someusername',password='somepassword',permission=1)
+        user = db.user_VERIFY('someusername','somepassword')
+        self.assertEqual(user['username'],'someusername')
 
-        db.change_user_password('someusername','somepassword','test123')
+        db.user_PUT(username='someusername',password='test123')
 
-        # delete the db object and see if admin is still present
+        # delete the db object and see if the user is still present
         del db
         db = database.Mysql('homecon_test','homecon_test','passwordusedfortesting')
         
-        user = db.verify_user('someusername','test123')
-        self.assertEqual(user[1],'someusername')
+        user = db.user_VERIFY('someusername','test123')
+        self.assertEqual(user['username'],'someusername')
 
 
-    def test_delete_user(self):
-
-        db = database.Mysql('homecon_test','homecon_test','passwordusedfortesting')
-
-        db.add_user('someusername','somepassword')
-        db.delete_user('someusername')
-
-        user = db.verify_user('someusername','somepassword')
-
-        self.assertEqual(user,False)
-
-    def test_verify_user_wrong_password(self):
+    def test_user_DELETE(self):
 
         db = database.Mysql('homecon_test','homecon_test','passwordusedfortesting')
 
-        db.add_user('someusername','somepassword')
-        user = db.verify_user('someusername','someotherpassword')
+        db.user_POST(username='someusername',password='somepassword',permission=1)
+        db.user_DELETE(username='someusername')
+
+        user = db.user_VERIFY('someusername','somepassword')
 
         self.assertEqual(user,False)
 
 
-    def test_add_setting(self):
+    def test_user_VERIFY_wrong_password(self):
 
         db = database.Mysql('homecon_test','homecon_test','passwordusedfortesting')
 
-        db.add_setting('test','123')
+        db.user_POST(username='someusername',password='somepassword',permission=1)
+        user = db.user_VERIFY('someusername','test123')
+
+        self.assertEqual(user,False)
+
+    def test_user_GET_without_users(self):
+
+        db = database.Mysql('homecon_test','homecon_test','passwordusedfortesting')
+
+        user = db.user_GET()
+
+        self.assertEqual(user,())
+
+
+    def test_setting_POST(self):
+
+        db = database.Mysql('homecon_test','homecon_test','passwordusedfortesting')
+
+        db.setting_POST(setting='test',value='123')
 
         con,cur = self.create_database_connection()
         cur.execute('SELECT * FROM settings WHERE setting=\'test\'')
         result = cur.fetchone()
         con.close()
 
-        self.assertEqual('123',result[2])
+        self.assertEqual(result[2],'123')
 
-    def test_update_setting(self):
+    def test_setting_PUT(self):
 
         db = database.Mysql('homecon_test','homecon_test','passwordusedfortesting')
 
-        db.add_setting('test','123')
-        db.update_setting('test','1234')
+        db.setting_POST(setting='test',value='123')
+        db.setting_PUT(setting='test',value='1234')
 
         con,cur = self.create_database_connection()
         cur.execute('SELECT * FROM settings WHERE setting=\'test\'')
         result = cur.fetchone()
         con.close()
 
-        self.assertEqual('1234',result[2])
+        self.assertEqual(result[2],'1234')
 
-    def test_update_nonexistent_setting(self):
+
+    def test_setting_PUT_nonexistent(self):
 
         db = database.Mysql('homecon_test','homecon_test','passwordusedfortesting')
 
-        db.add_setting('test','123')
-        db.update_setting('tested','1234')
+        db.setting_POST(setting='test',value='123')
+        db.setting_PUT(setting='tested',value='1234')
 
         con,cur = self.create_database_connection()
         cur.execute('SELECT * FROM settings WHERE setting=\'test\'')
         result = cur.fetchone()
         con.close()
 
-        self.assertEqual('123',result[2])
+        self.assertEqual(result[2],'123')
 
-    def test_add_item(self):
+
+    def test_item_POST(self):
 
         db = database.Mysql('homecon_test','homecon_test','passwordusedfortesting')
 
-        db.add_item('homecon','{}',1,'','','')
+        db.item_POST(path='homecon',conf='{}',persist=1,label='',description='',unit='')
 
         con,cur = self.create_database_connection()
         cur.execute('SELECT * FROM items WHERE path=\'homecon\'')
         result = cur.fetchone()
         con.close()
 
-        self.assertEqual('homecon',result[1])
+        self.assertEqual(result[1],'homecon')
 
-    def test_update_item(self):
+
+    def test_item_PUT(self):
 
         db = database.Mysql('homecon_test','homecon_test','passwordusedfortesting')
 
-        db.add_item('someitem','{someconf}',1,'somelabel','somedescription','degC')
-        db.update_item('someitem','{someconf}',1,'somelabel','somedescription','someunit')
+        db.item_POST(path='someitem',conf='{}',persist=1,label='',description='',unit='')
+        db.item_PUT(path='someitem',conf='{someconf}',persist=1,label='somelabel',description='somedescription',unit='someunit')
 
         con,cur = self.create_database_connection()
         cur.execute('SELECT * FROM items WHERE path=\'someitem\'')
         result = cur.fetchone()
         con.close()
 
-        self.assertEqual('someunit',result[6])
+        self.assertEqual(result[6],'someunit')
 
-        """
-        self.start_smarthome()
-        time.sleep(2)
 
-        con,cur = self.create_database_connection()
-        cur.execute('SHOW TABLES')
-        result = cur.fetchall()
-
-        self.assertIn(('settings',),result)
-        self.assertIn(('users',),result)
-        self.assertIn(('items',),result)
-
-        self.stop_smarthome()
-        con.close()
-        """
-    
 if __name__ == '__main__':
     # run tests
     unittest.main()
