@@ -256,6 +256,11 @@ class WebSocketHandler(lib.connection.Stream):
             logdata = json.loads(data)
             if 'password' in logdata:
                 logdata['password'] = '***'
+            if 'repeatpassword' in logdata:
+                logdata['repeatpassword'] = '***'
+            if 'token' in logdata:
+                logdata['token'] = '***'
+
             logger.debug("{0} sent {1}".format(self.addr, repr(logdata)))
         except:
             logger.debug("Problem decoding {0} from {1}: {2}".format(repr(data), self.addr, e))

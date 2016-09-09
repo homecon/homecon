@@ -51,8 +51,8 @@ class Authentication(object):
         self._token_exp = token_exp
 
         # load the groups and users from the database
-        self.groups = {group['id']: group for group in self._db.get_groups()}
-        self.users = {user['id']: user for user in self._db.get_users()}
+        self.groups = {group['id']: group for group in self._db.groups_GET()}
+        self.users = {user['id']: user for user in self._db.users_GET()}
 
         self.usernames = {user['username']: user['id'] for key,user in self.users.items()}
         self.groupnames = {group['groupname']: group['id'] for key,group in self.groups.items()}
@@ -66,7 +66,7 @@ class Authentication(object):
         for user in self.users:
             self.user_groups[user] = []
 
-        for gu in self._db.get_group_users():
+        for gu in self._db.group_users_GET():
             self.group_users[gu['group']].append(gu['user'])
             self.user_groups[gu['user']].append(gu['group'])
             
@@ -86,16 +86,17 @@ class Authentication(object):
         self.ws_commands = {
             'register': self._ws_register,
             'add_user': self._ws_add_user,
+            'update_user_permission': self._ws_update_user_permission,
             'request_token': self._ws_request_token,
             'authenticate': self._ws_authenticate,
         }
 
 
     def add_user(self,username,password,permission=0):
-        success = self._db.add_user(username,password,permission=permission)
+        success = self._db.users_POST(username=username,password=password,permission=permission)
         
         if success:
-            user = self._db.get_user(username)
+            user = self._db.users_GET(username=username)
 
             if not user == None:
                 self.users[user['id']] = user
@@ -106,22 +107,33 @@ class Authentication(object):
 
         return False
 
+
+    def update_user(self,**kwargs):
+        success = self._db.users_PUT(**kwargs)
+        
+        return success
+
+
     def add_group(self,groupname,permission=1):
-        success = self._db.add_group(groupname,permission=permission)
+        success = self._db.groups_POST(groupname=groupname,permission=permission)
         
         if success:
-            group = self._db.get_group(groupname)
+            group = self._db.groups_GET(groupname=groupname)
+
             success = False
             if not group == None:
                 success = True
+
                 self.groups[group['id']] = group
                 self.groupnames[group['groupname']] = group['id']
                 self.group_users[group['id']] = []
 
-        return success
+                return group
+
+        return False
 
     def add_user_to_group(self,user,group):
-        success = self._db.add_user_to_group(user['id'],group['id'])
+        success = self._db.group_users_POST(user['id'],group['id'])
         if success:
             self.group_users[group['id']].append(user['id'])
             self.user_groups[user['id']].append(group['id'])
@@ -129,18 +141,18 @@ class Authentication(object):
         return success
 
     def request_token(self,username,password):
-        user = self._db.verify_user(username,password)
+        user = self._db.users_VERIFY(username,password)
         
         if user:
             # return the token
             iat = datetime.datetime.utcnow()
             exp = iat + datetime.timedelta(seconds=self._token_exp)
 
-            payload = {'userid': user[0], 'groupids': self.user_groups[user[0]], 'username':user[1], 'permission':user[2], 'exp':exp, 'iat':iat}
+            payload = {'userid': user['id'], 'groupids': self.user_groups[user['id']], 'username':user['username'], 'permission':user['permission'], 'exp':exp, 'iat':iat}
 
             return self._encode(payload)
-        else:
-            return False
+
+        return False
 
     def renew_token(self,token):
 
@@ -154,8 +166,8 @@ class Authentication(object):
             payload['exp'] = exp
 
             return self._encode(payload)
-        else:
-            return False
+
+        return False
 
     def check_token(self,token):
         return self._decode(token)
@@ -187,23 +199,16 @@ class Authentication(object):
         An admin must verify the user
         """
 
-        success = False
-
         if data['password']==data['repeatpassword']:
 
             user = self.add_user(data['username'],data['password'],permission=0)
 
             if not user==False:
-                success = self.add_user_to_group(self.users[self.usernames[data['username']]],self.groups[self.groupnames['default']])
-        
-        if success:
-            logger.debug("Client {0} registerd as {1}".format(client.addr,user))
-            return {'cmd':'register', 'user':user}
-        else:
-            logger.debug("Client {0} tried to register".format(client.addr))
-            return {'cmd':'register', 'user':None}
+                logger.debug("Client {0} registerd as {1}".format(client.addr,user))
+                return {'cmd':'register', 'user':user}
 
-
+        logger.debug("Client {0} tried to register with username {1}".format(client.addr,data['username']))
+        return {'cmd':'register', 'user':None}
 
     def _ws_add_user(self,client,data,tokenpayload):
         """
@@ -228,11 +233,31 @@ class Authentication(object):
             return {'cmd':'add_user', 'user':None}
 
 
+    def _ws_update_user_permission(self,client,data,tokenpayload):
+        """
+        An admin can change the users permission. You can not change your own permissions
+        """
+
+        success = False
+
+        if tokenpayload and tokenpayload['permission']>=9 and 'id' in data and 'permission' in data and not data['id']==tokenpayload['userid']:
+
+            success = self.update_user(id=data['id'],permission=data['permission'])
+
+        
+        if success:
+            logger.debug("Client {0} updated user with id {1}".format(client.addr,data['id']))
+            return {'cmd':'update_user_permission', 'permission':data['permission']}
+        else:
+            logger.debug("Client {0} tried to update a user".format(client.addr))
+            return {'cmd':'update_user_permission', 'permission':False}
+
+
     def _ws_request_token(self,client,data,tokenpayload):
         """
         a client must request a token using their username and password
         """
-        logger.debug(data)
+
         token = self.request_token(data['username'],data['password'])
 
         logger.debug("Client {0} recieved a token".format(client.addr))
@@ -243,16 +268,18 @@ class Authentication(object):
         """
         a client must supply a token to smarthome to recieve incomming messages
         """
+        success = False
 
-        client.user = tokenpayload
-        if not client.user == False:
+        if tokenpayload and tokenpayload['permission'] >=1:
+            client.user = tokenpayload
             logger.debug("Client {0} authenticated with a valid token".format(client.addr))
-            return {'cmd':'authenticate', 'authenticated': True}
+            success = True
+
         else:
             logger.debug("Client {0} tried to authenticate with an invalid token".format(client.addr))
-            return {'cmd':'authenticate', 'authenticated': False}
-            
 
+        
+        return {'cmd':'authenticate', 'authenticated': success}
 
 
 

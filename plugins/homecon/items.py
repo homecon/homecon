@@ -57,7 +57,7 @@ class Items(object):
         
         if not parent==None:
             # add the item to the database
-            success = self._db.add_item(path,json.dumps(conf),persist,label,description,unit)
+            success = self._db.items_POST(path=path,conf=json.dumps(conf),persist=persist,label=label,description=description,unit=unit)
 
             if success:
                 # add the item to smarthome
@@ -78,7 +78,7 @@ class Items(object):
             path:   string, item path
 
         """
-        pass
+        return False
         """
         fixme
         # remove the item from the database
@@ -148,7 +148,7 @@ class Items(object):
     def _add_items_from_database_to_smarthome(self):
         """
         """
-        items = self._db.get_items()
+        items = self._db.items_GET()
         for item in items:
 
             path = item['path']
@@ -193,6 +193,9 @@ class Items(object):
             logger.debug("Client {0} tried to add an item using {1}".format(client.addr,data))
             return {'cmd':'add_user', 'user':None}
 
+
+
+
     def _ws_set_item(self,client,data,tokenpayload):
 
         success = False
@@ -211,7 +214,7 @@ class Items(object):
 
                 if not permitted and 'write_groups' in item.conf:
                     for group in item.conf['write_groups']:
-                        if group in tokenpayload['groupids']
+                        if group in tokenpayload['groupids']:
                             permitted = True
                             break
 
@@ -228,6 +231,18 @@ class Items(object):
         else:
             logger.debug("Client {0} tried to add an item using {1}".format(client.addr,data))
             return {'cmd':'add_user', 'user':None}
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

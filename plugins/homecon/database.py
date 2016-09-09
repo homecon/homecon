@@ -29,6 +29,43 @@ logger = logging.getLogger('')
 class Mysql(object):
     """
     low level database functions
+
+
+    Notes
+    -----
+    For each table GET, POST, PUT and DELETE methods are defined.
+    
+    POST:
+        Entries to post are given as keyword arguments
+        
+        returns :code:`True` or :code:`False` depending on the success
+
+    GET:
+        Certain keyword arguments can be supplied as a selector.
+        The :code:`id` parameter can allways be a selector.
+
+        When a selector is given, a single item or :code:`None` is returned
+        When no selector is given, a list of items or empty list is returned
+
+    PUT:
+        Certain keyword arguments can be supplied as a selector.
+        The :code:`id` parameter can allways be a selector.
+        A selector must allways be supplied.
+
+        The parameters to update must also be supplied as keyword arguments
+
+        returns :code:`True` or :code:`False` depending on the success
+
+    DELETE:
+        Certain keyword arguments can be supplied as a selector.
+        The :code:`id` parameter can allways be a selector.
+        A selector must allways be supplied.
+
+        returns :code:`True` or :code:`False` depending on the success
+
+
+    for some tables additional methods are defined
+
     """
 
     def __init__(self,db_name,db_user,db_pass):
@@ -36,10 +73,16 @@ class Mysql(object):
         A mysql object is created
         and mysql tables required for homecon are created
         
-        Parameters:
-            db_name       database name
-            db_user       database user
-            db_pass       database user password
+        Parameters
+        ----------
+        db_name : 
+            database name
+
+        db_user : 
+            database user
+
+        db_pass : 
+            database user password
         """
 
         self._db_name = db_name
@@ -72,9 +115,9 @@ class Mysql(object):
 ################################################################################
 # users
 ################################################################################
-    def user_POST(self,**kwargs):
+    def users_POST(self,**kwargs):
         """
-        post to the users table
+        Post to the users table
         """
         success = False
 
@@ -94,7 +137,7 @@ class Mysql(object):
         return success
 
 
-    def user_GET(self,**kwargs):
+    def users_GET(self,**kwargs):
         """
         get a user or all users
         """
@@ -116,20 +159,20 @@ class Mysql(object):
         else:
             con,cur = self._create_dict_cursor()
             self._execute_query(cur,'SELECT id,username,permission FROM users')
-            result = cur.fetchall()
+            result = list(cur.fetchall())
             con.commit()
             con.close()
 
         return result
 
 
-    def user_PUT(self,**kwargs):
+    def users_PUT(self,**kwargs):
         """
         edit a user
         """
         success = False
 
-        user = self.user_GET(**kwargs)
+        user = self.users_GET(**kwargs)
         if not user == None:
             fields = []
             data = [] 
@@ -156,13 +199,13 @@ class Mysql(object):
         return success
 
 
-    def user_DELETE(self,**kwargs):
+    def users_DELETE(self,**kwargs):
         """
         delete a user
         """
         success = False
 
-        user = self.user_GET(**kwargs)
+        user = self.users_GET(**kwargs)
         if not user == None:
 
             con,cur = self._create_cursor()
@@ -175,7 +218,7 @@ class Mysql(object):
         return success
 
 
-    def user_VERIFY(self,username,password):
+    def users_VERIFY(self,username,password):
         """
         verify a username - password combination
         """
@@ -211,7 +254,7 @@ class Mysql(object):
 ################################################################################
 # groups
 ################################################################################
-    def group_POST(self,**kwargs):
+    def groups_POST(self,**kwargs):
         """
         post to the groups table
         """
@@ -233,7 +276,7 @@ class Mysql(object):
         return success
 
 
-    def group_GET(self,**kwargs):
+    def groups_GET(self,**kwargs):
         """
         get a group or all groups
         """
@@ -246,7 +289,7 @@ class Mysql(object):
             con.commit()
             con.close()
 
-        elif 'username' in kwargs:
+        elif 'groupname' in kwargs:
             con,cur = self._create_dict_cursor()
             self._execute_query(cur,'SELECT id,groupname,permission FROM groups WHERE groupname=%s', (kwargs['groupname'],))
             result = cur.fetchone()
@@ -255,20 +298,20 @@ class Mysql(object):
         else:
             con,cur = self._create_dict_cursor()
             self._execute_query(cur,'SELECT id,groupname,permission FROM groups')
-            result = cur.fetchall()
+            result = list(cur.fetchall())
             con.commit()
             con.close()
 
         return result
 
 
-    def group_PUT(self,**kwargs):
+    def groups_PUT(self,**kwargs):
         """
         edit a group
         """
         success = False
 
-        group = self.group_GET(**kwargs)
+        group = self.groups_GET(**kwargs)
         if not group == None:
             fields = []
             data = [] 
@@ -291,13 +334,13 @@ class Mysql(object):
         return success
 
 
-    def group_DELETE(self,**kwargs):
+    def groups_DELETE(self,**kwargs):
         """
         delete a group
         """
         success = False
 
-        group = self.group_GET(**kwargs)
+        group = self.groups_GET(**kwargs)
         if not group == None:
 
             con,cur = self._create_cursor()
@@ -351,7 +394,7 @@ class Mysql(object):
         else:
             con,cur = self._create_dict_cursor()
             self._execute_query(cur,'SELECT `id`,`group`,`user` FROM group_users')
-            result = cur.fetchall()
+            result = list(cur.fetchall())
             con.commit()
             con.close()
 
@@ -366,7 +409,7 @@ class Mysql(object):
 ################################################################################
 # settings
 ################################################################################
-    def setting_POST(self,**kwargs):
+    def settings_POST(self,**kwargs):
         """
         post to the settings table
         """
@@ -388,7 +431,7 @@ class Mysql(object):
         return success
 
 
-    def setting_GET(self,**kwargs):
+    def settings_GET(self,**kwargs):
         """
         get a setting or all settings
         """
@@ -410,20 +453,20 @@ class Mysql(object):
         else:
             con,cur = self._create_dict_cursor()
             self._execute_query(cur,'SELECT id,setting,value FROM settings')
-            result = cur.fetchall()
+            result = list(cur.fetchall())
             con.commit()
             con.close()
 
         return result
 
 
-    def setting_PUT(self,**kwargs):
+    def settings_PUT(self,**kwargs):
         """
         edit a setting
         """
         success = False
 
-        setting = self.setting_GET(**kwargs)
+        setting = self.settings_GET(**kwargs)
         if not setting == None:
             fields = []
             data = [] 
@@ -442,13 +485,13 @@ class Mysql(object):
         return success
 
 
-    def setting_DELETE(self,**kwargs):
+    def settings_DELETE(self,**kwargs):
         """
         delete a setting
         """
         success = False
 
-        setting = self.setting_GET(**kwargs)
+        setting = self.settings_GET(**kwargs)
         if not setting == None:
 
             con,cur = self._create_cursor()
@@ -465,7 +508,7 @@ class Mysql(object):
 # items
 ################################################################################
 
-    def item_POST(self,**kwargs):
+    def items_POST(self,**kwargs):
         """
         post to the items table
         """
@@ -487,7 +530,7 @@ class Mysql(object):
         return success
 
 
-    def item_GET(self,**kwargs):
+    def items_GET(self,**kwargs):
         """
         get an item or all items
         """
@@ -511,7 +554,7 @@ class Mysql(object):
         else:
             con,cur = self._create_dict_cursor()
             self._execute_query(cur,'SELECT `id`,`path`,`conf`,`persist`,`label`,`description`,`unit` FROM items')
-            result = cur.fetchall()
+            result = list(cur.fetchall())
             con.commit()
             con.close()
 
@@ -521,13 +564,13 @@ class Mysql(object):
         return result
 
 
-    def item_PUT(self,**kwargs):
+    def items_PUT(self,**kwargs):
         """
         edit an item
         """
         success = False
 
-        item = self.item_GET(**kwargs)
+        item = self.items_GET(**kwargs)
         if not item == None:
             fields = []
             data = [] 
@@ -558,13 +601,13 @@ class Mysql(object):
         return success
 
 
-    def item_DELETE(self,**kwargs):
+    def items_DELETE(self,**kwargs):
         """
         delete an item
         """
         success = False
 
-        item = self.item_GET(**kwargs)
+        item = self.items_GET(**kwargs)
         if not item == None:
 
             con,cur = self._create_cursor()

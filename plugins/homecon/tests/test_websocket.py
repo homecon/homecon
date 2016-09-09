@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-######################################################################################
+################################################################################
 #    Copyright 2016 Brecht Baeten
 #    This file is part of HomeCon.
 #
@@ -15,14 +15,13 @@
 #
 #    You should have received a copy of the GNU General Public License
 #    along with HomeCon.  If not, see <http://www.gnu.org/licenses/>.
-######################################################################################
+################################################################################
 
 import unittest
 import time
 import json
-from websocket import create_connection
 
-from common import HomeConTestCase
+from common import HomeConTestCase, Client
 
 
 class WebsocketTests(HomeConTestCase):
@@ -31,8 +30,8 @@ class WebsocketTests(HomeConTestCase):
         
         self.start_smarthome(sleep=5)
         
-        client = create_connection("ws://127.0.0.1:9024")
-        client.send('{"somekey":"somevalue"}')
+        client = Client('ws://127.0.0.1:9024')
+        client.send({'somekey':'somevalue'})
         client.close()
 
         self.stop_smarthome()
@@ -46,94 +45,6 @@ class WebsocketTests(HomeConTestCase):
                     success = True
 
             self.assertEqual(success,True)
-
-
-    def test_request_token(self):
-        self.start_smarthome(sleep=5)
-
-        client = create_connection("ws://127.0.0.1:9024")
-        client.send('{"cmd":"request_token","username":"admin","password":"homecon"}')
-        time.sleep(1)
-
-        result = json.loads( client.recv() )
-        client.close()
-
-        self.stop_smarthome()
-
-        self.save_smarthome_log()
-
-        self.assertEqual(result['cmd'],'request_token')
-        self.assertNotEqual(result['token'],False)
-
-
-    def test_request_token_invalid(self):
-        self.start_smarthome(sleep=5)
-
-        client = create_connection("ws://127.0.0.1:9024")
-        client.send('{"cmd":"request_token","username":"admin","password":"test"}')
-        time.sleep(1)
-
-        result = json.loads( client.recv() )
-        client.close()
-
-        self.stop_smarthome()
-
-        self.save_smarthome_log()
-        
-        self.assertEqual(result['cmd'],'request_token')
-        self.assertEqual(result['token'],False)
-
-
-    def test_authenticate(self):
-        self.start_smarthome(sleep=5)
-
-        client = create_connection("ws://127.0.0.1:9024")
-        client.send('{"cmd":"request_token","username":"admin","password":"homecon"}')
-        time.sleep(1)
-        result = json.loads( client.recv() )
-
-        client.send('{{"cmd":"authenticate","token":"{}"}}'.format(result['token']) )
-        time.sleep(1)
-        result = json.loads( client.recv() )
-
-
-        client.close()
-
-        self.stop_smarthome()
-
-        self.save_smarthome_log()
-
-        self.assertEqual(result['cmd'],'authenticate')
-        self.assertEqual(result['authenticated'],True)
-
-
-    def test_authenticate_after_restart(self):
-        self.start_smarthome(sleep=5)
-
-        client = create_connection("ws://127.0.0.1:9024")
-        client.send('{"cmd":"request_token","username":"admin","password":"homecon"}')
-        time.sleep(1)
-        result = json.loads( client.recv() )
-        client.close()
-
-        self.stop_smarthome()
-        self.save_smarthome_log('_1')
-
-        self.start_smarthome(5)
-
-        client = create_connection("ws://127.0.0.1:9024")
-        client.send('{{"cmd":"authenticate","token":"{}"}}'.format(result['token']) )
-        time.sleep(1)
-        result = json.loads( client.recv() )
-
-        client.close()
-
-        self.stop_smarthome()
-
-        self.save_smarthome_log('_2')
-
-        self.assertEqual(result['cmd'],'authenticate')
-        self.assertEqual(result['authenticated'],True)
 
 
 

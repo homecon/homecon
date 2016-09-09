@@ -24,7 +24,8 @@ import os
 import importlib.machinery
 import shutil
 import pymysql
-
+import json
+from websocket import create_connection
 
 def import_homecon_module(module):
     return importlib.machinery.SourceFileLoader(module,os.path.abspath('../{}.py'.format(module))).load_module()
@@ -173,3 +174,26 @@ class HomeConTestCase(unittest.TestCase):
         self.clear_database()
 
 
+class Client(object):
+    """
+    A convienient wrapper for creating a websocke connection
+    """
+    def __init__(self,address):
+
+        self.address = address
+        self.client = create_connection(self.address)
+
+    def send(self,message):
+        """
+        recieve a websocket message in json format
+        """
+        self.client.send(json.dumps(message))
+
+    def recv(self):
+        """
+        recieve a websocket message in json format
+        """
+        return json.loads( self.client.recv() )
+
+    def close(self):
+        self.client.close()

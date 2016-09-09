@@ -45,8 +45,8 @@ class DatabaseTests(HomeConTestCase):
 
         db = database.Mysql('homecon_test','homecon_test','passwordusedfortesting')
 
-        db.user_POST(username='someusername',password='somepassword',permission=1)
-        user = db.user_VERIFY('someusername','somepassword')
+        db.users_POST(username='someusername',password='somepassword',permission=1)
+        user = db.users_VERIFY('someusername','somepassword')
 
         self.assertEqual(user['username'],'someusername')
         self.assertEqual(user['permission'],1)
@@ -56,8 +56,8 @@ class DatabaseTests(HomeConTestCase):
 
         db = database.Mysql('homecon_test','homecon_test','passwordusedfortesting')
 
-        db.user_POST(username='someusername',password='somepassword',permission=1)
-        success = db.user_POST(username='someusername',password='somepassword',permission=1)
+        db.users_POST(username='someusername',password='somepassword',permission=1)
+        success = db.users_POST(username='someusername',password='somepassword',permission=1)
         
         self.assertEqual(success,False)
 
@@ -66,17 +66,17 @@ class DatabaseTests(HomeConTestCase):
 
         db = database.Mysql('homecon_test','homecon_test','passwordusedfortesting')
         
-        db.user_POST(username='someusername',password='somepassword',permission=1)
-        user = db.user_VERIFY('someusername','somepassword')
+        db.users_POST(username='someusername',password='somepassword',permission=1)
+        user = db.users_VERIFY('someusername','somepassword')
         self.assertEqual(user['username'],'someusername')
 
-        db.user_PUT(username='someusername',password='test123')
+        db.users_PUT(username='someusername',password='test123')
 
         # delete the db object and see if the user is still present
         del db
         db = database.Mysql('homecon_test','homecon_test','passwordusedfortesting')
         
-        user = db.user_VERIFY('someusername','test123')
+        user = db.users_VERIFY('someusername','test123')
         self.assertEqual(user['username'],'someusername')
 
 
@@ -84,10 +84,10 @@ class DatabaseTests(HomeConTestCase):
 
         db = database.Mysql('homecon_test','homecon_test','passwordusedfortesting')
 
-        db.user_POST(username='someusername',password='somepassword',permission=1)
-        db.user_DELETE(username='someusername')
+        db.users_POST(username='someusername',password='somepassword',permission=1)
+        db.users_DELETE(username='someusername')
 
-        user = db.user_VERIFY('someusername','somepassword')
+        user = db.users_VERIFY('someusername','somepassword')
 
         self.assertEqual(user,False)
 
@@ -96,8 +96,8 @@ class DatabaseTests(HomeConTestCase):
 
         db = database.Mysql('homecon_test','homecon_test','passwordusedfortesting')
 
-        db.user_POST(username='someusername',password='somepassword',permission=1)
-        user = db.user_VERIFY('someusername','test123')
+        db.users_POST(username='someusername',password='somepassword',permission=1)
+        user = db.users_VERIFY('someusername','test123')
 
         self.assertEqual(user,False)
 
@@ -105,16 +105,16 @@ class DatabaseTests(HomeConTestCase):
 
         db = database.Mysql('homecon_test','homecon_test','passwordusedfortesting')
 
-        user = db.user_GET()
+        user = db.users_GET()
 
-        self.assertEqual(user,())
+        self.assertEqual(user,[])
 
 
     def test_setting_POST(self):
 
         db = database.Mysql('homecon_test','homecon_test','passwordusedfortesting')
 
-        db.setting_POST(setting='test',value='123')
+        db.settings_POST(setting='test',value='123')
 
         con,cur = self.create_database_connection()
         cur.execute('SELECT * FROM settings WHERE setting=\'test\'')
@@ -127,8 +127,8 @@ class DatabaseTests(HomeConTestCase):
 
         db = database.Mysql('homecon_test','homecon_test','passwordusedfortesting')
 
-        db.setting_POST(setting='test',value='123')
-        db.setting_PUT(setting='test',value='1234')
+        db.settings_POST(setting='test',value='123')
+        db.settings_PUT(setting='test',value='1234')
 
         con,cur = self.create_database_connection()
         cur.execute('SELECT * FROM settings WHERE setting=\'test\'')
@@ -142,8 +142,8 @@ class DatabaseTests(HomeConTestCase):
 
         db = database.Mysql('homecon_test','homecon_test','passwordusedfortesting')
 
-        db.setting_POST(setting='test',value='123')
-        db.setting_PUT(setting='tested',value='1234')
+        db.settings_POST(setting='test',value='123')
+        db.settings_PUT(setting='tested',value='1234')
 
         con,cur = self.create_database_connection()
         cur.execute('SELECT * FROM settings WHERE setting=\'test\'')
@@ -157,7 +157,7 @@ class DatabaseTests(HomeConTestCase):
 
         db = database.Mysql('homecon_test','homecon_test','passwordusedfortesting')
 
-        db.item_POST(path='homecon',conf='{}',persist=1,label='',description='',unit='')
+        db.items_POST(path='homecon',conf='{}',persist=1,label='',description='',unit='')
 
         con,cur = self.create_database_connection()
         cur.execute('SELECT * FROM items WHERE path=\'homecon\'')
@@ -171,8 +171,8 @@ class DatabaseTests(HomeConTestCase):
 
         db = database.Mysql('homecon_test','homecon_test','passwordusedfortesting')
 
-        db.item_POST(path='someitem',conf='{}',persist=1,label='',description='',unit='')
-        db.item_PUT(path='someitem',conf='{someconf}',persist=1,label='somelabel',description='somedescription',unit='someunit')
+        db.items_POST(path='someitem',conf='{}',persist=1,label='',description='',unit='')
+        db.items_PUT(path='someitem',conf='{someconf}',persist=1,label='somelabel',description='somedescription',unit='someunit')
 
         con,cur = self.create_database_connection()
         cur.execute('SELECT * FROM items WHERE path=\'someitem\'')
