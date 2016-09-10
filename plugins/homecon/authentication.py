@@ -26,7 +26,7 @@ logger = logging.getLogger('')
 
 
 class Authentication(object):
-    def __init__(self,database,secret,algorithm='HS256',token_exp=30*24*3600):
+    def __init__(self,database,secret,algorithm='HS256',token_exp=7*24*3600):
         """
 
         Parameters
@@ -110,7 +110,12 @@ class Authentication(object):
 
     def update_user(self,**kwargs):
         success = self._db.users_PUT(**kwargs)
-        
+
+        if success:
+            # update the local user reference
+            user = self._db.users_GET(**kwargs)
+            self.users[user['id']] = user
+
         return success
 
 
@@ -140,15 +145,27 @@ class Authentication(object):
 
         return success
 
+    def get_user_permission(self,user):
+        
+        user_permission = self.users[user['id']]['permission']
+
+        groups = self.user_groups[user['id']]
+        try:
+            group_permission = max([self.groups[groupid]['permission'] for groupid in groups])
+        except:
+            group_permission = 0
+
+        return max( user_permission,group_permission )
+
     def request_token(self,username,password):
         user = self._db.users_VERIFY(username,password)
-        
+
         if user:
             # return the token
             iat = datetime.datetime.utcnow()
             exp = iat + datetime.timedelta(seconds=self._token_exp)
 
-            payload = {'userid': user['id'], 'groupids': self.user_groups[user['id']], 'username':user['username'], 'permission':user['permission'], 'exp':exp, 'iat':iat}
+            payload = {'userid': user['id'], 'groupids': self.user_groups[user['id']], 'username':user['username'], 'permission':self.get_user_permission(user), 'exp':exp, 'iat':iat}
 
             return self._encode(payload)
 
@@ -163,9 +180,11 @@ class Authentication(object):
             iat = datetime.datetime.utcnow()
             exp = datetime.datetime.utcnow() + datetime.timedelta(seconds=self._token_exp)
 
-            payload['exp'] = exp
+            user = self._db.users_GET(id=payload['userid'])
+            if not user == None:
 
-            return self._encode(payload)
+                payload = {'userid': user['id'], 'groupids': self.user_groups[user['id']], 'username':user['username'], 'permission':self.get_user_permission(user), 'exp':exp, 'iat':iat}
+                return self._encode(payload)
 
         return False
 
@@ -217,7 +236,7 @@ class Authentication(object):
 
         success = False
 
-        if tokenpayload and tokenpayload['permission']>=9:
+        if tokenpayload and self.get_user_permission(tokenpayload['userid'])>=9:
             if data['password']==data['repeatpassword']:
 
                 success = self.add_user(data['username'],data['password'],permission=1)
@@ -239,12 +258,10 @@ class Authentication(object):
         """
 
         success = False
-
-        if tokenpayload and tokenpayload['permission']>=9 and 'id' in data and 'permission' in data and not data['id']==tokenpayload['userid']:
+        if tokenpayload and self.get_user_permission(self.users[tokenpayload['userid']])>=9 and 'id' in data and 'permission' in data and not data['id']==tokenpayload['userid']:
 
             success = self.update_user(id=data['id'],permission=data['permission'])
 
-        
         if success:
             logger.debug("Client {0} updated user with id {1}".format(client.addr,data['id']))
             return {'cmd':'update_user_permission', 'permission':data['permission']}
@@ -259,7 +276,7 @@ class Authentication(object):
         """
 
         token = self.request_token(data['username'],data['password'])
-
+        logger.warning( self.check_token(token) )
         logger.debug("Client {0} recieved a token".format(client.addr))
         return {'cmd': 'request_token', 'token': token}
 
@@ -270,7 +287,7 @@ class Authentication(object):
         """
         success = False
 
-        if tokenpayload and tokenpayload['permission'] >=1:
+        if tokenpayload and self.get_user_permission(self.users[tokenpayload['userid']]) >=1:
             client.user = tokenpayload
             logger.debug("Client {0} authenticated with a valid token".format(client.addr))
             success = True
