@@ -276,7 +276,7 @@ class Authentication(object):
         """
 
         token = self.request_token(data['username'],data['password'])
-        logger.warning( self.check_token(token) )
+
         logger.debug("Client {0} recieved a token".format(client.addr))
         return {'cmd': 'request_token', 'token': token}
 

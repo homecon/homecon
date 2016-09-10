@@ -35,7 +35,8 @@ class Items(object):
 
         self.ws_commands = {
             'add_item': self._ws_add_item,
-            '_ws_set_item': self._ws_set_item,
+            'set_item': self._ws_set_item,
+            'update_item': self._ws_update_item,
         }
 
         # add homecon items from the database
@@ -50,9 +51,6 @@ class Items(object):
         """
         adds an item to the database and smarthome
         """
-
-        success = False
-
         parent = self._get_parent(path)
         
         if not parent==None:
@@ -62,13 +60,38 @@ class Items(object):
             if success:
                 # add the item to smarthome
                 success = self._add_item_to_smarthome(path,conf,parent=parent)
+                return {'path':path,'conf':conf,'persist':persist,'label':label,'description':description,'unit':unit}
 
             else:
                 logger.debug('The item {} could not be added to the database'.format(path))
         else:
             logger.debug('The item {} does not have a parent'.format(path))
         
-        return success
+        return False
+
+    def update_item(self,path,conf,persist,label,description,unit):
+        item = self._db.items_GET(path=path)
+
+        if not item==None:
+            item_conf = json.loads(item['conf'])
+
+            # the item type or hctype can not be changed
+            for key in ['type','hctype']:
+                if key in item_conf:
+                    conf[key] = item_conf[key]
+                else:
+                    conf.pop(key, None)
+
+            # update the item in the database
+            self._db.items_PUT(path=path,conf=json.dumps(conf),persist=persist,label=label,description=description,unit=unit)
+            
+            # update the item conf in smarthome
+            item = self._sh.return_item(path)
+            item.conf = conf
+
+            return True
+
+        return False
 
     def delete_item(self,path):
         """
@@ -95,11 +118,20 @@ class Items(object):
         Adds a low level item to smarthome.
         Throws an exception when the item parent does not exist
 
-        Arguments:
-        smarthome: the smarthome object
-            parent:     item, the parent item
-            path:       string, the item path
-            conf:     dict, key value pairs of conf attributes or child items
+        Parameters
+        ----------
+        smarthome :
+            the smarthome object
+
+        parent :
+            item, the parent item
+
+        path :
+            string, the item path
+
+        conf :
+            dict, key value pairs of conf attributes or child items
+
         """
 
         if parent == None:
@@ -183,21 +215,39 @@ class Items(object):
 
         success = False
 
-        if tokenpayload and tokenpayload['permission']>=5:
-            success = self.add_item(data['path'],conf=data['conf'],persist=1,label='',description='',unit='')
+        if tokenpayload and tokenpayload['permission']>=5 and 'path' in data and 'conf' in data and 'persist' in data and 'label' in data and 'description' in data and 'unit' in data:
+            item = self.add_item(data['path'],conf=data['conf'],persist=data['persist'],label=data['label'],description=data['description'],unit=data['unit'])
+            success = True
 
         if success:
             logger.debug("Client {0} added an item {1}".format(client.addr,data['path']))
-            return {'cmd':'add_user', 'user':user}
+            return {'cmd':'add_item', 'item':item}
         else:
             logger.debug("Client {0} tried to add an item using {1}".format(client.addr,data))
-            return {'cmd':'add_user', 'user':None}
+            return {'cmd':'add_item', 'item':None}
 
 
+    def _ws_update_item(self,client,data,tokenpayload):
+        """
+        update item settings
+        """
+        success = False
+        if tokenpayload and tokenpayload['permission']>=5 and 'path' in data and 'conf' in data and 'persist' in data and 'label' in data and 'description' in data and 'unit' in data:
+            success = self.update_item(data['path'],data['conf'],data['persist'],data['label'],data['description'],data['unit'])
+            item = {'path': data['path'], 'conf':data['conf'], 'persist':data['persist'],'label':data['label'], 'description':data['description'], 'unit':data['unit']}
+
+        if success:
+            logger.debug("Client {0} updated item {1}".format(client.addr,data['path']))
+            return {'cmd':'update_item', 'item':item}
+        else:
+            logger.debug("Client {0} tried to update an item using {1}".format(client.addr,data))
+            return {'cmd':'update_item', 'item':None}
 
 
     def _ws_set_item(self,client,data,tokenpayload):
-
+        """
+        sets the value of an item
+        """
         success = False
 
         if tokenpayload and tokenpayload['permission']>=1:
@@ -226,11 +276,14 @@ class Items(object):
                     item(data['val'])
 
         if success:
-            logger.debug("Client {0} added an item {1}".format(client.addr,data['path']))
-            return {'cmd':'add_user', 'user':user}
+            logger.debug("Client {0} set the value of item {1} to {2}".format(client.addr,data['path'],data['val']))
+            return {'cmd':'set_item', 'val':data['val']}
         else:
-            logger.debug("Client {0} tried to add an item using {1}".format(client.addr,data))
-            return {'cmd':'add_user', 'user':None}
+            logger.debug("Client {0} tried to set the value of an item using {1}".format(client.addr,data))
+            return {'cmd':'set_item', 'val':None}
+
+
+
 
 
 
@@ -486,38 +539,4 @@ def update_smarthome_item(sh,item_path,item_type,item_conf):
         
         
 
-
-
-
-def _add_item(sh,path,conf={}):
-    """
-    Adds a low level item to smarthome.
-    Throws an exception when the item parent does not exist
-
-    Arguments:
-    smarthome: the smarthome object
-    path: the item path
-    conf: a dict with key value pairs of conf attributes or child items
-    
-    Example:
-    _add_item(smarthome,'firstfloor.living.window.shading.move',{'type':'bool','knx_dpt':'1','knx_send':'2/1/5'})
-    """
-
-    # split the path to find the parent    
-    parentpath = '.'.join( path.split('.')[:-1] )
-
-    if parentpath == '':
-        parent = None
-    else:
-        parent = sh.return_item(parentpath)
-        if parent == None:
-            raise Exception( 'Error: parent does not exist. {}'.format(path) )
-
-    item = lib.item.Item(sh, parent, path, conf)
-    sh.add_item(path, item)
-
-    if parent != None:
-        parent._Item__children.append(item)
-
-    return item
 

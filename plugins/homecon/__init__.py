@@ -90,7 +90,7 @@ class HomeCon:
 
         # add the websocket commands from the different modules
         self._ws.add_commands(self._auth.ws_commands)
-
+        self._ws.add_commands(self._items.ws_commands)
 
 
         
