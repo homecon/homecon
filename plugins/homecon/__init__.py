@@ -25,6 +25,7 @@ import os
 
 from . import database
 from . import authentication
+from . import settings
 from . import items
 from . import websocket
 
@@ -59,7 +60,8 @@ class HomeCon:
         self._sh = smarthome
         self._db = database.Mysql(db_name,db_user,db_pass)
         self._auth = authentication.Authentication(self._db,jwt_secret)
-        
+        self._settings = settings.Settings(self._sh,self._db)
+
         self._ws = websocket.WebSocket(self._sh, self._auth, ip='127.0.0.1', port=9024)
 
 
@@ -91,7 +93,7 @@ class HomeCon:
         # add the websocket commands from the different modules
         self._ws.add_commands(self._auth.ws_commands)
         self._ws.add_commands(self._items.ws_commands)
-
+        self._ws.add_commands(self._settings.ws_commands)
 
         
         """
