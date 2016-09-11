@@ -9,17 +9,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 -->
 
 <link rel="import" href="../bower_components/polymer/polymer.html">
-<link rel="import" href="../bower_components/paper-toggle-button/paper-toggle-button.html">
-<link rel="import" href="../bower_components/paper-button/paper-button.html">
-<link rel="import" href="../bower_components/iron-icon/iron-icon.html">
-<link rel="import" href="../bower_components/iron-icons/iron-icons.html">
-<link rel="import" href="../bower_components/iron-icons/editor-icons.html">
 
 <link rel="import" href="homecon-page.html">
 <link rel="import" href="homecon-page-header.html">
 <link rel="import" href="homecon-page-section.html">
 
-<dom-module id="homecon-editor">
+<dom-module id="view-users">
 
 	<template>
 
@@ -27,19 +22,14 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 			:host {
 				display: block;
 			}
-			paper-button{
-				color: var(--button-text-color);
-				background-color: var(--button-background-color);
-			}
+
 		</style>
 
 		<homecon-page>
-			<homecon-page-header title="Editor" icon="pagebuilder_pagebuilder"></homecon-page-header>
+			<homecon-page-header title="Users" icon="homecon_users"></homecon-page-header>
 			<homecon-page-section type="raised">
 
-				<paper-toggle-button active={{edit}}>Edit mode</paper-toggle-button>
-				<paper-button raised><iron-icon icon="editor:publish"></iron-icon>publish</paper-button>
-				
+		
 			</homecon-page-section>
 		</homecon-page>
 
@@ -47,14 +37,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
 	<script>
 		Polymer({
-			is: 'homecon-editor',
-			properties: {
-				edit: {
-					type: 'Boolean',
-					value: false,
-					notify: true
-				},
-			},
+			is: 'view-users'
 		});
 	</script>
 

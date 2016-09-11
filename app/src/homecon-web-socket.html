@@ -1,0 +1,132 @@
+
+<link rel="import" href="../bower_components/polymer/polymer.html">
+
+<link rel="import" href="../bower_components/iron-localstorage/iron-localstorage.html">
+<link rel="import" href="../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../bower_components/paper-dialog/paper-dialog.html">
+<link rel="import" href="../bower_components/neon-animation/animations/scale-up-animation.html">
+<link rel="import" href="../bower_components/neon-animation/animations/fade-out-animation.html">
+<link rel="import" href="../bower_components/web-socket/web-socket.html">
+
+<dom-module id="homecon-web-socket">
+
+    <template>
+
+        <style>
+            :host {
+                display: block;
+            }
+
+            #noConnection{
+                position: fixed;
+                bottom: 16px;
+                right: 16px;
+                margin: 0px;
+            }
+            #noConnection p{
+                margin: 6px;
+            }
+
+        </style>
+
+        <iron-localstorage name="homecon-websocket-settings" value="{{settings}}" on-iron-localstorage-load-empty="_initializeDefaultSettings"></iron-localstorage>
+        <web-socket id="webSocket" url="{{_websocketUrl(settings.address,settings.port)}}" auto json on-open="_handleOpen"on-close="_handleClose" on-message="_handleMessage" on-error="_handleError"></web-socket>
+        
+
+        <paper-dialog id="settings" no-cancel-on-outside-click no-cancel-on-esc-key entry-animation="scale-up-animation" exit-animation="fade-out-animation">
+            <h1>Websocket settings</h1>
+
+            <p>Could not connect to homecon. Please review the connection settings</p>
+            <paper-input label="Address:" value="{{settings.address}}"></paper-input>
+            <paper-input label="Port:" value="{{settings.port}}"></paper-input>
+
+            <paper-button dialog-dismiss>Close</paper-button>
+        </paper-dialog>
+
+        <paper-dialog id="noConnection" verticalAlign="bottom" no-cancel-on-outside-click no-cancel-on-esc-key entry-animation="scale-up-animation" exit-animation="fade-out-animation">
+            <p>No connection with HomeCon</p>
+        </paper-dialog>
+
+    </template>
+
+    <script>
+        Polymer({
+            is: 'homecon-web-socket',
+
+            properties: {
+                settings: {
+                    type: Object,
+                    notify: true
+                },
+                connected: {
+                    type: Boolean,
+                    notify: true,
+                    value: false,
+                    observer: '_connectedChanged'
+                },
+            },
+
+            ready: function(){
+                if(!this.connected){
+                    this.$.settings.open()
+                }
+                var that = this;
+                document.addEventListener('websocket-send', function(e){
+                    that.send(e.detail)
+                });
+
+            },
+
+            send: function(data){
+                // Send a message to HomeCon
+                console.log('Send message')
+                this.$.webSocket.send(data)
+            },
+
+            openSettings: function(){
+                this.$.settings.open()
+            },
+
+            _websocketUrl: function(address,port){
+                return 'ws://' + address + ':' + port
+            },
+
+            _connectedChanged: function(connected){
+                if(connected){
+                    this.$.settings.close();
+                    this.$.noConnection.close();
+                }
+                else{
+                    this.$.noConnection.open();
+                }
+            },
+
+            _initializeDefaultSettings: function(){
+                this.settings = {'address':'localhost','port':'9024'}
+            },
+
+            _handleOpen: function(){
+                console.log('Connected to HomeCon')
+                this.connected = true;
+            },
+
+            _handleClose: function(){
+                console.log('Connection Closed')
+                this.connected = false;
+            },
+
+            _handleMessage: function(e){
+                console.log('Message')
+                console.log(e.detail)
+            },
+
+            _handleError: function(){
+                console.log('No Connection to HomeCon')
+                
+            },
+
+        });
+    </script>
+
+</dom-module>
+

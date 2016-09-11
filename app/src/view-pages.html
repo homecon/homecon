@@ -18,7 +18,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="homecon-page-section.html">
 <link rel="import" href="homecon-widget.html">
 
-<dom-module id="homecon-pages">
+<dom-module id="view-pages">
 
 	<template>
 
@@ -85,7 +85,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
 	<script>
 		Polymer({
-			is: 'homecon-pages',
+			is: 'view-pages',
 			properties: {
 				route: {
 					type: 'Object',
@@ -105,7 +105,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 				edit: {
 					type: 'Boolean',
 					value: false,
-					observer: 'editChanged'
 				},
 			},
 			observers: [

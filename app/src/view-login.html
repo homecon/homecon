@@ -1,0 +1,111 @@
+<!--
+@license
+Copyright (c) 2016 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+
+<link rel="import" href="../bower_components/polymer/polymer.html">
+
+<link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout-classes.html">
+<link rel="import" href="../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../bower_components/paper-dialog/paper-dialog.html">
+<link rel="import" href="../bower_components/neon-animation/animations/scale-up-animation.html">
+<link rel="import" href="../bower_components/neon-animation/animations/fade-out-animation.html">
+
+<dom-module id="view-login">
+
+    <template>
+
+        <style>
+            :host {
+                display: block;
+                padding: 10px;
+            }
+
+            paper-material {
+                width: 100%;
+                max-width: 500px;
+                margin-left: auto;
+                margin-right: auto;
+                padding-left: 16px;
+                padding-right: 16px;
+                padding-bottom: 16px;
+                padding-top: 1px;
+                background-color: var(--secondary-background-color);
+            }
+            paper-material h1 {
+                color: var(--primary-text-color);
+                font-size: 18px;
+                margin-top
+            }
+
+            h1 {
+                color: var(--primary-text-color);
+            }
+            h2 {
+                color: var(--primary-text-color);
+            }
+
+            @media only screen and (max-height: 800px) {
+                #loginform {
+                    margin-top: 200px;
+                }
+            }
+
+            .hidden {
+                display: None;
+            }
+
+        </style>
+        <div class="vertical layout  center-justified">
+            <form is="iron-form" id="loginform" on-iron-form-submit="requestToken">
+                <paper-material>
+                    <h1>Login</h1>
+                    <paper-input label="Username:" value="{{username}}"></paper-input>
+                    <paper-input label="Password:" value="{{password}}" type="password"></paper-input>
+                    <paper-button on-tap="loginFormSubmit" raised>Login</paper-button>
+                    <button type="submit" class="hidden">Login</button>
+                </paper-material>
+
+                <paper-button on-tap="openWebSocketSettings" raised>Websocket settings</paper-button>
+
+            </form>
+        </div>
+
+    </template>
+
+    <script>
+        Polymer({
+            is: 'view-login',
+
+            properties: {
+                webSocketSettings: {
+                    type: Object,
+                    notify: true
+                },
+                connected: {
+                    type: Boolean,
+                },
+            },
+            
+    
+            openWebSocketSettings: function(){
+                
+            },
+            requestToken: function(){
+                this.fire('websocket-send',{'cmd':'request_token','username':this.username,'password':this.password})
+            },
+            loginFormSubmit: function(){
+                this.$.loginform.submit();
+            },
+
+            
+    
+        });
+    </script>
+
+</dom-module>

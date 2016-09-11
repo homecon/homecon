@@ -1,0 +1,74 @@
+
+<link rel="import" href="../bower_components/polymer/polymer.html">
+
+<link rel="import" href="../bower_components/iron-localstorage/iron-localstorage.html">
+
+<dom-module id="homecon-authentication">
+
+    <template>
+
+        <style>
+            :host {
+                display: block;
+            }
+        </style>
+
+        <iron-localstorage name="homecon-token" value="{{token}}" on-iron-localstorage-load-empty="_initializeDefaultToken"></iron-localstorage>
+
+    </template>
+
+    <script>
+        Polymer({
+            is: 'homecon-authentication',
+
+            properties: {
+                authenticated: {
+                    type: Boolean,
+                    notify: true,
+                    value: false
+                },
+                token: {
+                    type: String,
+                    notify: true,
+                    observer: '_tokenChanged'
+                },
+                tokenPayload: {
+                    type: String,
+                    notify: true
+                },
+                tokenHeader: {
+                    type: String,
+                    notify: true
+                }
+            },
+
+            login: function(){
+                // Send a message to HomeCon
+                console.log('Send message')
+            },
+
+            _tokenChanged: function(token){
+                try{
+                    var parts = token.split('.');
+                    this.tokenHeader = JSON.parse(atob(parts[0]));
+                    this.tokenPayload = JSON.parse(atob(parts[1]));
+                    this.isAuthenticated = true;
+                }
+                catch(e){
+                    this.tokenHeader = {};
+                    this.tokenPayload = {};
+                    this.isAuthenticated = false;
+                }
+            },
+
+            _initializeDefaultToken: function(){
+                this.token = ''
+            },
+
+           
+
+        });
+    </script>
+
+</dom-module>
+
