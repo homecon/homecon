@@ -3,6 +3,8 @@
 
 <link rel="import" href="../bower_components/iron-localstorage/iron-localstorage.html">
 
+<link rel="import" href="homecon-web-socket-object.html">
+
 <dom-module id="homecon-authentication">
 
     <template>
@@ -14,6 +16,8 @@
         </style>
 
         <iron-localstorage name="homecon-token" value="{{token}}" on-iron-localstorage-load-empty="_initializeDefaultToken"></iron-localstorage>
+        <homecon-web-socket-object cmd="request_token" data="{{requestTokenData}}" on-change="handleRequestTokenDataChange"></homecon-web-socket-object>
+        <homecon-web-socket-object cmd="authenticate" data="{{authenticateData}}" on-change="handleAuthenticateDataChange"></homecon-web-socket-object>
 
     </template>
 
@@ -39,12 +43,38 @@
                 tokenHeader: {
                     type: String,
                     notify: true
+                },
+                connected: {
+                    type: Boolean,
+                    observer: '_connectedChanged'
                 }
+            },
+
+            ready: function(){
+                // attatch the component to the window
+                window.homeconAuthentication = this;
             },
 
             login: function(){
                 // Send a message to HomeCon
-                console.log('Send message')
+                console.log('login');
+                this.authenticateData = {'token':this.token};
+            },
+
+            handleRequestTokenDataChange: function(e,d){
+                console.log(this.requestTokenData);
+                this.token = this.requestTokenData['token'];
+            },
+
+            handleAuthenticateDataChange: function(e,d){
+                console.log(this.authenticateData);
+                this.authenticated = this.authenticateData['authenticated'];
+            },
+
+            _connectedChanged: function(connected){
+                if(connected){
+                    this.login();
+                }
             },
 
             _tokenChanged: function(token){
@@ -52,12 +82,15 @@
                     var parts = token.split('.');
                     this.tokenHeader = JSON.parse(atob(parts[0]));
                     this.tokenPayload = JSON.parse(atob(parts[1]));
-                    this.isAuthenticated = true;
+
+                    if(this.connected){
+                        this.login();
+                    }
                 }
                 catch(e){
                     this.tokenHeader = {};
                     this.tokenPayload = {};
-                    this.isAuthenticated = false;
+                    this.authenticated = false;
                 }
             },
 

@@ -1,0 +1,72 @@
+
+<link rel="import" href="../bower_components/polymer/polymer.html">
+
+
+<dom-module id="homecon-web-socket-object">
+
+    <template>
+
+        <style>
+            :host {
+                display: block;
+            }
+
+        </style>
+
+    </template>
+
+    <script>
+        Polymer({
+            is: 'homecon-web-socket-object',
+
+            properties: {
+                cmd: {
+                    type: String,
+                    value: ''
+                },
+                data: {
+                    type: Object,
+                    notify: true,
+                    observer: '_dataChanged'
+                },
+            },
+
+            ready: function(){
+                this.observe = true;
+                this.listen(window.homeconWebSocket, 'homecon-web-socket-message', 'onMessage');
+            },
+
+            onMessage: function(e,d){
+                // check if the cmd in message equals cmd
+                if(d['cmd']==this.cmd){
+                    
+                    this.observe = false;
+
+                    this.data = Object.keys(d).reduce((result, key) => {
+                        if(key !== 'cmd') {
+                            result[key] = d[key];
+                        }
+                        return result;
+                    }, {});
+                    this.fire('change',this.data);
+                }
+            },
+
+            _dataChanged: function(data){
+                if(this.observe){
+                    var senddata = JSON.parse(JSON.stringify(data))
+
+                    // add the command and the token
+                    senddata['cmd'] = this.cmd;
+                    senddata['token'] = window.homeconAuthentication.token;
+
+                    window.homeconWebSocket.send(senddata);
+                }
+                this.observer = true;
+            },
+
+        });
+    </script>
+
+</dom-module>
+

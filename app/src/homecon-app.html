@@ -103,7 +103,7 @@
 
 
         <homecon-web-socket connected="{{connected}}"></homecon-web-socket>
-        <homecon-authentication authenticated="{{authenticated}}" token="{{token}}" tokenPayload="{{tokenPayload}}"></homecon-authentication>
+        <homecon-authentication authenticated="{{authenticated}}" token="{{token}}" tokenPayload="{{tokenPayload}}" connected="[[connected]]"></homecon-authentication>
 
         <app-location route="{{route}}"></app-location>
         <app-route route="{{route}}" pattern="/:page" data="{{routeData}}" tail="{{subroute}}"></app-route>
@@ -170,7 +170,8 @@
         },
 
         observers: [
-            '_routePageChanged(routeData.page)'
+            '_routePageChanged(routeData.page)',
+            '_authenticatedChanged(authenticated)'
         ],
 
         ready: function(){
@@ -195,9 +196,9 @@
 
         _routePageChanged: function(page){
 
-            if(!this.authenticated && page != 'login'){
-                this.set('routeData.page','login');
-            }
+            //if(!this.authenticated && page != 'login'){
+            //    this.set('routeData.page','login');
+            //}
 
             this.page = page || 'pages';
             if(this.page=='login'){
@@ -206,11 +207,21 @@
             else{
                 this.menuClass = ''
             }
+
             // close the pagesdrawer if it is not persistent
             if(!this.$.pagesDrawer.persistent){
                 this.$.pagesDrawer.close();
             }
 
+        },
+
+        _authenticatedChanged: function(authenticated){
+            if(authenticated){
+                this.set('routeData.page','pages');
+            }
+            else{
+                this.set('routeData.page','login');
+            }
         },
 
         _pageChanged: function(page){

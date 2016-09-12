@@ -94,10 +94,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             
     
             openWebSocketSettings: function(){
-                
+                window.homeconWebSocket.openSettings()
             },
             requestToken: function(){
-                this.fire('websocket-send',{'cmd':'request_token','username':this.username,'password':this.password})
+                window.homeconWebSocket.send({'cmd':'request_token','username':this.username,'password':this.password})
             },
             loginFormSubmit: function(){
                 this.$.loginform.submit();

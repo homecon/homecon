@@ -44,7 +44,7 @@
         </paper-dialog>
 
         <paper-dialog id="noConnection" verticalAlign="bottom" no-cancel-on-outside-click no-cancel-on-esc-key entry-animation="scale-up-animation" exit-animation="fade-out-animation">
-            <p>No connection with HomeCon</p>
+            <p>No connection with HomeCon <a href="#" on-tap="connect">reconnect</a></p>
         </paper-dialog>
 
     </template>
@@ -70,17 +70,19 @@
                 if(!this.connected){
                     this.$.settings.open()
                 }
-                var that = this;
-                document.addEventListener('websocket-send', function(e){
-                    that.send(e.detail)
-                });
 
+                // attatch the component to the window
+                window.homeconWebSocket = this;
             },
 
             send: function(data){
                 // Send a message to HomeCon
                 console.log('Send message')
                 this.$.webSocket.send(data)
+            },
+
+            connect: function(){
+                this.$.webSocket.open();
             },
 
             openSettings: function(){
@@ -108,6 +110,7 @@
             _handleOpen: function(){
                 console.log('Connected to HomeCon')
                 this.connected = true;
+                this.fire('homecon-web-socket-connected');
             },
 
             _handleClose: function(){
@@ -115,9 +118,8 @@
                 this.connected = false;
             },
 
-            _handleMessage: function(e){
-                console.log('Message')
-                console.log(e.detail)
+            _handleMessage: function(e,detail){
+                this.fire('homecon-web-socket-message',detail)
             },
 
             _handleError: function(){
