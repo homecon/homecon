@@ -42,7 +42,20 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             <homecon-page-header title="Settings" icon="homecon_gears"></homecon-page-header>
             
             <paper-material>
+
                 <h1>Location</h1>
+                <homecon-web-socket-object auto cmd="update_setting" data="{{lat}}" data-template="{'cmd': '__cmd__', 'token': '__token__', 'setting': 'lat', 'val': '__data__'}"></homecon-web-socket-object>
+                <paper-input label="Latitude" value="{{lat}}" required auto-validate pattern="[0-9]*.[0-9]*" error-message="Not a valid number!"></paper-input>
+                
+                <homecon-web-socket-object auto cmd="update_setting" data="{{lon}}" data-template="{'cmd': '__cmd__', 'token': '__token__', 'setting': 'lon', 'val': '__data__'}"></homecon-web-socket-object>
+                <paper-input label="Longitude" value="{{lon}}" required auto-validate pattern="[0-9]*.[0-9]*" error-message="Not a valid number!"></paper-input>
+
+                <homecon-web-socket-object auto cmd="update_setting" data="{{elev}}" data-template="{'cmd': '__cmd__', 'token': '__token__', 'setting': 'elev', 'val': '__data__'}"></homecon-web-socket-object>
+                <paper-input label="Elevation" value="{{elev}}" required auto-validate pattern="[0-9]*.[0-9]*" error-message="Not a valid number!"></paper-input>
+            
+                <homecon-web-socket-object auto cmd="update_setting" data="{{tz}}" data-template="{'cmd': '__cmd__', 'token': '__token__', 'setting': 'tz', 'val': '__data__'}"></homecon-web-socket-object>
+                <paper-input label="Time zone" value="{{tz}}" required auto-validate error-message="Not a valid number!"></paper-input>
+
             </paper-material>
 
             <paper-material>

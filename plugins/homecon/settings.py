@@ -216,25 +216,64 @@ class Settings(object):
         success = False
 
         if tokenpayload and tokenpayload['permission']>=5 and 'setting' in data and 'val' in data:
-            if data['setting'] == 'lat':
-                result = self.update_lat(data['val'])
-                success = True
-            elif data['setting'] == 'lon':
-                result = self.update_lon(data['val'])
-                success = True
-            elif data['setting'] == 'elev':
-                result = self._update_elev(data['val'])
-                success = True
-            elif data['setting'] == 'tz':
-                result = self.update_tz(data['val'])
-                success = True
+            if data['val'] == None or data['val'] =='':
+                if data['setting'] == 'lat':
+                    result = self._sh._lat
+                    success = True
+                elif data['setting'] == 'lon':
+                    result = self._sh._lon
+                    success = True
+                elif data['setting'] == 'elev':
+                    result = self._sh._elev
+                    success = True
+                elif data['setting'] == 'tz':
+                    result = self._sh.tz
+                    success = True
+
+            else:
+                if data['setting'] == 'lat':
+                    try:
+                        val = float(data['val'])
+                        result = self.update_lat(val)
+                        if not result == False:
+                            success = True
+                    except:
+                        pass
+                    result = self._sh._lat
+
+                elif data['setting'] == 'lon':
+                    try:
+                        val = float(data['val'])
+                        result = self.update_lon(val)
+                        if not result == False:
+                            success = True
+                    except:
+                        pass
+                    result = self._sh._lon
+
+                elif data['setting'] == 'elev':
+                    try:
+                        val = float(data['val'])
+                        result = self.update_elev(val)
+                        if not result == False:
+                            success = True
+                    except:
+                        pass
+                    result = self._sh._elev
+
+
+                elif data['setting'] == 'tz':
+                    result = self.update_tz(data['val'])
+                    if not result == False:
+                        success = True
+                    result = self._sh.tz
 
         if success:
             logger.debug("Client {0} updated setting {1} to {2}".format(client.addr,data['setting'],result))
-            return {'cmd':'update_setting', 'setting':{'setting':data['setting'],'val':result}}
+            return {'cmd':'update_setting', 'setting':data['setting'],'val':result}
         else:
             logger.debug("Client {0} tried to updated a setting {1}".format(client.addr,data))
-            return {'cmd':'update_setting', 'setting':None}
+            return {'cmd':'update_setting', 'setting':data['setting'],'val':result}
 
 
 

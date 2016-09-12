@@ -20,9 +20,17 @@
             is: 'homecon-web-socket-object',
 
             properties: {
+                auto: {
+                    type: Boolean,
+                    value: false
+                },
                 cmd: {
                     type: String,
                     value: ''
+                },
+                dataTemplate: {
+                    type: String,
+                    value: '{"cmd": "__cmd__", "token": "__token__", "val": "__data__"}'
                 },
                 data: {
                     type: Object,
@@ -32,37 +40,98 @@
             },
 
             ready: function(){
+                // invert the dataTemplate to find the dataKey
+                var dataTemplate = JSON.parse(this.dataTemplate.replace(/\'/g,'"'));
+
+                this.dataTemplateProperties = []
+
+                for(var prop in dataTemplate){
+                    if(dataTemplate.hasOwnProperty(prop) && prop != 'cmd' && prop != 'token'){
+
+                        if(dataTemplate[prop]=='__data__'){
+                            this.dataKey = prop;
+                        }
+                        else{
+                            this.dataTemplateProperties.push({'property':prop,'value':dataTemplate[prop]});
+                        }
+                    }
+                }
                 this.observe = true;
                 this.listen(window.homeconWebSocket, 'homecon-web-socket-message', 'onMessage');
+
+                if(this.auto){
+                    this.listen(window.homeconWebSocket, 'homecon-web-socket-connected', 'onConnected');
+
+                    // send null to retrieve the current value
+                    if(window.homeconWebSocket.connected){
+                        this.send(null);
+                    }
+                }
             },
 
             onMessage: function(e,d){
-                // check if the cmd in message equals cmd
+                // check if the message matches the template
                 if(d['cmd']==this.cmd){
-                    
-                    this.observe = false;
-
-                    this.data = Object.keys(d).reduce((result, key) => {
-                        if(key !== 'cmd') {
-                            result[key] = d[key];
+                    var pass = true
+                    for(var index in this.dataTemplateProperties){
+                        var prop = this.dataTemplateProperties[index];
+                        if( !d.hasOwnProperty(prop['property']) || d[prop['property']] != prop['value'] ){
+                            pass = false;
+                            break;
                         }
-                        return result;
-                    }, {});
-                    this.fire('change',this.data);
+                    }
+
+                    if(pass){
+                        // avoid looping forever
+                        this.observe = false;
+
+                        // extract data from the message
+                        this.data = d[this.dataKey];
+                        this.fire('change',this.data);
+        
+                        // reobserve
+                        this.observe = true;
+                    }
                 }
             },
 
-            _dataChanged: function(data){
-                if(this.observe){
-                    var senddata = JSON.parse(JSON.stringify(data))
-
-                    // add the command and the token
-                    senddata['cmd'] = this.cmd;
-                    senddata['token'] = window.homeconAuthentication.token;
-
-                    window.homeconWebSocket.send(senddata);
+            onConnected: function(e){
+                if(this.auto){
+                    this.send(null);
                 }
-                this.observer = true;
+            },
+
+            send: function(data){
+                var senddata = JSON.parse(this.dataTemplate.replace(/\'/g,'"'),this._reviver(data))
+                window.homeconWebSocket.send(senddata);
+            },
+            
+            _sendData: function(){
+                this.send(this.data);
+            },
+
+            _dataChanged: function(data){
+                if(this.auto && this.observe && window.homeconWebSocket.connected){
+                    this.debounce('sendDataDebounce', this._sendData, 800); 
+                }
+            },
+
+            _reviver: function(data){
+                var that = this;
+                return function(key,val){
+                    if(val=='__data__'){
+                        return data;
+                    }
+                    if(val=='__cmd__'){
+                        return that.cmd;
+                    }
+                    if(val=='__token__'){
+                        return window.homeconAuthentication.token;
+                    }
+                    else{
+                        return val;
+                    }
+                }
             },
 
         });

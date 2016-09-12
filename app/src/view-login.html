@@ -61,6 +61,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             }
 
         </style>
+
         <div class="vertical layout  center-justified">
             <form is="iron-form" id="loginform" on-iron-form-submit="requestToken">
                 <paper-material>
@@ -83,15 +84,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             is: 'view-login',
 
             properties: {
-                webSocketSettings: {
-                    type: Object,
-                    notify: true
-                },
-                connected: {
-                    type: Boolean,
-                },
             },
-            
     
             openWebSocketSettings: function(){
                 window.homeconWebSocket.openSettings()

@@ -16,8 +16,8 @@
         </style>
 
         <iron-localstorage name="homecon-token" value="{{token}}" on-iron-localstorage-load-empty="_initializeDefaultToken"></iron-localstorage>
-        <homecon-web-socket-object cmd="request_token" data="{{requestTokenData}}" on-change="handleRequestTokenDataChange"></homecon-web-socket-object>
-        <homecon-web-socket-object cmd="authenticate" data="{{authenticateData}}" on-change="handleAuthenticateDataChange"></homecon-web-socket-object>
+        <homecon-web-socket-object id="request_token" cmd="request_token" data="{{token}}" data-template="{'cmd': '__cmd__', 'token': '__data__'}"></homecon-web-socket-object>
+        <homecon-web-socket-object id="authenticate" cmd="authenticate" data="{{authenticated}}" data-template="{'cmd': '__cmd__', 'token': '__token__', 'authenticated': '__data__'}"></homecon-web-socket-object>
 
     </template>
 
@@ -58,17 +58,7 @@
             login: function(){
                 // Send a message to HomeCon
                 console.log('login');
-                this.authenticateData = {'token':this.token};
-            },
-
-            handleRequestTokenDataChange: function(e,d){
-                console.log(this.requestTokenData);
-                this.token = this.requestTokenData['token'];
-            },
-
-            handleAuthenticateDataChange: function(e,d){
-                console.log(this.authenticateData);
-                this.authenticated = this.authenticateData['authenticated'];
+                window.homeconWebSocket.send({'cmd':'authenticate','token':this.token})
             },
 
             _connectedChanged: function(connected){
@@ -82,7 +72,6 @@
                     var parts = token.split('.');
                     this.tokenHeader = JSON.parse(atob(parts[0]));
                     this.tokenPayload = JSON.parse(atob(parts[1]));
-
                     if(this.connected){
                         this.login();
                     }

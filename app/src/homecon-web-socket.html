@@ -76,8 +76,6 @@
             },
 
             send: function(data){
-                // Send a message to HomeCon
-                console.log('Send message')
                 this.$.webSocket.send(data)
             },
 
@@ -104,26 +102,26 @@
             },
 
             _initializeDefaultSettings: function(){
-                this.settings = {'address':'localhost','port':'9024'}
+                this.settings = {'address':'localhost','port':'9024'};
             },
 
             _handleOpen: function(){
-                console.log('Connected to HomeCon')
+                console.log('Connected to HomeCon');
                 this.connected = true;
                 this.fire('homecon-web-socket-connected');
             },
 
             _handleClose: function(){
-                console.log('Connection Closed')
+                console.log('Connection Closed');
                 this.connected = false;
             },
 
-            _handleMessage: function(e,detail){
-                this.fire('homecon-web-socket-message',detail)
+            _handleMessage: function(e,d){
+                this.fire('homecon-web-socket-message',d);
             },
 
             _handleError: function(){
-                console.log('No Connection to HomeCon')
+                console.log('No Connection to HomeCon');
                 
             },
 
