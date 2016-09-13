@@ -296,7 +296,7 @@ class Authentication(object):
             logger.debug("Client {0} tried to authenticate with an invalid token".format(client.addr))
 
         
-        return {'cmd':'authenticate', 'authenticated': success}
+        return {'cmd':'authenticate', 'val': success}
 
 
 

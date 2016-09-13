@@ -28,34 +28,26 @@
                     type: String,
                     value: ''
                 },
-                dataTemplate: {
+                path: {
                     type: String,
-                    value: '{"cmd": "__cmd__", "token": "__token__", "val": "__data__"}'
+                    value: ''
                 },
                 data: {
                     type: Object,
                     notify: true,
                     observer: '_dataChanged'
                 },
+                dataKey: {
+                    type: String,
+                    value: 'val'
+                },
+                debounce: {
+                    type: Number,
+                    value: 10
+                }
             },
 
             ready: function(){
-                // invert the dataTemplate to find the dataKey
-                var dataTemplate = JSON.parse(this.dataTemplate.replace(/\'/g,'"'));
-
-                this.dataTemplateProperties = []
-
-                for(var prop in dataTemplate){
-                    if(dataTemplate.hasOwnProperty(prop) && prop != 'cmd' && prop != 'token'){
-
-                        if(dataTemplate[prop]=='__data__'){
-                            this.dataKey = prop;
-                        }
-                        else{
-                            this.dataTemplateProperties.push({'property':prop,'value':dataTemplate[prop]});
-                        }
-                    }
-                }
                 this.observe = true;
                 this.listen(window.homeconWebSocket, 'homecon-web-socket-message', 'onMessage');
 
@@ -64,45 +56,39 @@
 
                     // send null to retrieve the current value
                     if(window.homeconWebSocket.connected){
-                        this.send(null);
+                        this.send();
                     }
                 }
             },
 
             onMessage: function(e,d){
+                
                 // check if the message matches the template
-                if(d['cmd']==this.cmd){
-                    var pass = true
-                    for(var index in this.dataTemplateProperties){
-                        var prop = this.dataTemplateProperties[index];
-                        if( !d.hasOwnProperty(prop['property']) || d[prop['property']] != prop['value'] ){
-                            pass = false;
-                            break;
-                        }
-                    }
+                if(d['cmd']==this.cmd && d['path']==this.path){
 
-                    if(pass){
-                        // avoid looping forever
-                        this.observe = false;
+                    // avoid looping forever
+                    this.observe = false;
 
-                        // extract data from the message
-                        this.data = d[this.dataKey];
-                        this.fire('change',this.data);
-        
-                        // reobserve
-                        this.observe = true;
-                    }
+                    // extract data from the message
+                    this.data = d[this.dataKey];
+                    this.fire('change',this.data);
+    
+                    // reobserve
+                    this.observe = true;
                 }
             },
 
             onConnected: function(e){
                 if(this.auto){
-                    this.send(null);
+                    this.send();
                 }
             },
 
             send: function(data){
-                var senddata = JSON.parse(this.dataTemplate.replace(/\'/g,'"'),this._reviver(data))
+                var senddata = {'cmd':this.cmd,'path':this.path,'token':window.homeconAuthentication.token}
+                if(typeof data != undefined){
+                    senddata[this.dataKey] = data
+                }
                 window.homeconWebSocket.send(senddata);
             },
             
@@ -112,25 +98,7 @@
 
             _dataChanged: function(data){
                 if(this.auto && this.observe && window.homeconWebSocket.connected){
-                    this.debounce('sendDataDebounce', this._sendData, 800); 
-                }
-            },
-
-            _reviver: function(data){
-                var that = this;
-                return function(key,val){
-                    if(val=='__data__'){
-                        return data;
-                    }
-                    if(val=='__cmd__'){
-                        return that.cmd;
-                    }
-                    if(val=='__token__'){
-                        return window.homeconAuthentication.token;
-                    }
-                    else{
-                        return val;
-                    }
+                    this.debounce('sendDataDebounce', this._sendData, this.debounce); 
                 }
             },
 

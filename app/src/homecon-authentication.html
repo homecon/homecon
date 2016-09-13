@@ -16,8 +16,8 @@
         </style>
 
         <iron-localstorage name="homecon-token" value="{{token}}" on-iron-localstorage-load-empty="_initializeDefaultToken"></iron-localstorage>
-        <homecon-web-socket-object id="request_token" cmd="request_token" data="{{token}}" data-template="{'cmd': '__cmd__', 'token': '__data__'}"></homecon-web-socket-object>
-        <homecon-web-socket-object id="authenticate" cmd="authenticate" data="{{authenticated}}" data-template="{'cmd': '__cmd__', 'token': '__token__', 'authenticated': '__data__'}"></homecon-web-socket-object>
+        <homecon-web-socket-object id="request_token" cmd="request_token" path="" data="{{token}}" data-key="token"></homecon-web-socket-object>
+        <homecon-web-socket-object id="authenticate" cmd="authenticate" path="" data="{{authenticated}}"></homecon-web-socket-object>
 
     </template>
 

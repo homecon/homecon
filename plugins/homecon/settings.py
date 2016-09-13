@@ -34,7 +34,7 @@ class Settings(object):
         self._db = database
 
         self.ws_commands = {
-            'update_setting': self._ws_update_setting,
+            'setting': self._ws_setting,
         }
 
         # add homecon settings from the database
@@ -95,8 +95,7 @@ class Settings(object):
         if success:
             # update the smarthome
             success = self._update_lat_in_smarthome(value)
-            if success:
-                return value
+            return success
 
         return False
 
@@ -106,19 +105,17 @@ class Settings(object):
         if success:
             # update the smarthome
             success = self._update_lon_in_smarthome(value)
-            if success:
-                return value
+            return success
 
         return False
 
     def update_elev(self,value):
         # update the database
-        success = self._db.settings_PUT(setting='lat',value=value)
+        success = self._db.settings_PUT(setting='elev',value=value)
         if success:
             # update the smarthome
             success = self._update_elev_in_smarthome(value)
-            if success:
-                return value
+            return success
 
         return False
 
@@ -128,8 +125,7 @@ class Settings(object):
         if success:
             # update the smarthome
             success = self._update_tz_in_smarthome(value)
-            if success:
-                return value
+            return success
 
         return False
 
@@ -143,7 +139,8 @@ class Settings(object):
         if hasattr(self._sh, '_lon') and hasattr(self._sh, '_lat') and hasattr(self._sh, '_elev'):
             self._sh.sun = lib.orb.Orb('sun', self._sh._lon, self._sh._lat, self._sh._elev)
             self._sh.moon = lib.orb.Orb('moon', self._sh._lon, self._sh._lat, self._sh._elev)
-        return True
+            return True
+        return False
 
     def _update_lon_in_smarthome(self,value):
         # update the setting in smarthome
@@ -153,8 +150,8 @@ class Settings(object):
         if hasattr(self._sh, '_lon') and hasattr(self._sh, '_lat') and hasattr(self._sh, '_elev'):
             self._sh.sun = lib.orb.Orb('sun', self._sh._lon, self._sh._lat, self._sh._elev)
             self._sh.moon = lib.orb.Orb('moon', self._sh._lon, self._sh._lat, self._sh._elev)
-
-        return True
+            return True
+        return False
 
     def _update_elev_in_smarthome(self,value):
         # update the setting in smarthome
@@ -164,27 +161,24 @@ class Settings(object):
         if hasattr(self._sh, '_lon') and hasattr(self._sh, '_lat') and hasattr(self._sh, '_elev'):
             self._sh.sun = lib.orb.Orb('sun', self._sh._lon, self._sh._lat, self._sh._elev)
             self._sh.moon = lib.orb.Orb('moon', self._sh._lon, self._sh._lat, self._sh._elev)
-
-        return True
+            return True
+        return False
 
     def _update_tz_in_smarthome(self,value):
 
         success = False
 
         # update the setting in smarthome
-        TZ = gettz('UTC')
-        self._sh.tz = 'UTC'
-        os.environ['TZ'] = self._sh.tz
 
         tzinfo = gettz(value)
-        if tzinfo is not None:
-            TZ = tzinfo
+        if not tzinfo == None:
+            self._sh._tzinfo = tzinfo
             self._sh.tz = value
             os.environ['TZ'] = self._sh.tz
             success = True
         else:
             logger.warning("Problem parsing timezone: {}. Using UTC.".format(value))
-        self._sh._tzinfo = TZ
+        
 
         return success
 
@@ -202,7 +196,7 @@ class Settings(object):
             elif setting['setting'] == 'elev':
                 self._update_elev_in_smarthome(float(setting['value']))
             elif setting['setting'] == 'tz':
-                self._update_tz_in_smarthome(float(setting['value']))
+                self._update_tz_in_smarthome(setting['value'])
 
 
 
@@ -211,69 +205,67 @@ class Settings(object):
     # websocket commands
     ############################################################################
 
-    def _ws_update_setting(self,client,data,tokenpayload):
+    def _ws_setting(self,client,data,tokenpayload):
 
         success = False
 
-        if tokenpayload and tokenpayload['permission']>=5 and 'setting' in data and 'val' in data:
-            if data['val'] == None or data['val'] =='':
-                if data['setting'] == 'lat':
+        if tokenpayload and tokenpayload['permission']>=5 and 'path' in data:
+            if 'val' in data:
+                # delete
+                if data['val'] == None:
+                    pass
+
+                # put 
+                elif data['path'] == 'lat':
+                    try:
+                        val = float(data['val'])
+                        success = self.update_lat(val)
+                    except:
+                        pass
                     result = self._sh._lat
-                    success = True
-                elif data['setting'] == 'lon':
+
+                elif data['path'] == 'lon':
+                    try:
+                        val = float(data['val'])
+                        success = self.update_lon(val)
+                    except:
+                        pass
                     result = self._sh._lon
-                    success = True
-                elif data['setting'] == 'elev':
+
+                elif data['path'] == 'elev':
+                    try:
+                        val = float(data['val'])
+                        success = self.update_elev(val)
+                    except:
+                        pass
                     result = self._sh._elev
-                    success = True
-                elif data['setting'] == 'tz':
+
+                elif data['path'] == 'tz':
+                    success = self.update_tz(data['val'])
                     result = self._sh.tz
-                    success = True
 
             else:
-                if data['setting'] == 'lat':
-                    try:
-                        val = float(data['val'])
-                        result = self.update_lat(val)
-                        if not result == False:
-                            success = True
-                    except:
-                        pass
+                # get
+                if data['path'] == 'lat':
                     result = self._sh._lat
-
-                elif data['setting'] == 'lon':
-                    try:
-                        val = float(data['val'])
-                        result = self.update_lon(val)
-                        if not result == False:
-                            success = True
-                    except:
-                        pass
+                    success = True
+                elif data['path'] == 'lon':
                     result = self._sh._lon
-
-                elif data['setting'] == 'elev':
-                    try:
-                        val = float(data['val'])
-                        result = self.update_elev(val)
-                        if not result == False:
-                            success = True
-                    except:
-                        pass
+                    success = True
+                elif data['path'] == 'elev':
                     result = self._sh._elev
-
-
-                elif data['setting'] == 'tz':
-                    result = self.update_tz(data['val'])
-                    if not result == False:
-                        success = True
+                    success = True
+                elif data['path'] == 'tz':
                     result = self._sh.tz
+                    success = True
+                logger.warning(result)
 
         if success:
-            logger.debug("Client {0} updated setting {1} to {2}".format(client.addr,data['setting'],result))
-            return {'cmd':'update_setting', 'setting':data['setting'],'val':result}
+            logger.info("User {} on client {} updated setting {} to {}".format(tokenpayload['userid'],client.addr,data['path'],result))
+            return {'cmd':'setting', 'path':data['path'],'val':result}
         else:
-            logger.debug("Client {0} tried to updated a setting {1}".format(client.addr,data))
-            return {'cmd':'update_setting', 'setting':data['setting'],'val':result}
+            logger.info("User {} on client {} tried to update a setting {}".format(okenpayload['userid'],client.addr,data))
+            return {'cmd':'setting', 'path':data['path'],'val':result}
 
 
 
