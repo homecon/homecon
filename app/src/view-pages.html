@@ -20,249 +20,249 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
 <dom-module id="view-pages">
 
-	<template>
+    <template>
 
-		<style>
-			:host {
-				display: block;
-				color: var(--primary-text-color);
-			}
-			.card {
-				box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.14), 0 1px 5px 0 rgba(0, 0, 0, 0.12), 0 3px 1px -2px rgba(0, 0, 0, 0.2);
-				padding: 16px;
-				margin: 24px;
-				border-radius: 5px;
-				background-color: var(--secondary-background-color);
-				color: #757575;
-			}
+        <style>
+            :host {
+                display: block;
+                color: var(--primary-text-color);
+            }
+            .card {
+                box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.14), 0 1px 5px 0 rgba(0, 0, 0, 0.12), 0 3px 1px -2px rgba(0, 0, 0, 0.2);
+                padding: 16px;
+                margin: 24px;
+                border-radius: 5px;
+                background-color: var(--secondary-background-color);
+                color: #757575;
+            }
 
-			h1 {
-				font-size: 22px;
-				margin: 16px 0;
-				color: #212121;
-			}
-		</style>
+            h1 {
+                font-size: 22px;
+                margin: 16px 0;
+                color: #212121;
+            }
+        </style>
 
-		<iron-localstorage name="sections" value="{{sections}}" on-iron-localstorage-load-empty="_initializeSections"></iron-localstorage>
-		<iron-localstorage name="pages" value="{{pages}}" on-iron-localstorage-load-empty="_initializePages"></iron-localstorage>
+        <iron-localstorage name="sections" value="{{sections}}" on-iron-localstorage-load-empty="_initializeSections"></iron-localstorage>
+        <iron-localstorage name="pages" value="{{pages}}" on-iron-localstorage-load-empty="_initializePages"></iron-localstorage>
 
-		<app-route route="{{route}}" pattern="/:page" data="{{routeData}}" tail="{{subroute}}"></app-route>
+        <app-route route="{{route}}" pattern="/:page" data="{{routeData}}" tail="{{subroute}}"></app-route>
 
-		<iron-pages selected="[[pageid]]" attr-for-selected="pageid">
+        <iron-pages selected="[[pageid]]" attr-for-selected="pageid">
 
-			<template is="dom-repeat" id="pages" items="{{pages}}" as="page">
-				<homecon-page pageid="[[page.id]]">
-					
-					<template is="dom-if" if="[[_filterHome(page)]]">
-						<homecon-page-header title="[[page.title]]" icon="[[page.icon]]"></homecon-page-header>
-					</template>
-					<sortable-js on-update="_updatePageSectionsOrder" disabled="{{!edit}}">
-						<template is="dom-repeat" id="pagesections" items="{{page.pagesections}}" as="pagesection" sort="_sortByOrder" index-as="pagesectionIndex">
-							<homecon-page-section title="{{pagesection.title}}" type="{{pagesection.type}}" pagesection="{{pagesection}}" edit="[[edit]]" on-delete="deletePageSection" >
+            <template is="dom-repeat" id="pages" items="{{pages}}" as="page">
+                <homecon-page pageid="[[page.id]]">
+                    
+                    <template is="dom-if" if="[[_filterHome(page)]]">
+                        <homecon-page-header title="[[page.title]]" icon="[[page.icon]]"></homecon-page-header>
+                    </template>
+                    <sortable-js on-update="_updatePageSectionsOrder" disabled="{{!edit}}">
+                        <template is="dom-repeat" id="pagesections" items="{{page.pagesections}}" as="pagesection" sort="_sortByOrder" index-as="pagesectionIndex">
+                            <homecon-page-section title="{{pagesection.title}}" type="{{pagesection.type}}" pagesection="{{pagesection}}" edit="[[edit]]" on-delete="deletePageSection" >
 
-								<sortable-js on-update="_updateWidgetsOrder" disabled="{{!edit}}">	
-									<template is="dom-repeat" id="widgets" items="{{pagesection.widgets}}" as="widget" sort="_sortByOrder" pagesection-index="[[pagesectionIndex]]">
-										<homecon-widget widget="{{widget}}" on-delete="deleteWidget" edit="[[edit]]"></homecon-widget>
-									</template>
-								</sortable-js>
+                                <sortable-js on-update="_updateWidgetsOrder" disabled="{{!edit}}">    
+                                    <template is="dom-repeat" id="widgets" items="{{pagesection.widgets}}" as="widget" sort="_sortByOrder" pagesection-index="[[pagesectionIndex]]">
+                                        <homecon-widget widget="{{widget}}" on-delete="deleteWidget" edit="[[edit]]"></homecon-widget>
+                                    </template>
+                                </sortable-js>
 
-								<div class="vertical layout center" hidden="[[!edit]]">
-									<paper-button raised noink="true" on-tap="addWidget">add widget</paper-button>
-								</div>
-							</homecon-page-section>
-						</template>
-					</sortable-js>
+                                <div class="vertical layout center" hidden="[[!edit]]">
+                                    <paper-button raised noink="true" on-tap="addWidget">add widget</paper-button>
+                                </div>
+                            </homecon-page-section>
+                        </template>
+                    </sortable-js>
 
-					<div class="vertical layout center" hidden="[[!edit]]">
-						<paper-button raised noink="true" on-tap="addPageSection">add section</paper-button>
-					</div>
-				</homecon-page>
-			</template>
+                    <div class="vertical layout center" hidden="[[!edit]]">
+                        <paper-button raised noink="true" on-tap="addPageSection">add section</paper-button>
+                    </div>
+                </homecon-page>
+            </template>
 
-		</iron-pages>
+        </iron-pages>
 
-	</template>
+    </template>
 
-	<script>
-		Polymer({
-			is: 'view-pages',
-			properties: {
-				route: {
-					type: 'Object',
-				},
-				pageid: {
-					type: 'String',
-					notify: true,
-				},
-				sections: {
-					type: 'Array',
-					notify: true,
-				},
-				pages: {
-					type: 'Array',
-					notify: true,
-				},
-				edit: {
-					type: 'Boolean',
-					value: false,
-				},
-			},
-			observers: [
-				'_routePageChanged(routeData.page,pages)',
-				'_pagesChanged(pages.*)',
-			],
-			ready: function(){
-			},
-			publish: function(){
+    <script>
+        Polymer({
+            is: 'view-pages',
+            properties: {
+                route: {
+                    type: 'Object',
+                },
+                pageid: {
+                    type: 'String',
+                    notify: true,
+                },
+                sections: {
+                    type: 'Array',
+                    notify: true,
+                },
+                pages: {
+                    type: 'Array',
+                    notify: true,
+                },
+                edit: {
+                    type: 'Boolean',
+                    value: false,
+                },
+            },
+            observers: [
+                '_routePageChanged(routeData.page,pages)',
+                '_pagesChanged(pages.*)',
+            ],
+            ready: function(){
+            },
+            publish: function(){
 
-			},
-			load: function(){
+            },
+            load: function(){
 
-			},
-			addPageSection: function(e){
-				var pageindex = parseInt(e.model.__data__.index);
-				var pageid = this.pages[pageindex].id;
+            },
+            addPageSection: function(e){
+                var pageindex = parseInt(e.model.__data__.index);
+                var pageid = this.pages[pageindex].id;
 
-				var pagesections = this.pages[pageindex].pagesections;
-				var order = this._getNextOrder(pagesections);
-				var id = new Date().valueOf();
+                var pagesections = this.pages[pageindex].pagesections;
+                var order = this._getNextOrder(pagesections);
+                var id = new Date().valueOf();
 
-				this.push('pages.'+pageindex+'.pagesections',{'id': id,'page':pageid,'type':'collapsible','title':'','widgets':[],'order':order});
-			},
-			deletePageSection: function(e){
-				e.stopPropagation()
+                this.push('pages.'+pageindex+'.pagesections',{'id': id,'page':pageid,'type':'collapsible','title':'','widgets':[],'order':order});
+            },
+            deletePageSection: function(e){
+                e.stopPropagation()
 
-				var pageindex = this._indexFromId(this.pages,e.target.pagesection.page);
-				var pagesectionindex = this._indexFromId(this.pages[pageindex].pagesections,e.target.pagesection.id);
-				
-				if(pagesectionindex>-1){
-					this.splice('pages.'+pageindex+'.pagesections',pagesectionindex,1);
-				}
-			},
-			_updatePageSectionsOrder: function(e){
-				if(typeof e.from != 'undefined'){
+                var pageindex = this._indexFromId(this.pages,e.target.pagesection.page);
+                var pagesectionindex = this._indexFromId(this.pages[pageindex].pagesections,e.target.pagesection.id);
+                
+                if(pagesectionindex>-1){
+                    this.splice('pages.'+pageindex+'.pagesections',pagesectionindex,1);
+                }
+            },
+            _updatePageSectionsOrder: function(e){
+                if(typeof e.from != 'undefined'){
 
-					var list = e.from.children;
-					for(var i=0; i<list.length; i++){
+                    var list = e.from.children;
+                    for(var i=0; i<list.length; i++){
 
-						if(typeof list[i].pagesection != 'undefined'){
-							list[i].pagesection.order = i;
-						}
-					}
-				}
-			},
-			addWidget: function(e){
-				var pageindex = this.$.pages.modelForElement(e.target).__data__.index;
-				var pagesectionindex = e.model.__data__.pagesectionIndex;
-				var pagesectionid = this.pages[pageindex].pagesections[pagesectionindex].id;
+                        if(typeof list[i].pagesection != 'undefined'){
+                            list[i].pagesection.order = i;
+                        }
+                    }
+                }
+            },
+            addWidget: function(e){
+                var pageindex = this.$.pages.modelForElement(e.target).__data__.index;
+                var pagesectionindex = e.model.__data__.pagesectionIndex;
+                var pagesectionid = this.pages[pageindex].pagesections[pagesectionindex].id;
 
-				
+                
 
-				var widgets = this.pages[pageindex].pagesections[pagesectionindex].widgets;
-				var order = this._getNextOrder(widgets);
-				var id = new Date().valueOf();
+                var widgets = this.pages[pageindex].pagesections[pagesectionindex].widgets;
+                var order = this._getNextOrder(widgets);
+                var id = new Date().valueOf();
 
-				this.push('pages.'+pageindex+'.pagesections.'+pagesectionindex+'.widgets',{'id':id,'pagesection':pagesectionid,'type':'homecon-widget-button','config':{},'order':order});
-			},
-			deleteWidget: function(e){
-				e.stopPropagation()
-				
-				var pageindex = parseInt(e.model.__data__.index);
-				var pagesectionindex = this._indexFromId(this.pages[pageindex].pagesections,e.target.widget.pagesection);
+                this.push('pages.'+pageindex+'.pagesections.'+pagesectionindex+'.widgets',{'id':id,'pagesection':pagesectionid,'type':'homecon-widget-button','config':{},'order':order});
+            },
+            deleteWidget: function(e){
+                e.stopPropagation()
+                
+                var pageindex = parseInt(e.model.__data__.index);
+                var pagesectionindex = this._indexFromId(this.pages[pageindex].pagesections,e.target.widget.pagesection);
 
-				var widgetindex = this._indexFromId(this.pages[pageindex].pagesections[pagesectionindex].widgets,e.target.widget.id);
-				
-				if(widgetindex>-1){
-					this.splice('pages.'+pageindex+'.pagesections.'+pagesectionindex+'.widgets',widgetindex,1);
-				}
-			},
-			_updateWidgetsOrder: function(e){
-				if(typeof e.from != 'undefined'){
+                var widgetindex = this._indexFromId(this.pages[pageindex].pagesections[pagesectionindex].widgets,e.target.widget.id);
+                
+                if(widgetindex>-1){
+                    this.splice('pages.'+pageindex+'.pagesections.'+pagesectionindex+'.widgets',widgetindex,1);
+                }
+            },
+            _updateWidgetsOrder: function(e){
+                if(typeof e.from != 'undefined'){
 
-					var list = e.from.children;
-					for(var i=0; i<list.length; i++){
+                    var list = e.from.children;
+                    for(var i=0; i<list.length; i++){
 
-						if(typeof list[i].widget != 'undefined'){
-							list[i].widget.order = i;
-						}
-					}
-				}
-			},
-			_routePageChanged: function(pageid,pages){
-				this.pageid = pageid || 'home';
-			},
-			_pagesChanged: function(changeRecord){
-				if(changeRecord.path != 'pages'){
-					//this.pages = JSON.parse(JSON.stringify(this.pages));
-				}
-			},
-			_getPages: function(pages){
-				var allpages = [];
-				pages.forEach(function(section){
-					section.pages.forEach(function(page){
-						allpages.push(page);
-					});
-				});
-				return allpages;
-			},
-			_initialize: function(){
-				this._initializeSections();
-				this._initializePages();
-			},
-			_initializeSections: function(){
-				// create a home section
-				this.sections = [{
-					'id': 'home',
-					'title': 'Home',
-					'order': 0
-				}];
-			},
-			_initializePages: function(){
-				// create the home page
-				this.pages = [{
-					'id':'home',
-					'section': 'home',
-					'title':'Home',
-					'icon':'',
-					'order': 0,
-					'pagesections':[{
-						'widgets': []
-					}]
-				}];
-			},
-			_indexFromId: function(items,id){
-				var index = -1;
-				items.forEach(function(item,tempindex){
-					if(item.id==id){
-						index = tempindex;
-					}
-				});
-				return index;
-			},
-			_filterHome: function(item){
-				return item.id != 'home';
-			},
-			_sortByOrder: function(a,b){
-				if(a.order>b.order){
-					return 1;
-				}
-				else if(a.order<b.order){
-					return -1;
-				}
-				else{
-					return 0;
-				}
-			},
-			_getNextOrder(items){
-				var order = 0;
-				if(typeof items != 'undefined'){
-					items.forEach(function(item){
-						order = Math.max(order,item.order+1);
-					});
-				}
-				return order;
-			},
-		});
-	</script>
+                        if(typeof list[i].widget != 'undefined'){
+                            list[i].widget.order = i;
+                        }
+                    }
+                }
+            },
+            _routePageChanged: function(pageid,pages){
+                this.pageid = pageid || 'home';
+            },
+            _pagesChanged: function(changeRecord){
+                if(changeRecord.path != 'pages'){
+                    //this.pages = JSON.parse(JSON.stringify(this.pages));
+                }
+            },
+            _getPages: function(pages){
+                var allpages = [];
+                pages.forEach(function(section){
+                    section.pages.forEach(function(page){
+                        allpages.push(page);
+                    });
+                });
+                return allpages;
+            },
+            _initialize: function(){
+                this._initializeSections();
+                this._initializePages();
+            },
+            _initializeSections: function(){
+                // create a home section
+                this.sections = [{
+                    'id': 'home',
+                    'title': 'Home',
+                    'order': 0
+                }];
+            },
+            _initializePages: function(){
+                // create the home page
+                this.pages = [{
+                    'id':'home',
+                    'section': 'home',
+                    'title':'Home',
+                    'icon':'',
+                    'order': 0,
+                    'pagesections':[{
+                        'widgets': []
+                    }]
+                }];
+            },
+            _indexFromId: function(items,id){
+                var index = -1;
+                items.forEach(function(item,tempindex){
+                    if(item.id==id){
+                        index = tempindex;
+                    }
+                });
+                return index;
+            },
+            _filterHome: function(item){
+                return item.id != 'home';
+            },
+            _sortByOrder: function(a,b){
+                if(a.order>b.order){
+                    return 1;
+                }
+                else if(a.order<b.order){
+                    return -1;
+                }
+                else{
+                    return 0;
+                }
+            },
+            _getNextOrder(items){
+                var order = 0;
+                if(typeof items != 'undefined'){
+                    items.forEach(function(item){
+                        order = Math.max(order,item.order+1);
+                    });
+                }
+                return order;
+            },
+        });
+    </script>
 
 </dom-module>

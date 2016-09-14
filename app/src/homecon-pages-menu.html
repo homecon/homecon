@@ -7,144 +7,144 @@
 <link rel="import" href="homecon-pages-menu-item.html">
 
 <dom-module is="homecon-pages-menu">
-	<template>
-		<style>
-			:host{
-			}
-			paper-button{
-				width: 90%;
-				margin: 8px;
-			}
-		</style>
-		
-		<sortable-js on-update="_updateSectionsOrder" disabled="{{!edit}}">
-			<template is="dom-repeat" id="sections" items="{{sections}}" as="section" filter="_filterHome" sort="_sortByOrder" observe="order">
-				<homecon-pages-menu-section section="{{section}}" on-change-state="changeState" edit="{{edit}}" on-delete="deleteSection">
+    <template>
+        <style>
+            :host{
+            }
+            paper-button{
+                width: 90%;
+                margin: 8px;
+            }
+        </style>
+        
+        <sortable-js on-update="_updateSectionsOrder" disabled="{{!edit}}">
+            <template is="dom-repeat" id="sections" items="{{sections}}" as="section" filter="_filterHome" sort="_sortByOrder" observe="order">
+                <homecon-pages-menu-section section="{{section}}" on-change-state="changeState" edit="{{edit}}" on-delete="deleteSection">
 
-					<sortable-js on-update="_updatePagesOrder" disabled="{{!edit}}">
-						<template is="dom-repeat" id="pages" items="{{pages}}" as="page" filter="{{_sectionPages(section.id)}}" sort="_sortByOrder" observe="order">
-							<homecon-pages-menu-item page="{{page}}" edit="{{edit}}" on-delete="deletePage"></homecon-menu-item>
-						</template>
-					</sortable-js>
+                    <sortable-js on-update="_updatePagesOrder" disabled="{{!edit}}">
+                        <template is="dom-repeat" id="pages" items="{{pages}}" as="page" filter="{{_sectionPages(section.id)}}" sort="_sortByOrder" observe="order">
+                            <homecon-pages-menu-item page="{{page}}" edit="{{edit}}" on-delete="deletePage"></homecon-menu-item>
+                        </template>
+                    </sortable-js>
 
-					<div class="vertical layout center" hidden="{{!edit}}">
-						<paper-button raised noink="true" on-click="addPage">add page</paper-button>
-					</div>
+                    <div class="vertical layout center" hidden="{{!edit}}">
+                        <paper-button raised noink="true" on-click="addPage">add page</paper-button>
+                    </div>
 
-				</homecon-pages-menu-section>
-			</template>
-		</sortable-js>
-		
-		<div class="vertical layout center" hidden="{{!edit}}">
-			<paper-button raised noink="true" on-click="addSection">add section</paper-button>
-		</div>
-		
-		
-	</template>
-	<script>
-		Polymer({
-			is: 'homecon-pages-menu',
-			properties: {
-				sections: {
-					type: 'Array',
-					notify: true
-				},
-				pages: {
-					type: 'Array',
-					notify: true
-				},
-				edit:{
-					type: 'Boolean',
-					value: false
-				}
-			},
-			changeState : function(e){
-				var children = Polymer.dom(this.root).querySelectorAll('homecon-pages-menu-section');
-				for(var i=0;i<children.length;i++){ 
-					children[i].fire('menuChangeState',e.target)
-				}
-			},
-			addSection: function(e){
-				var id = new Date().valueOf();
-				var order = this._getNextOrder(this.sections);
+                </homecon-pages-menu-section>
+            </template>
+        </sortable-js>
+        
+        <div class="vertical layout center" hidden="{{!edit}}">
+            <paper-button raised noink="true" on-click="addSection">add section</paper-button>
+        </div>
+        
+        
+    </template>
+    <script>
+        Polymer({
+            is: 'homecon-pages-menu',
+            properties: {
+                sections: {
+                    type: 'Array',
+                    notify: true
+                },
+                pages: {
+                    type: 'Array',
+                    notify: true
+                },
+                edit:{
+                    type: 'Boolean',
+                    value: false
+                }
+            },
+            changeState : function(e){
+                var children = Polymer.dom(this.root).querySelectorAll('homecon-pages-menu-section');
+                for(var i=0;i<children.length;i++){ 
+                    children[i].fire('menuChangeState',e.target)
+                }
+            },
+            addSection: function(e){
+                var id = new Date().valueOf();
+                var order = this._getNextOrder(this.sections);
 
-				this.push('sections',{'id':id, 'title':'','order':order});
-			},
-			deleteSection: function(e){
-				e.stopPropagation()
-				var sectionindex = parseInt(e.model.__data__.__key__.substr(1));
-				this.splice('sections',sectionindex,1);
-			},
-			_updateSectionsOrder: function(e){
-				if(typeof e.from != 'undefined'){
+                this.push('sections',{'id':id, 'title':'','order':order});
+            },
+            deleteSection: function(e){
+                e.stopPropagation()
+                var sectionindex = parseInt(e.model.__data__.__key__.substr(1));
+                this.splice('sections',sectionindex,1);
+            },
+            _updateSectionsOrder: function(e){
+                if(typeof e.from != 'undefined'){
 
-					var list = e.from.children;
-					for(var i=0; i<list.length; i++){
+                    var list = e.from.children;
+                    for(var i=0; i<list.length; i++){
 
-						if(typeof list[i].section != 'undefined'){
-							list[i].section.order = i;
-						}
-					}
-				}
-			},
-			addPage: function(e){
-				var id = new Date().valueOf();
+                        if(typeof list[i].section != 'undefined'){
+                            list[i].section.order = i;
+                        }
+                    }
+                }
+            },
+            addPage: function(e){
+                var id = new Date().valueOf();
 
-				var sectionindex = parseInt(this.$.sections.modelForElement(e.target).__data__.__key__.substr(1));
-				var sectionid = this.sections[sectionindex].id;
-				
-				var pages = this.pages.filter(function(page){
-					return page.section == sectionid;
-				});
-				var order = this._getNextOrder(pages);
+                var sectionindex = parseInt(this.$.sections.modelForElement(e.target).__data__.__key__.substr(1));
+                var sectionid = this.sections[sectionindex].id;
+                
+                var pages = this.pages.filter(function(page){
+                    return page.section == sectionid;
+                });
+                var order = this._getNextOrder(pages);
 
-				this.push('pages',{'id':id,'section':sectionid,'title':'','icon':'blank','header':{},'pagesections':[],'order':order})
-			},
-			deletePage: function(e){
-				e.stopPropagation()
-				var pageindex = parseInt(e.model.__data__.__key__.substr(1));
-				this.splice('pages',pageindex,1)
-			},
-			_updatePagesOrder: function(e){
-				if(typeof e.from != 'undefined'){
+                this.push('pages',{'id':id,'section':sectionid,'title':'','icon':'blank','header':{},'pagesections':[],'order':order})
+            },
+            deletePage: function(e){
+                e.stopPropagation()
+                var pageindex = parseInt(e.model.__data__.__key__.substr(1));
+                this.splice('pages',pageindex,1)
+            },
+            _updatePagesOrder: function(e){
+                if(typeof e.from != 'undefined'){
 
-					var list = e.from.children;
-					for(var i=0; i<list.length; i++){
+                    var list = e.from.children;
+                    for(var i=0; i<list.length; i++){
 
-						if(typeof list[i].page != 'undefined'){
-							list[i].page.order = i;
-						}
-					}
-				}
-			},
-			_sectionPages: function(sectionid){
-				return function(page){
-					return page.section == sectionid;
-				};
-			},
-			_filterHome: function(item){
-				return item.id != 'home';
-			},
-			_sortByOrder: function(a,b){
-				if(a.order>b.order){
-					return 1;
-				}
-				else if(a.order<b.order){
-					return -1;
-				}
-				else{
-					return 0;
-				}
-			},
-			_getNextOrder(items){
-				var order = 0;
-				if(typeof items != 'undefined'){
-					items.forEach(function(item){
-						order = Math.max(order,item.order+1);
-					});
-				}
-				return order;
-			},
-		});
-	</script>
+                        if(typeof list[i].page != 'undefined'){
+                            list[i].page.order = i;
+                        }
+                    }
+                }
+            },
+            _sectionPages: function(sectionid){
+                return function(page){
+                    return page.section == sectionid;
+                };
+            },
+            _filterHome: function(item){
+                return item.id != 'home';
+            },
+            _sortByOrder: function(a,b){
+                if(a.order>b.order){
+                    return 1;
+                }
+                else if(a.order<b.order){
+                    return -1;
+                }
+                else{
+                    return 0;
+                }
+            },
+            _getNextOrder(items){
+                var order = 0;
+                if(typeof items != 'undefined'){
+                    items.forEach(function(item){
+                        order = Math.max(order,item.order+1);
+                    });
+                }
+                return order;
+            },
+        });
+    </script>
 </dom-module>

@@ -264,7 +264,7 @@ class Settings(object):
             logger.info("User {} on client {} updated setting {} to {}".format(tokenpayload['userid'],client.addr,data['path'],result))
             return {'cmd':'setting', 'path':data['path'],'val':result}
         else:
-            logger.info("User {} on client {} tried to update a setting {}".format(okenpayload['userid'],client.addr,data))
+            logger.debug("User {} on client {} tried to update a setting {}".format(tokenpayload['userid'],client.addr,data))
             return {'cmd':'setting', 'path':data['path'],'val':result}
 
 

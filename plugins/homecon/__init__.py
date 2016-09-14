@@ -26,6 +26,7 @@ import os
 from . import database
 from . import authentication
 from . import settings
+from . import pages
 from . import items
 from . import websocket
 
@@ -47,7 +48,7 @@ logger = logging.getLogger('')
 
 class HomeCon:
 
-    def __init__(self,smarthome,jwt_secret='jwt_secret',db_name='homecon',db_user='homecon',db_pass='db_pass'):
+    def __init__(self,smarthome,jwt_secret='jwt_secret',db_name='homecon',db_user='homecon',db_pass='db_pass',ws_ip='127.0.0.1',ws_port=9024):
         """
         initialize
         """
@@ -61,8 +62,9 @@ class HomeCon:
         self._db = database.Mysql(db_name,db_user,db_pass)
         self._auth = authentication.Authentication(self._db,jwt_secret)
         self._settings = settings.Settings(self._sh,self._db)
+        self._pages = pages.Pages(self._db)
 
-        self._ws = websocket.WebSocket(self._sh, self._auth, ip='127.0.0.1', port=9024)
+        self._ws = websocket.WebSocket(self._sh,self._auth,ip=ws_ip,port=ws_port)
 
 
         """
@@ -94,7 +96,7 @@ class HomeCon:
         self._ws.add_commands(self._auth.ws_commands)
         self._ws.add_commands(self._items.ws_commands)
         self._ws.add_commands(self._settings.ws_commands)
-
+        self._ws.add_commands(self._pages.ws_commands)
         
         """
         config = self._db.GET_JSON( 'config','id=\'1\'' )[0]['config']

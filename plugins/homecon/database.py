@@ -97,6 +97,7 @@ class Mysql(object):
         self._execute_query(cur,'CREATE TABLE IF NOT EXISTS users (id int(11) NOT NULL AUTO_INCREMENT,username varchar(255) NOT NULL,password varchar(255) NOT NULL,permission tinyint(4) NOT NULL DEFAULT \'1\',PRIMARY KEY (id)) ENGINE=InnoDB DEFAULT CHARSET=latin1 AUTO_INCREMENT=1')
         self._execute_query(cur,'CREATE TABLE IF NOT EXISTS group_users (id int(11) NOT NULL AUTO_INCREMENT,`group` int(11) NOT NULL,user int(11) NOT NULL,PRIMARY KEY (id)) ENGINE=InnoDB DEFAULT CHARSET=latin1 AUTO_INCREMENT=1')
         self._execute_query(cur,'CREATE TABLE IF NOT EXISTS items (id int(11) NOT NULL AUTO_INCREMENT,path varchar(255) NOT NULL,conf varchar(255),persist tinyint(4) NOT NULL DEFAULT \'1\',label varchar(63),description varchar(255),unit varchar(63),PRIMARY KEY (id)) ENGINE=InnoDB DEFAULT CHARSET=latin1 AUTO_INCREMENT=1')
+        self._execute_query(cur,'CREATE TABLE IF NOT EXISTS pages (id int(11) NOT NULL AUTO_INCREMENT,name varchar(255) NOT NULL,pages text NOT NULL,active tinyint(4) NOT NULL DEFAULT \'1\',PRIMARY KEY (id)) ENGINE=InnoDB DEFAULT CHARSET=latin1 AUTO_INCREMENT=1')
         
 
         # set location data
@@ -621,6 +622,120 @@ class Mysql(object):
 
 
 
+################################################################################
+# pages
+################################################################################
+    def pages_POST(self,**kwargs):
+        """
+        post to the pages table
+        """
+        success = False
+
+        if 'name' in kwargs and 'pages' in kwargs and 'active' in kwargs:
+            con,cur = self._create_cursor()
+            self._execute_query(cur,'SELECT * FROM pages WHERE name=%s', (kwargs['name'],))
+            if cur.fetchone() == None:
+                self._execute_query(cur,'INSERT INTO pages (name,pages,active) VALUES (%s,%s,%s)', (kwargs['name'],kwargs['pages'],kwargs['active'],))
+                success = True
+            else:
+                logger.warning('name {} allready exists'.format(kwargs['name']))
+                success = False
+
+            con.commit()
+            con.close()
+
+        return success
+
+
+    def pages_GET(self,**kwargs):
+        """
+        get a pages entry or all pages entries
+        """
+
+        result = False
+        if 'id' in kwargs:
+            con,cur = self._create_dict_cursor()
+            self._execute_query(cur,'SELECT id,name,pages,active FROM pages WHERE id=%s', (kwargs['id'],))
+            result = cur.fetchone()
+            con.commit()
+            con.close()
+
+        elif 'name' in kwargs:
+            con,cur = self._create_dict_cursor()
+            self._execute_query(cur,'SELECT id,name,pages,active FROM pages WHERE name=%s', (kwargs['name'],))
+            result = cur.fetchone()
+            con.commit()
+            con.close()
+
+        elif 'active' in kwargs:
+            con,cur = self._create_dict_cursor()
+            self._execute_query(cur,'SELECT id,name,pages,active FROM pages WHERE active=%s', (kwargs['active'],))
+            result = cur.fetchone()
+            con.commit()
+            con.close()
+
+        else:
+            con,cur = self._create_dict_cursor()
+            self._execute_query(cur,'SELECT id,name,pages,active FROM pages')
+            result = list(cur.fetchall())
+            con.commit()
+            con.close()
+
+        return result
+
+
+    def pages_PUT(self,**kwargs):
+        """
+        edit a pages entry
+        """
+        success = False
+
+        pages = self.pages_GET(**kwargs)
+        if not pages == None:
+            fields = []
+            data = [] 
+            if 'name' in kwargs:
+                fields.append('name')
+                data.append(kwargs['name'])
+
+            if 'pages' in kwargs:
+                fields.append('pages')
+                data.append(kwargs['pages'])
+
+            if 'active' in kwargs:
+                fields.append('active')
+                data.append(kwargs['active'])
+
+            data.append(pages['id'])
+
+            con,cur = self._create_cursor()
+            self._execute_query(cur,'UPDATE `pages` SET {} WHERE id=%s'.format(', '.join(['{}=%s'.format(f) for f in fields])), tuple(data) )
+            con.commit()
+            con.close()
+            success = True
+
+        return success
+
+
+    def pages_DELETE(self,**kwargs):
+        """
+        delete a pages entry
+        """
+        success = False
+
+        pages = self.pages_GET(**kwargs)
+        if not pages == None:
+
+            con,cur = self._create_cursor()
+            self._execute_query(cur,"DELETE FROM `pages` WHERE id=%s", (pages['id'],))
+            con.commit()
+            con.close()
+
+            success = True
+
+        return success
+
+
 
 ################################################################################
 # private
@@ -642,7 +757,7 @@ class Mysql(object):
         try:
             cur.execute(query,insert)
         except:
-            logger.error('There was a problem executing query: {}'.format(query))
+            logger.error('There was a problem executing query: {}, {}'.format(query,insert))
 
 
 
