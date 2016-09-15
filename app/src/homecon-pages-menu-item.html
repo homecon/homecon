@@ -8,94 +8,102 @@
 
 
 <dom-module is="homecon-pages-menu-item">
-	<template>
-		<style>
-			:host{
-				display: block;
-				position: relative;
-				width: 100%;
-				color: var(--primary-text-color);
-			}
-			a.item{
-				display: block;
-				position: relative;
-				cursor: pointer;
+    <template>
+        <style>
+            :host{
+                display: block;
+                position: relative;
+                width: 100%;
+                color: var(--primary-text-color);
+            }
+            a.item{
+                display: block;
+                position: relative;
+                cursor: pointer;
 
-				background-color: var(--menu-item-background-color);
-				border-bottom: solid 1px;
-				border-color: var(--menu-item-border-color);
+                background-color: var(--menu-item-background-color);
+                border-bottom: solid 1px;
+                border-color: var(--menu-item-border-color);
 
-				text-decoration: none;
+                text-decoration: none;
 
-				height: 60px;
-			}
-			a.item:hover{
-				background-color: var(--menu-item-background-color-hover);
-			}
-			a.item .icon{
-				height: 100%;
-			}
-			a.item .title{
-				display: inline-block;
-				font-size: 18px;
-				font-family: sans-serif;
-				font-weight: 700;
-				color: var(--menu-item-text-color);
-				text-shadow: 0 1px 0 var(--text-shadow-color);
-				margin-left: 40px;
-				overflow: hidden;
-			}
-			.edit{
-				position: absolute;
-				top: 0px;
-				right: 5px;
-				color: var(--menu-item-text-color);
-			}
-		</style>
-		
-		<a class="item horizontal layout center" href="/pages/[[page.id]]">
-			<img class="icon" src="/images/icon/ffffff/[[page.icon]].png">
-			<h1 class="title">{{page.title}}</h1>
-		</a>
-		
-		<div class="edit" hidden="{{!edit}}">
-			<paper-icon-button icon="editor:mode-edit" noink="true" on-click="openEditDialog"></paper-icon-button>
-		</div>
-		
-		
-		<homecon-edit-dialog id="editDialog" on-save="save">
-			<paper-input label="Title:" value="{{newTitle}}"></paper-input>
-			<homecon-icon-select icon="{{newIcon}}"></homecon-icon-select>
-			<paper-button raised on-click="delete">Delete</paper-button>
-		</homecon-edit-dialog>
+                height: 60px;
+            }
+            a.item:hover{
+                background-color: var(--menu-item-background-color-hover);
+            }
+            a.item .icon{
+                height: 100%;
+            }
+            a.item .title{
+                display: inline-block;
+                font-size: 18px;
+                font-family: sans-serif;
+                font-weight: 700;
+                color: var(--menu-item-text-color);
+                text-shadow: 0 1px 0 var(--text-shadow-color);
+                margin-left: 40px;
+                overflow: hidden;
+            }
+            .edit{
+                position: absolute;
+                top: 0px;
+                right: 5px;
+                color: var(--menu-item-text-color);
+            }
+        </style>
+        
+        <a class="item horizontal layout center" href="/pages/[[page.id]]">
+            <img class="icon" src="/images/icon/ffffff/[[parseIcon(page.icon)]].png">
+            <h1 class="title">{{page.title}}</h1>
+        </a>
+        
+        <div class="edit" hidden="{{!edit}}">
+            <paper-icon-button icon="editor:mode-edit" noink="true" on-click="openEditDialog"></paper-icon-button>
+        </div>
+        
+        
+        <homecon-edit-dialog id="editDialog" on-save="save">
+            <paper-input label="Title:" value="{{newTitle}}"></paper-input>
+            <homecon-icon-select icon="{{newIcon}}"></homecon-icon-select>
+            <paper-button raised on-click="delete">Delete</paper-button>
+        </homecon-edit-dialog>
 
-	</template>
-	<script>
-		Polymer({
-			is: 'homecon-pages-menu-item',
-			properties: {
-				page: {
-					type: 'Object',
-					notify: true,
-				},
-				edit:{
-					type: 'Boolean',
-					value: false
-				}
-			},
-			openEditDialog: function(){
-				this.set('newTitle',this.page.title);
-				this.set('newIcon',this.page.icon);
-				this.$.editDialog.open();
-			},
-			save: function(){
-				this.set('page.title',this.newTitle);
-				this.set('page.icon',this.newIcon);
-				this.$.editDialog.close();
-			},
-			delete: function(){
-				this.fire('delete')
-			},
-		});
-	</script>
+    </template>
+    <script>
+        Polymer({
+            is: 'homecon-pages-menu-item',
+            properties: {
+                page: {
+                    type: 'Object',
+                    notify: true,
+                },
+                edit:{
+                    type: 'Boolean',
+                    value: false
+                }
+            },
+            openEditDialog: function(){
+                this.set('newTitle',this.page.title);
+                this.set('newIcon',this.page.icon);
+                this.$.editDialog.open();
+            },
+            save: function(){
+                this.set('page.title',this.newTitle);
+                this.set('page.icon',this.newIcon);
+                this.$.editDialog.close();
+            },
+            delete: function(){
+                this.fire('delete')
+            },
+            parseIcon: function(icon){
+                if(icon==''){
+                    return 'blank';
+                }
+                else{
+                    return icon;
+                }
+            }
+        });
+    </script>
 </dom-module>

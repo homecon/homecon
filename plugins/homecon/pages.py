@@ -45,15 +45,23 @@ class Pages(object):
 
 
     def _default_pages(self):
-        pages = {
+        data = {
             'id': 1,
             'name': 'default',
             'active': 1,
-            'pages':{
+            'pages': {
                 'sections': [{
                     'id': 'home',
                     'title': 'Home',
                     'order': 0,
+                },{
+                    'id': 'central',
+                    'title': 'Central',
+                    'order': 1,
+                },{
+                    'id': 'groundfloor',
+                    'title': 'Ground floor',
+                    'order': 2,
                 },],
                 'pages':[{
                     'id':'home',
@@ -63,12 +71,48 @@ class Pages(object):
                     'order': 0,
                     'pagesections': [{
                         'widgets': [],
+                    },]
+                },{
+                    'id':'central_heating',
+                    'section': 'central',
+                    'title': 'Heating',
+                    'icon': '',
+                    'order': 0,
+                    'pagesections': [{
+                        'widgets': [],
+                    },]
+                },{
+                    'id':'central_shading',
+                    'section': 'central',
+                    'title': 'Shading',
+                    'icon': '',
+                    'order': 1,
+                    'pagesections': [{
+                        'widgets': [],
+                    },]
+                },{
+                    'id':'groundfloor_living',
+                    'section': 'groundfloor',
+                    'title': 'Living',
+                    'icon': '',
+                    'order': 0,
+                    'pagesections': [{
+                        'widgets': [],
+                    },]
+                },{
+                    'id':'groundfloor_kitchen',
+                    'section': 'groundfloor',
+                    'title': 'Kitchen',
+                    'icon': '',
+                    'order': 1,
+                    'pagesections': [{
+                        'widgets': [],
                     },],
                 },],
             }
         }
 
-        return pages
+        return data
 
 
     def _load_active_pages(self):
@@ -78,6 +122,7 @@ class Pages(object):
         result = self._db.pages_GET(active=1)
         if not result==None:
             result['pages'] = json.loads(result['pages'])
+            logger.warning(result)
             self.data = result
             return True
         return False
@@ -188,7 +233,14 @@ class Pages(object):
 
         success = False
 
-        if tokenpayload and tokenpayload['permission']>=5 and 'path' in data:
+        if tokenpayload and tokenpayload['permission']>=1 and data['path'] == '':
+            result = json.dumps(self.permitted_pages(tokenpayload['userid'],tokenpayload['groupids']))
+            success = True
+            logger.info("User {} on client {} requested pages {}".format(tokenpayload['userid'],client.addr,result))
+            return {'cmd':'pages', 'path':data['path'],'val':result}
+
+
+        elif tokenpayload and tokenpayload['permission']>=5 and 'path' in data:
             if 'val' in data:
                 # delete
                 if data['val'] == None:
@@ -206,7 +258,7 @@ class Pages(object):
 
             else:
                 # get
-                if data['path'] == None:
+                if data['path'] == '':
                     result = json.dumps(self.data)
                     success = True
                 else:
@@ -214,11 +266,6 @@ class Pages(object):
                     success = True
 
                 logger.warning(result)
-
-        elif tokenpayload and tokenpayload['permission']>=1 and 'path' in data:
-            if data['path'] == None:
-                result = json.dumps(self.permitted_pages(tokenpayload['userid'],tokenpayload['groupids']))
-                success = True
 
 
         if success:

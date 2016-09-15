@@ -13,6 +13,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="../bower_components/iron-pages/iron-pages.html">
 <link rel="import" href="../bower_components/Sortable/Sortable.html">
 
+<link rel="import" href="homecon-web-socket-object.html">
 <link rel="import" href="homecon-page.html">
 <link rel="import" href="homecon-page-header.html">
 <link rel="import" href="homecon-page-section.html">
@@ -42,6 +43,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 color: #212121;
             }
         </style>
+        <homecon-web-socket-object id="websocketPages" cmd="pages" data="{{pagesData}}" auto></homecon-web-socket-object>
 
         <iron-localstorage name="sections" value="{{sections}}" on-iron-localstorage-load-empty="_initializeSections"></iron-localstorage>
         <iron-localstorage name="pages" value="{{pages}}" on-iron-localstorage-load-empty="_initializePages"></iron-localstorage>
@@ -108,10 +110,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 },
             },
             observers: [
+                '_pagesDataChanged(pagesData)',
                 '_routePageChanged(routeData.page,pages)',
                 '_pagesChanged(pages.*)',
             ],
             ready: function(){
+                this.$.websocketPages.send();
             },
             publish: function(){
 
@@ -193,7 +197,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             },
             _pagesChanged: function(changeRecord){
                 if(changeRecord.path != 'pages'){
-                    //this.pages = JSON.parse(JSON.stringify(this.pages));
+                   //this.pages = JSON.parse(JSON.stringify(this.pages));
                 }
             },
             _getPages: function(pages){
@@ -205,10 +209,19 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 });
                 return allpages;
             },
+
+            _pagesDataChanged: function(pagesData){
+                data= JSON.parse(pagesData)
+                console.log(data)
+                this.sections = data['sections']
+                this.pages = data['pages']
+            },
+
             _initialize: function(){
                 this._initializeSections();
                 this._initializePages();
             },
+
             _initializeSections: function(){
                 // create a home section
                 this.sections = [{

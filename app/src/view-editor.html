@@ -21,41 +21,50 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
 <dom-module id="view-editor">
 
-	<template>
+    <template>
 
-		<style>
-			:host {
-				display: block;
-			}
-			paper-button{
-				color: var(--button-text-color);
-				background-color: var(--button-background-color);
-			}
-		</style>
+        <style>
+            :host {
+                display: block;
+            }
+            paper-button{
+                color: var(--button-text-color);
+                background-color: var(--button-background-color);
+            }
+        </style>
 
-		<homecon-page>
-			<homecon-page-header title="Editor" icon="pagebuilder_pagebuilder"></homecon-page-header>
-			<homecon-page-section type="raised">
+        <homecon-web-socket-object id="websocketPages" cmd="pages" path="{{path}}" data="{{pagesData}}"></homecon-web-socket-object>
 
-				<paper-toggle-button active={{edit}}>Edit mode</paper-toggle-button>
-				<paper-button raised><iron-icon icon="editor:publish"></iron-icon>publish</paper-button>
-				
-			</homecon-page-section>
-		</homecon-page>
+        <homecon-page>
+            <homecon-page-header title="Editor" icon="pagebuilder_pagebuilder"></homecon-page-header>
+            <homecon-page-section type="raised">
 
-	</template>
+                <paper-toggle-button active={{edit}}>Edit mode</paper-toggle-button>
+                <paper-button raised><iron-icon icon="editor:publish"></iron-icon>publish</paper-button>
+                
+            </homecon-page-section>
+        </homecon-page>
 
-	<script>
-		Polymer({
-			is: 'view-editor',
-			properties: {
-				edit: {
-					type: 'Boolean',
-					value: false,
-					notify: true
-				},
-			},
-		});
-	</script>
+    </template>
+
+    <script>
+        Polymer({
+            is: 'view-editor',
+            properties: {
+                edit: {
+                    type: 'Boolean',
+                    value: false,
+                    notify: true
+                },
+            },
+            _pagesChanged: function(changeRecord){
+                if(changeRecord.path != 'pages'){
+                    this.path = 'default'
+                    //this.$.websocketPages.send()
+                   //this.pages = JSON.parse(JSON.stringify(this.pages));
+                }
+            },
+        });
+    </script>
 
 </dom-module>
