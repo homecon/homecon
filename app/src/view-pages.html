@@ -43,7 +43,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 color: #212121;
             }
         </style>
-        <homecon-web-socket-object id="websocketPages" cmd="pages" data="{{pagesData}}" auto></homecon-web-socket-object>
+        <homecon-web-socket-object id="websocketPages" cmd="pages" path="{{path}}" data="{{pagesData}}" auto></homecon-web-socket-object>
 
         <iron-localstorage name="sections" value="{{sections}}" on-iron-localstorage-load-empty="_initializeSections"></iron-localstorage>
         <iron-localstorage name="pages" value="{{pages}}" on-iron-localstorage-load-empty="_initializePages"></iron-localstorage>
@@ -104,6 +104,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                     type: 'Array',
                     notify: true,
                 },
+                path: {
+                    type: 'String',
+                    value: '',
+                    observer: '_pagesPathChanged',
+                },
                 edit: {
                     type: 'Boolean',
                     value: false,
@@ -115,7 +120,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 '_pagesChanged(pages.*)',
             ],
             ready: function(){
-                this.$.websocketPages.send();
+                //this.$.websocketPages.send();
             },
             publish: function(){
 
@@ -195,26 +200,22 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             _routePageChanged: function(pageid,pages){
                 this.pageid = pageid || 'home';
             },
+
             _pagesChanged: function(changeRecord){
                 if(changeRecord.path != 'pages'){
-                   //this.pages = JSON.parse(JSON.stringify(this.pages));
+                    this.$.websocketPages.send(JSON.stringify({'pages':this.pages,'sections':this.sections}) );
                 }
-            },
-            _getPages: function(pages){
-                var allpages = [];
-                pages.forEach(function(section){
-                    section.pages.forEach(function(page){
-                        allpages.push(page);
-                    });
-                });
-                return allpages;
             },
 
             _pagesDataChanged: function(pagesData){
-                data= JSON.parse(pagesData)
-                console.log(data)
+                var data= JSON.parse(JSON.stringify(pagesData))
                 this.sections = data['sections']
                 this.pages = data['pages']
+            },
+
+
+            _pagesPathChanged: function(pagesPath){
+                this.$.websocketPages.send();
             },
 
             _initialize: function(){

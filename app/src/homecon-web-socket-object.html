@@ -30,7 +30,7 @@
                 },
                 path: {
                     type: String,
-                    value: ''
+                    value: '',
                 },
                 data: {
                     type: Object,
@@ -54,7 +54,7 @@
                 if(this.auto){
                     this.listen(window.homeconWebSocket, 'homecon-web-socket-connected', 'onConnected');
 
-                    // send null to retrieve the current value
+                    // send without val key to start monitoring
                     if(window.homeconWebSocket.connected){
                         this.send();
                     }
@@ -68,7 +68,6 @@
 
                     // avoid looping forever
                     this.observe = false;
-
                     // extract data from the message
                     this.data = d[this.dataKey];
                     this.fire('change',this.data);

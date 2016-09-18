@@ -33,12 +33,15 @@ class Pages(object):
 
         self.ws_commands = {
             'pages': self._ws_pages,
+            'list_pages': self._ws_list_pages,
             'publish_pages': self._ws_publish_pages,
         }
 
         # define default pages
-        self.data = self._default_pages()
-        self.add_pages('default',json.dumps(self.data['pages']),active=1)
+        if self.list_pages() == []:
+            self.data = self._default_pages()
+            self.add_pages('default',json.dumps(self.data['pages']),active=1)
+            self.add_pages('default copy',json.dumps(self.data['pages']),active=0)
 
         # load the homecon pages from the database
         self._load_active_pages()
@@ -139,25 +142,43 @@ class Pages(object):
         return self.data['pages']
 
 
-    def get_pages(self,name):
+    def get_pages(self,id):
         """
         Loads pages by name
 
         Returns
         -------
-        pages : JSON string
+        pages : dict
 
         """
-        result = self._db.pages_GET(name=name)
+
+        result = self._db.pages_GET(id=id)
         if not result==None:
+            result = json.loads(result['pages'])
             return result
 
         return False
 
-
-    def update_pages(self,name,pages):
+    def list_pages(self):
         """
-        Loads pages by name
+        Loads a list of all pages
+
+        Returns
+        -------
+        pageslist : list
+
+        """
+        pageslist = []
+        result = self._db.pages_GET()
+        if not result==False:
+            for p in result:
+                pageslist.append({'id':p['id'],'name':p['name'],'active':p['active']})
+
+        return pageslist
+
+    def update_pages(self,id,pages):
+        """
+        Update pages by name
 
         Parameters
         ----------
@@ -168,7 +189,7 @@ class Pages(object):
         if self.check_pages(pages):
 
             # update the database
-            success = self._db.pages_PUT(name=name,pages=pages)
+            success = self._db.pages_PUT(id=id,pages=pages)
             if success:
                 self._load_active_pages()
                 return success
@@ -233,10 +254,11 @@ class Pages(object):
 
         success = False
 
-        if tokenpayload and tokenpayload['permission']>=1 and data['path'] == '':
-            result = json.dumps(self.permitted_pages(tokenpayload['userid'],tokenpayload['groupids']))
+        if tokenpayload and tokenpayload['permission']>=1 and data['path'] == '' and not 'val' in data:
+            result = self.permitted_pages(tokenpayload['userid'],tokenpayload['groupids'])
             success = True
-            logger.info("User {} on client {} requested pages {}".format(tokenpayload['userid'],client.addr,result))
+
+            logger.info("User {} on client {} loaded pages {}".format(tokenpayload['userid'],client.addr,self.data['id']))
             return {'cmd':'pages', 'path':data['path'],'val':result}
 
 
@@ -245,36 +267,49 @@ class Pages(object):
                 # delete
                 if data['val'] == None:
                     success = True
+                    logger.info("User {} on client {} deleted pages {}".format(tokenpayload['userid'],client.addr,data['path']))
+                    return {'cmd':'pages', 'path':data['path'], 'val':None}
 
                 # put
                 else:
+                    if data['path'] == '':
+                        data['path'] = self.data['id']
+
+                    logger.warning(data['path'])
                     success = self.update_pages(data['path'],data['val'])
-                    result = json.dumps(self.data)
-                
+                    result = self.get_pages(data['path'])
+                    logger.info("User {} on client {} updated pages {}".format(tokenpayload['userid'],client.addr,data['path']))
+                    return {'cmd':'pages', 'path':data['path'], 'val':result}
+
                 # post
                 if not success:
                     success = self.add_pages(data['path'],data['val'])
-                    result = json.dumps(data['val'])
+                    result = self.get_pages(data['path'])
+                    logger.info("User {} on client {} added pages {}".format(tokenpayload['userid'],client.addr,data['path']))
+                    return {'cmd':'pages', 'path':data['path'], 'val':result}
 
             else:
                 # get
                 if data['path'] == '':
-                    result = json.dumps(self.data)
+                    result = self.data['pages']
                     success = True
                 else:
-                    result = json.dumps(self.data)
+                    result = self.get_pages(data['path'])
                     success = True
 
-                logger.warning(result)
+                if success:
+                    logger.info("User {} on client {} loaded pages {}".format(tokenpayload['userid'],client.addr,data['path']))
+                    return {'cmd':'pages', 'path':data['path'], 'val':result}
+        
 
 
-        if success:
-            logger.info("User {} on client {} updated pages {} to {}".format(tokenpayload['userid'],client.addr,data['path'],result))
-            return {'cmd':'pages', 'path':data['path'],'val':result}
-        else:
-            logger.debug("User {} on client {} tried to update a setting {}".format(tokenpayload['userid'],client.addr,data))
-            return {'cmd':'pages', 'path':data['path'],'val':result}
+        logger.debug("User {} on client {} tried to update a setting {}".format(tokenpayload['userid'],client.addr,data))
+        return {'cmd':'pages', 'path':data['path'], 'val':result}
 
+
+    def _ws_list_pages(self,client,data,tokenpayload):
+        result = self.list_pages()
+        return {'cmd':'list_pages', 'path':'', 'val':result}
 
     def _ws_publish_pages(self,client,data,tokenpayload):
         return {'cmd':'publish_pages', 'path':'','val':''}
