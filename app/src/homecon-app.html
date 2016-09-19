@@ -3,12 +3,11 @@
 <link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout-classes.html">
 <link rel="import" href="../bower_components/app-route/app-location.html">
 <link rel="import" href="../bower_components/app-route/app-route.html">
-<link rel="import" href="../bower_components/app-layout/app-drawer-layout/app-drawer-layout.html">
 <link rel="import" href="../bower_components/app-layout/app-drawer/app-drawer.html">
-<link rel="import" href="../bower_components/app-layout/app-scroll-effects/app-scroll-effects.html">
+<!--<link rel="import" href="../bower_components/app-layout/app-scroll-effects/app-scroll-effects.html">-->
 <link rel="import" href="../bower_components/app-layout/app-header/app-header.html">
-<link rel="import" href="../bower_components/app-layout/app-header-layout/app-header-layout.html">
 <link rel="import" href="../bower_components/app-layout/app-toolbar/app-toolbar.html">
+<link rel="import" href="../bower_components/paper-dialog/paper-dialog.html">
 <link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
 <link rel="import" href="../bower_components/iron-pages/iron-pages.html">
 <link rel="import" href="../bower_components/iron-selector/iron-selector.html">
@@ -62,43 +61,91 @@
 
                 color: var(--primary-text-color);
             }
-            app-header{
+
+
+            .header{
+                position: fixed;
+                top: 0;
+                right: 0;
+                left: 0;
                 background-color: var(--toolbar-background-color);
                 color: var(--primary-text-color);
+                box-shadow: 0px 2px 2px 0px rgba(0, 0, 0, 0.5);
+                z-index: 102;
             }
-            app-header paper-icon-button{
+
+            .header.login{
+                display: none;
+            }
+
+            .header paper-icon-button{
                 --paper-icon-button-ink-color: white;
             }
-            app-drawer{
-                width: 40% !important;
-                min-width: 300px;
-                --app-drawer-content-container: {
-                    width: 100%;
-                };
+
+            .header .title{
+                margin-left: 10px;
             }
-            app-toolbar{
-                box-shadow: 0px 2px 2px 0px rgba(0, 0, 0, 0.5);
+
+            .drawer{
+                display: none;
+                z-index: 101;
             }
+
+            .drawer.login{
+                display: none;
+            }
+
             .drawer-content{
                 width: 100%;
                 height: 100%;
                 margin-top: 64px;
                 background-color: var(--secondary-background-color);
-                color: #fff;
                 box-shadow: 2px 2px 2px 0px rgba(0, 0, 0, 0.3);
+                overflow-y: auto;
+                -webkit-overflow-scrolling: touch;
             }
-            .main-content{
-                background-color: var(--primary-background-color);
-            }
-            div.menu{
-                margin-top: 30px;
-            }
-            img.logo{
-                height: 20px;
-            }
-            .hidden{
+
+            .drawer-toggle{
                 display: none;
             }
+
+            .drawer-content.persistent{
+                position: fixed;
+                top: 0;
+                bottom: 0;
+                width: 40%;
+                z-index: 2;
+                overflow-x: hidden;
+                overflow-y: auto;
+            }
+
+            .drawer-content.persistent.login{
+                display: none;
+            }
+
+            .main-content{
+                position: relative;
+                margin-left: 40%;
+                margin-top: 64px;
+                background-color: var(--primary-background-color);
+            }
+
+            .main-content.login{
+                margin-left: 0px;
+            }
+
+            @media (max-width: 767px){
+                .drawer, .drawer-toggle {
+                    display: block;
+                }
+                .main-content {
+                    margin-left: 0px;
+                }
+                .drawer-content.persistent{
+                    display: none;
+                }
+            }
+
         </style>
 
 
@@ -108,50 +155,54 @@
         <app-location route="{{route}}"></app-location>
         <app-route route="{{route}}" pattern="/:page" data="{{routeData}}" tail="{{subroute}}"></app-route>
         
-        <app-header-layout class="fullbleed">
+        <!-- Header -->
+        <app-header fixed shadow class$="header [[loginClass]]">
+            <app-toolbar>
+                <paper-icon-button class="drawer-toggle" icon="icons:menu" on-tap="_toggleDrawer"></paper-icon-button>
+                <div title class="title">Homecon</div>
+                <div class="flex"></div>
+                <paper-icon-button class="menu-toggle" icon="icons:more-vert" on-tap="_toggleMenu"></paper-icon-button>
+            </app-toolbar>
 
-            <app-header fixed class$="[[menuClass]]">
-                <app-toolbar>
-                    <paper-icon-button icon="menu" on-tap="toggleDrawer" class$="[[menuButtonClass]]"></paper-icon-button>
-                    <div title >Homecon</div>
-                </app-toolbar>
-            </app-header>
+            <!-- Menu -->
+            <paper-dialog id="menu" class$="menu" horizontal-align="right" vertical-allign="top">
+                <homecon-menu-item title="Settings" icon="homecon_gears" href="/settings"></homecon-menu-item>
+                <homecon-menu-item title="Users" icon="homecon_users" href="/users"></homecon-menu-item>
+                <homecon-menu-item title="Editor" icon="pagebuilder_pagebuilder" href="/editor"></homecon-menu-item>
+                <homecon-menu-item title="Logout" icon="homecon_logout" href="#" on-tap="logout"></homecon-menu-item>
+            </paper-dialog>
 
-            <app-drawer-layout id="pagesDrawerLayout" class$="[[drawerWidthClass]]">
-
-                <!-- Drawer -->
-                <app-drawer id="pagesDrawer" class$="[[menuClass]]">
-                    <div class=drawer-content>
-
-                        <!-- Pages menu -->
-                        <homecon-pages-menu sections="{{homeconSections}}" pages="{{homeconPages}}" edit="[[edit]]"></homecon-pages-menu>
-
-                        <!-- Menu -->
-                        <div class="menu">
-                            <homecon-menu-item title="Settings" icon="homecon_gears" href="/settings"></homecon-menu-item>
-                            <homecon-menu-item title="Users" icon="homecon_users" href="/users"></homecon-menu-item>
-                            <homecon-menu-item title="Editor" icon="pagebuilder_pagebuilder" href="/editor"></homecon-menu-item>
-                            <homecon-menu-item title="Logout" icon="homecon_logout" href="#" on-tap="logout"></homecon-menu-item>
-                        </div>
-
-                    </div>
-                </app-drawer>
+        </app-header>
 
 
+        <!-- Drawer -->
+        <app-drawer id="drawer" class$="drawer [[loginClass]]">
+            <div class="drawer-content">
 
-                <!-- Main -->
-                <div class="main-content">
-                    <iron-pages selected="[[page]]" attr-for-selected="name">
-                        <view-login name="login"></view-login>
-                        <view-pages name="pages" authenticated="[[authenticated]]" route="[[subroute]]" sections="{{homeconSections}}" pages="{{homeconPages}}" path="{{pagesPath}}" pageid="{{pageid}}" edit="[[edit]]"></view-pages>
-                        <view-settings name="settings"></view-settings>
-                        <view-editor name="editor" edit="{{edit}}" pages-path="{{pagesPath}}"></view-editor>
-                        <view-users name="users"></view-users>
-                    </iron-pages>
-                </div>
+                <!-- Pages menu -->
+                <homecon-pages-menu sections="{{homeconSections}}" pages="{{homeconPages}}" edit="[[edit]]"></homecon-pages-menu>
 
-            </app-drawer-layout>
-        </app-header-layout>
+            </div>
+        </app-drawer>
+
+        <div class$="drawer-content persistent [[loginClass]]">
+            <!-- Pages menu -->
+            <homecon-pages-menu sections="{{homeconSections}}" pages="{{homeconPages}}" edit="[[edit]]"></homecon-pages-menu>
+        </div>
+
+
+        <!-- Main -->
+        <div class$="main-content [[loginClass]]">
+            <iron-pages selected="[[page]]" attr-for-selected="name">
+                <view-login name="login"></view-login>
+                <view-pages name="pages" authenticated="[[authenticated]]" route="[[subroute]]" sections="{{homeconSections}}" pages="{{homeconPages}}" path="{{pagesPath}}" pageid="{{pageid}}" edit="[[edit]]"></view-pages>
+                <view-settings name="settings"></view-settings>
+                <view-editor name="editor" edit="{{edit}}" pages-path="{{pagesPath}}"></view-editor>
+                <view-users name="users"></view-users>
+            </iron-pages>
+        </div>
+
+
     </template>
 
     <script>
@@ -172,26 +223,26 @@
 
         ready: function(){
 
-            // hide the menu button when the drawer is persistent
-            var that = this;
-            this.$.pagesDrawer.addEventListener('opened-changed',function(e){
-                if(!that.$.pagesDrawer.persistent){
-                    that.menuButtonClass = '';
-                }
-                else{
-                    that.menuButtonClass = 'hidden';
-                }
-            });
-        },
-
-        toggleDrawer: function(){
-            if(!this.$.pagesDrawer.persistent){
-                this.$.pagesDrawer.toggle();
-            }
         },
 
         logout: function(){
             window.homeconAuthentication.logout()
+        },
+
+        _closeDrawer: function(){
+            this.$.drawer.close();
+        },
+
+        _toggleDrawer: function(){
+            this.$.drawer.toggle();
+        },
+
+        _closeMenu: function(){
+            this.$.menu.close();
+        },
+
+        _toggleMenu: function(){
+            this.$.menu.toggle();
         },
 
         _routePageChanged: function(page){
@@ -202,17 +253,15 @@
 
             this.page = page || 'pages';
             if(this.page=='login'){
-                this.menuClass = 'hidden'
+                this.loginClass = 'login'
             }
             else{
-                this.menuClass = ''
+                this.loginClass = ''
             }
 
-            // close the pagesdrawer if it is not persistent
-            if(!this.$.pagesDrawer.persistent){
-                this.$.pagesDrawer.close();
-            }
-
+            this._closeDrawer();
+            this._closeMenu();
+            window.scrollTo(0, 0);
         },
 
         _authenticatedChanged: function(authenticated){

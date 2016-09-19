@@ -77,7 +77,12 @@
 
             logout: function(){
                 console.log('logout');
-                window.homeconWebSocket.send({'cmd':'logout','token':this.token});
+                if(this.connected){
+                    window.homeconWebSocket.send({'cmd':'logout','token':this.token});
+                }
+                else{
+                    this.token = '';
+                }
             },
 
             _connectedChanged: function(connected){
