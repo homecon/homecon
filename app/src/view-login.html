@@ -89,6 +89,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             },
             requestToken: function(){
                 window.homeconWebSocket.send({'cmd':'request_token','username':this.username,'password':this.password})
+
+                // clear the password and username from memory
+                this.username = '';
+                this.password = '';
             },
             loginFormSubmit: function(){
                 this.$.loginform.submit();

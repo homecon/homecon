@@ -114,20 +114,25 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                     value: false,
                 },
             },
+
             observers: [
                 '_pagesDataChanged(pagesData)',
                 '_routePageChanged(routeData.page,pages)',
                 '_pagesChanged(pages.*)',
             ],
+
             ready: function(){
                 //this.$.websocketPages.send();
             },
+
             publish: function(){
 
             },
+
             load: function(){
 
             },
+
             addPageSection: function(e){
                 var pageindex = parseInt(e.model.__data__.index);
                 var pageid = this.pages[pageindex].id;
@@ -138,6 +143,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
                 this.push('pages.'+pageindex+'.pagesections',{'id': id,'page':pageid,'type':'collapsible','title':'','widgets':[],'order':order});
             },
+
             deletePageSection: function(e){
                 e.stopPropagation()
 
@@ -148,6 +154,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                     this.splice('pages.'+pageindex+'.pagesections',pagesectionindex,1);
                 }
             },
+
             _updatePageSectionsOrder: function(e){
                 if(typeof e.from != 'undefined'){
 
@@ -160,6 +167,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                     }
                 }
             },
+
             addWidget: function(e){
                 var pageindex = this.$.pages.modelForElement(e.target).__data__.index;
                 var pagesectionindex = e.model.__data__.pagesectionIndex;
@@ -173,6 +181,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
                 this.push('pages.'+pageindex+'.pagesections.'+pagesectionindex+'.widgets',{'id':id,'pagesection':pagesectionid,'type':'homecon-widget-button','config':{},'order':order});
             },
+
             deleteWidget: function(e){
                 e.stopPropagation()
                 
@@ -185,6 +194,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                     this.splice('pages.'+pageindex+'.pagesections.'+pagesectionindex+'.widgets',widgetindex,1);
                 }
             },
+
             _updateWidgetsOrder: function(e){
                 if(typeof e.from != 'undefined'){
 
@@ -197,6 +207,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                     }
                 }
             },
+
             _routePageChanged: function(pageid,pages){
                 this.pageid = pageid || 'home';
             },
@@ -231,6 +242,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                     'order': 0
                 }];
             },
+
             _initializePages: function(){
                 // create the home page
                 this.pages = [{
@@ -244,6 +256,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                     }]
                 }];
             },
+
             _indexFromId: function(items,id){
                 var index = -1;
                 items.forEach(function(item,tempindex){
@@ -253,9 +266,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 });
                 return index;
             },
+
             _filterHome: function(item){
                 return item.id != 'home';
             },
+
             _sortByOrder: function(a,b){
                 if(a.order>b.order){
                     return 1;
@@ -267,6 +282,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                     return 0;
                 }
             },
+
             _getNextOrder(items){
                 var order = 0;
                 if(typeof items != 'undefined'){

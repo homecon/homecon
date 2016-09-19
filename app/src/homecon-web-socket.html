@@ -30,7 +30,7 @@
         </style>
 
         <iron-localstorage name="homecon-websocket-settings" value="{{settings}}" on-iron-localstorage-load-empty="_initializeDefaultSettings"></iron-localstorage>
-        <web-socket id="webSocket" url="{{_websocketUrl(settings.address,settings.port)}}" auto json on-open="_handleOpen"on-close="_handleClose" on-message="_handleMessage" on-error="_handleError"></web-socket>
+        <web-socket id="webSocket" url="{{_websocketUrl(settings.address,settings.port)}}" json on-open="_handleOpen"on-close="_handleClose" on-message="_handleMessage" on-error="_handleError"></web-socket>
         
 
         <paper-dialog id="settings" no-cancel-on-outside-click no-cancel-on-esc-key entry-animation="scale-up-animation" exit-animation="fade-out-animation">
@@ -73,6 +73,10 @@
 
                 // attatch the component to the window
                 window.homeconWebSocket = this;
+            },
+
+            attached: function(){
+                this.connect()
             },
 
             send: function(data){
