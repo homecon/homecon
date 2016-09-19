@@ -89,6 +89,7 @@ class Authentication(object):
             'update_user_permission': self._ws_update_user_permission,
             'request_token': self._ws_request_token,
             'authenticate': self._ws_authenticate,
+            'logout': self._ws_logout,
         }
 
 
@@ -299,8 +300,24 @@ class Authentication(object):
         return {'cmd':'authenticate', 'val': success}
 
 
+    def _ws_logout(self,client,data,tokenpayload):
+        """
+        a client must supply a token to smarthome to recieve incomming messages
+        """
+        success = False
 
-    
+        if tokenpayload:
+            client.user = None
+            logger.debug("Client {0} logged out".format(client.addr))
+            success = True
+
+        else:
+            logger.debug("Client {0} tried to logout".format(client.addr))
+
+        
+        return {'cmd':'logout', 'val': success}
+
+
 
 
 

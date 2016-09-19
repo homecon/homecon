@@ -43,7 +43,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 color: #212121;
             }
         </style>
-        <homecon-web-socket-object id="websocketPages" cmd="pages" path="{{path}}" data="{{pagesData}}" auto></homecon-web-socket-object>
+        <homecon-web-socket-object id="websocketPages" cmd="pages" path="{{path}}" data="{{pagesData}}"></homecon-web-socket-object>
 
         <iron-localstorage name="sections" value="{{sections}}" on-iron-localstorage-load-empty="_initializeSections"></iron-localstorage>
         <iron-localstorage name="pages" value="{{pages}}" on-iron-localstorage-load-empty="_initializePages"></iron-localstorage>
@@ -89,6 +89,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         Polymer({
             is: 'view-pages',
             properties: {
+                authenticated: {
+                    type: 'Boolean',
+                    value: false,
+                    observer: '_authenticatedChanged',
+                },
                 route: {
                     type: 'Object',
                 },
@@ -122,14 +127,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             ],
 
             ready: function(){
-                //this.$.websocketPages.send();
-            },
-
-            publish: function(){
-
-            },
-
-            load: function(){
 
             },
 
@@ -205,6 +202,18 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                             list[i].widget.order = i;
                         }
                     }
+                }
+            },
+
+            _authenticatedChanged: function(authenticated){
+                if(authenticated){
+                    this.$.websocketPages.send();
+                }
+                else{
+                    this.path = '';
+                    this.pages = [];
+                    this.sections = [];
+                    this.pagesData = {};
                 }
             },
 

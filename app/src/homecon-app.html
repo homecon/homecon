@@ -131,7 +131,7 @@
                             <homecon-menu-item title="Settings" icon="homecon_gears" href="/settings"></homecon-menu-item>
                             <homecon-menu-item title="Users" icon="homecon_users" href="/users"></homecon-menu-item>
                             <homecon-menu-item title="Editor" icon="pagebuilder_pagebuilder" href="/editor"></homecon-menu-item>
-                            <homecon-menu-item title="Logout" icon="homecon_logout" href="/logout"></homecon-menu-item>
+                            <homecon-menu-item title="Logout" icon="homecon_logout" href="#" on-tap="logout"></homecon-menu-item>
                         </div>
 
                     </div>
@@ -143,7 +143,7 @@
                 <div class="main-content">
                     <iron-pages selected="[[page]]" attr-for-selected="name">
                         <view-login name="login"></view-login>
-                        <view-pages name="pages" route="[[subroute]]" sections="{{homeconSections}}" pages="{{homeconPages}}" path="{{pagesPath}}" pageid="{{pageid}}" edit="[[edit]]"></view-pages>
+                        <view-pages name="pages" authenticated="[[authenticated]]" route="[[subroute]]" sections="{{homeconSections}}" pages="{{homeconPages}}" path="{{pagesPath}}" pageid="{{pageid}}" edit="[[edit]]"></view-pages>
                         <view-settings name="settings"></view-settings>
                         <view-editor name="editor" edit="{{edit}}" pages-path="{{pagesPath}}"></view-editor>
                         <view-users name="users"></view-users>
@@ -163,15 +163,11 @@
                 reflectToAttribute: true,
                 observer: '_pageChanged'
             },
-            settings: {
-                type: Object,
-                value: {}
-            }
         },
 
         observers: [
             '_routePageChanged(routeData.page)',
-            '_authenticatedChanged(authenticated)'
+            '_authenticatedChanged(authenticated)',
         ],
 
         ready: function(){
@@ -194,11 +190,15 @@
             }
         },
 
+        logout: function(){
+            window.homeconAuthentication.logout()
+        },
+
         _routePageChanged: function(page){
 
-            //if(!this.authenticated && page != 'login'){
-            //    this.set('routeData.page','login');
-            //}
+            if(!this.authenticated && page != 'login'){
+                this.set('routeData.page','login');
+            }
 
             this.page = page || 'pages';
             if(this.page=='login'){
@@ -229,11 +229,6 @@
             this.importHref( this.resolveUrl('view-' + page + '.html'), null, null, true );
         },
 
-        _sectionFilter: function(section){
-            return function(page){
-                return (page.section==section)
-            }
-        },
         
     });
     </script>

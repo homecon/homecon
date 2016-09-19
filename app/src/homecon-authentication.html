@@ -53,12 +53,31 @@
             ready: function(){
                 // attatch the component to the window
                 window.homeconAuthentication = this;
+
+                this.listen(window.homeconWebSocket, 'homecon-web-socket-message', 'onMessage');
+            },
+            
+            onMessage: function(e,d){
+                if(d['cmd'] == 'request_token'){
+                    this.token = d['token'];
+                }
+                if(d['cmd'] == 'authenticate'){
+                    this.authenticated = d['val'];
+                }
+                if(d['cmd'] == 'logout'){
+                    this.token = '';
+                }
             },
 
             login: function(){
                 // Send a message to HomeCon
                 console.log('login');
-                window.homeconWebSocket.send({'cmd':'authenticate','token':this.token})
+                window.homeconWebSocket.send({'cmd':'authenticate','token':this.token});
+            },
+
+            logout: function(){
+                console.log('logout');
+                window.homeconWebSocket.send({'cmd':'logout','token':this.token});
             },
 
             _connectedChanged: function(connected){
