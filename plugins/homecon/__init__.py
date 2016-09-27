@@ -28,6 +28,7 @@ from . import authentication
 from . import settings
 from . import pages
 from . import items
+from . import measurements
 from . import websocket
 
 """
@@ -63,6 +64,7 @@ class HomeCon:
         self._auth = authentication.Authentication(self._db,jwt_secret)
         self._settings = settings.Settings(self._sh,self._db)
         self._pages = pages.Pages(self._db)
+        self._measurements = measurements.Measurements(self._db)
 
         self._ws = websocket.WebSocket(self._sh,self._auth,ip=ws_ip,port=ws_port)
 
@@ -97,6 +99,7 @@ class HomeCon:
         self._ws.add_commands(self._items.ws_commands)
         self._ws.add_commands(self._settings.ws_commands)
         self._ws.add_commands(self._pages.ws_commands)
+        self._ws.add_commands(self._measurements.ws_commands)
         
         """
         config = self._db.GET_JSON( 'config','id=\'1\'' )[0]['config']

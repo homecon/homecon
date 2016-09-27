@@ -92,12 +92,13 @@ class Mysql(object):
         # perpare the database
         con,cur = self._create_cursor()
         
-        self._execute_query(cur,'CREATE TABLE IF NOT EXISTS settings (id int(11) NOT NULL AUTO_INCREMENT,setting varchar(255)  NOT NULL,value varchar(255) NOT NULL,PRIMARY KEY (id)) ENGINE=InnoDB DEFAULT CHARSET=latin1 AUTO_INCREMENT=1')
-        self._execute_query(cur,'CREATE TABLE IF NOT EXISTS groups (id int(11) NOT NULL AUTO_INCREMENT,groupname varchar(255) NOT NULL,permission tinyint(4) NOT NULL DEFAULT \'1\',PRIMARY KEY (id)) ENGINE=InnoDB DEFAULT CHARSET=latin1 AUTO_INCREMENT=1')
-        self._execute_query(cur,'CREATE TABLE IF NOT EXISTS users (id int(11) NOT NULL AUTO_INCREMENT,username varchar(255) NOT NULL,password varchar(255) NOT NULL,permission tinyint(4) NOT NULL DEFAULT \'1\',PRIMARY KEY (id)) ENGINE=InnoDB DEFAULT CHARSET=latin1 AUTO_INCREMENT=1')
-        self._execute_query(cur,'CREATE TABLE IF NOT EXISTS group_users (id int(11) NOT NULL AUTO_INCREMENT,`group` int(11) NOT NULL,user int(11) NOT NULL,PRIMARY KEY (id)) ENGINE=InnoDB DEFAULT CHARSET=latin1 AUTO_INCREMENT=1')
-        self._execute_query(cur,'CREATE TABLE IF NOT EXISTS items (id int(11) NOT NULL AUTO_INCREMENT,path varchar(255) NOT NULL,conf varchar(255),persist tinyint(4) NOT NULL DEFAULT \'1\',label varchar(63),description varchar(255),unit varchar(63),PRIMARY KEY (id)) ENGINE=InnoDB DEFAULT CHARSET=latin1 AUTO_INCREMENT=1')
-        self._execute_query(cur,'CREATE TABLE IF NOT EXISTS pages (id int(11) NOT NULL AUTO_INCREMENT,name varchar(255) NOT NULL,pages text NOT NULL,active tinyint(4) NOT NULL DEFAULT \'1\',PRIMARY KEY (id)) ENGINE=InnoDB DEFAULT CHARSET=latin1 AUTO_INCREMENT=1')
+        self._execute_query(cur,'CREATE TABLE IF NOT EXISTS settings     (id int(11) NOT NULL AUTO_INCREMENT, `setting` varchar(255)  NOT NULL, value varchar(255) NOT NULL, PRIMARY KEY (id)) ENGINE=InnoDB DEFAULT CHARSET=latin1 AUTO_INCREMENT=1')
+        self._execute_query(cur,'CREATE TABLE IF NOT EXISTS groups       (id int(11) NOT NULL AUTO_INCREMENT, `groupname` varchar(255) NOT NULL, permission tinyint(4) NOT NULL DEFAULT \'0\', PRIMARY KEY (id)) ENGINE=InnoDB DEFAULT CHARSET=latin1 AUTO_INCREMENT=1')
+        self._execute_query(cur,'CREATE TABLE IF NOT EXISTS users        (id int(11) NOT NULL AUTO_INCREMENT, `username` varchar(255) NOT NULL, password varchar(255) NOT NULL, permission tinyint(4) NOT NULL DEFAULT \'0\', PRIMARY KEY (id)) ENGINE=InnoDB DEFAULT CHARSET=latin1 AUTO_INCREMENT=1')
+        self._execute_query(cur,'CREATE TABLE IF NOT EXISTS group_users  (id int(11) NOT NULL AUTO_INCREMENT, `group` int(11) NOT NULL, user int(11) NOT NULL, PRIMARY KEY (id)) ENGINE=InnoDB DEFAULT CHARSET=latin1 AUTO_INCREMENT=1')
+        self._execute_query(cur,'CREATE TABLE IF NOT EXISTS pages        (id int(11) NOT NULL AUTO_INCREMENT, `name` varchar(255) NOT NULL, pages text NOT NULL, active tinyint(4) NOT NULL DEFAULT \'1\', PRIMARY KEY (id)) ENGINE=InnoDB DEFAULT CHARSET=latin1 AUTO_INCREMENT=1')
+        self._execute_query(cur,'CREATE TABLE IF NOT EXISTS items        (id int(11) NOT NULL AUTO_INCREMENT, `path` varchar(255) NOT NULL, conf varchar(255), persist tinyint(4) NOT NULL DEFAULT \'1\', label varchar(63), description varchar(255), unit varchar(63), PRIMARY KEY (id)) ENGINE=InnoDB DEFAULT CHARSET=latin1 AUTO_INCREMENT=1')
+        self._execute_query(cur,'CREATE TABLE IF NOT EXISTS measurements (id int(11) NOT NULL AUTO_INCREMENT, `time` bigint(20) NOT NULL, path varchar(255) NOT NULL, value float, PRIMARY KEY (id)) ENGINE=InnoDB DEFAULT CHARSET=latin1 AUTO_INCREMENT=1')
         
 
         # set location data
@@ -620,6 +621,129 @@ class Mysql(object):
 
         return success
 
+
+################################################################################
+# measurements
+################################################################################
+    def measurements_POST(self,**kwargs):
+        """
+        post to the measurements table
+        """
+        success = False
+
+        if 'time' in kwargs and 'path' in kwargs and 'value' in kwargs:
+            con,cur = self._create_cursor()
+            
+            self._execute_query(cur,'INSERT INTO measurements (time,path,value) VALUES (%s,%s,%s)', (kwargs['time'],kwargs['path'],kwargs['value'],))
+            success = True
+
+            con.commit()
+            con.close()
+
+        return success
+
+
+    def measurements_GET(self,**kwargs):
+        """
+        get a pages entry or all pages entries
+        """
+
+        result = False
+        if 'id' in kwargs:
+            con,cur = self._create_dict_cursor()
+            self._execute_query(cur,'SELECT id,time,path,value FROM measurements WHERE id=%s', (kwargs['id'],))
+            result = cur.fetchone()
+            con.commit()
+            con.close()
+
+        elif 'path' in kwargs:
+            con,cur = self._create_dict_cursor()
+            self._execute_query(cur,'SELECT id,time,path,value FROM measurements WHERE path=%s ORDER BY id DESC LIMIT %s', (kwargs['path'],60*24*7,))
+            result = cur.fetchone()
+            con.commit()
+            con.close()
+
+        elif 'time' in kwargs:
+            con,cur = self._create_dict_cursor()
+            self._execute_query(cur,'SELECT id,time,path,value FROM measurements WHERE time=%s', (kwargs['time'],))
+            result = cur.fetchone()
+            con.commit()
+            con.close()
+
+        elif 'time_ge' in kwargs and 'time_le' in kwargs:
+            con,cur = self._create_dict_cursor()
+            self._execute_query(cur,'SELECT id,time,path,value FROM measurements WHERE time>=%s AND time <=%s', (kwargs['time_ge'],kwargs['time_le'],))
+            result = cur.fetchone()
+            con.commit()
+            con.close()
+
+        elif 'time_ge' in kwargs:
+            con,cur = self._create_dict_cursor()
+            self._execute_query(cur,'SELECT id,time,path,value FROM measurements WHERE time>=%s', (kwargs['time_ge'],))
+            result = cur.fetchone()
+            con.commit()
+            con.close()
+
+        else:
+            con,cur = self._create_dict_cursor()
+            self._execute_query(cur,'SELECT id,time,path,value FROM measurements')
+            result = list(cur.fetchall())
+            con.commit()
+            con.close()
+
+        return result
+
+
+    def measurements_PUT(self,**kwargs):
+        """
+        edit a pages entry
+        """
+        success = False
+
+        measurements = self.measurements_GET(**kwargs)
+        if not pages == None:
+            fields = []
+            data = [] 
+            if 'name' in kwargs:
+                fields.append('name')
+                data.append(kwargs['name'])
+
+            if 'pages' in kwargs:
+                fields.append('pages')
+                data.append(kwargs['pages'])
+
+            if 'active' in kwargs:
+                fields.append('active')
+                data.append(kwargs['active'])
+
+            data.append(pages['id'])
+
+            con,cur = self._create_cursor()
+            self._execute_query(cur,'UPDATE `measurements` SET {} WHERE id=%s'.format(', '.join(['{}=%s'.format(f) for f in fields])), tuple(data) )
+            con.commit()
+            con.close()
+            success = True
+
+        return success
+
+
+    def measurements_DELETE(self,**kwargs):
+        """
+        delete a pages entry
+        """
+        success = False
+
+        measurements = self.measurements_GET(**kwargs)
+        if not pages == None:
+
+            con,cur = self._create_cursor()
+            self._execute_query(cur,"DELETE FROM `measurements` WHERE id=%s", (pages['id'],))
+            con.commit()
+            con.close()
+
+            success = True
+
+        return success
 
 
 ################################################################################
