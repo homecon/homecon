@@ -1,0 +1,8 @@
+2016-09-29 21:17:39,016    MainThread      INFO     HomeCon started
+2016-09-29 21:17:39,016    MainThread      DEBUG    Using selector: EpollSelector
+2016-09-29 21:17:39,066    MainThread      INFO     HomeCon Initialized
+2016-09-29 21:17:39,906    MainThread      DEBUG    Connecting new client
+2016-09-29 21:17:39,906    MainThread      DEBUG    Incomming connection from 127.0.0.1:34158
+2016-09-29 21:17:39,907    MainThread      DEBUG    Client on 127.0.0.1:34158 sent {'somekey': 'somevalue'}
+2016-09-29 21:17:39,907    MainThread      DEBUG    Client on 127.0.0.1:34158 sent {'event': 'someevent', 'key': 'value', 'foo': 'bar'}
+2016-09-29 21:17:39,908    MainThread      DEBUG    Disconnected 127.0.0.1:34158
