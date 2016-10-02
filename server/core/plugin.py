@@ -15,7 +15,7 @@ class Event(object):
 
 
 
-class Plugin(object):
+class BasePlugin(object):
     def __init__(self,homecon):
         """
         Initialize a plugin instance
@@ -28,7 +28,6 @@ class Plugin(object):
         """
 
         self.homecon = homecon
-        self.logger = self.homecon.logger
 
         self.initialize()
 
@@ -72,21 +71,27 @@ class Plugin(object):
         pass
 
 
-    def fire(self,event_type,data):
+    def fire(self,event_type,data,source=None):
         """
         Add the event to the que
         
         Parameters
         ----------
+        event_type : string
+            the event type
+
         data : dict
             the data describing the event
         
-        target : string or list of strings
-            a target or list of targets for the event
+        source : string
+            the source of the event
             
         """
 
-        self.homecon.fire( Event(event_type,data,self) )
+        if source==None:
+            source = self
+
+        self.homecon.fire( Event(event_type,data,source) )
 
 
     def _listen(self,event):
@@ -108,4 +113,25 @@ class Plugin(object):
             self.listen(event)
     
     
-    
+class Plugin(BasePlugin):
+    def __init__(self,homecon):
+        """
+        Initialize a plugin instance
+        
+        Parameters
+        ---------
+        homecon : Homecon object
+            the main homecon object
+            
+        """
+
+        self.homecon = homecon
+
+        self.states = self.homecon.states
+        self.websocket = self.homecon.websocket
+
+        self.initialize()
+
+
+
+

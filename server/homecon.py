@@ -13,6 +13,28 @@ import plugins
 
 
 
+################################################################################
+# create the logger
+################################################################################
+
+logFormatter = logging.Formatter('%(asctime)s    %(threadName)-15.15s %(levelname)-8.8s    %(message)s')
+logger = logging.getLogger()
+
+basedir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
+if not os.path.exists( os.path.join(basedir,'log')):
+    os.makedirs(os.path.join(basedir,'log'))
+
+if not 'homecon.fileHandler' in [lh.name for lh in logger.handlers]:
+    fileHandler = logging.FileHandler(os.path.join(basedir,'log/homecon.log'))
+    fileHandler.setFormatter(logFormatter)
+    fileHandler.set_name('homecon.fileHandler')
+    logger.addHandler(fileHandler)
+
+
+
+################################################################################
+# HomeCon object
+################################################################################
 class HomeCon(object): 
     def __init__(self,debug=False):
         """
@@ -20,27 +42,18 @@ class HomeCon(object):
         """
 
         ########################################################################
-        # create the logger
+        # set logging properties
         ########################################################################
-        logFormatter = logging.Formatter('%(asctime)s    %(threadName)-15.15s %(levelname)-5.5s    %(message)s')
-        self.logger = logging.getLogger()
         if debug:
-            self.logger.setLevel(logging.DEBUG)
-
-            consoleHandler = logging.StreamHandler()
-            consoleHandler.setFormatter(logFormatter)
-            self.logger.addHandler(consoleHandler)
+            logger.setLevel(logging.DEBUG)
+            if not 'homecon.consoleHandler' in [lh.name for lh in logger.handlers]:
+                consoleHandler = logging.StreamHandler()
+                consoleHandler.setFormatter(logFormatter)
+                consoleHandler.set_name('homecon.consoleHandler')
+                logger.addHandler(consoleHandler)
 
         else:
-            self.logger.setLevel(logging.INFO)
-
-
-        basedir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
-        if not os.path.exists( os.path.join(basedir,'log')):
-            os.makedirs(os.path.join(basedir,'log'))
-        fileHandler = logging.FileHandler(os.path.join(basedir,'log/homecon.log'))
-        fileHandler.setFormatter(logFormatter)
-        self.logger.addHandler(fileHandler)
+            logger.setLevel(logging.INFO)
 
         logging.info('HomeCon started')
 
@@ -51,24 +64,21 @@ class HomeCon(object):
         self._loop = asyncio.get_event_loop()
 
 
+        ########################################################################
+        # start core components
+        ########################################################################
+        self.states = core.states.States(self)
+        self.websocket = core.websocket.Websocket(self)
+        
 
         ########################################################################
         # start plugins
         ########################################################################
         self.plugins = []
-
-
-        # core plugins
-        self.start_plugin('server',package='core')
-        self.start_plugin('states',package='core')
-        
-        
-        # optional plugins
         self.start_plugin('knx')  # this should be done dynamically from the database
 
 
-
-        self.logger.info('HomeCon Initialized')
+        logging.info('HomeCon Initialized')
 
 
 
@@ -96,6 +106,7 @@ class HomeCon(object):
 
 
     def fire(self,event):
+        logging.debug(event)
         self._loop.call_soon_threadsafe(self.listen,event)
 
 
@@ -108,13 +119,27 @@ class HomeCon(object):
 
 
     def main(self):
-
         # Start the event loop
+        logging.debug('Starting event loop')
         self._loop.run_forever()
-        self._loop.close()
+        #self._loop.close()
 
+
+    def stop(self):
+        logging.info('Stopping HomeCon')
+        
+        # cancel all tasks
+        for task in asyncio.Task.all_tasks():
+            task.cancel()
+
+        # stop the websocket
+        self.websocket.stop()
+
+        logging.info('Homecon stopped\n\n')
 
 
 if __name__ == '__main__':
     hc = HomeCon(debug=True)
     hc.main()
+    hc.stop()
+

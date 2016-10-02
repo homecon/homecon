@@ -20,39 +20,44 @@
 import unittest
 import time
 import json
+import sys
+import os
 
-from common import HomeConTestCase, Client
+sys.path.append(os.path.abspath('..'))
+from homecon import HomeCon
 
+class StatesTests(unittest.TestCase):
 
-class WebsocketTests(HomeConTestCase):
+    def test_add_state(self):
+        hc = HomeCon()
+        hc.states.add('mystate')
 
-    def test_send_message(self):
-        
-        self.start_homecon(print_log=True)
-        try:
-            client = Client('ws://127.0.0.1:9024')
-
-            client.send({'somekey':'somevalue'})
-            client.send({'event':'state_set','path':'somepath','value':1})
-
-            client.close()
-
-        except:
-            pass
-
-        self.stop_homecon()
-        self.save_homecon_log()
-
-        # check for success in the log
-        with open(self.logfile) as f:
-            success = False
-            for l in f:
-                if 'sent {\'somekey\': \'somevalue\'}' in l:
-                    success = True
-
-            self.assertEqual(success,True)
+        self.assertEqual(hc.states['mystate'].path, 'mystate')
+        hc.stop()
 
 
+    def test_children(self):
+        hc = HomeCon()
+        hc.states.add('parent')
+        hc.states.add('parent.child0')
+        hc.states.add('parent.child1')
+
+        children = hc.states['parent'].children
+
+        self.assertIn(hc.states['parent.child0'], children)
+        self.assertIn(hc.states['parent.child1'], children)
+        hc.stop()
+
+
+    def test_parent(self):
+        hc = HomeCon()
+        hc.states.add('parent')
+        hc.states.add('parent.child')
+
+        parent = hc.states['parent.child'].parent
+
+        self.assertEqual(hc.states['parent'], parent)
+        hc.stop()
 
 if __name__ == '__main__':
     # run tests

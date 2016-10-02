@@ -1,26 +1,30 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-import time
+import logging
 import json
 import asyncio
+
 import asyncws
 
 
 
-from .plugin import Plugin,Event
+from .plugin import BasePlugin
 
-class Server(Plugin):
+
+class Websocket(BasePlugin):
     def initialize(self):
 
         self.clients = []
+        self.server = None
+
         clients_lock = asyncio.Lock()
 
         def connect_client(websocket):
             """
             connect a client and listen for messages
             """
-            self.logger.debug( 'Connecting new client' )
+            logging.debug( 'Connecting new client' )
 
             with (yield from clients_lock):
                 self.clients.append(websocket)
@@ -28,7 +32,7 @@ class Server(Plugin):
             address = websocket.writer.get_extra_info('peername')
             address = '{}:{}'.format(address[0],address[1])
 
-            self.logger.debug('Incomming connection from {}'.format(address))
+            logging.debug('Incomming connection from {}'.format(address))
 
             try:
                 while True:
@@ -45,20 +49,21 @@ class Server(Plugin):
                             self.fire(data['event'],data)
 
                     except:
-                        self.logger.debug('A message was recieved but could not be handled')
+                        logging.debug('A message was recieved but could not be handled')
                     
 
             finally:
                 with (yield from clients_lock):
                     self.clients.remove(websocket)
 
-                self.logger.debug('Disconnected {}'.format(address))
+                logging.debug('Disconnected {}'.format(address))
 
 
         # create a server and run it in the event loop
-        server = asyncws.start_server(connect_client, '127.0.0.1', 9024)
-        self.homecon._loop.run_until_complete( server )
+        servergenerator = asyncws.start_server(connect_client, host='127.0.0.1', port=9024, loop=self.homecon._loop)
+        self.server = self.homecon._loop.run_until_complete( servergenerator )
 
+        logging.info('Websocket started')
 
 
     def log_data(self,address,data):
@@ -80,7 +85,7 @@ class Server(Plugin):
             if key in data:
                 data[key] = '***'
 
-        self.logger.debug('Client on {} sent {}'.format(address,data))
+        logging.debug('Client on {} sent {}'.format(address,data))
 
 
     def listen(self,event):
@@ -91,5 +96,10 @@ class Server(Plugin):
                 client.send(event.data)
 
 
+    def stop(self):
+        if self.server is not None:
+            self.server.close()
+            self.server = None
+            logging.info('Websocket stopped')
 
 

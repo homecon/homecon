@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-import time
+import logging
 
 from .. import Plugin
 
@@ -14,7 +14,7 @@ class Knx(Plugin):
             # what is the group address of the item
             item = event.data['item']
             if 'knx_ga' in item.config:
-                self.homecon.logger.debug('{} changed, write {} to knx ga: {}'.format(item.path,item.value,item.config['knx_ga']))
+                logging.debug('{} changed, write {} to knx ga: {}'.format(item.path,item.value,item.config['knx_ga']))
         
 
 
