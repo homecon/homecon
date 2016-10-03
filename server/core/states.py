@@ -54,6 +54,10 @@ class States(BasePlugin):
             logging.error('State {} is not defined'.format(path))
             return None
 
+    def listen(self,event):
+        if event.type == 'state_add':
+            self.add_state(event.data['path'],event.data['config'])
+
 
     def __getitem__(self,path):
         return self.get(path)
@@ -113,6 +117,14 @@ class State(object):
     def get(self):
         return self._value
 
+
+    @property
+    def value(self):
+        return self._value
+
+    @value.setter
+    def value(self, value):
+        self.set(value)
 
     @property
     def path(self):

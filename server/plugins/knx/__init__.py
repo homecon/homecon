@@ -10,11 +10,11 @@ class Knx(Plugin):
 
     def listen(self,event):
 
-        if event.data['cmd'] == 'item_changed':
+        if event.type == 'state_changed':
             # what is the group address of the item
-            item = event.data['item']
-            if 'knx_ga' in item.config:
-                logging.debug('{} changed, write {} to knx ga: {}'.format(item.path,item.value,item.config['knx_ga']))
+            state = event.data['state']
+            if 'knx_ga' in state.config:
+                logging.debug('{} changed, write {} to knx ga: {}'.format(state.path,state.value,state.config['knx_ga']))
         
 
 

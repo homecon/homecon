@@ -20,10 +20,12 @@ class Websocket(BasePlugin):
 
         clients_lock = asyncio.Lock()
 
+
         def connect_client(websocket):
             """
             connect a client and listen for messages
             """
+            
             logging.debug( 'Connecting new client' )
 
             with (yield from clients_lock):
@@ -61,7 +63,8 @@ class Websocket(BasePlugin):
 
         # create a server and run it in the event loop
         servergenerator = asyncws.start_server(connect_client, host='127.0.0.1', port=9024, loop=self.homecon._loop)
-        self.server = self.homecon._loop.run_until_complete( servergenerator )
+        self.server = asyncio.get_event_loop().run_until_complete( servergenerator )
+
 
         logging.info('Websocket started')
 
@@ -98,6 +101,9 @@ class Websocket(BasePlugin):
 
     def stop(self):
         if self.server is not None:
+            # send a shutting down message to all clients
+            
+            # close the server
             self.server.close()
             self.server = None
             logging.info('Websocket stopped')

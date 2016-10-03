@@ -23,41 +23,85 @@ import json
 import sys
 import os
 
+from common import HomeConTestCase, Client
+
 sys.path.append(os.path.abspath('..'))
 from homecon import HomeCon
 
-class StatesTests(unittest.TestCase):
 
+
+class StatesTests(HomeConTestCase):
+    
     def test_add_state(self):
-        hc = HomeCon()
+        hc = self.start_homecon()
         hc.states.add('mystate')
+        self.stop_homecon(hc)
 
         self.assertEqual(hc.states['mystate'].path, 'mystate')
-        hc.stop()
+    
 
-
+    
     def test_children(self):
-        hc = HomeCon()
+        hc = self.start_homecon()
         hc.states.add('parent')
         hc.states.add('parent.child0')
         hc.states.add('parent.child1')
+        self.stop_homecon(hc)
 
         children = hc.states['parent'].children
 
         self.assertIn(hc.states['parent.child0'], children)
         self.assertIn(hc.states['parent.child1'], children)
-        hc.stop()
-
-
+    
+    
     def test_parent(self):
-        hc = HomeCon()
+        hc = self.start_homecon()
         hc.states.add('parent')
         hc.states.add('parent.child')
+        self.stop_homecon(hc)
 
         parent = hc.states['parent.child'].parent
 
         self.assertEqual(hc.states['parent'], parent)
-        hc.stop()
+    
+    def test_set(self):
+
+        hc = self.start_homecon()
+        hc.states.add('somestate')
+
+        hc.states['somestate'].value = 1
+
+        self.stop_homecon(hc)
+        self.save_homecon_log()
+
+        self.assertEqual(hc.states['somestate'].value,1)
+
+        # check for success in the log
+        with open(self.logfile) as f:
+            success = False
+            for l in f:
+                if 'Event: state_changed' in l:
+                    success = True
+
+            self.assertEqual(success,True)
+        
+
+
+class StatesWebsocketTests(HomeConTestCase):
+
+    def test_add_state(self):
+        
+        hc = self.start_homecon(print_log=True)
+
+        client = Client('ws://127.0.0.1:9024')
+        client.send({'event':'state_add','path':'somepath','config':{}})
+        client.close()
+
+        self.stop_homecon(hc)
+        self.save_homecon_log()
+
+
+
 
 if __name__ == '__main__':
     # run tests

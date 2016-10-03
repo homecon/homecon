@@ -28,20 +28,17 @@ class WebsocketTests(HomeConTestCase):
 
     def test_send_message(self):
         
-        self.start_homecon(print_log=True)
-        try:
-            client = Client('ws://127.0.0.1:9024')
+        hc = self.start_homecon()
+        client = Client('ws://127.0.0.1:9024')
 
-            client.send({'somekey':'somevalue'})
-            client.send({'event':'state_set','path':'somepath','value':1})
+        client.send({'somekey':'somevalue'})
+        client.send({'event':'state_set','path':'somepath','value':1})
 
-            client.close()
+        client.close()
 
-        except:
-            pass
-
-        self.stop_homecon()
+        self.stop_homecon(hc)
         self.save_homecon_log()
+
 
         # check for success in the log
         with open(self.logfile) as f:

@@ -7,7 +7,6 @@ import time
 import asyncio
 import logging
 
-
 import core
 import plugins
 
@@ -36,7 +35,7 @@ if not 'homecon.fileHandler' in [lh.name for lh in logger.handlers]:
 # HomeCon object
 ################################################################################
 class HomeCon(object): 
-    def __init__(self,debug=False):
+    def __init__(self,loglevel='info',printlog=False):
         """
         initialize a homecon object
         """
@@ -44,16 +43,17 @@ class HomeCon(object):
         ########################################################################
         # set logging properties
         ########################################################################
-        if debug:
-            logger.setLevel(logging.DEBUG)
+        if printlog:
             if not 'homecon.consoleHandler' in [lh.name for lh in logger.handlers]:
                 consoleHandler = logging.StreamHandler()
                 consoleHandler.setFormatter(logFormatter)
                 consoleHandler.set_name('homecon.consoleHandler')
                 logger.addHandler(consoleHandler)
 
-        else:
+        if loglevel=='info':
             logger.setLevel(logging.INFO)
+        else:
+            logger.setLevel(logging.DEBUG)
 
         logging.info('HomeCon started')
 
@@ -61,8 +61,12 @@ class HomeCon(object):
         ########################################################################
         # create the event loop
         ########################################################################
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
         self._loop = asyncio.get_event_loop()
 
+        if loglevel == 'debug':
+            self._loop.set_debug(True)
 
         ########################################################################
         # start core components
@@ -122,8 +126,8 @@ class HomeCon(object):
         # Start the event loop
         logging.debug('Starting event loop')
         self._loop.run_forever()
-        #self._loop.close()
 
+        logging.info('Homecon stopped\n\n')
 
     def stop(self):
         logging.info('Stopping HomeCon')
@@ -133,13 +137,14 @@ class HomeCon(object):
             task.cancel()
 
         # stop the websocket
-        self.websocket.stop()
+        self._loop.call_soon_threadsafe(self.websocket.stop)
 
-        logging.info('Homecon stopped\n\n')
+        # stop the event loop
+        self._loop.stop()
+        time.sleep(0.1)
 
 
 if __name__ == '__main__':
     hc = HomeCon(debug=True)
     hc.main()
-    hc.stop()
 

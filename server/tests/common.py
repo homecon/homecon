@@ -19,14 +19,18 @@
 
 import unittest
 import subprocess
+import threading
 import time
 import os
+import sys
 import shutil
 import pymysql
 import json
+
 from websocket import create_connection
 
-
+sys.path.append(os.path.abspath('..'))
+from homecon import HomeCon
 
 class HomeConTestCase(unittest.TestCase):
     
@@ -102,25 +106,31 @@ class HomeConTestCase(unittest.TestCase):
         starts homecon
         """
 
-        if print_log:
-            self.hc_process = subprocess.Popen(['python', os.path.join(self.homecondir,'homecon.py'), '-d'])
-        else:
-            self.fnull = open(os.devnull, 'w')
-            self.hc_process = subprocess.Popen(['python', os.path.join(self.homecondir,'homecon.py'), '-d'], stdout=self.fnull, stderr=subprocess.STDOUT)
-        
-        time.sleep(sleep)
+        temp = {}
+        def target():
+            temp['hc'] = HomeCon(loglevel='debug',printlog=print_log)
+            temp['hc'].main()
 
-    def stop_homecon(self):
+        hc_thread = threading.Thread(target=target)
+        hc_thread.start()
+
+        while not 'hc' in temp:
+            time.sleep(0.1) # starting homecon takes some time
+
+        hc = temp['hc']
+
+
+        return hc
+
+    def stop_homecon(self,hc,sleep=1):
         """
         stop homecon
         """
-        self.hc_process.terminate()
-        time.sleep(0) # stopping homecon takes some time
+        hc._loop.call_soon_threadsafe( hc.stop() )
 
-        try:
-            self.fnull.close()
-        except:
-            pass
+        while hc._loop and hc._loop.is_running():
+            time.sleep(0.1) # stopping homecon takes some time
+
 
     def save_homecon_log(self,append=''):
         """
