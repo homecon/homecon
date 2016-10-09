@@ -1,7 +1,7 @@
 HomeCon
 =======
 
-Control your home instalation using state of the art control algorithms and visualise the results
+Control your home installation using state of the art control algorithms and visualise the results
 
 HomeCon is intended to have the conn over the entire energy management of your home and direct it in the best possible way.
 Not only HomeCon has the conn but you do. As the software is entirely local (no information gets sent from your home to the web) you can rest assured that your privacy is respected.
