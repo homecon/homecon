@@ -24,7 +24,7 @@ import time
 import os
 import sys
 import shutil
-import pymysql
+import sqlite3
 import json
 
 from websocket import create_connection
@@ -84,22 +84,18 @@ class HomeConTestCase(unittest.TestCase):
 
 
     def create_database_connection(self):
-        con = pymysql.connect('localhost', 'homecon_test', 'passwordusedfortesting', 'homecon_test')
-        cur = con.cursor()
-
-        return con,cur
+        connection = sqlite3.connect('homecon')
+    #    con = pymysql.connect('localhost', 'homecon_test', 'passwordusedfortesting', 'homecon_test')
+    #    cur = con.cursor()
+    #
+        return connection
 
 
     def clear_database(self):
-        con,cur = self.create_database_connection()
-        cur.execute('SHOW TABLES')
-        result = cur.fetchall()
-
-        for table in result:
-            cur.execute('DROP TABLE {}'.format(table[0]))
-
-        con.commit()
-        con.close()
+        try:
+            os.remove('homecontest.db')
+        except:
+            pass
 
     def start_homecon(self,sleep=1,clear_log=True,print_log=False):
         """

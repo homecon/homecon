@@ -8,7 +8,6 @@ class Event(object):
         self.source = source
 
 
-
     def __str__(self):
         return 'Event: {}, data: {}, source: {}'.format(self.type,self.data.__repr__(),self.source.__class__.__name__)
 

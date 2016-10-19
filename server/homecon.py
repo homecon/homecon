@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+import sys
 import os
 import inspect
 import time
@@ -145,6 +146,21 @@ class HomeCon(object):
 
 
 if __name__ == '__main__':
-    hc = HomeCon(debug=True)
-    hc.main()
+
+    kwargs = {}
+    if 'debug' in sys.argv:
+        kwargs = {
+            'loglevel': 'debug',
+            'printlog': True,
+        }
+
+    # start homecon
+    print('Starting HomeCon')
+    print('Press Ctrl + C to stop')
+    print('')
+    hc = HomeCon(**kwargs)
+    try:
+        hc.main()
+    except KeyboardInterrupt:
+        hc.stop()
 
