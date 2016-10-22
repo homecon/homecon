@@ -35,12 +35,12 @@ class DatabaseTests(HomeConTestCase):
 
     def test_connection(self):
         self.clear_database()
-        db = core.database.Database(database='homecontest.db')
+        db = core.database.Database(database='homecon.db')
         con = db.create_connection()
 
     def test_create_table(self):
         self.clear_database()
-        db = core.database.Database(database='homecontest.db')
+        db = core.database.Database(database='homecon.db')
         users = core.database.Table(db,'users',[
             {'name':'username',   'type':'char(255)', 'null': '',  'default':'',  'unique':'UNIQUE'},
             {'name':'password',   'type':'char(255)', 'null': '',  'default':'',  'unique':''},
@@ -49,7 +49,7 @@ class DatabaseTests(HomeConTestCase):
         
     def test_post(self):
         self.clear_database()
-        db = core.database.Database(database='homecontest.db')
+        db = core.database.Database(database='homecon.db')
         users = core.database.Table(db,'users',[
             {'name':'username',   'type':'char(255)', 'null': '',  'default':'',  'unique':'UNIQUE'},
             {'name':'password',   'type':'char(255)', 'null': '',  'default':'',  'unique':''},
@@ -63,7 +63,7 @@ class DatabaseTests(HomeConTestCase):
 
     def test_get(self):
         self.clear_database()
-        db = core.database.Database(database='homecontest.db')
+        db = core.database.Database(database='homecon.db')
         users = core.database.Table(db,'users',[
             {'name':'username',   'type':'char(255)', 'null': '',  'default':'',  'unique':'UNIQUE'},
             {'name':'password',   'type':'char(255)', 'null': '',  'default':'',  'unique':''},
@@ -74,12 +74,12 @@ class DatabaseTests(HomeConTestCase):
         users.POST(username='user2',password='test',permission=1)
         users.POST(username='user3',password='test',permission=1)
         
-        db_users = users.GET(columns=['username','permission'])
-        self.assertEqual(db_users,[{'username': 'user1', 'permission': 1}, {'username': 'user2', 'permission': 1}, {'username': 'user3', 'permission': 1}])
+        db_users = users.GET(columns=['id','username','permission'])
+        self.assertEqual(db_users,[{'id':1,'username': 'user1', 'permission': 1}, {'id':2,'username': 'user2', 'permission': 1}, {'id':3,'username': 'user3', 'permission': 1}])
 
     def test_put(self):
         self.clear_database()
-        db = core.database.Database(database='homecontest.db')
+        db = core.database.Database(database='homecon.db')
         users = core.database.Table(db,'users',[
             {'name':'username',   'type':'char(255)', 'null': '',  'default':'',  'unique':'UNIQUE'},
             {'name':'password',   'type':'char(255)', 'null': '',  'default':'',  'unique':''},
@@ -100,7 +100,7 @@ class DatabaseTests(HomeConTestCase):
 
     def test_reconnect_to_table(self):
         self.clear_database()
-        db = core.database.Database(database='homecontest.db')
+        db = core.database.Database(database='homecon.db')
         users = core.database.Table(db,'users',[
             {'name':'username',   'type':'char(255)', 'null': '',  'default':'',  'unique':'UNIQUE'},
             {'name':'password',   'type':'char(255)', 'null': '',  'default':'',  'unique':''},
@@ -114,7 +114,7 @@ class DatabaseTests(HomeConTestCase):
         del users
         del db
 
-        db = core.database.Database(database='homecontest.db')
+        db = core.database.Database(database='homecon.db')
         users = core.database.Table(db,'users')
 
         db_users = users.GET(columns=['username','permission'])

@@ -48,7 +48,7 @@ class Websocket(BasePlugin):
                         self.log_data(address,data)
                         
                         if 'event' in data:
-                            self.fire(data['event'],data)
+                            self.fire(data['event'],data,client=websocket)
 
                     except:
                         logging.debug('A message was recieved but could not be handled')
@@ -98,6 +98,13 @@ class Websocket(BasePlugin):
             for client in self.clients:
                 client.send(event.data)
 
+        if event.type == 'send_to':
+            # send the event to some clients
+            clients = event.data['clients']
+            del event.data['clients']
+
+            for client in clients:
+                client.send(event.data)
 
     def stop(self):
         if self.server is not None:

@@ -93,7 +93,7 @@ class HomeConTestCase(unittest.TestCase):
 
     def clear_database(self):
         try:
-            os.remove('homecontest.db')
+            os.remove('homecon.db')
         except:
             pass
 

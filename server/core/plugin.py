@@ -2,14 +2,14 @@
 # -*- coding: utf-8 -*-
 
 class Event(object):
-    def __init__(self,event_type,data,source):
+    def __init__(self,event_type,data,source,client):
         self.type = event_type
         self.data = data
         self.source = source
-
+        self.client = client
 
     def __str__(self):
-        return 'Event: {}, data: {}, source: {}'.format(self.type,self.data.__repr__(),self.source.__class__.__name__)
+        return 'Event: {}, data: {}, source: {}, client: {}'.format(self.type,self.data.__repr__(),self.source.__class__.__name__,self.client.__repr__())
 
 
 
@@ -70,7 +70,7 @@ class BasePlugin(object):
         pass
 
 
-    def fire(self,event_type,data,source=None):
+    def fire(self,event_type,data,source=None,client=None):
         """
         Add the event to the que
         
@@ -90,7 +90,7 @@ class BasePlugin(object):
         if source==None:
             source = self
 
-        self.homecon.fire( Event(event_type,data,source) )
+        self.homecon.fire( Event(event_type,data,source,client) )
 
 
     def _listen(self,event):

@@ -12,7 +12,6 @@ class States(BasePlugin):
     def initialize(self):
         self._states = {}
         self._db = database.Database(database='homecon.db')
-        con = self._db
         self._db_states = database.Table(self._db,'states',[
             {'name':'path',        'type':'char(255)',  'null': '',  'default':'',  'unique':'UNIQUE'},
             {'name':'config',      'type':'char(255)',  'null': '',  'default':'',  'unique':''},
@@ -65,8 +64,17 @@ class States(BasePlugin):
             return None
 
     def listen(self,event):
-        if event.type == 'state_add':
+        """
+        Listen for events
+
+        """
+
+        if event.type == 'add_state':
             self.add_state(event.data['path'],event.data['config'])
+
+        if event.type == 'state_changed':
+            pass
+
 
 
     def __getitem__(self,path):

@@ -100,7 +100,7 @@ class Table(object):
         
         # create the table if it does not exist
         if BACKEND == 'sqlite3':
-            query = 'CREATE TABLE IF NOT EXISTS {} (id int, PRIMARY KEY (id))'.format(self.name)
+            query = 'CREATE TABLE IF NOT EXISTS {} (id INTEGER PRIMARY KEY)'.format(self.name)
         else:
             query = 'CREATE TABLE IF NOT EXISTS {} (id int(11) NOT NULL AUTO_INCREMENT, PRIMARY KEY (id))'.format(self.name)
         self.database.execute_query( query )
@@ -142,7 +142,7 @@ class Table(object):
             self.columns.append('id')
 
     
-    def GET(self,columns=None,order=None,**kwargs):
+    def GET(self,columns=None,order=None,desc=False,limit=None,**kwargs):
         """
         Gets data from the database
         """
@@ -171,9 +171,18 @@ class Table(object):
                     
             where = 'WHERE ' + ' AND '.join(where)
             
-        data = tuple(data)            
+        data = tuple(data)
                     
         query = 'SELECT {} FROM {} {}'.format(columns,self.name,where)
+        
+        if not order is None:
+            query = query + ' ORDER BY '+order
+            if desc:
+                query = query + ' DESC'
+
+        if not limit is None:
+            query = query + ' LIMIT {}'.format(limit)
+
         cursor = self.database.execute_query( query, data )
         
         if cursor == None:
