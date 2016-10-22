@@ -75,7 +75,8 @@ class HomeCon(object):
         self.authentication = core.authentication.Authentication(self)
         self.states = core.states.States(self)
         self.websocket = core.websocket.Websocket(self)
-        
+
+        self.coreplugins = [self.authentication,self.states,self.websocket]
 
         ########################################################################
         # start plugins
@@ -120,6 +121,9 @@ class HomeCon(object):
         """
         listen for events in all plugins
         """
+        for plugin in self.coreplugins:
+            self._loop.call_soon_threadsafe(plugin._listen, event)
+
         for plugin in self.plugins:
             self._loop.call_soon_threadsafe(plugin._listen, event)
 

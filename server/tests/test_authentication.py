@@ -31,7 +31,6 @@ from homecon import HomeCon
 
 
 class AuthenticationTests(HomeConTestCase):
-    
 
     def test_initialize(self):
         self.clear_database()
@@ -80,10 +79,35 @@ class AuthenticationTests(HomeConTestCase):
         self.assertEqual(payload['permission'], 5)
 
 
+    def test_request_token_admin(self):
+        self.clear_database()
+        hc = self.start_homecon()
+        token = hc.authentication.request_token('admin','homecon')
+        payload = hc.authentication.jwt_decode(token)
+        hc.stop()
+
+        userid = hc.authentication.usernames['admin']
+        print(payload)
+        self.assertEqual(payload['userid'], userid)
+        self.assertIn(1,payload['groupids'])
+        self.assertIn(2,payload['groupids'])
+        self.assertEqual(payload['permission'], 9)
+
+
 
 class AuthenticationWebsocketTests(HomeConTestCase):
-    pass
-    
+
+    def test_request_token(self):
+        hc = self.start_homecon(print_log=True)
+        client = Client('ws://127.0.0.1:9024')
+        client.send({'event':'request_token','username':'admin','password':'homecon'})
+        
+        result = client.recv()
+        client.close()
+        print(result)
+
+        self.stop_homecon(hc)
+        self.save_homecon_log()
 
 
 

@@ -49,6 +49,24 @@ class WebsocketTests(HomeConTestCase):
 
             self.assertEqual(success,True)
 
+    def test_recv_message(self):
+        hc = self.start_homecon()
+        client = Client('ws://127.0.0.1:9024')
+        time.sleep(1)
+
+        for cl in hc.websocket.clients:
+            print('sending')
+            cl.send({'somekey':'somevalue'})
+
+        print('ready to recv')
+        response = client.recv()
+        print('done')
+        print(response)
+        client.close()
+
+        self.stop_homecon(hc)
+        self.save_homecon_log()
+
 
 
 if __name__ == '__main__':

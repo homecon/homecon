@@ -69,6 +69,7 @@ class Authentication(BasePlugin):
 
         # add the admin user if they do not exist
         self.add_user('admin','homecon',permission=9)
+        self.add_user_to_group(self.usernames['admin'],self.groupnames['default'])
         self.add_user_to_group(self.usernames['admin'],self.groupnames['admin'])
 
       
@@ -219,7 +220,7 @@ class Authentication(BasePlugin):
             iat = datetime.datetime.utcnow()
             exp = iat + datetime.timedelta(seconds=self._token_exp)
 
-            payload = {'userid': user['id'], 'groupids': self.user_groups[user['id']], 'username':user['username'], 'permission':self.user_permission(user['id']), 'exp':exp, 'iat':iat}
+            payload = {'userid': user['id'], 'groupids': [group['id'] for group in self.user_groups[user['id']]], 'username':user['username'], 'permission':self.user_permission(user['id']), 'exp':exp, 'iat':iat}
 
             return self.jwt_encode(payload)
 

@@ -85,10 +85,10 @@ class Websocket(BasePlugin):
 
         newdata = dict(data)
         for key in ['password','token']:
-            if key in data:
-                data[key] = '***'
+            if key in newdata:
+                newdata[key] = '***'
 
-        logging.debug('Client on {} sent {}'.format(address,data))
+        logging.debug('Client on {} sent {}'.format(address,newdata))
 
 
     def listen(self,event):
@@ -96,7 +96,7 @@ class Websocket(BasePlugin):
         if event.type == 'send':
             # send the event to all connected clients
             for client in self.clients:
-                client.send(event.data)
+                client.send(event.data,flush=True)
 
         if event.type == 'send_to':
             # send the event to some clients
@@ -104,7 +104,7 @@ class Websocket(BasePlugin):
             del event.data['clients']
 
             for client in clients:
-                client.send(event.data)
+                client.send(event.data,flush=True)
 
     def stop(self):
         if self.server is not None:
