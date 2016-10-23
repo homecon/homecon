@@ -344,7 +344,7 @@ class Authentication(BasePlugin):
             if user:
                 pass
 
-        if event.type == 'add_user':
+        elif event.type == 'add_user':
             user = self.add_user(event.data['username'],event.data['password'],event.data['permission'])
             if user:
                 # add the user to the default user group

@@ -135,6 +135,7 @@ class HomeCon(object):
 
         logging.info('Homecon stopped\n\n')
 
+
     def stop(self):
         logging.info('Stopping HomeCon')
         

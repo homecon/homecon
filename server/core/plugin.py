@@ -106,12 +106,12 @@ class BasePlugin(object):
             an Event instance
             
         """
-        
+
         # check if this plugin is the source and stop execution if so
         if not event.source == self:
             self.listen(event)
-    
-    
+
+
 class Plugin(BasePlugin):
     def __init__(self,homecon):
         """

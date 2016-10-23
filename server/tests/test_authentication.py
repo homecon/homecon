@@ -35,7 +35,8 @@ class AuthenticationTests(HomeConTestCase):
     def test_initialize(self):
         self.clear_database()
         hc = self.start_homecon()
-        hc.stop()
+
+        self.stop_homecon(hc)
 
 
         self.assertEqual(hc.authentication.users,{1: {'id': 1, 'permission': 9, 'username': 'admin'}})
@@ -46,7 +47,8 @@ class AuthenticationTests(HomeConTestCase):
         self.clear_database()
         hc = self.start_homecon()
         hc.authentication.add_user('testuser','testpassword',5)
-        hc.stop()
+
+        self.stop_homecon(hc)
 
         userid = hc.authentication.usernames['testuser']
         
@@ -57,7 +59,8 @@ class AuthenticationTests(HomeConTestCase):
         self.clear_database()
         hc = self.start_homecon()
         hc.authentication.add_group('testgroup',2)
-        hc.stop()
+
+        self.stop_homecon(hc)
 
         groupid = hc.authentication.groupnames['testgroup']
         
@@ -70,7 +73,8 @@ class AuthenticationTests(HomeConTestCase):
         hc.authentication.add_user('testuser','testpassword',5)
         token = hc.authentication.request_token('testuser','testpassword')
         payload = hc.authentication.jwt_decode(token)
-        hc.stop()
+
+        self.stop_homecon(hc)
 
         userid = hc.authentication.usernames['testuser']
 
@@ -84,10 +88,11 @@ class AuthenticationTests(HomeConTestCase):
         hc = self.start_homecon()
         token = hc.authentication.request_token('admin','homecon')
         payload = hc.authentication.jwt_decode(token)
-        hc.stop()
+
+        self.stop_homecon(hc)
 
         userid = hc.authentication.usernames['admin']
-        print(payload)
+
         self.assertEqual(payload['userid'], userid)
         self.assertIn(1,payload['groupids'])
         self.assertIn(2,payload['groupids'])
@@ -98,18 +103,17 @@ class AuthenticationTests(HomeConTestCase):
 class AuthenticationWebsocketTests(HomeConTestCase):
 
     def test_request_token(self):
-        hc = self.start_homecon(print_log=True)
+        hc = self.start_homecon()
         client = Client('ws://127.0.0.1:9024')
         client.send({'event':'request_token','username':'admin','password':'homecon'})
         
+
         result = client.recv()
         client.close()
-        print(result)
-
+        
         self.stop_homecon(hc)
-        self.save_homecon_log()
 
-
+        self.assertIn('token',result)
 
 
 if __name__ == '__main__':

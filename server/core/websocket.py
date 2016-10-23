@@ -26,10 +26,10 @@ class Websocket(BasePlugin):
             connect a client and listen for messages
             """
             
-            logging.debug( 'Connecting new client' )
-
+            client = Client(websocket)
             with (yield from clients_lock):
-                self.clients.append(websocket)
+                
+                self.clients.append(client)
 
             address = websocket.writer.get_extra_info('peername')
             address = '{}:{}'.format(address[0],address[1])
@@ -48,7 +48,10 @@ class Websocket(BasePlugin):
                         self.log_data(address,data)
                         
                         if 'event' in data:
-                            self.fire(data['event'],data,client=websocket)
+                            self.fire(data['event'],data,client=client)
+
+                        elif 'echo' in data:
+                            yield from client.send(data)
 
                     except:
                         logging.debug('A message was recieved but could not be handled')
@@ -56,7 +59,7 @@ class Websocket(BasePlugin):
 
             finally:
                 with (yield from clients_lock):
-                    self.clients.remove(websocket)
+                    self.clients.remove(client)
 
                 logging.debug('Disconnected {}'.format(address))
 
@@ -92,19 +95,20 @@ class Websocket(BasePlugin):
 
 
     def listen(self,event):
-        
+
         if event.type == 'send':
             # send the event to all connected clients
             for client in self.clients:
-                client.send(event.data,flush=True)
+                asyncio.ensure_future( client.send(event.data) )
 
-        if event.type == 'send_to':
+        elif event.type == 'send_to':
             # send the event to some clients
             clients = event.data['clients']
-            del event.data['clients']
+            senddata = {key:val for key,val in event.data.items() if not key=='clients'}
 
             for client in clients:
-                client.send(event.data,flush=True)
+                asyncio.ensure_future( client.send(senddata) )
+
 
     def stop(self):
         if self.server is not None:
@@ -114,5 +118,16 @@ class Websocket(BasePlugin):
             self.server.close()
             self.server = None
             logging.info('Websocket stopped')
+
+
+class Client(object):
+    def __init__(self,websocket):
+        self.websocket = websocket
+
+    @asyncio.coroutine
+    def send(self,message):
+        yield from self.websocket.send(json.dumps(message))
+
+
 
 
