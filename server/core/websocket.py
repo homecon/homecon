@@ -25,14 +25,13 @@ class Websocket(BasePlugin):
             """
             connect a client and listen for messages
             """
-            
+
             client = Client(websocket)
             with (yield from clients_lock):
                 
                 self.clients.append(client)
 
-            address = websocket.writer.get_extra_info('peername')
-            address = '{}:{}'.format(address[0],address[1])
+            address = client.address
 
             logging.debug('Incomming connection from {}'.format(address))
 
@@ -123,6 +122,9 @@ class Websocket(BasePlugin):
 class Client(object):
     def __init__(self,websocket):
         self.websocket = websocket
+
+        address = websocket.writer.get_extra_info('peername')
+        self.address = '{}:{}'.format(address[0],address[1])
 
     @asyncio.coroutine
     def send(self,message):

@@ -363,11 +363,11 @@ class Authentication(BasePlugin):
         elif event.type == 'request_token':
             token = self.request_token(event.data['username'],event.data['password'])
             if token:
-                self.fire('send_to',{'token':token,'clients':[event.client]})
+                self.fire('send_to',{'event':'request_token', 'token':token, 'clients':[event.client]})
 
         elif event.type == 'renew_token':
             token = self.renew_token(event.data['token'])
             if token:
-                self.fire('send_to',{'token':token,'clients':[event.client]})
+                self.fire('send_to',{'event':'renew_token', 'token':token,'clients':[event.client]})
 
 

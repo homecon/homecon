@@ -72,11 +72,12 @@ class HomeCon(object):
         ########################################################################
         # start core components
         ########################################################################
-        self.authentication = core.authentication.Authentication(self)
         self.states = core.states.States(self)
         self.websocket = core.websocket.Websocket(self)
+        self.authentication = core.authentication.Authentication(self)
+        self.pages = core.pages.Pages(self)
 
-        self.coreplugins = [self.authentication,self.states,self.websocket]
+        self.coreplugins = [self.states,self.websocket,self.authentication,self.pages]
 
         ########################################################################
         # start plugins
