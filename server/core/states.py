@@ -70,7 +70,7 @@ class States(BasePlugin):
         """
 
         if event.type == 'add_state':
-            self.add_state(event.data['path'],event.data['config'])
+            self.add(event.data['path'],event.data['config'])
 
         if event.type == 'state_changed':
             pass

@@ -72,10 +72,9 @@ class StatesTests(HomeConTestCase):
         hc.states['somestate'].value = 1
 
         self.stop_homecon(hc)
-        self.save_homecon_log()
 
         self.assertEqual(hc.states['somestate'].value,1)
-
+        
         # check for success in the log
         with open(self.logfile) as f:
             success = False
@@ -84,22 +83,23 @@ class StatesTests(HomeConTestCase):
                     success = True
 
             self.assertEqual(success,True)
-        
-
+    
 
 class StatesWebsocketTests(HomeConTestCase):
 
     def test_add_state(self):
         
-        hc = self.start_homecon(print_log=True)
+        hc = self.start_homecon()
 
         client = Client('ws://127.0.0.1:9024')
-        client.send({'event':'state_add','path':'somepath','config':{}})
+        client.send({'event':'add_state','path':'somepath','config':{'myconfigattribute':True}})
         client.close()
 
         self.stop_homecon(hc)
         self.save_homecon_log()
 
+        self.assertEqual(hc.states['somepath'].path,'somepath')
+        self.assertIn('myconfigattribute',hc.states['somepath'].config)
 
 
 
