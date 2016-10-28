@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+import asyncio
+
 
 class Event(object):
     def __init__(self,event_type,data,source,client):
@@ -15,7 +17,7 @@ class Event(object):
 
 
 class BasePlugin(object):
-    def __init__(self,homecon):
+    def __init__(self,queue):
         """
         Initialize a plugin instance
         
@@ -26,7 +28,8 @@ class BasePlugin(object):
             
         """
 
-        self.homecon = homecon
+        self._queue = queue
+        self._loop = asyncio.get_event_loop()
 
         self.initialize()
 
@@ -86,11 +89,23 @@ class BasePlugin(object):
             the source of the event
             
         """
-
+        
         if source==None:
             source = self
 
-        self.homecon.fire( Event(event_type,data,source,client) )
+
+        event = Event(event_type,data,source,client)
+
+        async def do_fire(event):
+            await self._queue.put(event)
+
+        def do_create_task():
+            self._loop.create_task(do_fire(event))
+
+        self._loop.call_soon_threadsafe(do_create_task)
+
+
+        #self.homecon.fire( Event(event_type,data,source,client) )
 
 
     def _listen(self,event):
@@ -113,7 +128,7 @@ class BasePlugin(object):
 
 
 class Plugin(BasePlugin):
-    def __init__(self,homecon):
+    def __init__(self,queue,states):
         """
         Initialize a plugin instance
         
@@ -124,10 +139,9 @@ class Plugin(BasePlugin):
             
         """
 
-        self.homecon = homecon
+        self._queue = queue
 
-        self.states = self.homecon.states
-        self.websocket = self.homecon.websocket
+        self.states = states
 
         self.initialize()
 

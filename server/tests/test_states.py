@@ -22,86 +22,106 @@ import time
 import json
 import sys
 import os
+import asyncio
 
 from common import HomeConTestCase, Client
 
 sys.path.append(os.path.abspath('..'))
 from homecon import HomeCon
-
+from core.plugin import Event
+from core.states import States
 
 
 class StatesTests(HomeConTestCase):
     
-    def test_add_state(self):
-        hc = self.start_homecon()
-        hc.states.add('mystate')
-        self.stop_homecon(hc)
+    def test_add(self):
+        queue = asyncio.Queue()
 
-        self.assertEqual(hc.states['mystate'].path, 'mystate')
-    
+        states = States(queue)
+        states.add('mystate')
 
-    
+        self.assertEqual(states['mystate'].path, 'mystate')
+
+
+    def test_add_state_event(self):
+        queue = asyncio.Queue()
+
+        states = States(queue)
+        event = Event('add_state',{'path':'mystate','config':{'prop1':'val1'}},self,None)
+        states.listen(event)
+
+        self.assertEqual(states['mystate'].path, 'mystate')
+        self.assertEqual(states['mystate'].config['prop1'], 'val1')
+
+
     def test_children(self):
-        hc = self.start_homecon()
-        hc.states.add('parent')
-        hc.states.add('parent.child0')
-        hc.states.add('parent.child1')
-        self.stop_homecon(hc)
+        queue = asyncio.Queue()
 
-        children = hc.states['parent'].children
+        states = States(queue)
+        states.add('parent')
+        states.add('parent.child0')
+        states.add('parent.child1')
 
-        self.assertIn(hc.states['parent.child0'], children)
-        self.assertIn(hc.states['parent.child1'], children)
-    
-    
+        children = states['parent'].children
+
+        self.assertIn(states['parent.child0'], children)
+        self.assertIn(states['parent.child1'], children)
+
+
     def test_parent(self):
-        hc = self.start_homecon()
-        hc.states.add('parent')
-        hc.states.add('parent.child')
-        self.stop_homecon(hc)
+        queue = asyncio.Queue()
 
-        parent = hc.states['parent.child'].parent
+        states = States(queue)
+        states.add('parent')
+        states.add('parent.child')
 
-        self.assertEqual(hc.states['parent'], parent)
-    
+        parent = states['parent.child'].parent
+
+        self.assertEqual(states['parent'], parent)
+
+
     def test_set(self):
+        queue = asyncio.Queue()
 
-        hc = self.start_homecon()
-        hc.states.add('somestate')
+        states = States(queue)
+        s = states.add('somestate')
 
-        hc.states['somestate'].value = 1
+        states['somestate'].value = 1
 
-        self.stop_homecon(hc)
+        # run the loop to fire fire events
+        async def spam():
+            asyncio.sleep(0.1)
+        states._loop.run_until_complete(spam())
 
-        self.assertEqual(hc.states['somestate'].value,1)
-        
-        # check for success in the log
-        with open(self.logfile) as f:
-            success = False
-            for l in f:
-                if 'Event: state_changed' in l:
-                    success = True
-
-            self.assertEqual(success,True)
-    
-
-class StatesWebsocketTests(HomeConTestCase):
-
-    def test_add_state(self):
-        
-        hc = self.start_homecon()
-
-        client = Client('ws://127.0.0.1:9024')
-        client.send({'event':'add_state','path':'somepath','config':{'myconfigattribute':True}})
-        client.close()
-
-        self.stop_homecon(hc)
-        self.save_homecon_log()
-
-        self.assertEqual(hc.states['somepath'].path,'somepath')
-        self.assertIn('myconfigattribute',hc.states['somepath'].config)
+        # check if there is an event in the queue
+        event = queue.get_nowait()
+        self.assertEqual(event.type,'state_changed')
+        self.assertEqual(event.data['state'],s)
+        self.assertEqual(event.data['value'],1)
+        self.assertIn('oldvalue',event.data)
 
 
+    def test_set_state_event(self):
+        queue = asyncio.Queue()
+
+        states = States(queue)
+        event = Event('add_state',{'path':'somestate','config':{'prop1':'val1'}},self,None)
+        states.listen(event)
+
+        event = Event('set_state',{'path':'somestate','value':1},self,None)
+        states.listen(event)
+
+        # run the loop to fire fire events
+        async def spam():
+            asyncio.sleep(0.1)
+        states._loop.run_until_complete(spam())
+
+        # check if there is an event in the queue
+        event = queue.get_nowait()
+        self.assertEqual(event.type,'state_changed')
+        self.assertEqual(event.data['state'].path,'somestate')
+        self.assertEqual(event.data['value'],1)
+        self.assertIn('oldvalue',event.data)
 
 if __name__ == '__main__':
     # run tests
