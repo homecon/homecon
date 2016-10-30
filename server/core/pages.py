@@ -78,13 +78,12 @@ class Pages(BasePlugin):
         if self.check_pages(pages):
 
             # update the database
-            success = self._db_pages.PUT(id=id,pages=pages)
-            if success:
-                self._get_active_pages()
-                return success
+            self._db_pages.PUT(where='id={}'.format(id),pages=pages)
+            self._get_active_pages()
+
+            return True
 
         return False
-
 
     def add(self,name,pages,active=0):
         """
@@ -122,10 +121,10 @@ class Pages(BasePlugin):
         """
 
         # set the new pages to active
-        self._db_pages.PUT(id=id,active=1)
+        self._db_pages.PUT(where='id={}'.format(id),active=1)
 
         # deactivate the old pages
-        self._db_pages.PUT(id=self._active_pages['id'],active=0)
+        self._db_pages.PUT(where='id={}'.format(self._active_pages['id']),active=0)
 
         # load the new pages
         self._get_active_pages()
@@ -195,70 +194,65 @@ class Pages(BasePlugin):
 
     def _default_pages(self):
         pages = {
-            'id': 1,
-            'name': 'default',
-            'active': 1,
-            'pages': {
-                'sections': [{
-                    'id': 'home',
-                    'title': 'Home',
-                    'order': 0,
-                },{
-                    'id': 'central',
-                    'title': 'Central',
-                    'order': 1,
-                },{
-                    'id': 'groundfloor',
-                    'title': 'Ground floor',
-                    'order': 2,
+            'sections': [{
+                'id': 'home',
+                'title': 'Home',
+                'order': 0,
+            },{
+                'id': 'central',
+                'title': 'Central',
+                'order': 1,
+            },{
+                'id': 'groundfloor',
+                'title': 'Ground floor',
+                'order': 2,
+            },],
+            'pages':[{
+                'id':'home',
+                'section': 'home',
+                'title': 'Home',
+                'icon': '',
+                'order': 0,
+                'pagesections': [{
+                    'widgets': [],
+                },]
+            },{
+                'id':'central_heating',
+                'section': 'central',
+                'title': 'Heating',
+                'icon': '',
+                'order': 0,
+                'pagesections': [{
+                    'widgets': [],
+                },]
+            },{
+                'id':'central_shading',
+                'section': 'central',
+                'title': 'Shading',
+                'icon': '',
+                'order': 1,
+                'pagesections': [{
+                    'widgets': [],
+                },]
+            },{
+                'id':'groundfloor_living',
+                'section': 'groundfloor',
+                'title': 'Living',
+                'icon': '',
+                'order': 0,
+                'pagesections': [{
+                    'widgets': [],
+                },]
+            },{
+                'id':'groundfloor_kitchen',
+                'section': 'groundfloor',
+                'title': 'Kitchen',
+                'icon': '',
+                'order': 1,
+                'pagesections': [{
+                    'widgets': [],
                 },],
-                'pages':[{
-                    'id':'home',
-                    'section': 'home',
-                    'title': 'Home',
-                    'icon': '',
-                    'order': 0,
-                    'pagesections': [{
-                        'widgets': [],
-                    },]
-                },{
-                    'id':'central_heating',
-                    'section': 'central',
-                    'title': 'Heating',
-                    'icon': '',
-                    'order': 0,
-                    'pagesections': [{
-                        'widgets': [],
-                    },]
-                },{
-                    'id':'central_shading',
-                    'section': 'central',
-                    'title': 'Shading',
-                    'icon': '',
-                    'order': 1,
-                    'pagesections': [{
-                        'widgets': [],
-                    },]
-                },{
-                    'id':'groundfloor_living',
-                    'section': 'groundfloor',
-                    'title': 'Living',
-                    'icon': '',
-                    'order': 0,
-                    'pagesections': [{
-                        'widgets': [],
-                    },]
-                },{
-                    'id':'groundfloor_kitchen',
-                    'section': 'groundfloor',
-                    'title': 'Kitchen',
-                    'icon': '',
-                    'order': 1,
-                    'pagesections': [{
-                        'widgets': [],
-                    },],
-                },],
-            }
+            },],
         }
 
         return pages

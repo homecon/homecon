@@ -223,7 +223,6 @@ class Table(object):
         
         query = 'UPDATE {} SET {} WHERE {}'.format(self.name,columnsvalues,where)
 
-        
         cursor = self.database.execute_query( query, data )
         
         

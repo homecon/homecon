@@ -69,21 +69,29 @@ class HomeCon(object):
         if loglevel == 'debug':
             self._loop.set_debug(True)
 
+        self._queue = asyncio.Queue(loop=self._loop)
+
+
         ########################################################################
         # start core components
         ########################################################################
-        self.states = core.states.States(self)
-        self.websocket = core.websocket.Websocket(self)
-        self.authentication = core.authentication.Authentication(self)
-        self.pages = core.pages.Pages(self)
+        self.states = core.states.States(self._queue)
+        self.websocket = core.websocket.Websocket(self._queue)
+        self.authentication = core.authentication.Authentication(self._queue)
+        self.pages = core.pages.Pages(self._queue)
 
-        self.coreplugins = [self.states,self.websocket,self.authentication,self.pages]
+        self.coreplugins = [
+            self.states,
+            self.websocket,
+            self.authentication,
+            self.pages,
+        ]
 
         ########################################################################
         # start plugins
         ########################################################################
         self.plugins = []
-        self.start_plugin('knx')  # this should be done dynamically from the database
+        #self.start_plugin('knx')  # this should be done dynamically from the database
 
 
         logging.info('HomeCon Initialized')
@@ -109,29 +117,49 @@ class HomeCon(object):
         pluginmodule = __import__('{}.{}'.format(package,name), fromlist=[name])
         pluginclass = getattr(pluginmodule, name.capitalize())
         
-        plugininstance = pluginclass(self)
+        plugininstance = pluginclass(self._queue,self.states)
         self.plugins.append(plugininstance)
 
 
     def fire(self,event):
-        logging.debug(event)
-        self._loop.call_soon_threadsafe(self.listen,event)
+        """
+        fire an event, mainly used for testing
+
+        """
+
+        async def do_fire(event):
+            await self._queue.put(event)
+
+        def do_create_task():
+            self._loop.create_task(do_fire(event))
+
+        self._loop.call_soon_threadsafe(do_create_task)
 
 
-    def listen(self,event):
+    async def listen(self):
         """
         listen for events in all plugins
-        """
-        for plugin in self.coreplugins:
-            self._loop.call_soon_threadsafe(plugin._listen, event)
 
-        for plugin in self.plugins:
-            self._loop.call_soon_threadsafe(plugin._listen, event)
+        """
+
+        while True:
+            logging.debug('waiting for an event to occur')
+            event = await self._queue.get()
+            logging.debug(event)
+
+            for plugin in self.coreplugins:
+                self._loop.call_soon_threadsafe(plugin._listen, event)
+
+            for plugin in self.plugins:
+                self._loop.call_soon_threadsafe(plugin._listen, event)
 
 
     def main(self):
         # Start the event loop
         logging.debug('Starting event loop')
+
+        self._loop.create_task(self.listen())
+
         self._loop.run_forever()
 
         logging.info('Homecon stopped\n\n')
@@ -139,7 +167,7 @@ class HomeCon(object):
 
     def stop(self):
         logging.info('Stopping HomeCon')
-        
+
         # cancel all tasks
         for task in asyncio.Task.all_tasks():
             task.cancel()

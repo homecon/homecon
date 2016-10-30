@@ -37,8 +37,11 @@ class States(BasePlugin):
         if not path in self._states:
             state = State(self,path,config=config)
             self._states[path] = state
+
+            return state
         else:
             logging.error('State {} allready exists'.format(path))
+
 
 
     def get(self,path):
@@ -71,6 +74,12 @@ class States(BasePlugin):
 
         if event.type == 'add_state':
             self.add(event.data['path'],event.data['config'])
+
+
+        if event.type == 'set_state':
+            state = self.get(event.data['path'])
+            state.value = event.data['value']
+
 
         if event.type == 'state_changed':
             pass

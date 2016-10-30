@@ -41,7 +41,7 @@ class Websocket(BasePlugin):
                     if message is None:
                         break
 
-                    # parse the message and fire an event to homecon if the data is in the correct format
+                    # parse the message and fire an event if the data is in the correct format
                     try:
                         data = json.loads(message)
                         self.log_data(address,data)
@@ -64,8 +64,8 @@ class Websocket(BasePlugin):
 
 
         # create a server and run it in the event loop
-        servergenerator = asyncws.start_server(connect_client, host='127.0.0.1', port=9024, loop=self.homecon._loop)
-        self.server = asyncio.get_event_loop().run_until_complete( servergenerator )
+        servergenerator = asyncws.start_server(connect_client, host='127.0.0.1', port=9024, loop=self._loop)
+        self.server = self._loop.run_until_complete( servergenerator )
 
 
         logging.info('Websocket started')
