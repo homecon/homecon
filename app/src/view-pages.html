@@ -43,7 +43,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 color: #212121;
             }
         </style>
-        <homecon-web-socket-object id="websocketPages" cmd="pages" path="{{path}}" data="{{pagesData}}"></homecon-web-socket-object>
+        <homecon-web-socket-object id="websocketPages" event="pages" path="{{path}}" data="{{pagesData}}"></homecon-web-socket-object>
 
         <iron-localstorage name="sections" value="{{sections}}" on-iron-localstorage-load-empty="_initializeSections"></iron-localstorage>
         <iron-localstorage name="pages" value="{{pages}}" on-iron-localstorage-load-empty="_initializePages"></iron-localstorage>

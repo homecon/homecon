@@ -26,6 +26,7 @@ import sys
 import shutil
 import sqlite3
 import json
+import asyncio
 
 from websocket import create_connection
 
@@ -126,6 +127,14 @@ class HomeConTestCase(unittest.TestCase):
 
         while hc._loop and hc._loop.is_running():
             time.sleep(0.1) # stopping homecon takes some time
+
+    # run the loop to fire fire events
+    def run_event_loop(self,loop):
+
+        async def spam():
+            asyncio.sleep(0.1)
+
+        loop.run_until_complete(spam())
 
 
     def save_homecon_log(self,append=''):

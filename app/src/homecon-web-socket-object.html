@@ -24,7 +24,7 @@
                     type: Boolean,
                     value: false
                 },
-                cmd: {
+                event: {
                     type: String,
                     value: ''
                 },
@@ -62,9 +62,8 @@
             },
 
             onMessage: function(e,d){
-                
                 // check if the message matches the template
-                if(d['cmd']==this.cmd && d['path']==this.path){
+                if(d['event']==this.event && d['path']==this.path){
 
                     // avoid looping forever
                     this.observe = false;
@@ -84,7 +83,7 @@
             },
 
             send: function(data){
-                var senddata = {'cmd':this.cmd,'path':this.path,'token':window.homeconAuthentication.token}
+                var senddata = {'event':this.event,'path':this.path,'token':window.homeconAuthentication.token}
                 if(typeof data != undefined){
                     senddata[this.dataKey] = data
                 }

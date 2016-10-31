@@ -11,7 +11,12 @@ class Event(object):
         self.client = client
 
     def __str__(self):
-        return 'Event: {}, data: {}, source: {}, client: {}'.format(self.type,self.data.__repr__(),self.source.__class__.__name__,self.client.__repr__())
+        newdata = dict(self.data)
+        for key in ['password','token']:
+            if key in newdata:
+                newdata[key] = '***'
+
+        return 'Event: {}, data: {}, source: {}, client: {}'.format(self.type,newdata.__repr__(),self.source.__class__.__name__,self.client.__repr__())
 
 
 

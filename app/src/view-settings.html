@@ -44,16 +44,16 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             <paper-material>
 
                 <h1>Location</h1>
-                <homecon-web-socket-object auto cmd="setting" path="lat" data="{{lat}}" debounce="800"></homecon-web-socket-object>
+                <homecon-web-socket-object auto event="setting" path="lat" data="{{lat}}" debounce="800"></homecon-web-socket-object>
                 <paper-input label="Latitude" value="{{lat}}" required auto-validate pattern="[0-9]*.[0-9]*" error-message="Not a valid number!"></paper-input>
                 
-                <homecon-web-socket-object auto cmd="setting" path="lon" data="{{lon}}" debounce="800"></homecon-web-socket-object>
+                <homecon-web-socket-object auto event="setting" path="lon" data="{{lon}}" debounce="800"></homecon-web-socket-object>
                 <paper-input label="Longitude" value="{{lon}}" required auto-validate pattern="[0-9]*.[0-9]*" error-message="Not a valid number!"></paper-input>
 
-                <homecon-web-socket-object auto cmd="setting" path="elev" data="{{elev}}" debounce="800"></homecon-web-socket-object>
+                <homecon-web-socket-object auto event="setting" path="elev" data="{{elev}}" debounce="800"></homecon-web-socket-object>
                 <paper-input label="Elevation" value="{{elev}}" required auto-validate pattern="[0-9]*.[0-9]*" error-message="Not a valid number!"></paper-input>
             
-                <homecon-web-socket-object auto cmd="setting" path="tz" data="{{tz}}" debounce="800"></homecon-web-socket-object>
+                <homecon-web-socket-object auto event="setting" path="tz" data="{{tz}}" debounce="800"></homecon-web-socket-object>
                 <paper-dropdown-menu label="Timezone">
                     <paper-listbox class="dropdown-content">
                         <iron-selector attr-for-selected="name" selected="{{tz}}">

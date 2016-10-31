@@ -88,10 +88,8 @@ class StatesTests(HomeConTestCase):
 
         states['somestate'].value = 1
 
-        # run the loop to fire fire events
-        async def spam():
-            asyncio.sleep(0.1)
-        states._loop.run_until_complete(spam())
+        # run the loop to fire events
+        self.run_event_loop(states._loop)
 
         # check if there is an event in the queue
         event = queue.get_nowait()
@@ -111,10 +109,8 @@ class StatesTests(HomeConTestCase):
         event = Event('set_state',{'path':'somestate','value':1},self,None)
         states.listen(event)
 
-        # run the loop to fire fire events
-        async def spam():
-            asyncio.sleep(0.1)
-        states._loop.run_until_complete(spam())
+        # run the loop to fire events
+        self.run_event_loop(states._loop)
 
         # check if there is an event in the queue
         event = queue.get_nowait()

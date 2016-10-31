@@ -16,8 +16,8 @@
         </style>
 
         <iron-localstorage name="homecon-token" value="{{token}}" on-iron-localstorage-load-empty="_initializeDefaultToken"></iron-localstorage>
-        <homecon-web-socket-object id="request_token" cmd="request_token" path="" data="{{token}}" data-key="token"></homecon-web-socket-object>
-        <homecon-web-socket-object id="authenticate" cmd="authenticate" path="" data="{{authenticated}}"></homecon-web-socket-object>
+        <homecon-web-socket-object id="request_token" event="request_token" path="" data="{{token}}" data-key="token"></homecon-web-socket-object>
+        <homecon-web-socket-object id="authenticate" event="authenticate" path="" data="{{authenticated}}"></homecon-web-socket-object>
 
     </template>
 
@@ -58,13 +58,13 @@
             },
             
             onMessage: function(e,d){
-                if(d['cmd'] == 'request_token'){
+                if(d['event'] == 'request_token'){
                     this.token = d['token'];
                 }
-                if(d['cmd'] == 'authenticate'){
-                    this.authenticated = d['val'];
+                if(d['event'] == 'authenticate'){
+                    this.authenticated = d['authenticated'];
                 }
-                if(d['cmd'] == 'logout'){
+                if(d['event'] == 'logout'){
                     this.token = '';
                 }
             },
@@ -72,13 +72,13 @@
             login: function(){
                 // Send a message to HomeCon
                 console.log('login');
-                window.homeconWebSocket.send({'cmd':'authenticate','token':this.token});
+                window.homeconWebSocket.send({'event':'authenticate','token':this.token});
             },
 
             logout: function(){
                 console.log('logout');
                 if(this.connected){
-                    window.homeconWebSocket.send({'cmd':'logout','token':this.token});
+                    window.homeconWebSocket.send({'event':'logout','token':this.token});
                 }
                 else{
                     this.token = '';

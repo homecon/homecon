@@ -22,86 +22,136 @@ import time
 import json
 import sys
 import os
+import asyncio
 
 from common import HomeConTestCase, Client
 
 sys.path.append(os.path.abspath('..'))
 from homecon import HomeCon
+from core.plugin import Event
+from core.authentication import Authentication
 
 
 
 class AuthenticationTests(HomeConTestCase):
 
     def test_initialize(self):
+        queue = asyncio.Queue()
+
         self.clear_database()
-        hc = self.start_homecon()
-
-        self.stop_homecon(hc)
+        authentication = Authentication(queue)
 
 
-        self.assertEqual(hc.authentication.users,{1: {'id': 1, 'permission': 9, 'username': 'admin'}})
-        self.assertEqual(hc.authentication.groups,{1: {'groupname': 'admin', 'id': 1, 'permission': 9}, 2: {'groupname': 'default', 'id': 2, 'permission': 1}})
+        self.assertEqual(authentication.users,{1: {'id': 1, 'permission': 9, 'username': 'admin'}})
+        self.assertEqual(authentication.groups,{1: {'groupname': 'admin', 'id': 1, 'permission': 9}, 2: {'groupname': 'default', 'id': 2, 'permission': 1}})
 
-
+    
     def test_add_user(self):
+        queue = asyncio.Queue()
+
         self.clear_database()
-        hc = self.start_homecon()
-        hc.authentication.add_user('testuser','testpassword',5)
+        authentication = Authentication(queue)
 
-        self.stop_homecon(hc)
+        authentication.add_user('testuser','testpassword',5)
 
-        userid = hc.authentication.usernames['testuser']
+        userid = authentication.usernames['testuser']
         
-        self.assertEqual(hc.authentication.users[userid], {'id': userid, 'permission': 5, 'username': 'testuser'})
+        self.assertEqual(authentication.users[userid], {'id': userid, 'permission': 5, 'username': 'testuser'})
         
 
+    
     def test_add_group(self):
+        queue = asyncio.Queue()
+
         self.clear_database()
-        hc = self.start_homecon()
-        hc.authentication.add_group('testgroup',2)
+        authentication = Authentication(queue)
 
-        self.stop_homecon(hc)
+        authentication.add_group('testgroup',2)
 
-        groupid = hc.authentication.groupnames['testgroup']
+
+        groupid = authentication.groupnames['testgroup']
         
-        self.assertEqual(hc.authentication.groups[groupid], {'id': groupid, 'permission': 2, 'groupname': 'testgroup'})
+        self.assertEqual(authentication.groups[groupid], {'id': groupid, 'permission': 2, 'groupname': 'testgroup'})
 
 
     def test_request_token(self):
+        queue = asyncio.Queue()
+
         self.clear_database()
-        hc = self.start_homecon()
-        hc.authentication.add_user('testuser','testpassword',5)
-        token = hc.authentication.request_token('testuser','testpassword')
-        payload = hc.authentication.jwt_decode(token)
+        authentication = Authentication(queue)
 
-        self.stop_homecon(hc)
+        authentication.add_user('testuser','testpassword',5)
+        token = authentication.request_token('testuser','testpassword')
+        payload = authentication.jwt_decode(token)
 
-        userid = hc.authentication.usernames['testuser']
+
+        userid = authentication.usernames['testuser']
 
         self.assertEqual(payload['userid'], userid)
         self.assertEqual(payload['groupids'], [])
         self.assertEqual(payload['permission'], 5)
 
-
+    
     def test_request_token_admin(self):
+        queue = asyncio.Queue()
+
         self.clear_database()
-        hc = self.start_homecon()
-        token = hc.authentication.request_token('admin','homecon')
-        payload = hc.authentication.jwt_decode(token)
+        authentication = Authentication(queue)
 
-        self.stop_homecon(hc)
+        token = authentication.request_token('admin','homecon')
+        payload = authentication.jwt_decode(token)
 
-        userid = hc.authentication.usernames['admin']
+        userid = authentication.usernames['admin']
 
         self.assertEqual(payload['userid'], userid)
         self.assertIn(1,payload['groupids'])
         self.assertIn(2,payload['groupids'])
         self.assertEqual(payload['permission'], 9)
 
+    
+    def test_request_token_event(self):
+        queue = asyncio.Queue()
+
+        self.clear_database()
+        authentication = Authentication(queue)
+
+        event = Event('request_token',{'username':'admin','password':'homecon'},self,None)
+        authentication.listen(event)
+
+        # run the loop to fire events
+        self.run_event_loop(authentication._loop)
+
+        # check if there is an event in the queue
+        event = queue.get_nowait()
+
+        self.assertEqual(event.type,'send_to')
+        self.assertEqual(event.data['event'],'request_token')
+        self.assertIn('token',event.data)
 
 
+    def test_authenticate_event(self):
+        queue = asyncio.Queue()
+
+        self.clear_database()
+        authentication = Authentication(queue)
+        token = authentication.request_token('admin','homecon')
+
+        event = Event('authenticate',{'token':token},self,None)
+        authentication.listen(event)
+
+        # run the loop to fire events
+        self.run_event_loop(authentication._loop)
+
+        # check if there is an event in the queue
+        event = queue.get_nowait()
+
+        self.assertEqual(event.type,'send_to')
+        self.assertEqual(event.data['event'],'authenticate')
+        self.assertEqual(event.data['authenticated'],True)
+
+"""
 class AuthenticationWebsocketTests(HomeConTestCase):
-
+    
     def test_request_token(self):
         hc = self.start_homecon()
         client = Client('ws://127.0.0.1:9024')
@@ -114,7 +164,7 @@ class AuthenticationWebsocketTests(HomeConTestCase):
         self.stop_homecon(hc)
 
         self.assertIn('token',result)
-
+"""
 
 if __name__ == '__main__':
     # run tests

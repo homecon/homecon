@@ -143,7 +143,6 @@ class HomeCon(object):
         """
 
         while True:
-            logging.debug('waiting for an event to occur')
             event = await self._queue.get()
             logging.debug(event)
 

@@ -220,7 +220,8 @@ class Authentication(BasePlugin):
             iat = datetime.datetime.utcnow()
             exp = iat + datetime.timedelta(seconds=self._token_exp)
 
-            payload = {'userid': user['id'], 'groupids': [group['id'] for group in self.user_groups[user['id']]], 'username':user['username'], 'permission':self.user_permission(user['id']), 'exp':exp, 'iat':iat}
+            groupids = [group['id'] for group in self.user_groups[user['id']]]
+            payload = {'userid': user['id'], 'groupids': groupids, 'username':user['username'], 'permission':self.user_permission(user['id']), 'exp':exp, 'iat':iat}
 
             return self.jwt_encode(payload)
 
@@ -369,5 +370,10 @@ class Authentication(BasePlugin):
             token = self.renew_token(event.data['token'])
             if token:
                 self.fire('send_to',{'event':'renew_token', 'token':token,'clients':[event.client]})
+
+        elif event.type == 'authenticate':
+            payload = self.jwt_decode(event.data['token'])
+            if payload:
+                self.fire('send_to',{'event':'authenticate', 'authenticated':True, 'clients':[event.client]})
 
 
