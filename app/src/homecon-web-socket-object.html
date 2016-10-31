@@ -39,7 +39,7 @@
                 },
                 dataKey: {
                     type: String,
-                    value: 'val'
+                    value: 'value'
                 },
                 debounce: {
                     type: Number,
@@ -54,7 +54,7 @@
                 if(this.auto){
                     this.listen(window.homeconWebSocket, 'homecon-web-socket-connected', 'onConnected');
 
-                    // send without val key to start monitoring
+                    // send without value key to start monitoring
                     if(window.homeconWebSocket.connected){
                         this.send();
                     }
@@ -64,7 +64,6 @@
             onMessage: function(e,d){
                 // check if the message matches the template
                 if(d['event']==this.event && d['path']==this.path){
-
                     // avoid looping forever
                     this.observe = false;
                     // extract data from the message
@@ -94,8 +93,8 @@
                 this.send(this.data);
             },
 
-            _dataChanged: function(data){
-                if(this.auto && this.observe && window.homeconWebSocket.connected){
+            _dataChanged: function(data,olddata){
+                if(this.auto && this.observe && window.homeconWebSocket.connected && !(data == '' && typeof olddata == 'undefined')){
                     this.debounce('sendDataDebounce', this._sendData, this.debounce); 
                 }
             },

@@ -27,9 +27,10 @@ import asyncio
 from common import HomeConTestCase, Client
 
 sys.path.append(os.path.abspath('..'))
-from homecon import HomeCon
+#from homecon import HomeCon
 from core.plugin import Event
 from core.states import States
+from core.websocket import DummyAdminClient
 
 
 class StatesTests(HomeConTestCase):
@@ -59,13 +60,13 @@ class StatesTests(HomeConTestCase):
 
         states = States(queue)
         states.add('parent')
-        states.add('parent.child0')
-        states.add('parent.child1')
+        states.add('parent/child0')
+        states.add('parent/child1')
 
         children = states['parent'].children
 
-        self.assertIn(states['parent.child0'], children)
-        self.assertIn(states['parent.child1'], children)
+        self.assertIn(states['parent/child0'], children)
+        self.assertIn(states['parent/child1'], children)
 
 
     def test_parent(self):
@@ -73,9 +74,9 @@ class StatesTests(HomeConTestCase):
 
         states = States(queue)
         states.add('parent')
-        states.add('parent.child')
+        states.add('parent/child')
 
-        parent = states['parent.child'].parent
+        parent = states['parent/child'].parent
 
         self.assertEqual(states['parent'], parent)
 
@@ -99,14 +100,17 @@ class StatesTests(HomeConTestCase):
         self.assertIn('oldvalue',event.data)
 
 
-    def test_set_state_event(self):
+    def test_state_set_event(self):
         queue = asyncio.Queue()
 
         states = States(queue)
-        event = Event('add_state',{'path':'somestate','config':{'prop1':'val1'}},self,None)
+
+        client = DummyAdminClient()
+
+        event = Event('add_state',{'path':'somestate','config':{'prop1':'val1'}},self,client)
         states.listen(event)
 
-        event = Event('set_state',{'path':'somestate','value':1},self,None)
+        event = Event('state',{'path':'somestate','value':1},self,client)
         states.listen(event)
 
         # run the loop to fire events
@@ -118,6 +122,33 @@ class StatesTests(HomeConTestCase):
         self.assertEqual(event.data['state'].path,'somestate')
         self.assertEqual(event.data['value'],1)
         self.assertIn('oldvalue',event.data)
+
+
+    def test_state_get_event(self):
+        queue = asyncio.Queue()
+
+        states = States(queue)
+
+        client = DummyAdminClient()
+
+        event = Event('add_state',{'path':'somestate','config':{'prop1':'val1'}},self,client)
+        states.listen(event)
+
+        event = Event('state',{'path':'somestate'},self,client)
+        states.listen(event)
+
+        # run the loop to fire events
+        self.run_event_loop(states._loop)
+
+        # check if there is an event in the queue
+        event = queue.get_nowait()
+        self.assertEqual(event.type,'send_to')
+        self.assertEqual(event.data['path'],'somestate')
+        self.assertIn('value',event.data)
+
+
+
+
 
 if __name__ == '__main__':
     # run tests

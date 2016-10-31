@@ -5,6 +5,7 @@ import logging
 import json
 import asyncio
 
+
 import asyncws
 
 
@@ -95,10 +96,29 @@ class Websocket(BasePlugin):
 
     def listen(self,event):
 
-        if event.type == 'send':
+        if event.type == 'broadcast':
             # send the event to all connected clients
             for client in self.clients:
                 asyncio.ensure_future( client.send(event.data) )
+
+
+        if event.type == 'send':
+            # send the event to permitted clients
+            senddata = {key:val for key,val in event.data.items() if not (key=='readusers' or key=='readgroups')}
+
+            for client in self.clients:
+                permitted = False
+                if client.tokenpayload['userid'] in event.data['readusers']:
+                    permitted = True
+                else:
+                    for g in client.tokenpayload['groupids']:
+                        if g in event.data['readgroups']:
+                            permitted = True
+                            break
+
+                if permitted:
+                    asyncio.ensure_future( client.send(senddata) )
+
 
         elif event.type == 'send_to':
             # send the event to some clients
@@ -122,6 +142,7 @@ class Websocket(BasePlugin):
 class Client(object):
     def __init__(self,websocket):
         self.websocket = websocket
+        self.tokenpayload = False
 
         address = websocket.writer.get_extra_info('peername')
         self.address = '{}:{}'.format(address[0],address[1])
@@ -130,6 +151,15 @@ class Client(object):
     def send(self,message):
         yield from self.websocket.send(json.dumps(message))
 
+
+class DummyAdminClient(object):
+    def __init__(self,websocket=None):
+        self.websocket = websocket
+        self.address = '1.1.1.1'
+        self.tokenpayload = {'userid':1, 'groupids':[1,2], 'username':'admin','permission':9}
+
+    def send(self,message):
+        pass
 
 
 

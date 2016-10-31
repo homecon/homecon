@@ -3,23 +3,48 @@
 
 import logging
 import copy
+import json
 
 from . import database
 from .plugin import BasePlugin
 
 class States(BasePlugin):
- 
+    """
+    Class to control the HomeCon states
+    
+    Each 'state' in the building should be reflected by a HomeCon state. This 
+    can be the status of a light (on/off), the temperature in a room, the solar 
+    irradiation, ...
+    
+    A state is identified by a string, its path. The predefined HomeCon States are 
+    structured as if they were actual paths to folders on a unix system, using
+    slashes (:code`/`). e.g. :code`settings/latitude`.
+    
+    Unlike a folder structure, the paths remain simple strings so 
+    'parent folders' do not need to exists.
+    
+    The format is not manatory, any characters can be used. However, when using
+    this format, parent or child states can be retrieved are available and for 
+    dependent expressions some regular expression syntax can be used.
+    
+    """
+
     def initialize(self):
         self._states = {}
         self._db = database.Database(database='homecon.db')
         self._db_states = database.Table(self._db,'states',[
             {'name':'path',        'type':'char(255)',  'null': '',  'default':'',  'unique':'UNIQUE'},
-            {'name':'config',      'type':'char(255)',  'null': '',  'default':'',  'unique':''},
-            {'name':'quantity',    'type':'char(63)',   'null': '',  'default':'',  'unique':''},
-            {'name':'unit',        'type':'char(15)',   'null': '',  'default':'',  'unique':''},
-            {'name':'label',       'type':'char(63)',   'null': '',  'default':'',  'unique':''},
-            {'name':'description', 'type':'char(255)',  'null': '',  'default':'',  'unique':''},
+            {'name':'config',      'type':'char(511)',  'null': '',  'default':'',  'unique':''},
         ])
+
+
+        # add settings states
+        self.add('settings/latitude', {'quantity':'angle', 'unit':'deg','label':'latitude', 'description':'HomeCon latitude'})
+        self.add('settings/longitude',{'quantity':'angle', 'unit':'deg','label':'longitude','description':'HomeCon longitude'})
+        self.add('settings/elevation',{'quantity':'height','unit':'m',  'label':'elevation','description':'HomeCon elevation'})
+        self.add('settings/timezone', {'quantity':'',      'unit':'',   'label':'time zone','description':'HomeCon time zone'})
+
+
 
     def add(self,path,config=None):
         """
@@ -34,13 +59,45 @@ class States(BasePlugin):
             state configuration dictionary
 
         """
+
         if not path in self._states:
+
+            # check the config
+            if config is None:
+                config = {}
+
+            if 'quantity' not in config:
+                config['quantity'] = ''
+
+            if 'unit' not in config:
+                config['unit'] = ''
+
+            if 'label' not in config:
+                config['label'] = ''
+
+            if 'description' not in config:
+                config['description'] = ''
+
+            if 'readusers' not in config:
+                config['readusers'] = []
+
+            if 'writeusers' not in config:
+                config['writeusers'] = []
+
+            if 'readgroups' not in config:
+                config['readgroups'] = [1]
+
+            if 'writegroups' not in config:
+                config['writegroups'] = [1]
+
+
             state = State(self,path,config=config)
+            self._db_states.POST(path=path,config=json.dumps(config))
             self._states[path] = state
 
             return state
         else:
-            logging.error('State {} allready exists'.format(path))
+            logging.warning('State {} allready exists'.format(path))
 
 
 
@@ -76,14 +133,48 @@ class States(BasePlugin):
             self.add(event.data['path'],event.data['config'])
 
 
-        if event.type == 'set_state':
-            state = self.get(event.data['path'])
-            state.value = event.data['value']
-
-
         if event.type == 'state_changed':
-            pass
+            self.fire('send',{'event':'state', 'path':event.data['state'].path, 'value':event.data['state'].value, 'readusers':event.data['state'].config['readusers'], 'readgroups':event.data['state'].config['readgroups']})
 
+
+        if event.type == 'state':
+            # get or set a state
+            state = self.get(event.data['path'])
+            tokenpayload = event.client.tokenpayload  # event.data['token']  fixme, retrieve the payload from the token
+
+            
+            if 'value' in event.data:
+                # set
+                permitted = False
+                if tokenpayload['userid'] in state.config['writeusers']:
+                    permitted = True
+                else:
+                    for g in tokenpayload['groupids']:
+                        if g in state.config['writegroups']:
+                            permitted = True
+                            break
+
+                if permitted:
+                    state.value = event.data['value']
+                else:
+                    logging.warning('User {} on client {} attempted to change the value of {} but is not permitted'.format(tokenpayload['userid'],event.client.address,state.path))
+
+            else:
+                # get
+                permitted = False
+                if tokenpayload['userid'] in state.config['readusers']:
+                    permitted = True
+                else:
+                    for g in tokenpayload['groupids']:
+                        if g in state.config['readgroups']:
+                            permitted = True
+                            break
+
+                if permitted:
+                    self.fire('send_to',{'event':'state', 'path':state.path, 'value':state.value, 'clients':[event.client]})
+                else:
+                    logging.warning('User {} attempted to change the value of {} but is not permitted'.format(tokenpayload['userid'],state.path))
+                
 
 
     def __getitem__(self,path):
@@ -109,6 +200,10 @@ class States(BasePlugin):
 
 
 class State(object):
+    """
+    A class representing a single state
+
+    """
     def __init__(self,states,path,config=None):
         """
         Parameters
@@ -151,7 +246,7 @@ class State(object):
 
     @value.setter
     def value(self, value):
-        self.set(value)
+        self.set(value,source=self)
 
     @property
     def path(self):
@@ -161,19 +256,19 @@ class State(object):
     @property
     def parent(self):
         """
-        returns the parent of the current state when the paths follow the dot
-        syntax according to :code`parent.child`
+        returns the parent of the current state when the paths follow the slash
+        syntax according to :code`parent/child`
 
         Example
         -------
         >>> p = states.add('parent')
-        >>> c = states.add('parent.child')
+        >>> c = states.add('parent/child')
         >>> c.return_parent()
         
         """
 
-        if '.' in self._path:
-            parentpath = '.'.join(self._path.split('.')[:-1])
+        if '/' in self._path:
+            parentpath = '/'.join(self._path.split('/')[:-1])
             parent = self._states.get(parentpath)
             return parent
         else:
@@ -183,15 +278,15 @@ class State(object):
     @property
     def children(self):
         """
-        returns a list of children of the current state when the paths follow the dot
-        syntax according to :code`parent.child`
+        returns a list of children of the current state when the paths follow 
+        the slash syntax according to :code`parent/child`
 
         Example
         -------
         >>> p = states.add('parent')
-        >>> c0 = states.add('parent.child0')
-        >>> c1 = states.add('parent.child1')
-        >>> cc = states.add('parent.child0.child')
+        >>> c0 = states.add('parent/child0')
+        >>> c1 = states.add('parent/child1')
+        >>> cc = states.add('parent/child0/child')
         >>> p.return_children()
         
         """
@@ -199,7 +294,7 @@ class State(object):
         children = []
         for path,state in self._states.items():
             if self._path in path:
-                if len(self._path.split('.')) == len(path.split('.'))-1:
+                if len(self._path.split('/')) == len(path.split('/'))-1:
                     children.append(state)
 
         return children

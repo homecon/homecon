@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 
 import logging
-import copy
 import json
 
 from . import database

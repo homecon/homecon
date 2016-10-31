@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 
 import logging
-import copy
 import datetime
 import passlib.hash
 import jwt
@@ -374,6 +373,7 @@ class Authentication(BasePlugin):
         elif event.type == 'authenticate':
             payload = self.jwt_decode(event.data['token'])
             if payload:
+                event.client.tokenpayload = payload
                 self.fire('send_to',{'event':'authenticate', 'authenticated':True, 'clients':[event.client]})
 
 
