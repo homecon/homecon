@@ -33,8 +33,9 @@ class States(BasePlugin):
         self._states = {}
         self._db = database.Database(database='homecon.db')
         self._db_states = database.Table(self._db,'states',[
-            {'name':'path',        'type':'char(255)',  'null': '',  'default':'',  'unique':'UNIQUE'},
-            {'name':'config',      'type':'char(511)',  'null': '',  'default':'',  'unique':''},
+            {'name':'path',   'type':'char(255)',  'null': '',  'default':'',  'unique':'UNIQUE'},
+            {'name':'config', 'type':'char(511)',  'null': '',  'default':'',  'unique':''},
+            {'name':'value',  'type':'char(255)',  'null': '',  'default':'',  'unique':''},
         ])
 
 
@@ -94,6 +95,9 @@ class States(BasePlugin):
             state = State(self,path,config=config)
             self._db_states.POST(path=path,config=json.dumps(config))
             self._states[path] = state
+
+            # update the value from the database
+            state.get_value_from_db()
 
             return state
         else:
@@ -204,6 +208,7 @@ class State(object):
     A class representing a single state
 
     """
+
     def __init__(self,states,path,config=None):
         """
         Parameters
@@ -233,12 +238,21 @@ class State(object):
     def set(self,value,source=None):
         oldvalue = copy.copy(self._value)
         self._value = value
+
+        # update the value in the database
+        self._states._db_states.PUT(value=json.dumps(value), where='path=\'{}\''.format(self.path))
+
         self._states.fire('state_changed',{'state':self,'value':self._value,'oldvalue':oldvalue},source)
 
 
     def get(self):
         return self._value
 
+    def get_value_from_db(self):
+        result = self._states._db_states.GET(path=self.path,columns=['value'])
+        value = result[0]['value']
+        if not value is None:
+            self.value = json.loads(value)
 
     @property
     def value(self):
