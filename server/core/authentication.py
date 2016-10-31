@@ -12,6 +12,22 @@ from .plugin import BasePlugin
 class Authentication(BasePlugin):
     """
     Authentication class
+
+    All permissions are built up like the unix permission numbers using 3 bits:
+
+    :code::
+        read / write / change
+          4      2        1
+
+        0-3: no permissions
+        4 : read
+        5 : read + change
+        6 : read + write
+        7 : read + write + change
+
+    read allows a user to read the value, write allows the user to change the
+    value and change allows a user to change configuration parameters
+
     """
 
     def initialize(self):
@@ -351,7 +367,7 @@ class Authentication(BasePlugin):
                 self.add_user_to_group(user['id'],self.groupnames['default'])
 
         elif event.type == 'add_group':
-            group = self.add_group(event.data['groupname'],1)
+            group = self.add_group(event.data['groupname'],event.data['permission'])
             if group:
                 pass
 

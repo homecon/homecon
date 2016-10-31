@@ -112,7 +112,9 @@ class PagesTests(HomeConTestCase):
         q = asyncio.Queue()
         pg  = pages.Pages(q)
 
-        pg.update(1,json.dumps(pgs))
+        id = pg._active_pages['id']
+
+        pg.update(id,json.dumps(pgs))
         self.assertEqual(pg._active_pages['pages'],pgs)
 
     
@@ -135,13 +137,8 @@ class PagesTests(HomeConTestCase):
         olddata = dict(pg._active_pages)
 
         newdata = pg.add('newpages',json.dumps(pgs))
-
-        for key,val in pg._pages.items():
-            if val['name'] == 'newpages':
-                id = val['id']
-                break
-
-        newdata = pg.activate_pages(id)
+        id = newdata['id']
+        pg.activate_pages(id)
 
         self.assertEqual(pg._active_pages['pages'],pgs)
 
