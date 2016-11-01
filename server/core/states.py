@@ -4,6 +4,7 @@
 import logging
 import copy
 import json
+import inspect
 
 from . import database
 from .plugin import BasePlugin
@@ -40,10 +41,10 @@ class States(BasePlugin):
 
 
         # add settings states
-        self.add('settings/latitude', {'quantity':'angle', 'unit':'deg','label':'latitude', 'description':'HomeCon latitude'})
-        self.add('settings/longitude',{'quantity':'angle', 'unit':'deg','label':'longitude','description':'HomeCon longitude'})
-        self.add('settings/elevation',{'quantity':'height','unit':'m',  'label':'elevation','description':'HomeCon elevation'})
-        self.add('settings/timezone', {'quantity':'',      'unit':'',   'label':'time zone','description':'HomeCon time zone'})
+        self.add('settings/latitude', config={'type': 'number', 'quantity':'angle', 'unit':'deg','label':'latitude', 'description':'HomeCon latitude'})
+        self.add('settings/longitude',config={'type': 'number', 'quantity':'angle', 'unit':'deg','label':'longitude','description':'HomeCon longitude'})
+        self.add('settings/elevation',config={'type': 'number', 'quantity':'height','unit':'m',  'label':'elevation','description':'HomeCon elevation'})
+        self.add('settings/timezone', config={'type': 'string', 'quantity':'',      'unit':'',   'label':'time zone','description':'HomeCon time zone'})
 
 
 
@@ -66,6 +67,9 @@ class States(BasePlugin):
             # check the config
             if config is None:
                 config = {}
+
+            if 'type' not in config:
+                config['type'] = ''
 
             if 'quantity' not in config:
                 config['quantity'] = ''
@@ -138,7 +142,7 @@ class States(BasePlugin):
 
 
         if event.type == 'state_changed':
-            self.fire('send',{'event':'state', 'path':event.data['state'].path, 'value':event.data['state'].value, 'readusers':event.data['state'].config['readusers'], 'readgroups':event.data['state'].config['readgroups']})
+            self.fire('send',{'event':'state', 'path':event.data['state'].path, 'value':event.data['state'].value, 'readusers':event.data['state'].config['readusers'], 'readgroups':event.data['state'].config['readgroups']},source=event.source)
 
 
         if event.type == 'state':
@@ -159,7 +163,7 @@ class States(BasePlugin):
                             break
 
                 if permitted:
-                    state.value = event.data['value']
+                    state.set(event.data['value'],event.source)
                 else:
                     logging.warning('User {} on client {} attempted to change the value of {} but is not permitted'.format(tokenpayload['userid'],event.client.address,state.path))
 
@@ -260,6 +264,8 @@ class State(object):
 
     @value.setter
     def value(self, value):
+        # get the source from inspection
+        
         self.set(value,source=self)
 
     @property

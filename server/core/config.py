@@ -1,0 +1,4 @@
+
+
+jwt_secret = 'secret'
+

@@ -8,6 +8,50 @@ import jwt
 
 from . import database
 from .plugin import BasePlugin
+from . import config
+
+
+
+jwt_algorithm = 'HS256'
+
+def jwt_encode(payload):
+    """
+    Parameters
+    ----------
+    payload : dict
+        a payload dictionary
+
+    Returns
+    -------
+    a JSON web token
+
+    """
+
+    return jwt.encode(payload, config.jwt_secret, jwt_algorithm).decode('utf-8')
+
+
+def jwt_decode(token):
+    """
+    Checks if a token is valid
+    
+    Parameters
+    ----------
+    token : string
+        a jwt
+
+    Returns
+    -------
+    the token payload or False
+
+    """
+
+    try:
+        return jwt.decode(token.encode('utf-8'), jwt_secret, algorithms=[config.jwt_algorithm])
+    except:
+        return False
+
+
+
 
 class Authentication(BasePlugin):
     """
@@ -52,8 +96,6 @@ class Authentication(BasePlugin):
         ])
         
 
-        self._secret = 'secret'
-        self._algorithm = 'HS256'
         self._token_exp = 7*24*3600
 
 
@@ -238,7 +280,7 @@ class Authentication(BasePlugin):
             groupids = [group['id'] for group in self.user_groups[user['id']]]
             payload = {'userid': user['id'], 'groupids': groupids, 'username':user['username'], 'permission':self.user_permission(user['id']), 'exp':exp, 'iat':iat}
 
-            return self.jwt_encode(payload)
+            return jwt_encode(payload)
 
         return False
 
@@ -257,7 +299,7 @@ class Authentication(BasePlugin):
 
         """
 
-        payload = self.jwt_decode(token)
+        payload = jwt_decode(token)
         
         if payload:
             # return a new token
@@ -268,46 +310,13 @@ class Authentication(BasePlugin):
             if len(users)==1:
                 user = users[0]
                 payload = {'userid': user['id'], 'groupids': self.user_groups[user['id']], 'username':user['username'], 'permission':self.user_permission(user), 'exp':exp, 'iat':iat}
-                return self.jwt_encode(payload)
+                return jwt_encode(payload)
 
         return False
 
 
-    def jwt_encode(self,payload):
-        """
-        Parameters
-        ----------
-        payload : dict
-            a payload dictionary
-
-        Returns
-        -------
-        a JSON web token
-
-        """
-
-        return jwt.encode(payload, self._secret, self._algorithm).decode('utf-8')
 
 
-    def jwt_decode(self,token):
-        """
-        Checks if a token is valid
-        
-        Parameters
-        ----------
-        token : string
-            a jwt
-
-        Returns
-        -------
-        the token payload or False
-
-        """
-
-        try:
-            return jwt.decode(token.encode('utf-8'), self._secret, algorithms=[self._algorithm])
-        except:
-            return False
 
 
     def encrypt_password(self,password):
@@ -387,7 +396,7 @@ class Authentication(BasePlugin):
                 self.fire('send_to',{'event':'renew_token', 'token':token,'clients':[event.client]})
 
         elif event.type == 'authenticate':
-            payload = self.jwt_decode(event.data['token'])
+            payload = jwt_decode(event.data['token'])
             if payload:
                 event.client.tokenpayload = payload
                 self.fire('send_to',{'event':'authenticate', 'authenticated':True, 'clients':[event.client]})

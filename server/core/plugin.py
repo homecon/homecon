@@ -98,7 +98,6 @@ class BasePlugin(object):
         if source==None:
             source = self
 
-
         event = Event(event_type,data,source,client)
 
         async def do_fire(event):
@@ -139,8 +138,8 @@ class Plugin(BasePlugin):
         
         Parameters
         ---------
-        homecon : Homecon object
-            the main homecon object
+        states : States object
+            the main states object
             
         """
 

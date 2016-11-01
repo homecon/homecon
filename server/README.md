@@ -12,6 +12,7 @@ source env/bin/activate
 
 Install python dependencies:
 ```
+pip install pytz
 pip install ephem
 pip install passlib
 pip install PyJWT

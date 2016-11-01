@@ -129,10 +129,10 @@ class HomeConTestCase(unittest.TestCase):
             time.sleep(0.1) # stopping homecon takes some time
 
     # run the loop to fire fire events
-    def run_event_loop(self,loop):
+    def run_event_loop(self,loop,sleep=0.1):
 
         async def spam():
-            asyncio.sleep(0.1)
+            asyncio.sleep(sleep)
 
         loop.run_until_complete(spam())
 

@@ -80,11 +80,14 @@ class HomeCon(object):
         self.authentication = core.authentication.Authentication(self._queue)
         self.pages = core.pages.Pages(self._queue)
 
+        self.alarms = core.alarms.Alarms(self._queue,self.states)
+
         self.coreplugins = [
             self.states,
             self.websocket,
             self.authentication,
             self.pages,
+            self.alarms,
         ]
 
         ########################################################################
