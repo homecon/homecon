@@ -15,6 +15,9 @@
                 width: 90%;
                 margin: 8px;
             }
+            .spacer{
+                height: 70px;
+            }
         </style>
         
         <sortable-js on-update="_updateSectionsOrder" disabled="{{!edit}}">
@@ -38,7 +41,11 @@
         <div class="vertical layout center" hidden="{{!edit}}">
             <paper-button raised noink="true" on-click="addSection">add section</paper-button>
         </div>
-        
+
+        <!--a spacer to be able to scroll all the way down-->
+        <div class="spacer">
+            &nbsp;
+        </div>
         
     </template>
     <script>
