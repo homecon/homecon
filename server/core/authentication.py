@@ -46,7 +46,7 @@ def jwt_decode(token):
     """
 
     try:
-        return jwt.decode(token.encode('utf-8'), jwt_secret, algorithms=[config.jwt_algorithm])
+        return jwt.decode(token.encode('utf-8'), config.jwt_secret, algorithms=[jwt_algorithm])
     except:
         return False
 

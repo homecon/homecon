@@ -5,4 +5,5 @@ from . import authentication
 from . import states
 from . import websocket
 from . import pages
+from . import alarms
 
