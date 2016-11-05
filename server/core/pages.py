@@ -81,12 +81,15 @@ class Pages(BasePlugin):
         """
 
         if self.check_pages(pages):
-
+            print(id)
             # update the database
             self._db_pages.PUT(where='id=\'{}\''.format(id),pages=pages)
             self._get_active_pages()
 
-            return True
+            pages = self._db_pages.GET(id=id)[0]
+            pages['pages'] = json.loads(pages['pages'])
+
+            return pages
 
         return False
 
@@ -148,8 +151,13 @@ class Pages(BasePlugin):
 
             if tokenpayload and tokenpayload['permission']>=6 and 'value' in event.data:
                 # set
-                logging.warning(event.data['path'])
-                pages = self.update(event.data['path'],event.data['value'])
+                if event.data['path'] == '':
+                    id = self._active_pages['id']
+                else:
+                    id = event.data['path']
+
+
+                pages = self.update(id,event.data['value'])
                 logging.info("User {} on client {} updated pages {}".format(tokenpayload['userid'],event.client.address,pages['name']))
                 self.fire('send_to',{'event':'pages', 'path':pages['id'], 'value':pages['pages'], 'clients':[event.client]})
 
