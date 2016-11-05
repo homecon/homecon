@@ -14,6 +14,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
 <link rel="import" href="homecon-page.html">
 <link rel="import" href="homecon-page-header.html">
+<link rel="import" href="homecon-web-socket-object.html">
+<link rel="import" href="homecon-web-socket-sender.html">
 
 <dom-module id="view-settings">
 
@@ -65,9 +67,30 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
             </paper-material>
 
+
+            <homecon-web-socket-object auto id="websocketStatesList" event="list_states" data="{{statesList}}"></homecon-web-socket-object>
+            <homecon-web-socket-sender id="websocket"></homecon-web-socket-sender>
+
             <paper-material>
-                <h1>Items</h1>
+                <h1>States</h1>
+                <template is="dom-repeat" items="{{statesList}}" as="state">
+                    <paper-material class="horizontal layout center state" on-tap="editState">
+                        {{state.path}}
+                    </paper-material>
+                </template>
+
+                <paper-button raised noink="true" on-tap="addStateDialog">add state</paper-button>
             </paper-material>
+
+            <homecon-edit-dialog id="addStateDialog" on-save="addState">
+                <paper-input label="path:" value="{{newPath}}"></paper-input>
+                
+                <paper-input label="type: " value="{{newType}}"></paper-input>
+                <paper-input label="quantity: " value="{{newQuantity}}"></paper-input>
+                <paper-input label="unit: " value="{{newUnit}}"></paper-input>
+                <paper-input label="label: " value="{{newLabel}}"></paper-input>
+                <paper-input label="description: " value="{{newDescription}}"></paper-input>
+            </homecon-edit-dialog>
 
         </homecon-page>
 
@@ -78,9 +101,44 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             is: 'view-settings',
 
             properties: {
+                states: {
+                    type: 'Object',
+                    notify: true,
+                },
             },
 
 
+            addStateDialog: function(e){
+                this.$.addStateDialog.open()
+            },
+
+            addState: function(e){
+
+                this.$.addStateDialog.close();
+
+                var config = {
+                    'type': this.newType,
+                    'quantity': this.newQuantity,
+                    'unit': this.newUnit,
+                    'label': this.newLabel,
+                    'description': this.newDescription,
+                };
+
+                this.$.websocket.send({'event':'add_state','path':this.newPath,'config':config});
+            },
+
+            deleteState: function(e){
+                e.stopPropagation()
+                
+                var pageindex = parseInt(e.model.__data__.index);
+                var pagesectionindex = this._indexFromId(this.pages[pageindex].pagesections,e.target.widget.pagesection);
+
+                var widgetindex = this._indexFromId(this.pages[pageindex].pagesections[pagesectionindex].widgets,e.target.widget.id);
+                
+                if(widgetindex>-1){
+                    this.splice('pages.'+pageindex+'.pagesections.'+pagesectionindex+'.widgets',widgetindex,1);
+                }
+            },
         });
     </script>
 

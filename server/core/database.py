@@ -225,6 +225,11 @@ class Table(object):
 
         cursor = self.database.execute_query( query, data )
         
+    def DELETE(self,where=''):
+    
+        query = 'DELETE FROM {} WHERE {}'.format(self.name,where)
+        cursor = self.database.execute_query( query, data )
+
         
         
 # Example usage

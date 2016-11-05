@@ -9,43 +9,43 @@
 
 
 <dom-module is="homecon-edit-dialog">
-	<template>
-		<style include="iron-flex iron-flex-alignment">
-			:host{
-			}
-		</style>
-		
-		<paper-dialog id="dialog" entry-animation="scale-up-animation" exit-animation="fade-out-animation">
-			<form id="form" is="iron-form" on-iron-form-submit="save" action="/">
-				<content></content>
-				<div class="horizontal layout">
-					<paper-button raised on-tap="formSubmit">save</paper-button>
-					<paper-button raised on-tap="close">cancel</paper-button>
-				</div>
-			</form>
-		</paper-dialog>	
+    <template>
+        <style include="iron-flex iron-flex-alignment">
+            :host{
+            }
+        </style>
+        
+        <paper-dialog id="dialog" entry-animation="scale-up-animation" exit-animation="fade-out-animation">
+            <form id="form" is="iron-form" on-iron-form-submit="save" action="/">
+                <content></content>
+                <div class="horizontal layout">
+                    <paper-button raised on-tap="formSubmit">save</paper-button>
+                    <paper-button raised on-tap="close">cancel</paper-button>
+                </div>
+            </form>
+        </paper-dialog>    
 
-			
-	</template>
-	<script>
-		Polymer({
-			is: 'homecon-edit-dialog',
-			properties: {
-			},
-			open: function(){
-				this.$.dialog.open();
-			},
-			close: function(){
-				this.$.dialog.close();
-			},
-			formSubmit: function(){
-				this.$.form.submit();
-			},
-			save: function(){
-				this.fire('save');
-			},
-			
+            
+    </template>
+    <script>
+        Polymer({
+            is: 'homecon-edit-dialog',
+            properties: {
+            },
+            open: function(){
+                this.$.dialog.open();
+            },
+            close: function(){
+                this.$.dialog.close();
+            },
+            formSubmit: function(){
+                this.$.form.submit();
+            },
+            save: function(){
+                this.fire('save');
+            },
+            
 
-		});
-	</script>
+        });
+    </script>
 </dom-module>

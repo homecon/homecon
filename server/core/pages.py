@@ -81,7 +81,6 @@ class Pages(BasePlugin):
         """
 
         if self.check_pages(pages):
-            print(id)
             # update the database
             self._db_pages.PUT(where='id=\'{}\''.format(id),pages=pages)
             self._get_active_pages()
@@ -95,11 +94,15 @@ class Pages(BasePlugin):
 
     def add(self,name,pages,active=0):
         """
-        Loads pages by name
+        adds page
 
         Parameters
         ----------
+        name : string
+            pages name
+            
         pages : JSON string
+            the pages
 
         """
         
@@ -117,6 +120,17 @@ class Pages(BasePlugin):
         else:
             return False
 
+    def delete(self,id):
+        """
+        dDeltes pages by id
+
+        Parameters
+        ----------
+        id : int
+            the id
+
+        """
+        self._db_pages.DELETE(where='id=\'{}\''.format(id))
 
     def activate_pages(self,id):
         """
@@ -156,7 +170,6 @@ class Pages(BasePlugin):
                 else:
                     id = event.data['path']
 
-
                 pages = self.update(id,event.data['value'])
                 logging.info("User {} on client {} updated pages {}".format(tokenpayload['userid'],event.client.address,pages['name']))
                 self.fire('send_to',{'event':'pages', 'path':pages['id'], 'value':pages['pages'], 'clients':[event.client]})
@@ -179,10 +192,10 @@ class Pages(BasePlugin):
 
         if event.type == 'delete_pages':
             if tokenpayload and tokenpayload['permission']>=7:
-                # do delete
-                logging.info("User {} on client {} deleted pages {}".format(tokenpayload['userid'],event.client.address,event.data['id']))
+                self.delete(event.data['path'])
+                logging.info("User {} on client {} deleted pages {}".format(tokenpayload['userid'],event.client.address,event.data['path']))
                 self.fire('send_to',{'event':'pages', 'path':event.data['path'], 'value':None, 'clients':[event.client]})
-                    
+        
 
         if event.type == 'add_pages':
             if tokenpayload and tokenpayload['permission']>=7:

@@ -1,0 +1,38 @@
+
+<link rel="import" href="../bower_components/polymer/polymer.html">
+
+
+<dom-module id="homecon-web-socket-sender">
+
+    <template>
+
+        <style>
+            :host {
+                display: block;
+            }
+
+        </style>
+
+    </template>
+
+    <script>
+        Polymer({
+            is: 'homecon-web-socket-sender',
+
+            properties: {
+            },
+
+            send: function(data){
+                var senddata = {'token':window.homeconAuthentication.token}
+                
+                for(var attr in data){
+                    senddata[attr] = data[attr];
+                }
+                window.homeconWebSocket.send(senddata);
+            },
+
+        });
+    </script>
+
+</dom-module>
+

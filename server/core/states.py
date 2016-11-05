@@ -39,6 +39,12 @@ class States(BasePlugin):
             {'name':'value',  'type':'char(255)',  'null': '',  'default':'',  'unique':''},
         ])
 
+        # get all states from the database
+        result = self._db_states.GET()
+        for s in result:
+            state = State(self,s['path'],config=json.loads(s['config']))
+            state.get_value_from_db()
+            self._states[s['path']] = state
 
         # add settings states
         self.add('settings/latitude', config={'type': 'number', 'quantity':'angle', 'unit':'deg','label':'latitude', 'description':'HomeCon latitude'})
@@ -105,8 +111,7 @@ class States(BasePlugin):
 
             return state
         else:
-            logging.warning('State {} allready exists'.format(path))
-
+            return False
 
 
     def get(self,path):
@@ -131,14 +136,36 @@ class States(BasePlugin):
             logging.error('State {} is not defined'.format(path))
             return None
 
+    def get_states_list(self):
+        """
+        Returns a list of states which can be edited
+        """
+
+        stateslist = []
+        for state in self._states.values():
+            if not state.path.split('/')[0] == 'settings':
+                stateslist.append({'path':state.path,'config':state.config})
+
+        newlist = sorted(stateslist, key=lambda k: k['path'])
+
+        return newlist
+
+
     def listen(self,event):
         """
         Listen for events
 
         """
+        if event.type == 'list_states':
+
+            self.fire('send_to',{'event':'list_states', 'path':'', 'value':self.get_states_list(), 'clients':[event.client]})
 
         if event.type == 'add_state':
-            self.add(event.data['path'],event.data['config'])
+            state = self.add(event.data['path'],event.data['config'])
+
+            if state:
+                self.fire('state_added',{'state':state})
+                self.fire('send_to',{'event':'list_states', 'path':'', 'value':self.get_states_list(), 'clients':[event.client]})
 
 
         if event.type == 'state_changed':
@@ -146,43 +173,45 @@ class States(BasePlugin):
 
 
         if event.type == 'state':
+
             # get or set a state
             state = self.get(event.data['path'])
-            tokenpayload = event.client.tokenpayload  # event.data['token']  fixme, retrieve the payload from the token
+            if not state is None:
+                tokenpayload = event.client.tokenpayload  # event.data['token']  fixme, retrieve the payload from the token
 
-            
-            if 'value' in event.data:
-                # set
-                permitted = False
-                if tokenpayload['userid'] in state.config['writeusers']:
-                    permitted = True
-                else:
-                    for g in tokenpayload['groupids']:
-                        if g in state.config['writegroups']:
-                            permitted = True
-                            break
-
-                if permitted:
-                    state.set(event.data['value'],event.source)
-                else:
-                    logging.warning('User {} on client {} attempted to change the value of {} but is not permitted'.format(tokenpayload['userid'],event.client.address,state.path))
-
-            else:
-                # get
-                permitted = False
-                if tokenpayload['userid'] in state.config['readusers']:
-                    permitted = True
-                else:
-                    for g in tokenpayload['groupids']:
-                        if g in state.config['readgroups']:
-                            permitted = True
-                            break
-
-                if permitted:
-                    self.fire('send_to',{'event':'state', 'path':state.path, 'value':state.value, 'clients':[event.client]})
-                else:
-                    logging.warning('User {} attempted to change the value of {} but is not permitted'.format(tokenpayload['userid'],state.path))
                 
+                if 'value' in event.data:
+                    # set
+                    permitted = False
+                    if tokenpayload['userid'] in state.config['writeusers']:
+                        permitted = True
+                    else:
+                        for g in tokenpayload['groupids']:
+                            if g in state.config['writegroups']:
+                                permitted = True
+                                break
+
+                    if permitted:
+                        state.set(event.data['value'],event.source)
+                    else:
+                        logging.warning('User {} on client {} attempted to change the value of {} but is not permitted'.format(tokenpayload['userid'],event.client.address,state.path))
+
+                else:
+                    # get
+                    permitted = False
+                    if tokenpayload['userid'] in state.config['readusers']:
+                        permitted = True
+                    else:
+                        for g in tokenpayload['groupids']:
+                            if g in state.config['readgroups']:
+                                permitted = True
+                                break
+
+                    if permitted:
+                        self.fire('send_to',{'event':'state', 'path':state.path, 'value':state.value, 'clients':[event.client]})
+                    else:
+                        logging.warning('User {} attempted to change the value of {} but is not permitted'.format(tokenpayload['userid'],state.path))
+                    
 
 
     def __getitem__(self,path):
@@ -256,7 +285,7 @@ class State(object):
         result = self._states._db_states.GET(path=self.path,columns=['value'])
         value = result[0]['value']
         if not value is None:
-            self.value = json.loads(value)
+            self._value = json.loads(value)
 
     @property
     def value(self):

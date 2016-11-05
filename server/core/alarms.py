@@ -193,7 +193,7 @@ class Alarms(Plugin):
                 self.schedule_alarm(event.data['state'])
 
 
-        elif event.type == 'add_state':
+        elif event.type == 'state_added':
             if event.data['state'].config['type'] == 'alarm':
                 # schedule
                 self.schedule_alarm(event.data['state'])

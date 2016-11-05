@@ -11,65 +11,84 @@
 
 
 <dom-module is="homecon-widget-button">
-	<template>
-		<style>
-			:host{
-				display: inline-block;
-				position: relative;
-			}
-			.edit{
-				position: absolute;
-				top: -10px;
-				right: -10px;
-				color: var(--button-text-color);
-			}
-		</style>
-		
-		<paper-button raised>{{config.label}}</paper-button>
-		
-		<div class="edit" hidden="{{!edit}}">
-			<paper-icon-button icon="editor:mode-edit" noink="true" on-click="openEditDialog"></paper-icon-button>
-		</div>
-		
-		<homecon-edit-dialog id="editDialog" on-save="save">
-			<paper-input label="Label:" value="{{newLabel}}"></paper-input>
-			<homecon-icon-select icon="{{newIcon}}"></homecon-icon-select>
-			<paper-button on-click="delete">Delete</paper-button>
-		</homecon-edit-dialog>
+    <template>
+        <style>
+            :host{
+                display: inline-block;
+                position: relative;
+            }
+            .edit{
+                position: absolute;
+                top: -10px;
+                right: -10px;
+                color: var(--button-text-color);
+            }
+        </style>
+        
+        <homecon-web-socket-object id="websocketObject" event="state" path="{{config.state}}"></homecon-web-socket-object>
+        
+        <paper-button raised on-tap="call">{{config.label}}</paper-button>
+        
+        <div class="edit" hidden="{{!edit}}">
+            <paper-icon-button icon="editor:mode-edit" noink="true" on-tap="openEditDialog"></paper-icon-button>
+        </div>
+        
+        <homecon-edit-dialog id="editDialog" on-save="save">
+            <paper-input label="Label:" value="{{newLabel}}"></paper-input>
+            <paper-input label="state:" value="{{newState}}"></paper-input>
+            <paper-input label="value:" value="{{newValue}}"></paper-input>
+            <homecon-icon-select icon="{{newIcon}}"></homecon-icon-select>
+            <paper-button on-tap="delete">Delete</paper-button>
+        </homecon-edit-dialog>
 
-	</template>
-	<script>
-		Polymer({
-			is: 'homecon-widget-button',
-			properties: {
-				config: {
-					type: 'Object',
-					value: {'label':'new button','icon':'blank'},
-				},
-				edit:{
-					type: 'Boolean',
-					value: false
-				}
-			},
-			openEditDialog: function(){
-				this.set('newLabel',this.config.label);
-				this.$.editDialog.open();
-			},
-			save: function(e){
-				e.stopPropagation()
-				this.set('config.label',this.newLabel);
-				this.$.editDialog.close();
-				this.fire('save',this.config);
-			},
-			delete: function(){
-				this.fire('delete')
-			},
-			moveUp: function(){
-				this.fire('move-up')
-			},
-			moveDown: function(){
-				this.fire('move-down')
-			}
-		});
-	</script>
+    </template>
+    <script>
+        Polymer({
+            is: 'homecon-widget-button',
+            properties: {
+                config: {
+                    type: 'Object',
+                    value: {'label':'new button','state':'','value':1,'icon':'blank'},
+                },
+                edit:{
+                    type: 'Boolean',
+                    value: false
+                }
+            },
+
+            call: function(){
+                this.$.websocketObject.send(this.config.value);
+            },
+
+            openEditDialog: function(){
+                this.set('newLabel',this.config.label);
+                this.set('newState',this.config.state);
+                this.set('newValue',this.config.value);
+                this.$.editDialog.open();
+            },
+
+            save: function(e){
+                e.stopPropagation()
+                this.set('config.label',this.newLabel);
+                this.set('config.state',this.newState);
+                this.set('config.value',this.newValue);
+
+                this.$.editDialog.close();
+                this.fire('save',this.config);
+            },
+
+            delete: function(){
+                this.fire('delete')
+            },
+
+            moveUp: function(){
+                this.fire('move-up')
+            },
+
+            moveDown: function(){
+                this.fire('move-down')
+            }
+
+        });
+    </script>
 </dom-module>
