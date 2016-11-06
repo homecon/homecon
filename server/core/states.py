@@ -150,10 +150,6 @@ class States(BasePlugin):
 
 
     def listen_list_states(self,event):
-        """
-        Listen for events
-
-        """
         if event.type == 'list_states':
 
             self.fire('send_to',{'event':'list_states', 'path':'', 'value':self.get_states_list(), 'clients':[event.client]})
@@ -171,8 +167,13 @@ class States(BasePlugin):
         if event.data['path'] in self._states:
 
             state = self._states[event.data['path']]
+
+            config = dict(state.config)
             for key,val in event.data['config'].items():
-                state.config[key] = val
+                config[key] = val
+
+            state.config = config
+
 
             self.fire('send_to',{'event':'list_states', 'path':'', 'value':self.get_states_list(), 'clients':[event.client]})
 
@@ -269,9 +270,9 @@ class State(object):
         self._path = path
 
         if config == None:
-            self.config = {}
+            self._config = {}
         else:
-            self.config = config 
+            self._config = config 
 
         self._value = None
 
@@ -281,10 +282,9 @@ class State(object):
         self._value = value
 
         # update the value in the database
-        self._states._db_states.PUT(value=json.dumps(value), where='path=\'{}\''.format(self.path))
+        self._states._db_states.PUT(value=json.dumps(value), where='path=\'{}\''.format(self._path))
 
         self._states.fire('state_changed',{'state':self,'value':self._value,'oldvalue':oldvalue},source)
-
 
     def get(self):
         return self._value
@@ -309,6 +309,14 @@ class State(object):
     def path(self):
         return self._path
 
+    @property
+    def config(self):
+        return self._config
+
+    @config.setter
+    def config(self, config):
+        self._states._db_states.PUT(config=json.dumps(config), where='path=\'{}\''.format(self._path))
+        self._config=config
 
     @property
     def parent(self):
