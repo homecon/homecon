@@ -53,7 +53,6 @@ class States(BasePlugin):
         self.add('settings/timezone', config={'type': 'string', 'quantity':'',      'unit':'',   'label':'time zone','description':'HomeCon time zone'})
 
 
-
     def add(self,path,config=None):
         """
         add a state
@@ -113,7 +112,6 @@ class States(BasePlugin):
         else:
             return False
 
-
     def get(self,path):
         """
         gets a state given its path
@@ -143,7 +141,7 @@ class States(BasePlugin):
 
         stateslist = []
         for state in self._states.values():
-            if not state.path.split('/')[0] == 'settings':
+            if not state.path.split('/')[0] in ['settings','plugins']:
                 stateslist.append({'path':state.path,'config':state.config})
 
         newlist = sorted(stateslist, key=lambda k: k['path'])
@@ -160,11 +158,22 @@ class States(BasePlugin):
 
             self.fire('send_to',{'event':'list_states', 'path':'', 'value':self.get_states_list(), 'clients':[event.client]})
 
+
         if event.type == 'add_state':
             state = self.add(event.data['path'],event.data['config'])
 
             if state:
                 self.fire('state_added',{'state':state})
+                self.fire('send_to',{'event':'list_states', 'path':'', 'value':self.get_states_list(), 'clients':[event.client]})
+        
+
+        if event.type == 'edit_state':
+            if event.data['path'] in self._states:
+
+                state = self._states[event.data['path']]
+                for key,val in event.data['config'].items():
+                    state.config[key] = val
+
                 self.fire('send_to',{'event':'list_states', 'path':'', 'value':self.get_states_list(), 'clients':[event.client]})
 
 

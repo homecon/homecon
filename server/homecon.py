@@ -82,7 +82,12 @@ class HomeCon(object):
 
         self.alarms = core.alarms.Alarms(self._queue,self.states)
 
+
+        # start plugins
+        self.plugins = core.plugin.Plugins(self._queue,self.states)
+
         self.coreplugins = [
+            self.plugins,
             self.states,
             self.websocket,
             self.authentication,
@@ -90,38 +95,8 @@ class HomeCon(object):
             self.alarms,
         ]
 
-        ########################################################################
-        # start plugins
-        ########################################################################
-        self.plugins = []
-        #self.start_plugin('knx')  # this should be done dynamically from the database
-
 
         logging.info('HomeCon Initialized')
-
-
-
-    def start_plugin(self,name,package='plugins'):
-        """
-        Starts a plugin
-
-        this attempts to load the plugin with the correct format by name from
-        the plugins folder
-
-        Parameters
-        ----------
-        name : string
-            the filename of the plugin
-    
-        package : string
-            package where to find the plugin, defaults to 'plugins'
-
-        """
-        pluginmodule = __import__('{}.{}'.format(package,name), fromlist=[name])
-        pluginclass = getattr(pluginmodule, name.capitalize())
-        
-        plugininstance = pluginclass(self._queue,self.states)
-        self.plugins.append(plugininstance)
 
 
     def fire(self,event):
@@ -152,7 +127,7 @@ class HomeCon(object):
             for plugin in self.coreplugins:
                 self._loop.call_soon_threadsafe(plugin._listen, event)
 
-            for plugin in self.plugins:
+            for plugin in self.plugins.values():
                 self._loop.call_soon_threadsafe(plugin._listen, event)
 
 
