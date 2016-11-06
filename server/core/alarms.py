@@ -181,26 +181,20 @@ class Alarms(Plugin):
             self._loop.call_later(delay,functools.partial(self.fire, 'state', {'path':path, 'value':value}, source=self))
 
 
-    def listen(self,event):
-        """
-        Listen for events
-
-        """
-
-        if event.type == 'state_changed':
-            if event.data['state'].config['type'] == 'alarm':
-                # schedule
-                self.schedule_alarm(event.data['state'])
+    def listen_state_changed(self,event):
+        if event.data['state'].config['type'] == 'alarm':
+            # schedule
+            self.schedule_alarm(event.data['state'])
 
 
-        elif event.type == 'state_added':
-            if event.data['state'].config['type'] == 'alarm':
-                # schedule
-                self.schedule_alarm(event.data['state'])
+    def listen_state_added(self,event):
+        if event.data['state'].config['type'] == 'alarm':
+            # schedule
+            self.schedule_alarm(event.data['state'])
 
 
-        elif event.type == 'alarm_snooze':
-            logging.warning('alarm snooze is not implemented yet')
+    def listen_alarm_snooze(self,event):
+        logging.warning('alarm snooze is not implemented yet')
 
 
 

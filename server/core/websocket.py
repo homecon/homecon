@@ -94,39 +94,37 @@ class Websocket(BasePlugin):
         logging.debug('Client on {} sent {}'.format(address,newdata))
 
 
-    def listen(self,event):
-
-        if event.type == 'broadcast':
-            # send the event to all connected clients
-            for client in self.clients:
-                asyncio.ensure_future( client.send(event.data) )
+    def listen_broadcast(self,event):
+        # send the event to all connected clients
+        for client in self.clients:
+            asyncio.ensure_future( client.send(event.data) )
 
 
-        if event.type == 'send':
-            # send the event to permitted clients
-            senddata = {key:val for key,val in event.data.items() if not (key=='readusers' or key=='readgroups')}
+    def listen_send(self,event):
+        # send the event to permitted clients
+        senddata = {key:val for key,val in event.data.items() if not (key=='readusers' or key=='readgroups')}
 
-            for client in self.clients:
-                permitted = False
-                if client.tokenpayload['userid'] in event.data['readusers']:
-                    permitted = True
-                else:
-                    for g in client.tokenpayload['groupids']:
-                        if g in event.data['readgroups']:
-                            permitted = True
-                            break
+        for client in self.clients:
+            permitted = False
+            if client.tokenpayload['userid'] in event.data['readusers']:
+                permitted = True
+            else:
+                for g in client.tokenpayload['groupids']:
+                    if g in event.data['readgroups']:
+                        permitted = True
+                        break
 
-                if permitted:
-                    asyncio.ensure_future( client.send(senddata) )
-
-
-        elif event.type == 'send_to':
-            # send the event to some clients
-            clients = event.data['clients']
-            senddata = {key:val for key,val in event.data.items() if not key=='clients'}
-
-            for client in clients:
+            if permitted:
                 asyncio.ensure_future( client.send(senddata) )
+
+
+    def listen_send_to(self,event):
+        # send the event to some clients
+        clients = event.data['clients']
+        senddata = {key:val for key,val in event.data.items() if not key=='clients'}
+
+        for client in clients:
+            asyncio.ensure_future( client.send(senddata) )
 
 
     def stop(self):

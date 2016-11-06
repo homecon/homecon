@@ -42,7 +42,16 @@ class BasePlugin(object):
         self._loop = asyncio.get_event_loop()
         self.config_keys = []
 
+        self.get_listeners()
+
         self.initialize()
+
+    def get_listeners(self):
+        self.listeners = {}
+        for method in dir(self):
+            if method.startswith('listen_'):
+                event = '_'.join(method.split('_')[1:])
+                self.listeners[event] = getattr(self,method)
 
 
     def initialize(self):
@@ -134,7 +143,10 @@ class BasePlugin(object):
 
         # check if this plugin is the source and stop execution if so
         if not event.source == self:
-            self.listen(event)
+            #self.listen(event)
+            #getattr(self,'listen')(event)
+            if event.type in self.listeners:
+                self.listeners[event.type](event)
 
 
 class Plugin(BasePlugin):
@@ -151,6 +163,7 @@ class Plugin(BasePlugin):
 
         self._queue = queue
         self._loop = asyncio.get_event_loop()
+        self.get_listeners()
 
         self.states = states
 
@@ -248,31 +261,27 @@ class Plugins(Plugin):
         return False
 
 
-    def listen(self,event):
-        """
-        Listen for events
+    def listen_list_plugins(self,event):
+        self.fire('send_to',{'event':'list_plugins', 'path':'', 'value':self.get_plugins_list(), 'clients':[event.client]})
+        
 
-        """
+    def listen_list_state_config_keys(self,event):
+        self.fire('send_to',{'event':'list_state_config_keys', 'path':'', 'value':self.get_state_config_keys(), 'clients':[event.client]})
 
-        if event.type == 'list_plugins':
+
+    def listen_activate_plugin(self,event):
+        if self.activate(event.data['plugin']):
             self.fire('send_to',{'event':'list_plugins', 'path':'', 'value':self.get_plugins_list(), 'clients':[event.client]})
-        
-
-        if event.type == 'list_state_config_keys':
-            self.fire('send_to',{'event':'list_state_config_keys', 'path':'', 'value':self.get_state_config_keys(), 'clients':[event.client]})
 
 
-        if event.type == 'activate_plugin':
-            if self.activate(event.data['plugin']):
-                self.fire('send_to',{'event':'list_plugins', 'path':'', 'value':self.get_plugins_list(), 'clients':[event.client]})
-        
-        if event.type == 'deactivate_plugin':
-            if self.deactivate(event.data['plugin']):
-                self.fire('send_to',{'event':'list_plugins', 'path':'', 'value':self.get_plugins_list(), 'clients':[event.client]})
+    def listen_deactivate_plugin(self,event):
+        if self.deactivate(event.data['plugin']):
+            self.fire('send_to',{'event':'list_plugins', 'path':'', 'value':self.get_plugins_list(), 'clients':[event.client]})
 
-        if event.type == 'download_plugin':
-            if self.download(event.data['url']):
-                self.fire('send_to',{'event':'list_plugins', 'path':'', 'value':self.get_plugins_list(), 'clients':[event.client]})
+
+    def listen_download_plugin(self,event):
+        if self.download(event.data['url']):
+            self.fire('send_to',{'event':'list_plugins', 'path':'', 'value':self.get_plugins_list(), 'clients':[event.client]})
 
 
     def _start_plugin(self,name,package=None):

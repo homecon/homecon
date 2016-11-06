@@ -153,66 +153,61 @@ class Pages(BasePlugin):
 
 
 
-    def listen(self,event):
+    def listen_pages(self,event):
         """
         Listen for events
 
         """
+        # set or get
+        tokenpayload = event.client.tokenpayload  # fixme, retrieve the payload from the token tokenpayload = self._homecon.authentication.jwt_decode(event.data['token'])
 
-        if event.type == 'pages':
-            # set or get
-            tokenpayload = event.client.tokenpayload  # fixme, retrieve the payload from the token tokenpayload = self._homecon.authentication.jwt_decode(event.data['token'])
+        if tokenpayload and tokenpayload['permission']>=6 and 'value' in event.data:
+            # set
+            if event.data['path'] == '':
+                id = self._active_pages['id']
+            else:
+                id = event.data['path']
 
-            if tokenpayload and tokenpayload['permission']>=6 and 'value' in event.data:
-                # set
-                if event.data['path'] == '':
-                    id = self._active_pages['id']
-                else:
-                    id = event.data['path']
+            pages = self.update(id,event.data['value'])
+            logging.info("User {} on client {} updated pages {}".format(tokenpayload['userid'],event.client.address,pages['name']))
+            self.fire('send_to',{'event':'pages', 'path':pages['id'], 'value':pages['pages'], 'clients':[event.client]})
 
-                pages = self.update(id,event.data['value'])
-                logging.info("User {} on client {} updated pages {}".format(tokenpayload['userid'],event.client.address,pages['name']))
-                self.fire('send_to',{'event':'pages', 'path':pages['id'], 'value':pages['pages'], 'clients':[event.client]})
+        elif tokenpayload and tokenpayload['permission']>=5 and not event.data['path'] == '':
+            # get
+            pages = self.get(event.data['path'])
 
-            elif tokenpayload and tokenpayload['permission']>=5 and not event.data['path'] == '':
-                # get
-                pages = self.get(event.data['path'])
+            logging.info("User {} on client {} loaded pages {}".format(tokenpayload['userid'],event.client.address,pages['name']))
+            self.fire('send_to',{'event':'pages', 'path':pages['id'], 'value':pages['pages'], 'clients':[event.client]})
 
-                logging.info("User {} on client {} loaded pages {}".format(tokenpayload['userid'],event.client.address,pages['name']))
-                self.fire('send_to',{'event':'pages', 'path':pages['id'], 'value':pages['pages'], 'clients':[event.client]})
+        elif tokenpayload and tokenpayload['permission']>=4:
+            # get active
+            pages = self.permitted_pages(tokenpayload['userid'],tokenpayload['groupids'])
 
-            elif tokenpayload and tokenpayload['permission']>=4:
-                # get active
-                pages = self.permitted_pages(tokenpayload['userid'],tokenpayload['groupids'])
-
-                logging.info("User {} on client {} loaded pages {}".format(tokenpayload['userid'],event.client.address,self._active_pages['name']))
-                self.fire('send_to',{'event':'pages', 'path':event.data['path'], 'value':pages, 'clients':[event.client]})
-        
+            logging.info("User {} on client {} loaded pages {}".format(tokenpayload['userid'],event.client.address,self._active_pages['name']))
+            self.fire('send_to',{'event':'pages', 'path':event.data['path'], 'value':pages, 'clients':[event.client]})
 
 
-        if event.type == 'delete_pages':
-            if tokenpayload and tokenpayload['permission']>=7:
-                self.delete(event.data['path'])
-                logging.info("User {} on client {} deleted pages {}".format(tokenpayload['userid'],event.client.address,event.data['path']))
-                self.fire('send_to',{'event':'pages', 'path':event.data['path'], 'value':None, 'clients':[event.client]})
-        
-
-        if event.type == 'add_pages':
-            if tokenpayload and tokenpayload['permission']>=7:
-                pages = self.add(event.data['name'],event.data['pages'],active=0)
-                logging.info("User {} on client {} added pages {}".format(tokenpayload['userid'],event.client.addr,pages['name']))
-                self.fire('send_to',{'event':'pages', 'path':pages['id'], 'value':pages['pages'], 'clients':[event.client]})
+    def listen_delete_pages(self,event):
+        if tokenpayload and tokenpayload['permission']>=7:
+            self.delete(event.data['path'])
+            logging.info("User {} on client {} deleted pages {}".format(tokenpayload['userid'],event.client.address,event.data['path']))
+            self.fire('send_to',{'event':'pages', 'path':event.data['path'], 'value':None, 'clients':[event.client]})
 
 
+    def listen_add_pages(self,event):
+        if tokenpayload and tokenpayload['permission']>=7:
+            pages = self.add(event.data['name'],event.data['pages'],active=0)
+            logging.info("User {} on client {} added pages {}".format(tokenpayload['userid'],event.client.addr,pages['name']))
+            self.fire('send_to',{'event':'pages', 'path':pages['id'], 'value':pages['pages'], 'clients':[event.client]})
 
 
-        if event.type == 'list_pages':
-            self.fire('send_to',{'event':'list_pages', 'path':'', 'value':[page for page in self._pages.values()], 'clients':[event.client]})
+    def listen_list_pages(self,event):
+        self.fire('send_to',{'event':'list_pages', 'path':'', 'value':[page for page in self._pages.values()], 'clients':[event.client]})
 
 
-        if event.type == 'publish_pages':
-            self.activate_pages(event.data['id'])
-            self.fire('send_to',{'event':'activate_pages', 'success':True, 'clients':[event.client]})
+    def listen_publish_pages(self,event):
+        self.activate_pages(event.data['id'])
+        self.fire('send_to',{'event':'activate_pages', 'success':True, 'clients':[event.client]})
 
 
     def _get_active_pages(self):

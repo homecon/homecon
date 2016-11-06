@@ -358,47 +358,47 @@ class Authentication(BasePlugin):
         return result
         
 
-    def listen(self,event):
-        """
-        Listen for events
+    def listen_register(self,event):
+        user = self.add_user(event.data['username'],event.data['password'],0)
+        if user:
+            pass
 
-        """
 
-        if event.type == 'register':
-            user = self.add_user(event.data['username'],event.data['password'],0)
-            if user:
-                pass
+    def listen_add_user(self,event):
+        user = self.add_user(event.data['username'],event.data['password'],event.data['permission'])
+        if user:
+            # add the user to the default user group
+            self.add_user_to_group(user['id'],self.groupnames['default'])
 
-        elif event.type == 'add_user':
-            user = self.add_user(event.data['username'],event.data['password'],event.data['permission'])
-            if user:
-                # add the user to the default user group
-                self.add_user_to_group(user['id'],self.groupnames['default'])
 
-        elif event.type == 'add_group':
-            group = self.add_group(event.data['groupname'],event.data['permission'])
-            if group:
-                pass
+    def listen_add_group(self,event):
+        group = self.add_group(event.data['groupname'],event.data['permission'])
+        if group:
+            pass
 
-        elif event.type == 'add_user_to_group':
-            success = self.add_user_to_group(event.data['userid'],event.data['groupid'])
-            if success:
-                pass
 
-        elif event.type == 'request_token':
-            token = self.request_token(event.data['username'],event.data['password'])
-            if token:
-                self.fire('send_to',{'event':'request_token', 'token':token, 'clients':[event.client]})
+    def listen_add_user_to_group(self,event):
+        success = self.add_user_to_group(event.data['userid'],event.data['groupid'])
+        if success:
+            pass
 
-        elif event.type == 'renew_token':
-            token = self.renew_token(event.data['token'])
-            if token:
-                self.fire('send_to',{'event':'renew_token', 'token':token,'clients':[event.client]})
 
-        elif event.type == 'authenticate':
-            payload = jwt_decode(event.data['token'])
-            if payload:
-                event.client.tokenpayload = payload
-                self.fire('send_to',{'event':'authenticate', 'authenticated':True, 'clients':[event.client]})
+    def listen_request_token(self,event):
+        token = self.request_token(event.data['username'],event.data['password'])
+        if token:
+            self.fire('send_to',{'event':'request_token', 'token':token, 'clients':[event.client]})
+
+
+    def listen_renew_token(self,event):
+        token = self.renew_token(event.data['token'])
+        if token:
+            self.fire('send_to',{'event':'renew_token', 'token':token,'clients':[event.client]})
+
+
+    def listen_authenticate(self,event):
+        payload = jwt_decode(event.data['token'])
+        if payload:
+            event.client.tokenpayload = payload
+            self.fire('send_to',{'event':'authenticate', 'authenticated':True, 'clients':[event.client]})
 
 
