@@ -7,70 +7,77 @@
 <link rel="import" href="../bower_components/paper-button/paper-button.html">
 
 <link rel="import" href="widgets/homecon-widget-button.html">
+<link rel="import" href="widgets/homecon-widget-switch.html">
 
 <dom-module is="homecon-widget">
-	<template>
-		<style>
-			:host{
-				display: inline-block;
-				position: relative;
-			}
-			.edit{
-				position: absolute;
-				top: 0px;
-				right: 5px;
-				color: var(--button-text-color);
-			}
-		</style>
-		
-		<div id="container" on-save="save"><div></div></div>
+    <template>
+        <style>
+            :host{
+                display: inline-block;
+                position: relative;
+            }
+            .edit{
+                position: absolute;
+                top: 0px;
+                right: 5px;
+                color: var(--button-text-color);
+            }
+        </style>
+        
+        <div id="container" on-save="save"><div></div></div>
 
-	</template>
-	<script>
-		Polymer({
-			is: 'homecon-widget',
-			properties: {
-				widget: {
-					type: 'Object',
-					value: {'type':'homecon-widget-button','config':{}}
-				},
-				pagesectionIndex: {
-					type: 'Number'
-				},
-				edit: {
-					type: 'Boolean',
-					value: false,
-					observer: 'editChanged'
-				},
-			},
-			observers: [
-				'updateWidget(widget.type,widget.config)'
-			],
-			updateWidget: function(type,config){
-				var container = this.$.container;
+    </template>
+    <script>
+        Polymer({
+            is: 'homecon-widget',
+            properties: {
+                widget: {
+                    type: 'Object',
+                    value: {'type':'homecon-widget-button','config':{}}
+                },
+                pagesectionIndex: {
+                    type: 'Number'
+                },
+                edit: {
+                    type: 'Boolean',
+                    value: false,
+                    observer: 'editChanged'
+                },
+            },
+            observers: [
+                'updateWidget(widget.type,widget.config)'
+            ],
+            updateWidget: function(type,config){
+                var container = this.$.container;
 
-				var widget = document.createElement(type);
-				widget.config = this.widget.config;
-				widget.edit = this.edit;
+                var widget = document.createElement(type);
+                if('initialize' in this.widget.config){
+                    this.widget.config = widget.config;
+                }
+                else{
+                    widget.config = this.widget.config;
+                }
 
-				this.set('widgetinstance',widget);
-				
-				// import the widget
-				//this.importHref( this.resolveUrl(type+'.html'), null, null, true );
+                widget.edit = this.edit;
 
-				// add the widget to the dom
-				container.removeChild(container.firstChild)
-				container.appendChild(widget);
-			},
-			save: function(e,d){
-				e.stopPropagation();
-				this.set('widget.config',d);
-			},
-			editChanged: function(newValue) {
-				if(typeof this.widgetinstance != 'undefined' && this.widgetinstance != {}){	
-					this.widgetinstance.edit = newValue;
-				}
-			}
-		});
-	</script>
+                this.set('widgetinstance',widget);
+                
+                // import the widget
+                //this.importHref( this.resolveUrl(type+'.html'), null, null, true );
+
+                // add the widget to the dom
+                container.removeChild(container.firstChild)
+                container.appendChild(widget);
+            },
+            save: function(e,d){
+                e.stopPropagation();
+                this.set('widget.config',d);
+            },
+            editChanged: function(newValue) {
+                if(typeof this.widgetinstance != 'undefined' && this.widgetinstance != {}){    
+                    this.widgetinstance.edit = newValue;
+                }
+            }
+        });
+    </script>
 </dom-module>

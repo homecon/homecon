@@ -31,6 +31,7 @@
                 path: {
                     type: String,
                     value: '',
+                    observer: '_pathChanged',
                 },
                 data: {
                     type: Object,
@@ -98,7 +99,11 @@
                     this.debounce('sendDataDebounce', this._sendData, this.debounce); 
                 }
             },
-
+            _pathChanged: function(path, oldpath){
+                if(this.auto && this.observe && window.homeconWebSocket.connected && !(path == '')){
+                    this.debounce('sendDataDebounce', this.send, this.debounce); 
+                }
+            },
         });
     </script>
 

@@ -5,10 +5,11 @@
 <link rel="import" href="../../bower_components/iron-icons/editor-icons.html">
 
 <link rel="import" href="../../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../../bower_components/paper-icon-button/paper-icon-button.html">
 
 <link rel="import" href="../homecon-edit-dialog.html">
 <link rel="import" href="../homecon-icon-select.html">
-
+<link rel="import" href="../homecon-web-socket-sender.html">
 
 <dom-module is="homecon-widget-button">
     <template>
@@ -16,6 +17,12 @@
             :host{
                 display: inline-block;
                 position: relative;
+            }
+            .button {
+                min-width: 250px;
+                text-transform: none;
+                font-size: 1.2em;
+                font-weight: 700;
             }
             .edit{
                 position: absolute;
@@ -25,9 +32,9 @@
             }
         </style>
         
-        <homecon-web-socket-object id="websocketObject" event="state" path="{{config.state}}"></homecon-web-socket-object>
+        <homecon-web-socket-sender id="websocket"></homecon-web-socket-sender>
         
-        <paper-button raised on-tap="call">{{config.label}}</paper-button>
+        <paper-button class="button" raised on-tap="call">{{config.label}}</paper-button>
         
         <div class="edit" hidden="{{!edit}}">
             <paper-icon-button icon="editor:mode-edit" noink="true" on-tap="openEditDialog"></paper-icon-button>
@@ -35,8 +42,8 @@
         
         <homecon-edit-dialog id="editDialog" on-save="save">
             <paper-input label="Label:" value="{{newLabel}}"></paper-input>
-            <paper-input label="state:" value="{{newState}}"></paper-input>
-            <paper-input label="value:" value="{{newValue}}"></paper-input>
+            <paper-input label="event:" value="{{newEvent}}"></paper-input>
+            <paper-input label="data:" value="{{newData}}"></paper-input>
             <homecon-icon-select icon="{{newIcon}}"></homecon-icon-select>
             <paper-button on-tap="delete">Delete</paper-button>
         </homecon-edit-dialog>
@@ -48,7 +55,7 @@
             properties: {
                 config: {
                     type: 'Object',
-                    value: {'label':'new button','state':'','value':1,'icon':'blank'},
+                    value: {'label':'new button','event':'','data':{},'icon':'blank'},
                 },
                 edit:{
                     type: 'Boolean',
@@ -57,21 +64,41 @@
             },
 
             call: function(){
-                this.$.websocketObject.send(this.config.value);
+                var data = {'event':this.config.event}
+
+                for(key in this.config.data){
+                    data[key] = this.config.data[key]
+                }
+                this.$.websocket.send(data);
             },
 
             openEditDialog: function(){
+                var configdata = this.config.data
+                if( typeof configdata != 'string'){
+                    configdata = JSON.stringify(configdata);
+                }
+
                 this.set('newLabel',this.config.label);
-                this.set('newState',this.config.state);
-                this.set('newValue',this.config.value);
+                this.set('newEvent',this.config.event);
+                this.set('newData',configdata);
+                this.set('newIcon',this.config.icon);
                 this.$.editDialog.open();
             },
 
             save: function(e){
                 e.stopPropagation()
+
+                var configdata = this.newData
+                try{
+                    configdata = JSON.parse(configdata);
+                }
+                catch(e){
+                }
+
                 this.set('config.label',this.newLabel);
-                this.set('config.state',this.newState);
-                this.set('config.value',this.newValue);
+                this.set('config.event',this.newEvent);
+                this.set('config.data',configdata);
+                this.set('config.icon',this.newIcon);
 
                 this.$.editDialog.close();
                 this.fire('save',this.config);

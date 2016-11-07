@@ -1,0 +1,157 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout-classes.html">
+<link rel="import" href="../../bower_components/iron-icon/iron-icon.html">
+<link rel="import" href="../../bower_components/iron-icons/iron-icons.html">
+<link rel="import" href="../../bower_components/iron-icons/editor-icons.html">
+
+<link rel="import" href="../../bower_components/paper-icon-button/paper-icon-button.html">
+
+<link rel="import" href="../homecon-edit-dialog.html">
+<link rel="import" href="../homecon-icon-select.html">
+<link rel="import" href="../homecon-web-socket-object.html">
+
+<dom-module is="homecon-widget-switch">
+    <template>
+        <style>
+            :host{
+                display: inline-block;
+                position: relative;
+            }
+            .button {
+                text-transform: none;
+                min-width: 250px;
+                padding: 0px;
+            }
+            .icon{
+                width: 60px;
+                height: 60px;
+            }
+            .label{
+                font-size: 1.2em;
+                font-weight: 700;
+            }
+            .edit{
+                position: absolute;
+                top: -10px;
+                right: -10px;
+                color: var(--button-text-color);
+            }
+        </style>
+        
+        <homecon-web-socket-object auto id="websocketObject" event="state" path="[[config.path]]" data="{{value}}"></homecon-web-socket-object>
+        
+        <paper-button noink class="button horizontal layout center" on-tap="call">
+            <img class="icon" src="/images/icon/[[color]]/[[parseIcon(config.icon)]].png">
+            <div class="label">{{config.label}}</div>
+        </paper-button>
+
+        <!--<div class="container horizontal layout">
+            <paper-icon-button class="icon" src="/images/icon/[[color]]/[[parseIcon(config.icon)]].png" on-tap="call"></paper-icon-button>
+            <div>{{config.label}}</div>
+        </div>-->
+
+        <div class="edit" hidden="{{!edit}}">
+            <paper-icon-button icon="editor:mode-edit" noink="true" on-tap="openEditDialog"></paper-icon-button>
+        </div>
+        
+        <homecon-edit-dialog id="editDialog" on-save="save">
+            <paper-input label="Label:" value="{{newLabel}}"></paper-input>
+            <paper-input label="path:" value="{{newPath}}"></paper-input>
+            <paper-input label="value on:" value="{{newValueOn}}"></paper-input>
+            <paper-input label="value off:" value="{{newValueOff}}"></paper-input>
+            <homecon-icon-select icon="{{newIcon}}"></homecon-icon-select>
+            <paper-input label="color on:" value="{{newColorOn}}"></paper-input>
+            <paper-input label="color off:" value="{{newColorOff}}"></paper-input>
+            <paper-button on-tap="delete">Delete</paper-button>
+        </homecon-edit-dialog>
+
+    </template>
+    <script>
+        Polymer({
+            is: 'homecon-widget-switch',
+            properties: {
+                config: {
+                    type: 'Object',
+                    value: {'label':'new switch','path':'','valueOn':1,'valueOff':0,'colorOn':'f79a1f','colorOff':'ffffff','icon':'light_light'},
+                },
+                edit: {
+                    type: 'Boolean',
+                    value: false
+                }
+            },
+            
+            observers: [
+                'parseColor(value)',
+            ],
+
+            ready: function(){
+                this.color = 'ffffff';
+            },
+
+            call: function(){
+                var sendvalue = 1;
+
+                if(this.value){
+                    sendvalue = 0;
+                }
+
+                this.$.websocketObject.send(sendvalue);
+            },
+
+            openEditDialog: function(){
+                this.set('newLabel',this.config.label);
+                this.set('newPath',this.config.path);
+                this.set('newIcon',this.config.icon);
+                this.set('newValueOn',this.config.valueOn);
+                this.set('newValueOff',this.config.valueOff);
+                this.set('newColorOn',this.config.colorOn);
+                this.set('newColorOff',this.config.colorOff);
+                this.$.editDialog.open();
+            },
+
+            save: function(e){
+                e.stopPropagation()
+
+                this.set('config.label',this.newLabel);
+                this.set('config.path',this.newPath);
+                this.set('config.icon',this.newIcon);
+                this.set('config.valueOn',this.newValueOn);
+                this.set('config.valueOff',this.newValueOff);
+                this.set('config.colorOn',this.newColorOn);
+                this.set('config.colorOff',this.newColorOff);
+
+                this.$.editDialog.close();
+                this.fire('save',this.config);
+            },
+
+            delete: function(){
+                this.fire('delete')
+            },
+
+            moveUp: function(){
+                this.fire('move-up')
+            },
+
+            moveDown: function(){
+                this.fire('move-down')
+            },
+            parseIcon: function(icon){
+                if(icon==''){
+                    return 'blank';
+                }
+                else{
+                    return icon;
+                }
+            },
+            parseColor: function(value){
+                if(value){
+                   this.color = this.config.colorOn;
+                }
+                else{
+                   this.color = this.config.colorOff;
+                }
+            },
+
+        });
+    </script>
+</dom-module>

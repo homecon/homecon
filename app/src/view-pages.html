@@ -11,7 +11,15 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="../bower_components/polymer/polymer.html">
 <link rel="import" href="../bower_components/iron-localstorage/iron-localstorage.html">
 <link rel="import" href="../bower_components/iron-pages/iron-pages.html">
+
+<link rel="import" href="../bower_components/paper-dropdown-menu/paper-dropdown-menu.html">
+<link rel="import" href="../bower_components/paper-menu/paper-menu.html">
+<link rel="import" href="../bower_components/paper-item/paper-item.html">
+
 <link rel="import" href="../bower_components/Sortable/Sortable.html">
+
+
+
 
 <link rel="import" href="homecon-web-socket-object.html">
 <link rel="import" href="homecon-page.html">
@@ -69,7 +77,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                                 </sortable-js>
 
                                 <div class="vertical layout center" hidden="[[!edit]]">
-                                    <paper-button raised noink="true" on-tap="addWidget">add widget</paper-button>
+                                    <paper-button raised noink="true" on-tap="addWidgetDialog">add widget</paper-button>
                                 </div>
                             </homecon-page-section>
                         </template>
@@ -82,6 +90,17 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             </template>
 
         </iron-pages>
+
+
+        <homecon-edit-dialog id="addWidgetDialog" on-save="addWidget">
+            <paper-dropdown-menu label="type">
+                <paper-menu class="dropdown-content" attr-for-selected="value" selected="{{addWidgetType}}">
+                    <paper-item value="homecon-widget-button">button</paper-item>
+                    <paper-item value="homecon-widget-switch">switch</paper-item>
+                </paper-menu>
+            </paper-dropdown-menu>
+
+        </homecon-edit-dialog>
 
     </template>
 
@@ -165,18 +184,29 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 }
             },
 
-            addWidget: function(e){
-                var pageindex = this.$.pages.modelForElement(e.target).__data__.index;
-                var pagesectionindex = e.model.__data__.pagesectionIndex;
-                var pagesectionid = this.pages[pageindex].pagesections[pagesectionindex].id;
+            addWidgetDialog: function(e){
+                this.addWidgetPageindex = this.$.pages.modelForElement(e.target).__data__.index;
+                this.addWidgetPagesectionindex = e.model.__data__.pagesectionIndex;
+                this.addWidgetPagesectionid = this.pages[this.addWidgetPageindex].pagesections[this.addWidgetPagesectionindex].id;
 
-                
+                this.addWidgetType = 'homecon-widget-switch';
+
+                this.$.addWidgetDialog.open();
+            },
+
+            addWidget: function(e){
+                this.$.addWidgetDialog.close();
+
+                var pageindex = this.addWidgetPageindex;
+                var pagesectionindex = this.addWidgetPagesectionindex;
+                var pagesectionid = this.addWidgetPagesectionid;
+
 
                 var widgets = this.pages[pageindex].pagesections[pagesectionindex].widgets;
                 var order = this._getNextOrder(widgets);
                 var id = new Date().valueOf();
 
-                this.push('pages.'+pageindex+'.pagesections.'+pagesectionindex+'.widgets',{'id':id,'pagesection':pagesectionid,'type':'homecon-widget-button','config':{},'order':order});
+                this.push('pages.'+pageindex+'.pagesections.'+pagesectionindex+'.widgets',{'id':id,'pagesection':pagesectionid,'type':this.addWidgetType,'config':{'initialize':true},'order':order});
             },
 
             deleteWidget: function(e){
