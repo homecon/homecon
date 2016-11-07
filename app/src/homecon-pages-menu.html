@@ -8,12 +8,15 @@
 
 <dom-module is="homecon-pages-menu">
     <template>
-        <style>
+        <style include="iron-flex iron-flex-alignment">
             :host{
             }
             paper-button{
                 width: 90%;
                 margin: 8px;
+            }
+            .hidden{
+                display: none !important;
             }
             .spacer{
                 height: 70px;
@@ -30,7 +33,7 @@
                         </template>
                     </sortable-js>
 
-                    <div class="vertical layout center" hidden="{{!edit}}">
+                    <div class$="vertical layout [[_hiddenclass(edit)]]">
                         <paper-button raised noink="true" on-click="addPage">add page</paper-button>
                     </div>
 
@@ -38,7 +41,7 @@
             </template>
         </sortable-js>
         
-        <div class="vertical layout center" hidden="{{!edit}}">
+        <div class$="vertical layout [[_hiddenclass(edit)]]">
             <paper-button raised noink="true" on-click="addSection">add section</paper-button>
         </div>
 
@@ -151,6 +154,14 @@
                     });
                 }
                 return order;
+            },
+            _hiddenclass: function(edit){
+                if(edit){
+                    return '';
+                }
+                else{
+                    return 'hidden';
+                }
             },
         });
     </script>

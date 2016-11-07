@@ -179,7 +179,7 @@ class States(BasePlugin):
 
 
     def listen_state_changed(self,event):
-        self.fire('send',{'event':'state', 'path':event.data['state'].path, 'value':event.data['state'].value, 'readusers':event.data['state'].config['readusers'], 'readgroups':event.data['state'].config['readgroups']},source=event.source)
+        self.fire('send',{'event':'state', 'path':event.data['state'].path, 'value':event.data['state'].value, 'readusers':event.data['state'].config['readusers'], 'readgroups':event.data['state'].config['readgroups']},source=self)
 
 
     def listen_state(self,event):
@@ -220,7 +220,25 @@ class States(BasePlugin):
                     self.fire('send_to',{'event':'state', 'path':state.path, 'value':state.value, 'clients':[event.client]})
                 else:
                     logging.warning('User {} attempted to change the value of {} but is not permitted'.format(tokenpayload['userid'],state.path))
-                
+
+
+    def listen_send_states_to(self,event):
+        for client in event.data['clients']:
+            tokenpayload = client.tokenpayload  # event.data['token']  fixme, retrieve the payload from the token
+
+            for state in self._states.values():
+                permitted = False
+                if tokenpayload['userid'] in state.config['readusers']:
+
+                    permitted = True
+                else:
+                    for g in tokenpayload['groupids']:
+                        if g in state.config['readgroups']:
+                            permitted = True
+                            break
+
+                if permitted:
+                    self.fire('send_to',{'event':'state', 'path':state.path, 'value':state.value, 'clients':[client]})
 
 
     def __getitem__(self,path):

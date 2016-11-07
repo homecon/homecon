@@ -113,7 +113,6 @@ class Websocket(BasePlugin):
                     if g in event.data['readgroups']:
                         permitted = True
                         break
-
             if permitted:
                 asyncio.ensure_future( client.send(senddata) )
 

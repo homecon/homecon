@@ -56,7 +56,7 @@
                     this.listen(window.homeconWebSocket, 'homecon-web-socket-connected', 'onConnected');
 
                     // send without value key to start monitoring
-                    if(window.homeconWebSocket.connected){
+                    if(window.homeconWebSocket.connected && !(this.event == 'state' && this.path == '')){
                         this.send();
                     }
                 }
@@ -95,7 +95,7 @@
             },
 
             _dataChanged: function(data,olddata){
-                if(this.auto && this.observe && window.homeconWebSocket.connected && !(data == '' && typeof olddata == 'undefined')){
+                if(this.auto && this.observe && window.homeconWebSocket.connected && !(data == '' && typeof olddata == 'undefined') && !(this.event == 'state' && this.path == '')){
                     this.debounce('sendDataDebounce', this._sendData, this.debounce); 
                 }
             },

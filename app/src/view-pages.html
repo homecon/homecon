@@ -11,6 +11,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="../bower_components/polymer/polymer.html">
 <link rel="import" href="../bower_components/iron-localstorage/iron-localstorage.html">
 <link rel="import" href="../bower_components/iron-pages/iron-pages.html">
+<link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout-classes.html">
 
 <link rel="import" href="../bower_components/paper-dropdown-menu/paper-dropdown-menu.html">
 <link rel="import" href="../bower_components/paper-menu/paper-menu.html">
@@ -31,7 +32,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
     <template>
 
-        <style>
+        <style include="iron-flex iron-flex-alignment">
             :host {
                 display: block;
                 color: var(--primary-text-color);
@@ -44,7 +45,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 background-color: var(--secondary-background-color);
                 color: #757575;
             }
-
+            .hidden{
+                display: none !important;
+            }
             h1 {
                 font-size: 22px;
                 margin: 16px 0;
@@ -70,20 +73,20 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                         <template is="dom-repeat" id="pagesections" items="{{page.pagesections}}" as="pagesection" sort="_sortByOrder" index-as="pagesectionIndex">
                             <homecon-page-section title="{{pagesection.title}}" type="{{pagesection.type}}" pagesection="{{pagesection}}" edit="[[edit]]" on-delete="deletePageSection" >
 
-                                <sortable-js on-update="_updateWidgetsOrder" disabled="{{!edit}}">    
+                                <sortable-js on-update="_updateWidgetsOrder" disabled="{{!edit}}" class="horizontal layout wrap center">
                                     <template is="dom-repeat" id="widgets" items="{{pagesection.widgets}}" as="widget" sort="_sortByOrder" pagesection-index="[[pagesectionIndex]]">
                                         <homecon-widget widget="{{widget}}" on-delete="deleteWidget" edit="[[edit]]"></homecon-widget>
                                     </template>
                                 </sortable-js>
 
-                                <div class="vertical layout center" hidden="[[!edit]]">
+                                <div class$="vertical layout [[_hiddenclass(edit)]]">
                                     <paper-button raised noink="true" on-tap="addWidgetDialog">add widget</paper-button>
                                 </div>
                             </homecon-page-section>
                         </template>
                     </sortable-js>
 
-                    <div class="vertical layout center" hidden="[[!edit]]">
+                    <div class$="vertical layout [[_hiddenclass(edit)]]">
                         <paper-button raised noink="true" on-tap="addPageSection">add section</paper-button>
                     </div>
                 </homecon-page>
@@ -330,6 +333,14 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                     });
                 }
                 return order;
+            },
+            _hiddenclass: function(edit){
+                if(edit){
+                    return '';
+                }
+                else{
+                    return 'hidden';
+                }
             },
         });
     </script>
