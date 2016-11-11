@@ -44,17 +44,6 @@ class StatesTests(HomeConTestCase):
         self.assertEqual(states['mystate'].path, 'mystate')
 
 
-    def test_add_state_event(self):
-        queue = asyncio.Queue()
-
-        states = States(queue)
-        event = Event('add_state',{'path':'mystate','config':{'prop1':'val1'}},self,None)
-        states.listen(event)
-
-        self.assertEqual(states['mystate'].path, 'mystate')
-        self.assertEqual(states['mystate'].config['prop1'], 'val1')
-
-
     def test_children(self):
         queue = asyncio.Queue()
 
@@ -100,22 +89,31 @@ class StatesTests(HomeConTestCase):
         self.assertIn('oldvalue',event.data)
 
 
-    def test_state_set_event(self):
+    def test_add_state_event(self):
         queue = asyncio.Queue()
 
         states = States(queue)
+        event = Event('add_state',{'path':'mystate','config':{'prop1':'val1'}},self,None)
+        states._listen(event)
+
+        self.assertEqual(states['mystate'].path, 'mystate')
+        self.assertEqual(states['mystate'].config['prop1'], 'val1')
+
+
+    def test_state_event_set(self):
+        queue = asyncio.Queue()
+
+        states = States(queue)
+        states.add('somestate',config={'prop1':'val1'})
 
         client = DummyAdminClient()
 
-        event = Event('add_state',{'path':'somestate','config':{'prop1':'val1'}},self,client)
-        states.listen(event)
-
         event = Event('state',{'path':'somestate','value':1},self,client)
-        states.listen(event)
+        states._listen(event)
 
         # run the loop to fire events
         self.run_event_loop(states._loop)
-
+        
         # check if there is an event in the queue
         event = queue.get_nowait()
         self.assertEqual(event.type,'state_changed')
@@ -124,18 +122,16 @@ class StatesTests(HomeConTestCase):
         self.assertIn('oldvalue',event.data)
 
 
-    def test_state_get_event(self):
+    def test_state_event_get(self):
         queue = asyncio.Queue()
 
         states = States(queue)
+        states.add('somestate',config={'prop1':'val1'})
 
         client = DummyAdminClient()
 
-        event = Event('add_state',{'path':'somestate','config':{'prop1':'val1'}},self,client)
-        states.listen(event)
-
         event = Event('state',{'path':'somestate'},self,client)
-        states.listen(event)
+        states._listen(event)
 
         # run the loop to fire events
         self.run_event_loop(states._loop)
@@ -144,6 +140,7 @@ class StatesTests(HomeConTestCase):
         event = queue.get_nowait()
         self.assertEqual(event.type,'send_to')
         self.assertEqual(event.data['path'],'somestate')
+        self.assertEqual(event.data['clients'],[client])
         self.assertIn('value',event.data)
 
 

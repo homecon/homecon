@@ -27,6 +27,22 @@ class Event(object):
 
 
 class BasePlugin(object):
+    """
+    Notes
+    -----
+    A plugin can not send events to itself through the fire / listen methods
+
+    Examples
+    --------
+    .. code-block::
+        def listen_someevent(self,event):
+            self.do_something(event)
+
+        def listen_someotherevent(self,event):
+            self.do_somethingelse(event)
+
+    """
+
     def __init__(self,queue):
         """
         Initialize a plugin instance
@@ -59,36 +75,6 @@ class BasePlugin(object):
         Base method runs when the plugin is instantiated
         
         redefine this method in a child class
-        """
-        pass
-
-
-    def listen(self,event):
-        """
-        Base method to listen for events and perform actions
-        
-        redefine this method in a child class
-        
-        Parameters
-        ----------
-        event : Event
-            an Event instance
-            
-        Notes
-        -----
-        A plugin can not send events to itself through the fire / listen methods
-
-        Examples
-        --------
-        .. code-block::
-            def listen(self,event):
-
-                if event.type == 'do_something':
-                    self.do_something(event)
-
-                elif event.type == 'do_something_else':
-                    self.do_something_else(event)
-
         """
         pass
 
