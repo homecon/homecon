@@ -41,10 +41,8 @@ class States(BasePlugin):
 
         # get all states from the database
         result = self._db_states.GET()
-        for s in result:
-            state = State(self,s['path'],config=json.loads(s['config']))
-            state.get_value_from_db()
-            self._states[s['path']] = state
+        for state in result:
+            self.add_local(state['path'],config=json.loads(state['config']))
 
         # add settings states
         self.add('settings/latitude', config={'type': 'number', 'quantity':'angle', 'unit':'deg','label':'latitude', 'description':'HomeCon latitude'})
@@ -53,9 +51,10 @@ class States(BasePlugin):
         self.add('settings/timezone', config={'type': 'string', 'quantity':'',      'unit':'',   'label':'time zone','description':'HomeCon time zone'})
 
 
-    def add(self,path,config=None):
+    def add_local(self,path,config=None):
         """
-        add a state
+        Add a state to the plugin but not to the database but tries to load the
+        value from the database
 
         Parameters
         ----------
@@ -102,15 +101,30 @@ class States(BasePlugin):
 
 
             state = State(self,path,config=config)
-            self._db_states.POST(path=path,config=json.dumps(config))
             self._states[path] = state
 
             # update the value from the database
-            state.get_value_from_db()
+            try:
+                state.get_value_from_db()
+            except:
+                pass
 
             return state
         else:
             return False
+
+    def add(self,path,config=None):
+        """
+        add a state
+
+        """
+
+        self._db_states.POST(path=path,config=json.dumps(config))
+
+        state = self.add_local(path,config=config)
+
+        return state
+
 
     def get(self,path):
         """

@@ -79,12 +79,11 @@ class HomeCon(object):
         self.websocket = core.websocket.Websocket(self._queue)
         self.authentication = core.authentication.Authentication(self._queue)
         self.pages = core.pages.Pages(self._queue)
-
-        self.alarms = core.alarms.Alarms(self._queue,self.states)
+        self.schedules = core.schedules.Schedules(self._queue)
 
 
         # start plugins
-        self.plugins = core.plugin.Plugins(self._queue,self.states)
+        self.plugins = core.plugin.Plugins(self._queue)
 
         self.coreplugins = [
             self.plugins,
@@ -92,7 +91,7 @@ class HomeCon(object):
             self.websocket,
             self.authentication,
             self.pages,
-            self.alarms,
+            self.schedules,
         ]
 
 

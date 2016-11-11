@@ -150,27 +150,10 @@ class BasePlugin(object):
 
 
 class Plugin(BasePlugin):
-    def __init__(self,queue,states):
-        """
-        Initialize a plugin instance
-        
-        Parameters
-        ---------
-        states : States object
-            the main states object
-            
-        """
-
-        self._queue = queue
-        self._loop = asyncio.get_event_loop()
-        self.get_listeners()
-
-        self.states = states
-
-        self.initialize()
+    pass
 
 
-class Plugins(Plugin):
+class Plugins(BasePlugin):
     """
     A class to manage plugins dynamically
     """
@@ -307,7 +290,7 @@ class Plugins(Plugin):
         pluginmodule = __import__('{}.{}'.format(package,name), fromlist=[name])
         pluginclass = getattr(pluginmodule, name.capitalize())
         
-        plugininstance = pluginclass(self._queue,self.states)
+        plugininstance = pluginclass(self._queue)
         self._plugins[name] = plugininstance
 
 
