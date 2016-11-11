@@ -68,12 +68,23 @@ class PagesTests(HomeConTestCase):
         self.clear_database()
         pages  = Pages(queue)
 
-        page = pages.add_page('central',{'title':'Sometitle'})
+        page = pages.add_page('central',{'title':'Sometitle','icon':'someicon'})
         page = pages.get_page('central/sometitle')
 
         self.assertEqual(page['sections'],[])
 
 
+    def test_set_page(self):
+        queue = asyncio.Queue()
+
+        self.clear_database()
+        pages  = Pages(queue)
+
+        page = pages.add_page('central',{'title':'Sometitle','icon':'someicon'})
+        page = pages.set_page('central/sometitle',{'title':'Newtitle','icon':'anothericon'})
+        page = pages.get_page('central/sometitle')
+
+        self.assertEqual(page['config']['title'],'Newtitle')
 
 
 
