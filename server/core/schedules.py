@@ -7,7 +7,6 @@ import json
 import datetime
 import pytz
 import uuid
-import asyncio
 
 from . import database
 from .plugin import BasePlugin

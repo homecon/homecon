@@ -28,119 +28,54 @@ from common import HomeConTestCase, Client
 sys.path.append(os.path.abspath('..'))
 from homecon import HomeCon
 
-import core.pages as pages
-
-pgs = {
-    'sections': [{
-        'id': 'home',
-        'title': 'Home',
-        'order': 0,
-    },{
-        'id': 'central',
-        'title': 'Central',
-        'order': 1,
-    },{
-        'id': 'groundfloor',
-        'title': 'Ground floor',
-        'order': 2,
-    },],
-    'pages':[{
-        'id':'home',
-        'section': 'home',
-        'title': 'Home',
-        'icon': 'none',
-        'order': 0,
-        'pagesections': [{
-            'widgets': [],
-        },]
-    },{
-        'id':'central_heating',
-        'section': 'central',
-        'title': 'Heating',
-        'icon': 'none',
-        'order': 0,
-        'pagesections': [{
-            'widgets': [],
-        },]
-    },{
-        'id':'central_shading',
-        'section': 'central',
-        'title': 'Heating',
-        'icon': 'none',
-        'order': 1,
-        'pagesections': [{
-            'widgets': [],
-        },]
-    },{
-        'id':'groundfloor_living',
-        'section': 'groundfloor',
-        'title': 'Living',
-        'icon': 'none',
-        'order': 0,
-        'pagesections': [{
-            'widgets': [],
-        },]
-    },{
-        'id':'groundfloor_kitchen',
-        'section': 'groundfloor',
-        'title': 'Kitchen',
-        'icon': 'none',
-        'order': 1,
-        'pagesections': [{
-            'widgets': [],
-        },],
-    },],
-}
+from core.pages import Pages
 
 
 class PagesTests(HomeConTestCase):
     
     def test_initialize_pages(self):
-        q = asyncio.Queue()
-        pg  = pages.Pages(q)
+        queue = asyncio.Queue()
+
+        self.clear_database()
+        pages  = Pages(queue)
+
+        self.assertIn('home',pages._groups)
 
 
-    def test_check_pages(self):
-        q = asyncio.Queue()
-        pg  = pages.Pages(q)
+    def test_get_menu(self):
+        queue = asyncio.Queue()
 
-        result = pg.check_pages(pgs)
-        
+        self.clear_database()
+        pages  = Pages(queue)
 
-
-    def test_update_pages(self):
-        q = asyncio.Queue()
-        pg  = pages.Pages(q)
-
-        id = pg._active_pages['id']
-
-        pg.update(id,json.dumps(pgs))
-        self.assertEqual(pg._active_pages['pages'],pgs)
-
-    
-    def test_add_pages(self):
-        q = asyncio.Queue()
-        pg  = pages.Pages(q)
-
-        olddata = dict(pg._active_pages)
-
-        newdata = pg.add('newpages',json.dumps(pgs))
-
-        self.assertEqual(pg._active_pages['pages'],olddata['pages'])
-        self.assertEqual(newdata['pages'],pgs)
+        menu = pages.get_menu()
+        self.assertEqual(menu[0]['pages'][0]['path'], 'central/heating')
 
 
-    def test_activate_pages(self):
-        q = asyncio.Queue()
-        pg  = pages.Pages(q)
+    def test_get_page(self):
+        queue = asyncio.Queue()
 
-        olddata = dict(pg._active_pages)
+        self.clear_database()
+        pages  = Pages(queue)
 
-        newdata = pg.add('newpages',json.dumps(pgs))
-        id = newdata['id']
-        pg.activate_pages(id)
+        page = pages.get_page('home/home')
+        self.assertIn('sections',page)
 
-        self.assertEqual(pg._active_pages['pages'],pgs)
+
+    def test_add_page(self):
+        queue = asyncio.Queue()
+
+        self.clear_database()
+        pages  = Pages(queue)
+
+        page = pages.add_page('central',{'title':'Sometitle'})
+        page = pages.get_page('central/sometitle')
+
+        self.assertEqual(page['sections'],[])
+
+
+
+
 
 
 

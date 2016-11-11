@@ -38,6 +38,7 @@ class StatesTests(HomeConTestCase):
     def test_add(self):
         queue = asyncio.Queue()
 
+        self.clear_database()
         states = States(queue)
         states.add('mystate')
 
@@ -47,6 +48,7 @@ class StatesTests(HomeConTestCase):
     def test_children(self):
         queue = asyncio.Queue()
 
+        self.clear_database()
         states = States(queue)
         states.add('parent')
         states.add('parent/child0')
@@ -61,6 +63,7 @@ class StatesTests(HomeConTestCase):
     def test_parent(self):
         queue = asyncio.Queue()
 
+        self.clear_database()
         states = States(queue)
         states.add('parent')
         states.add('parent/child')
@@ -73,6 +76,7 @@ class StatesTests(HomeConTestCase):
     def test_set(self):
         queue = asyncio.Queue()
 
+        self.clear_database()
         states = States(queue)
         s = states.add('somestate')
 
@@ -92,6 +96,7 @@ class StatesTests(HomeConTestCase):
     def test_add_state_event(self):
         queue = asyncio.Queue()
 
+        self.clear_database()
         states = States(queue)
         event = Event('add_state',{'path':'mystate','config':{'prop1':'val1'}},self,None)
         states._listen(event)
@@ -103,6 +108,7 @@ class StatesTests(HomeConTestCase):
     def test_state_event_set(self):
         queue = asyncio.Queue()
 
+        self.clear_database()
         states = States(queue)
         states.add('somestate',config={'prop1':'val1'})
 
@@ -125,6 +131,7 @@ class StatesTests(HomeConTestCase):
     def test_state_event_get(self):
         queue = asyncio.Queue()
 
+        self.clear_database()
         states = States(queue)
         states.add('somestate',config={'prop1':'val1'})
 
