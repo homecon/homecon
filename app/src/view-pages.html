@@ -23,10 +23,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
 
 <link rel="import" href="homecon-web-socket-object.html">
-<link rel="import" href="homecon-page.html">
-<link rel="import" href="homecon-page-header.html">
-<link rel="import" href="homecon-page-section.html">
-<link rel="import" href="homecon-widget.html">
+<link rel="import" href="homecon-pages-page.html">
+
 
 <dom-module id="view-pages">
 
@@ -54,56 +52,22 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 color: #212121;
             }
         </style>
-        <homecon-web-socket-object id="websocketPages" event="pages" path="{{path}}" data="{{pagesData}}"></homecon-web-socket-object>
 
-        <iron-localstorage name="sections" value="{{sections}}" on-iron-localstorage-load-empty="_initializeSections"></iron-localstorage>
+        <homecon-web-socket-object id="websocketPages" event="pages_paths" data="{{pagesPaths}}"></homecon-web-socket-object>
+
+<!--        <iron-localstorage name="sections" value="{{sections}}" on-iron-localstorage-load-empty="_initializeSections"></iron-localstorage>
         <iron-localstorage name="pages" value="{{pages}}" on-iron-localstorage-load-empty="_initializePages"></iron-localstorage>
+-->
 
-        <app-route route="{{route}}" pattern="/:page" data="{{routeData}}" tail="{{subroute}}"></app-route>
+        <app-route route="{{route}}" pattern="/:group/:page" data="{{routeData}}" tail="{{subroute}}"></app-route>
 
-        <iron-pages selected="[[pageid]]" attr-for-selected="pageid">
+        <iron-pages selected="[[path]]" attr-for-selected="path">
 
-            <template is="dom-repeat" id="pages" items="{{pages}}" as="page">
-                <homecon-page pageid="[[page.id]]">
-                    
-                    <template is="dom-if" if="[[_filterHome(page)]]">
-                        <homecon-page-header title="[[page.title]]" icon="[[page.icon]]"></homecon-page-header>
-                    </template>
-                    <sortable-js on-update="_updatePageSectionsOrder" disabled="{{!edit}}">
-                        <template is="dom-repeat" id="pagesections" items="{{page.pagesections}}" as="pagesection" sort="_sortByOrder" index-as="pagesectionIndex">
-                            <homecon-page-section title="{{pagesection.title}}" type="{{pagesection.type}}" pagesection="{{pagesection}}" edit="[[edit]]" on-delete="deletePageSection" >
-
-                                <sortable-js on-update="_updateWidgetsOrder" disabled="{{!edit}}" class="horizontal layout wrap center">
-                                    <template is="dom-repeat" id="widgets" items="{{pagesection.widgets}}" as="widget" sort="_sortByOrder" pagesection-index="[[pagesectionIndex]]">
-                                        <homecon-widget widget="{{widget}}" on-delete="deleteWidget" edit="[[edit]]"></homecon-widget>
-                                    </template>
-                                </sortable-js>
-
-                                <div class$="vertical layout [[_hiddenclass(edit)]]">
-                                    <paper-button raised noink="true" on-tap="addWidgetDialog">add widget</paper-button>
-                                </div>
-                            </homecon-page-section>
-                        </template>
-                    </sortable-js>
-
-                    <div class$="vertical layout [[_hiddenclass(edit)]]">
-                        <paper-button raised noink="true" on-tap="addPageSection">add section</paper-button>
-                    </div>
-                </homecon-page>
+            <template is="dom-repeat" id="pages" items="{{pagesPaths}}" as="pagePath">
+                <homecon-pages-page path="{{pagePath}}" edit="{{edit}}"></homecon-page>
             </template>
 
         </iron-pages>
-
-
-        <homecon-edit-dialog id="addWidgetDialog" on-save="addWidget">
-            <paper-dropdown-menu label="type">
-                <paper-menu class="dropdown-content" attr-for-selected="value" selected="{{addWidgetType}}">
-                    <paper-item value="homecon-widget-button">button</paper-item>
-                    <paper-item value="homecon-widget-switch">switch</paper-item>
-                </paper-menu>
-            </paper-dropdown-menu>
-
-        </homecon-edit-dialog>
 
     </template>
 
@@ -119,22 +83,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 route: {
                     type: 'Object',
                 },
-                pageid: {
-                    type: 'String',
-                    notify: true,
-                },
-                sections: {
-                    type: 'Array',
-                    notify: true,
-                },
-                pages: {
-                    type: 'Array',
-                    notify: true,
-                },
                 path: {
                     type: 'String',
-                    value: '',
-                    observer: '_pagesPathChanged',
+                    notify: true,
                 },
                 edit: {
                     type: 'Boolean',
@@ -143,9 +94,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             },
 
             observers: [
-                '_pagesDataChanged(pagesData)',
-                '_routePageChanged(routeData.page,pages)',
-                '_pagesChanged(pages.*)',
+                '_routePageChanged(routeData.group,routeData.page,pagesPaths)',
             ],
 
             ready: function(){
@@ -153,6 +102,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             },
 
             addPageSection: function(e){
+                /*
                 var pageindex = parseInt(e.model.__data__.index);
                 var pageid = this.pages[pageindex].id;
 
@@ -161,9 +111,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 var id = new Date().valueOf();
 
                 this.push('pages.'+pageindex+'.pagesections',{'id': id,'page':pageid,'type':'collapsible','title':'','widgets':[],'order':order});
+                */
             },
 
             deletePageSection: function(e){
+                /*
                 e.stopPropagation()
 
                 var pageindex = this._indexFromId(this.pages,e.target.pagesection.page);
@@ -172,9 +124,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 if(pagesectionindex>-1){
                     this.splice('pages.'+pageindex+'.pagesections',pagesectionindex,1);
                 }
+                */
             },
 
             _updatePageSectionsOrder: function(e){
+                /*
                 if(typeof e.from != 'undefined'){
 
                     var list = e.from.children;
@@ -185,9 +139,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                         }
                     }
                 }
+                */
             },
 
             addWidgetDialog: function(e){
+                /*
                 this.addWidgetPageindex = this.$.pages.modelForElement(e.target).__data__.index;
                 this.addWidgetPagesectionindex = e.model.__data__.pagesectionIndex;
                 this.addWidgetPagesectionid = this.pages[this.addWidgetPageindex].pagesections[this.addWidgetPagesectionindex].id;
@@ -195,9 +151,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 this.addWidgetType = 'homecon-widget-switch';
 
                 this.$.addWidgetDialog.open();
+                */
             },
 
             addWidget: function(e){
+                /*
                 this.$.addWidgetDialog.close();
 
                 var pageindex = this.addWidgetPageindex;
@@ -210,9 +168,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 var id = new Date().valueOf();
 
                 this.push('pages.'+pageindex+'.pagesections.'+pagesectionindex+'.widgets',{'id':id,'pagesection':pagesectionid,'type':this.addWidgetType,'config':{'initialize':true},'order':order});
+                */
             },
 
             deleteWidget: function(e){
+                /*
                 e.stopPropagation()
                 
                 var pageindex = parseInt(e.model.__data__.index);
@@ -223,9 +183,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 if(widgetindex>-1){
                     this.splice('pages.'+pageindex+'.pagesections.'+pagesectionindex+'.widgets',widgetindex,1);
                 }
+                */
             },
 
             _updateWidgetsOrder: function(e){
+                /*
                 if(typeof e.from != 'undefined'){
 
                     var list = e.from.children;
@@ -236,6 +198,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                         }
                     }
                 }
+                */
             },
 
             _authenticatedChanged: function(authenticated){
@@ -250,11 +213,13 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 }
             },
 
-            _routePageChanged: function(pageid,pages){
-                this.pageid = pageid || 'home';
+            _routePageChanged: function(group,page,pagesPaths){
+                this.path = group+'/'+page || 'home/home';
             },
 
+/*
             _pagesChanged: function(changeRecord){
+                
                 if(changeRecord.path != 'pages'){
                     this.$.websocketPages.send(JSON.stringify({'pages':this.pages,'sections':this.sections}) );
                 }
@@ -270,34 +235,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             _pagesPathChanged: function(pagesPath){
                 this.$.websocketPages.send();
             },
-
-            _initialize: function(){
-                this._initializeSections();
-                this._initializePages();
-            },
-
-            _initializeSections: function(){
-                // create a home section
-                this.sections = [{
-                    'id': 'home',
-                    'title': 'Home',
-                    'order': 0
-                }];
-            },
-
-            _initializePages: function(){
-                // create the home page
-                this.pages = [{
-                    'id':'home',
-                    'section': 'home',
-                    'title':'Home',
-                    'icon':'',
-                    'order': 0,
-                    'pagesections':[{
-                        'widgets': []
-                    }]
-                }];
-            },
+*/
 
             _indexFromId: function(items,id){
                 var index = -1;
@@ -307,10 +245,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                     }
                 });
                 return index;
-            },
-
-            _filterHome: function(item){
-                return item.id != 'home';
             },
 
             _sortByOrder: function(a,b){
@@ -333,14 +267,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                     });
                 }
                 return order;
-            },
-            _hiddenclass: function(edit){
-                if(edit){
-                    return '';
-                }
-                else{
-                    return 'hidden';
-                }
             },
         });
     </script>

@@ -1,0 +1,97 @@
+<link rel="import" href="../bower_components/polymer/polymer.html">
+
+<link rel="import" href="homecon-section.html">
+<link rel="import" href="homecon-pages-widget.html">
+
+<link rel="import" href="homecon-edit-dialog.html">
+
+<dom-module is="homecon-pages-section">
+    <template>
+        <style>
+            .hidden{
+                display: none !important;
+            }
+            .edit{
+                position: absolute;
+                top: 0px;
+                right: 5px;
+                color: var(--primary-text-color);
+            }
+            .edit .collapsible{
+                color: var(--header-text-color);
+            }
+        </style>
+
+        <homecon-web-socket-object id="websocket" event="pages_section" path="{{path}}" data="{{section}}" auto></homecon-web-socket-object>
+        
+        <homecon-section type="{{section.config.type}}" title="{{section.config.title}}">
+
+            <sortable-js on-update="_updateWidgetsOrder" disabled="{{!edit}}" class="horizontal layout wrap center">
+                <template is="dom-repeat" id="widgets" items="{{section.widgets}}" as="widgetPath">
+<!--
+                    <homecon-widget path="{{widgetPath}}" on-delete="deleteWidget" edit="[[edit]]"></homecon-widget>
+-->
+                </template>
+            </sortable-js>
+
+            <div class$="vertical layout [[_hiddenClass(edit)]]">
+                <paper-button raised noink="true" on-tap="addWidgetDialog">add widget</paper-button>
+            </div>
+
+        <homecon-section>
+        
+        <div class="edit" hidden="{{!edit}}">
+            <paper-icon-button class$="{{section.config.type}}" icon="editor:mode-edit" noink="true" on-click="openEditDialog"></paper-icon-button>
+        </div>
+
+        <homecon-edit-dialog id="editDialog" on-save="save">
+            <paper-dropdown-menu label="page section type">
+                <paper-menu class="dropdown-content" attr-for-selected="value" selected="{{newType}}">
+                    <paper-item value="collapsible">collapsible</paper-item>
+                    <paper-item value="raised">raised</paper-item>
+                    <paper-item value="transparent">transparent</paper-item>
+                </paper-menu>
+            </paper-dropdown-menu>
+            <paper-input label="Title:" value="{{newTitle}}"></paper-input>
+            <paper-button raised on-tap="delete">Delete</paper-button>
+        </homecon-edit-dialog>
+
+    </template>
+    <script>
+        Polymer({
+            is: 'homecon-pages-section',
+            properties: {
+                path: {
+                    type: 'String',
+                },
+                edit:{
+                    type: 'Boolean',
+                    value: false,
+                }
+            },
+            openEditDialog: function(){
+                this.newType = this.section.config.type;
+                this.newTitle = this.section.config.title;
+                this.$.editDialog.open();
+            },
+            save: function(e){
+                /*
+                this.set('type',this.newType);
+                this.set('title',this.newTitle);
+                */
+                this.$.editDialog.close();
+            },
+            delete: function(){
+                this.fire('delete')
+            },
+            _hiddenClass: function(edit){
+                if(edit){
+                    return '';
+                }
+                else{
+                    return 'hidden';
+                }
+            },
+        });
+    </script>
+</dom-module>

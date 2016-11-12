@@ -170,7 +170,7 @@ class Schedules(BasePlugin):
 
     def listen_add_schedule(self,event):
 
-        path = uuid.uuid4()
+        path = str(uuid.uuid4())
         schedule = self.add(path,event.data['config'],event.data['value'])
 
         if state:

@@ -54,22 +54,22 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             }
         </style>
 
-        <homecon-web-socket-object id="websocketPagesList" event="list_pages" data="{{pagesList}}" auto></homecon-web-socket-object>
-
+<!--        <homecon-web-socket-object id="websocketPagesList" event="list_pages" data="{{pagesList}}" auto></homecon-web-socket-object>
+-->
         <homecon-page>
             <homecon-page-header title="Editor" icon="pagebuilder_pagebuilder"></homecon-page-header>
             <homecon-page-section type="raised">
                 <h2>Current pages</h2>
                 <div class="horizontal layout center">
-                    <div class="flex">
+<!--                    <div class="flex">
                         {{_pagesName(pagesPath,pagesList)}}
-                    </div>
+                    </div>-->
                     <div class="flex">
                         <paper-toggle-button active={{edit}}>Edit</paper-toggle-button>
                     </div>
                 </div>
                 
-                <h2>Pages list</h2>
+<!--                <h2>Pages list</h2>
                 <template is="dom-repeat" items="{{pagesList}}" as="pages">
                     <paper-material class$="horizontal layout center pages {{_activeClass(pages)}}" on-tap="showPages">
                         <div class="shown">
@@ -82,7 +82,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                             <paper-button raised><iron-icon icon="editor:publish"></iron-icon>publish</paper-button>
                         </template>
                     </paper-material>
-                </template>
+                </template>-->
 
 
                     
@@ -101,14 +101,14 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                     value: false,
                     notify: true
                 },
-                pagesPath: {
+                /*pagesPath: {
                     type: 'String',
                     value: '',
                     notify: true,
-                },
+                },*/
                 
             },
-
+/*
             showPages: function(e){
                 this.pagesPath = e.model.__data__.pages.id;
                 this.$.websocketPagesList.send();
@@ -157,7 +157,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 }
                 return '';
             },
-
+*/
         });
     </script>
 

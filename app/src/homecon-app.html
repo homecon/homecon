@@ -178,14 +178,14 @@
             <div class="drawer-content">
 
                 <!-- Pages menu -->
-                <homecon-pages-menu sections="{{homeconSections}}" pages="{{homeconPages}}" edit="[[edit]]"></homecon-pages-menu>
+                <homecon-pages-menu edit="[[edit]]"></homecon-pages-menu>
 
             </div>
         </app-drawer>
 
         <div class$="drawer-content persistent [[loginClass]]">
             <!-- Pages menu -->
-            <homecon-pages-menu sections="{{homeconSections}}" pages="{{homeconPages}}" edit="[[edit]]"></homecon-pages-menu>
+            <homecon-pages-menu edit="[[edit]]"></homecon-pages-menu>
         </div>
 
 
@@ -193,7 +193,7 @@
         <div class$="main-content [[loginClass]]">
             <iron-pages selected="[[page]]" attr-for-selected="name">
                 <view-login name="login"></view-login>
-                <view-pages name="pages" authenticated="[[authenticated]]" route="[[subroute]]" sections="{{homeconSections}}" pages="{{homeconPages}}" path="{{pagesPath}}" pageid="{{pageid}}" edit="[[edit]]"></view-pages>
+                <view-pages name="pages" authenticated="[[authenticated]]" route="[[subroute]]" edit="[[edit]]"></view-pages>
                 <view-settings name="settings"></view-settings>
                 <view-editor name="editor" edit="{{edit}}" pages-path="{{pagesPath}}"></view-editor>
                 <view-users name="users"></view-users>

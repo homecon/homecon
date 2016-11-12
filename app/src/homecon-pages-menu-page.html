@@ -7,7 +7,7 @@
 <link rel="import" href="homecon-icon-select.html">
 
 
-<dom-module is="homecon-pages-menu-item">
+<dom-module is="homecon-pages-menu-page">
     <template>
         <style>
             :host{
@@ -53,9 +53,9 @@
             }
         </style>
         
-        <a class="item horizontal layout center" href="/pages/[[page.id]]">
-            <img class="icon" src="/images/icon/ffffff/[[parseIcon(page.icon)]].png">
-            <h1 class="title">{{page.title}}</h1>
+        <a class="item horizontal layout center" href="/pages/[[path]]">
+            <img class="icon" src="/images/icon/ffffff/[[parseIcon(config.icon)]].png">
+            <h1 class="title">{{config.title}}</h1>
         </a>
         
         <div class="edit" hidden="{{!edit}}">
@@ -72,9 +72,12 @@
     </template>
     <script>
         Polymer({
-            is: 'homecon-pages-menu-item',
+            is: 'homecon-pages-menu-page',
             properties: {
-                page: {
+                path: {
+                    type: 'String',
+                },
+                config: {
                     type: 'Object',
                     notify: true,
                 },
@@ -84,13 +87,13 @@
                 }
             },
             openEditDialog: function(){
-                this.set('newTitle',this.page.title);
-                this.set('newIcon',this.page.icon);
+                this.set('newTitle',this.config.title);
+                this.set('newIcon',this.config.icon);
                 this.$.editDialog.open();
             },
             save: function(){
-                this.set('page.title',this.newTitle);
-                this.set('page.icon',this.newIcon);
+                this.set('config.title',this.newTitle);
+                this.set('config.icon',this.newIcon);
                 this.$.editDialog.close();
             },
             delete: function(){

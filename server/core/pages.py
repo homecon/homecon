@@ -80,7 +80,13 @@ class Pages(BasePlugin):
 
         if len(self._pages) == 0:
             self.add_page('home',{'title':'Home','icon':'blank'})
-            self.add_page('central',{'title':'Heating','icon':'blank'})
+            self.add_page('central',{'title':'Heating','icon':'sani_heating'})
+            self.add_page('groundfloor',{'title':'Living room','icon':'scene_livingroom'})
+            self.add_page('groundfloor',{'title':'Kitchen','icon':'scene_dinner'})
+
+        if len(self._sections) == 0:
+            self.add_section('home/home',{'type':'collapsible'})
+
 
 
     def add_group_local(self,path,config,order):
@@ -105,7 +111,7 @@ class Pages(BasePlugin):
                 i += 1
                 path = '{}{}'.format(temppath,i)
         else:
-            path = uuid.uuid4()
+            path = str(uuid.uuid4())
 
         if order is None:
             order = self._get_next_order(self._groups)
@@ -139,7 +145,7 @@ class Pages(BasePlugin):
                 i += 1
                 path = '{}{}'.format(temppath,i)
         else:
-            path = basepath + uuid.uuid4()
+            path = basepath + str(uuid.uuid4())
 
         if order is None:
             order = self._get_next_order(self._pages)
@@ -163,7 +169,7 @@ class Pages(BasePlugin):
         """
         """
         
-        path = uuid.uuid4()
+        path = str(uuid.uuid4())
         
         if config is None:
             config = {}
@@ -190,7 +196,7 @@ class Pages(BasePlugin):
         """
         """
         
-        path = uuid.uuid4()
+        path = str(uuid.uuid4())
         
         if config is None:
             config = {}
@@ -287,27 +293,55 @@ class Pages(BasePlugin):
         if tokenpayload['permission'] > 1:
             self.fire('send_to',{'event':'pages_menu', 'path':'', 'value':self.get_menu(), 'clients':[event.client]})
 
+
+    def listen_pages_paths(self,event):
+        
+        tokenpayload = jwt_decode(event.data['token'])
+        
+        if tokenpayload['permission'] > 1:
+            self.fire('send_to',{'event':'pages_paths', 'path':'', 'value':[page['path'] for page in self._pages.values()], 'clients':[event.client]})
+
+
     def listen_pages_page(self,event):
+
+        tokenpayload = jwt_decode(event.data['token'])
 
         if not 'value' in event.data and tokenpayload['permission'] > 1:
             # get
-            page = self.get_page(event.data['path'])
-            self.fire('send_to',{'event':'pages_page', 'path':page['path'], 'value':page, 'clients':[event.client]})
-
+            if event.data['path'] in self._pages:
+                page = self.get_page(event.data['path'])
+                self.fire('send_to',{'event':'pages_page', 'path':page['path'], 'value':page, 'clients':[event.client]})
+            else:
+                logging.warning('{} not in pages'.format(event.data['path']))
+    
         elif not event.data['value'] == '' and tokenpayload['permission'] > 6:
             # set
-            self.set_page(event.data['path'],event.data['value'])
+            print('set')
+            #self.set_page(event.data['path'],event.data['value']['config'])
 
-            page = self.get_page(event.data['path'])
-            self.fire('send_to',{'event':'pages_page', 'path':page['path'], 'value':page, 'clients':[event.client]})
+            #page = self.get_page(event.data['path'])
+            #self.fire('send_to',{'event':'pages_page', 'path':page['path'], 'value':page, 'clients':[event.client]})
 
 
     def listen_pages_section(self,event):
-        pass
+
+        tokenpayload = jwt_decode(event.data['token'])
+
+        if not 'value' in event.data and tokenpayload['permission'] > 1:
+            # get
+            section = self.get_section(event.data['path'])
+            self.fire('send_to',{'event':'pages_section', 'path':section['path'], 'value':section, 'clients':[event.client]})
+
     
 
     def listen_pages_widget(self,event):
-        pass
+
+        tokenpayload = jwt_decode(event.data['token'])
+
+        if not 'value' in event.data and tokenpayload['permission'] > 1:
+            # get
+            widget = self.get_widget(event.data['path'])
+            self.fire('send_to',{'event':'pages_widget', 'path':widget['path'], 'value':widget, 'clients':[event.client]})
 
 
 
@@ -338,4 +372,6 @@ class Pages(BasePlugin):
 
 
     def _title_to_path(self,title):
-        return title.lower().replace(' ','_')
+        return title.lower().replace(' ','')
+
+

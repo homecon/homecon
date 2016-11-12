@@ -95,7 +95,7 @@
             },
 
             _dataChanged: function(data,olddata){
-                if(this.auto && this.observe && window.homeconWebSocket.connected && !(data == '' && typeof olddata == 'undefined') && !(this.event == 'state' && this.path == '')){
+                if(this.auto && this.observe && window.homeconWebSocket.connected && data != olddata && !(data == '' && typeof olddata == 'undefined') && !(this.event == 'state' && this.path == '')){
                     this.debounce('sendDataDebounce', this._sendData, this.debounce); 
                 }
             },

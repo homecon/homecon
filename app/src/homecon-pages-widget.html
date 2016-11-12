@@ -9,7 +9,7 @@
 <link rel="import" href="widgets/homecon-widget-button.html">
 <link rel="import" href="widgets/homecon-widget-switch.html">
 
-<dom-module is="homecon-widget">
+<dom-module is="homecon-pages-widget">
     <template>
         <style>
             :host{
@@ -24,16 +24,20 @@
             }
         </style>
         
+        <homecon-web-socket-object id="websocketWidget" event="pages_widget" path="{{path}}" data="{{widget}}" auto></homecon-web-socket-object>
+
         <div id="container" on-save="save"><div></div></div>
 
     </template>
     <script>
         Polymer({
-            is: 'homecon-widget',
+            is: 'homecon-pages-widget',
             properties: {
+                path: {
+                    type: 'String',
+                },
                 widget: {
                     type: 'Object',
-                    value: {'type':'homecon-widget-button','config':{}}
                 },
                 pagesectionIndex: {
                     type: 'Number'

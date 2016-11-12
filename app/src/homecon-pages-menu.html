@@ -3,8 +3,9 @@
 <link rel="import" href="../bower_components/paper-button/paper-button.html">
 <link rel="import" href="../bower_components/Sortable/Sortable.html">
 
-<link rel="import" href="homecon-pages-menu-section.html">
-<link rel="import" href="homecon-pages-menu-item.html">
+<link rel="import" href="homecon-web-socket-object.html">
+<link rel="import" href="homecon-pages-menu-group.html">
+<link rel="import" href="homecon-pages-menu-page.html">
 
 <dom-module is="homecon-pages-menu">
     <template>
@@ -23,13 +24,16 @@
             }
         </style>
         
+        
+        <homecon-web-socket-object id="websocketPagesMenu" event="pages_menu" data="{{groups}}" auto></homecon-web-socket-object>
+
         <sortable-js on-update="_updateSectionsOrder" disabled="{{!edit}}">
-            <template is="dom-repeat" id="sections" items="{{sections}}" as="section" filter="_filterHome" sort="_sortByOrder" observe="order">
-                <homecon-pages-menu-section section="{{section}}" on-change-state="changeState" edit="{{edit}}" on-delete="deleteSection">
+            <template is="dom-repeat" id="groups" items="{{groups}}" as="group">
+                <homecon-pages-menu-group config="{{group.config}}" on-change-state="changeState" edit="{{edit}}" on-delete="deleteGroup">
 
                     <sortable-js on-update="_updatePagesOrder" disabled="{{!edit}}">
-                        <template is="dom-repeat" id="pages" items="{{pages}}" as="page" filter="{{_sectionPages(section.id)}}" sort="_sortByOrder" observe="order">
-                            <homecon-pages-menu-item page="{{page}}" edit="{{edit}}" on-delete="deletePage"></homecon-menu-item>
+                        <template is="dom-repeat" id="pages" items="{{group.pages}}" as="page">
+                            <homecon-pages-menu-page path="[[page.path]]" config="{{page.config}}" edit="{{edit}}" on-delete="deletePage"></homecon-menu-page>
                         </template>
                     </sortable-js>
 
@@ -37,7 +41,7 @@
                         <paper-button raised noink="true" on-click="addPage">add page</paper-button>
                     </div>
 
-                </homecon-pages-menu-section>
+                </homecon-pages-menu-group>
             </template>
         </sortable-js>
         
@@ -55,14 +59,6 @@
         Polymer({
             is: 'homecon-pages-menu',
             properties: {
-                sections: {
-                    type: 'Array',
-                    notify: true
-                },
-                pages: {
-                    type: 'Array',
-                    notify: true
-                },
                 edit:{
                     type: 'Boolean',
                     value: false
@@ -75,17 +71,22 @@
                 }
             },
             addSection: function(e){
+                /*
                 var id = new Date().valueOf();
                 var order = this._getNextOrder(this.sections);
 
                 this.push('sections',{'id':id, 'title':'','order':order});
+                */
             },
             deleteSection: function(e){
+                /*
                 e.stopPropagation()
                 var sectionindex = parseInt(e.model.__data__.__key__.substr(1));
                 this.splice('sections',sectionindex,1);
+                */
             },
             _updateSectionsOrder: function(e){
+                /*
                 if(typeof e.from != 'undefined'){
 
                     var list = e.from.children;
@@ -96,8 +97,10 @@
                         }
                     }
                 }
+                */
             },
             addPage: function(e){
+                /*
                 var id = new Date().valueOf();
 
                 var sectionindex = parseInt(this.$.sections.modelForElement(e.target).__data__.__key__.substr(1));
@@ -109,13 +112,17 @@
                 var order = this._getNextOrder(pages);
 
                 this.push('pages',{'id':id,'section':sectionid,'title':'','icon':'blank','header':{},'pagesections':[],'order':order})
+                */
             },
             deletePage: function(e){
+                /*
                 e.stopPropagation()
                 var pageindex = parseInt(e.model.__data__.__key__.substr(1));
                 this.splice('pages',pageindex,1)
+                */
             },
             _updatePagesOrder: function(e){
+                /*
                 if(typeof e.from != 'undefined'){
 
                     var list = e.from.children;
@@ -126,35 +133,9 @@
                         }
                     }
                 }
+                */
             },
-            _sectionPages: function(sectionid){
-                return function(page){
-                    return page.section == sectionid;
-                };
-            },
-            _filterHome: function(item){
-                return item.id != 'home';
-            },
-            _sortByOrder: function(a,b){
-                if(a.order>b.order){
-                    return 1;
-                }
-                else if(a.order<b.order){
-                    return -1;
-                }
-                else{
-                    return 0;
-                }
-            },
-            _getNextOrder(items){
-                var order = 0;
-                if(typeof items != 'undefined'){
-                    items.forEach(function(item){
-                        order = Math.max(order,item.order+1);
-                    });
-                }
-                return order;
-            },
+
             _hiddenclass: function(edit){
                 if(edit){
                     return '';
