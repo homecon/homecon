@@ -122,10 +122,13 @@ class Pages(BasePlugin):
         return group
 
     def update_group(self,path,config):
+        """
+        """
 
         group =  self._groups[path]
-        group['config']['title'] = config['title']
-        print('path=`{}`'.format(path))
+        for key in config:
+            group['config'][key] = config[key]
+
         self._db_groups.PUT(config=json.dumps(group['config']),where='path=\'{}\''.format(path))
 
         return group
@@ -175,6 +178,18 @@ class Pages(BasePlugin):
         
         return page
 
+    def update_page(self,path,config):
+        """
+        """
+
+        page =  self._pages[path]
+        for key in config:
+            page['config'][key] = config[key]
+
+        self._db_pages.PUT(config=json.dumps(page['config']),where='path=\'{}\''.format(path))
+
+        return page
+
     def delete_page(self,path):
         """
         """
@@ -212,6 +227,18 @@ class Pages(BasePlugin):
         self._db_sections.POST(path=path,page=page,config=json.dumps(config),order=order)
         section = self.add_section_local(path,page,config,order)
         
+        return section
+
+    def update_section(self,path,config):
+        """
+        """
+
+        section =  self._sections[path]
+        for key in config:
+            section['config'][key] = config[key]
+
+        self._db_sections.PUT(config=json.dumps(section['config']),where='path=\'{}\''.format(path))
+
         return section
 
     def delete_section(self,path):
@@ -253,6 +280,18 @@ class Pages(BasePlugin):
         widget = self.add_widget_local(path,section,widgettype,config,order)
         
         return widget
+
+    def update_widget(self,path,config):
+        """
+        """
+
+        widget =  self._widgets[path]
+        for key in config:
+            widget['config'][key] = config[key]
+
+        self._db_widgets.PUT(config=json.dumps(widget['config']),where='path=\'{}\''.format(path))
+
+        return section
 
     def delete_widget(self,path):
         """
@@ -359,13 +398,8 @@ class Pages(BasePlugin):
     def listen_pages_group(self,event):
 
         tokenpayload = jwt_decode(event.data['token'])
-        print(event.data)
-        if not 'path' in event.data and tokenpayload and tokenpayload['permission'] > 6:
-            # add
-            self.add_group({'title':'newgroup'})
-            self.fire('send_to',{'event':'pages_menu', 'path':'', 'value':self.get_menu(), 'clients':[event.client]})
 
-        elif 'path' in event.data and 'value' in event.data and event.data['value'] is None and tokenpayload and tokenpayload['permission'] > 6:
+        if 'path' in event.data and 'value' in event.data and event.data['value'] is None and tokenpayload and tokenpayload['permission'] > 6:
             # delete
             self.delete_group(event.data['path'])
             self.fire('send_to',{'event':'pages_menu', 'path':'', 'value':self.get_menu(), 'clients':[event.client]})
@@ -375,25 +409,37 @@ class Pages(BasePlugin):
             self.update_group(event.data['path'],event.data['value'])
             self.fire('send_to',{'event':'pages_menu', 'path':'', 'value':self.get_menu(), 'clients':[event.client]})
 
+        if not 'path' in event.data and tokenpayload and tokenpayload['permission'] > 6:
+            # add
+            self.add_group({'title':'newgroup'})
+            self.fire('send_to',{'event':'pages_menu', 'path':'', 'value':self.get_menu(), 'clients':[event.client]})
+
     def listen_pages_page(self,event):
 
         tokenpayload = jwt_decode(event.data['token'])
 
-        if not 'value' in event.data and tokenpayload and tokenpayload['permission'] > 1:
+        if 'path' in event.data and not 'value' in event.data and tokenpayload and tokenpayload['permission'] > 1:
             # get
             if event.data['path'] in self._pages:
                 page = self.get_page(event.data['path'])
                 self.fire('send_to',{'event':'pages_page', 'path':page['path'], 'value':page, 'clients':[event.client]})
             else:
                 logging.warning('{} not in pages'.format(event.data['path']))
-    
-        elif not event.data['value'] == '' and tokenpayload and tokenpayload['permission'] > 6:
-            # set
-            print('set')
-            #self.set_page(event.data['path'],event.data['value']['config'])
 
-            #page = self.get_page(event.data['path'])
-            #self.fire('send_to',{'event':'pages_page', 'path':page['path'], 'value':page, 'clients':[event.client]})
+        elif 'path' in event.data and 'value' in event.data and event.data['value'] is None and tokenpayload and tokenpayload['permission'] > 6:
+            # delete
+            self.delete_page(event.data['path'])
+            self.fire('send_to',{'event':'pages_menu', 'path':'', 'value':self.get_menu(), 'clients':[event.client]})
+
+        elif 'path' in event.data and 'value' in event.data and not event.data['value'] is None and tokenpayload and tokenpayload['permission'] > 6:
+            # update
+            self.update_page(event.data['path'],event.data['value'])
+            self.fire('send_to',{'event':'pages_menu', 'path':'', 'value':self.get_menu(), 'clients':[event.client]})
+        
+        elif not 'path' in event.data and tokenpayload and tokenpayload['permission'] > 6:
+            # add
+            self.add_page(event.data['group'],{'title':'newpage','icon':'blank'})
+            self.fire('send_to',{'event':'pages_menu', 'path':'', 'value':self.get_menu(), 'clients':[event.client]})
 
 
     def listen_pages_section(self,event):

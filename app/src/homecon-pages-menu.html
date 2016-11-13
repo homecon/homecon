@@ -74,35 +74,9 @@
             },
             addGroup: function(e){
                 this.$.websocket.send({'event':'pages_group'})
-                /*
-                var id = new Date().valueOf();
-                var order = this._getNextOrder(this.sections);
-
-                this.push('sections',{'id':id, 'title':'','order':order});
-                */
-            },
-            deleteSection: function(e){
-                /*
-                e.stopPropagation()
-                var sectionindex = parseInt(e.model.__data__.__key__.substr(1));
-                this.splice('sections',sectionindex,1);
-                */
-            },
-            _updateSectionsOrder: function(e){
-                /*
-                if(typeof e.from != 'undefined'){
-
-                    var list = e.from.children;
-                    for(var i=0; i<list.length; i++){
-
-                        if(typeof list[i].section != 'undefined'){
-                            list[i].section.order = i;
-                        }
-                    }
-                }
-                */
             },
             addPage: function(e){
+                this.$.websocket.send({'event':'pages_page','group':e.model.__data__.group.path})
                 /*
                 var id = new Date().valueOf();
 
@@ -117,13 +91,23 @@
                 this.push('pages',{'id':id,'section':sectionid,'title':'','icon':'blank','header':{},'pagesections':[],'order':order})
                 */
             },
-            deletePage: function(e){
+
+
+            _updateSectionsOrder: function(e){
                 /*
-                e.stopPropagation()
-                var pageindex = parseInt(e.model.__data__.__key__.substr(1));
-                this.splice('pages',pageindex,1)
+                if(typeof e.from != 'undefined'){
+
+                    var list = e.from.children;
+                    for(var i=0; i<list.length; i++){
+
+                        if(typeof list[i].section != 'undefined'){
+                            list[i].section.order = i;
+                        }
+                    }
+                }
                 */
             },
+
             _updatePagesOrder: function(e){
                 /*
                 if(typeof e.from != 'undefined'){
