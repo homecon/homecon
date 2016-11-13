@@ -198,42 +198,44 @@ class States(BasePlugin):
 
     def listen_state(self,event):
         # get or set a state
-        state = self.get(event.data['path'])
-        if not state is None:
-            tokenpayload = event.client.tokenpayload  # event.data['token']  fixme, retrieve the payload from the token
+        if 'path' in event.data:
+            state = self.get(event.data['path'])
 
-            
-            if 'value' in event.data:
-                # set
-                permitted = False
-                if tokenpayload['userid'] in state.config['writeusers']:
-                    permitted = True
-                else:
-                    for g in tokenpayload['groupids']:
-                        if g in state.config['writegroups']:
-                            permitted = True
-                            break
+            if not state is None:
+                tokenpayload = event.client.tokenpayload  # event.data['token']  fixme, retrieve the payload from the token
 
-                if permitted:
-                    state.set(event.data['value'],event.source)
-                else:
-                    logging.warning('User {} on client {} attempted to change the value of {} but is not permitted'.format(tokenpayload['userid'],event.client.address,state.path))
+                
+                if 'value' in event.data:
+                    # set
+                    permitted = False
+                    if tokenpayload['userid'] in state.config['writeusers']:
+                        permitted = True
+                    else:
+                        for g in tokenpayload['groupids']:
+                            if g in state.config['writegroups']:
+                                permitted = True
+                                break
 
-            else:
-                # get
-                permitted = False
-                if tokenpayload['userid'] in state.config['readusers']:
-                    permitted = True
-                else:
-                    for g in tokenpayload['groupids']:
-                        if g in state.config['readgroups']:
-                            permitted = True
-                            break
+                    if permitted:
+                        state.set(event.data['value'],event.source)
+                    else:
+                        logging.warning('User {} on client {} attempted to change the value of {} but is not permitted'.format(tokenpayload['userid'],event.client.address,state.path))
 
-                if permitted:
-                    self.fire('send_to',{'event':'state', 'path':state.path, 'value':state.value, 'clients':[event.client]})
                 else:
-                    logging.warning('User {} attempted to change the value of {} but is not permitted'.format(tokenpayload['userid'],state.path))
+                    # get
+                    permitted = False
+                    if tokenpayload['userid'] in state.config['readusers']:
+                        permitted = True
+                    else:
+                        for g in tokenpayload['groupids']:
+                            if g in state.config['readgroups']:
+                                permitted = True
+                                break
+
+                    if permitted:
+                        self.fire('send_to',{'event':'state', 'path':state.path, 'value':state.value, 'clients':[event.client]})
+                    else:
+                        logging.warning('User {} attempted to change the value of {} but is not permitted'.format(tokenpayload['userid'],state.path))
 
 
     def listen_send_states_to(self,event):

@@ -13,7 +13,7 @@
 
 <dom-module is="homecon-widget-button">
     <template>
-        <style>
+        <style include="iron-flex iron-flex-alignment">
             :host{
                 display: inline-block;
                 position: relative;
@@ -60,7 +60,7 @@
                 edit:{
                     type: 'Boolean',
                     value: false
-                }
+                },
             },
 
             call: function(){
@@ -78,16 +78,16 @@
                     configdata = JSON.stringify(configdata);
                 }
 
-                this.set('newLabel',this.config.label);
-                this.set('newEvent',this.config.event);
-                this.set('newData',configdata);
-                this.set('newIcon',this.config.icon);
+                this.set('newLabel',this.config.label || '');
+                this.set('newEvent',this.config.event  || '');
+                this.set('newData',configdata || '');
+                this.set('newIcon',this.config.icon || 'blank');
                 this.$.editDialog.open();
             },
 
             save: function(e){
                 e.stopPropagation()
-
+                
                 var configdata = this.newData
                 try{
                     configdata = JSON.parse(configdata);
@@ -95,16 +95,17 @@
                 catch(e){
                 }
 
-                this.set('config.label',this.newLabel);
-                this.set('config.event',this.newEvent);
-                this.set('config.data',configdata);
-                this.set('config.icon',this.newIcon);
-
                 this.$.editDialog.close();
-                this.fire('save',this.config);
+                this.fire('edit-widget',{
+                    'label':this.newLabel,
+                    'event':this.newEvent,
+                    'data':configdata,
+                    'icon':this.newIcon
+                });
             },
 
-            delete: function(){
+            delete: function(e){
+                e.stopPropagation()
                 this.fire('delete')
             },
 

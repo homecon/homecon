@@ -12,7 +12,7 @@
 
 <dom-module is="homecon-widget-switch">
     <template>
-        <style>
+        <style include="iron-flex iron-flex-alignment">
             :host{
                 display: inline-block;
                 position: relative;
@@ -38,17 +38,12 @@
             }
         </style>
         
-        <homecon-web-socket-object auto id="websocketObject" event="state" path="[[config.path]]" data="{{value}}"></homecon-web-socket-object>
+        <homecon-web-socket-object id="websocketObject" event="state" path="[[config.path]]" data="{{value}}"></homecon-web-socket-object>
         
-        <paper-button noink class="button" on-tap="call">
+        <paper-button noink class="button horizontal layout start-justified" on-tap="call">
             <img class="icon" src="/images/icon/[[color]]/[[parseIcon(config.icon)]].png">
             <div class="label">{{config.label}}</div>
         </paper-button>
-
-        <!--<div class="container horizontal layout">
-            <paper-icon-button class="icon" src="/images/icon/[[color]]/[[parseIcon(config.icon)]].png" on-tap="call"></paper-icon-button>
-            <div>{{config.label}}</div>
-        </div>-->
 
         <div class="edit" hidden="{{!edit}}">
             <paper-icon-button icon="editor:mode-edit" noink="true" on-tap="openEditDialog"></paper-icon-button>
@@ -77,11 +72,16 @@
                 edit: {
                     type: 'Boolean',
                     value: false
-                }
+                },
+                classes: {
+                    type: 'String',
+                    value: 'halfwidth',
+                },
             },
             
             observers: [
                 'parseColor(value)',
+                'pathChanged(config.path)',
             ],
 
             ready: function(){
@@ -89,10 +89,10 @@
             },
 
             call: function(){
-                var sendvalue = 1;
+                var sendvalue = this.config.valueOn;
 
-                if(this.value){
-                    sendvalue = 0;
+                if(this.value == this.config.valueOn){
+                    sendvalue = this.config.valueOff;
                 }
 
                 this.$.websocketObject.send(sendvalue);
@@ -112,19 +112,20 @@
             save: function(e){
                 e.stopPropagation()
 
-                this.set('config.label',this.newLabel);
-                this.set('config.path',this.newPath);
-                this.set('config.icon',this.newIcon);
-                this.set('config.valueOn',this.newValueOn);
-                this.set('config.valueOff',this.newValueOff);
-                this.set('config.colorOn',this.newColorOn);
-                this.set('config.colorOff',this.newColorOff);
-
                 this.$.editDialog.close();
-                this.fire('save',this.config);
+                this.fire('edit-widget',{
+                    'label':this.newLabel,
+                    'path':this.newPath,
+                    'icon':this.newIcon,
+                    'valueOn':this.newValueOn,
+                    'valueOff':this.newValueOff,
+                    'colorOn':this.newColorOn,
+                    'colorOff':this.newColorOff
+                });
             },
 
-            delete: function(){
+            delete: function(e){
+                e.stopPropagation()
                 this.fire('delete')
             },
 
@@ -135,6 +136,13 @@
             moveDown: function(){
                 this.fire('move-down')
             },
+
+            pathChanged: function(path){
+                if(path != ''){
+                    this.$.websocketObject.send();
+                }
+            },
+
             parseIcon: function(icon){
                 if(icon==''){
                     return 'blank';
@@ -144,7 +152,7 @@
                 }
             },
             parseColor: function(value){
-                if(value){
+                if(value == this.config.valueOn){
                    this.color = this.config.colorOn;
                 }
                 else{
