@@ -95,7 +95,7 @@
             },
             save: function(){
                 this.$.editDialog.close();
-                this.$.websocket.send({'event':'pages_page','path':this.path,'value':{'title':this.newTitle,'icon':this.newIcon}})
+                this.$.websocket.send({'event':'pages_page','path':this.path,'value':{'config':{'title':this.newTitle,'icon':this.newIcon}}})
             },
             delete: function(){
                 this.$.websocket.send({'event':'pages_page','path':this.path,'value':null})

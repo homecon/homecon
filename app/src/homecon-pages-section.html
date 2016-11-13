@@ -22,15 +22,16 @@
             }
         </style>
 
-        <homecon-web-socket-object id="websocket" event="pages_section" path="{{path}}" data="{{section}}" auto></homecon-web-socket-object>
+        <homecon-web-socket-sender id="websocket"></homecon-web-socket-sender>
+        <homecon-web-socket-object id="websocketSection" event="pages_section" path="{{path}}" data="{{section}}" auto></homecon-web-socket-object>
         
         <homecon-section type="{{section.config.type}}" title="{{section.config.title}}">
 
             <sortable-js on-update="_updateWidgetsOrder" disabled="{{!edit}}" class="horizontal layout wrap center">
                 <template is="dom-repeat" id="widgets" items="{{section.widgets}}" as="widgetPath">
-<!--
-                    <homecon-widget path="{{widgetPath}}" on-delete="deleteWidget" edit="[[edit]]"></homecon-widget>
--->
+
+                    <homecon-pages-widget path="{{widgetPath}}" edit="[[edit]]"></homecon-pages-widget>
+
                 </template>
             </sortable-js>
 
@@ -38,11 +39,11 @@
                 <paper-button raised noink="true" on-tap="addWidgetDialog">add widget</paper-button>
             </div>
 
+            <div class="edit" hidden="{{!edit}}">
+                <paper-icon-button class$="{{section.config.type}}" icon="editor:mode-edit" noink="true" on-click="openEditDialog"></paper-icon-button>
+            </div>
         </homecon-section>
-        
-        <div class="edit" hidden="{{!edit}}">
-            <paper-icon-button class$="{{section.config.type}}" icon="editor:mode-edit" noink="true" on-click="openEditDialog"></paper-icon-button>
-        </div>
+
 
         <homecon-edit-dialog id="editDialog" on-save="save">
             <paper-dropdown-menu label="page section type">
@@ -54,6 +55,15 @@
             </paper-dropdown-menu>
             <paper-input label="Title:" value="{{newTitle}}"></paper-input>
             <paper-button raised on-tap="delete">Delete</paper-button>
+        </homecon-edit-dialog>
+
+        <homecon-edit-dialog id="addWidgetDialog" on-save="addWidget">
+            <paper-dropdown-menu label="widget type">
+                <paper-menu class="dropdown-content" attr-for-selected="value" selected="{{widgetType}}">
+                    <paper-item value="button">Button</paper-item>
+                    <paper-item value="switch">Switch</paper-item>
+                </paper-menu>
+            </paper-dropdown-menu>
         </homecon-edit-dialog>
 
     </template>
@@ -74,15 +84,20 @@
                 this.newTitle = this.section.config.title;
                 this.$.editDialog.open();
             },
+            addWidgetDialog: function(){
+                this.widgetType = 'button'
+                this.$.addWidgetDialog.open();
+            },
             save: function(e){
-                /*
-                this.set('type',this.newType);
-                this.set('title',this.newTitle);
-                */
+                this.$.websocketSection.send({'config':{'type':this.newType,'title':this.newTitle}})
                 this.$.editDialog.close();
             },
             delete: function(){
-                this.fire('delete')
+                this.$.websocketSection.send(null)
+            },
+            addWidget: function(e){
+                this.$.websocket.send({'event':'pages_widget','type':this.widgetType,'section':this.path})
+                this.$.addWidgetDialog.close();
             },
             _hiddenClass: function(edit){
                 if(edit){

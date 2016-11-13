@@ -433,9 +433,11 @@ class Pages(BasePlugin):
 
         elif 'path' in event.data and 'value' in event.data and not event.data['value'] is None and tokenpayload and tokenpayload['permission'] > 6:
             # update
-            self.update_page(event.data['path'],event.data['value'])
+            page = self._pages[event.data['path']]
+            self.update_page(event.data['path'],event.data['value']['config'])
             self.fire('send_to',{'event':'pages_menu', 'path':'', 'value':self.get_menu(), 'clients':[event.client]})
-        
+            self.fire('send_to',{'event':'pages_page', 'path':page['path'], 'value':page, 'clients':[event.client]})
+
         elif not 'path' in event.data and tokenpayload and tokenpayload['permission'] > 6:
             # add
             self.add_page(event.data['group'],{'title':'newpage','icon':'blank'})
@@ -446,20 +448,59 @@ class Pages(BasePlugin):
 
         tokenpayload = jwt_decode(event.data['token'])
 
-        if not 'value' in event.data and tokenpayload and tokenpayload['permission'] > 1:
+        if 'path' in event.data and not 'value' in event.data and tokenpayload and tokenpayload['permission'] > 1:
             # get
             section = self.get_section(event.data['path'])
             self.fire('send_to',{'event':'pages_section', 'path':section['path'], 'value':section, 'clients':[event.client]})
+
+        elif 'path' in event.data and 'value' in event.data and event.data['value'] is None and tokenpayload and tokenpayload['permission'] > 6:
+            # delete
+            pagepath = self._sections[event.data['path']]['page']
+            self.delete_section(event.data['path'])
+            page = self.get_page(pagepath)
+            self.fire('send_to',{'event':'pages_page', 'path':page['path'], 'value':page, 'clients':[event.client]})
+
+        elif 'path' in event.data and 'value' in event.data and not event.data['value'] is None and tokenpayload and tokenpayload['permission'] > 6:
+            # update
+            section = self._sections[event.data['path']]
+            self.update_section(event.data['path'],event.data['value']['config'])
+            self.fire('send_to',{'event':'pages_section', 'path':section['path'], 'value':section, 'clients':[event.client]})
+
+        elif not 'path' in event.data and tokenpayload and tokenpayload['permission'] > 6:
+            # add
+            self.add_section(event.data['page'],{'title':'newsection','type':'raised'})
+            page = self.get_page(event.data['page'])
+            self.fire('send_to',{'event':'pages_page', 'path':page['path'], 'value':page, 'clients':[event.client]})
+
 
 
     def listen_pages_widget(self,event):
 
         tokenpayload = jwt_decode(event.data['token'])
 
-        if not 'value' in event.data and tokenpayload and tokenpayload['permission'] > 1:
+        if 'path' in event.data and not 'value' in event.data and tokenpayload and tokenpayload['permission'] > 1:
             # get
             widget = self.get_widget(event.data['path'])
             self.fire('send_to',{'event':'pages_widget', 'path':widget['path'], 'value':widget, 'clients':[event.client]})
+
+        elif 'path' in event.data and 'value' in event.data and event.data['value'] is None and tokenpayload and tokenpayload['permission'] > 6:
+            # delete
+            sectionpath = self._widgets[event.data['path']]['section']
+            self.delete_widget(event.data['path'])
+            section = self.get_section(sectionpath)
+            self.fire('send_to',{'event':'pages_section', 'path':sectino['path'], 'value':section, 'clients':[event.client]})
+
+        elif 'path' in event.data and 'value' in event.data and not event.data['value'] is None and tokenpayload and tokenpayload['permission'] > 6:
+            # update
+            widget = self._widgets[event.data['path']]
+            self.update_widget(event.data['path'],event.data['value']['config'])
+            self.fire('send_to',{'event':'pages_widget', 'path':widget['path'], 'value':widget, 'clients':[event.client]})
+
+        elif not 'path' in event.data and tokenpayload and tokenpayload['permission'] > 6:
+            # add
+            self.add_widget(event.data['section'],event.data['type'])
+            section = self.get_section(event.data['section'])
+            self.fire('send_to',{'event':'pages_section', 'path':section['path'], 'value':section, 'clients':[event.client]})
 
 
 

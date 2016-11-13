@@ -77,19 +77,6 @@
             },
             addPage: function(e){
                 this.$.websocket.send({'event':'pages_page','group':e.model.__data__.group.path})
-                /*
-                var id = new Date().valueOf();
-
-                var sectionindex = parseInt(this.$.sections.modelForElement(e.target).__data__.__key__.substr(1));
-                var sectionid = this.sections[sectionindex].id;
-                
-                var pages = this.pages.filter(function(page){
-                    return page.section == sectionid;
-                });
-                var order = this._getNextOrder(pages);
-
-                this.push('pages',{'id':id,'section':sectionid,'title':'','icon':'blank','header':{},'pagesections':[],'order':order})
-                */
             },
 
 

@@ -14,7 +14,7 @@
             }
         </style>
 
-
+        <homecon-web-socket-sender id="websocket"></homecon-web-socket-sender>
         <homecon-web-socket-object id="websocketPage" event="pages_page" path="{{path}}" data="{{page}}" auto></homecon-web-socket-object>
 
         <homecon-page>
@@ -51,6 +51,9 @@
                     type: 'Boolean',
                     value: false,
                 },
+            },
+            addSection: function(){
+                this.$.websocket.send({'event':'pages_section','page':this.path})
             },
             _filterHome: function(item){
                 return item.path != 'home/home';

@@ -28,6 +28,10 @@
 
         <div id="container" on-save="save"><div></div></div>
 
+        <div class="edit" hidden="{{!edit}}">
+            <paper-icon-button icon="editor:mode-edit" noink="true" on-click="openEditDialog"></paper-icon-button>
+        </div>
+
     </template>
     <script>
         Polymer({
