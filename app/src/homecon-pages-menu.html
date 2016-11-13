@@ -3,7 +3,7 @@
 <link rel="import" href="../bower_components/paper-button/paper-button.html">
 <link rel="import" href="../bower_components/Sortable/Sortable.html">
 
-<link rel="import" href="homecon-web-socket-object.html">
+<link rel="import" href="homecon-web-socket-sender.html">
 <link rel="import" href="homecon-pages-menu-group.html">
 <link rel="import" href="homecon-pages-menu-page.html">
 
@@ -24,10 +24,11 @@
             }
         </style>
         
-        
+        <homecon-web-socket-sender id="websocket"></homecon-web-socket-sender>
+
         <sortable-js on-update="_updateSectionsOrder" disabled="{{!edit}}">
             <template is="dom-repeat" id="groups" items="{{groups}}" as="group">
-                <homecon-pages-menu-group config="{{group.config}}" on-change-state="changeState" edit="{{edit}}" on-delete="deleteGroup">
+                <homecon-pages-menu-group path="{{group.path}}" config="{{group.config}}" on-change-state="changeState" edit="{{edit}}" on-delete="deleteGroup">
 
                     <sortable-js on-update="_updatePagesOrder" disabled="{{!edit}}">
                         <template is="dom-repeat" id="pages" items="{{group.pages}}" as="page">
@@ -44,7 +45,7 @@
         </sortable-js>
         
         <div class$="vertical layout [[_hiddenclass(edit)]]">
-            <paper-button raised noink="true" on-click="addSection">add section</paper-button>
+            <paper-button raised noink="true" on-click="addGroup">add group</paper-button>
         </div>
 
         <!--a spacer to be able to scroll all the way down-->
@@ -71,7 +72,8 @@
                     children[i].fire('menuChangeState',e.target)
                 }
             },
-            addSection: function(e){
+            addGroup: function(e){
+                this.$.websocket.send({'event':'pages_group'})
                 /*
                 var id = new Date().valueOf();
                 var order = this._getNextOrder(this.sections);

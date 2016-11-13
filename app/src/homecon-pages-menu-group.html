@@ -9,7 +9,8 @@
 <link rel="import" href="../bower_components/paper-input/paper-input.html">
 <link rel="import" href="../bower_components/paper-button/paper-button.html">
 
-<<link rel="import" href="homecon-edit-dialog.html">
+<link rel="import" href="homecon-edit-dialog.html">
+<link rel="import" href="homecon-web-socket-sender.html">
 
 <dom-module is="homecon-pages-menu-group">
     <template>
@@ -47,6 +48,8 @@
             }
         </style>
         
+        <homecon-web-socket-sender id="websocket"></homecon-web-socket-sender>
+        
         <a class="header" on-tap="changeState">
             {{config.title}}
         </a>
@@ -71,6 +74,9 @@
         Polymer({
             is: 'homecon-pages-menu-group',
             properties: {
+                path: {
+                    type: 'String',
+                },
                 config: {
                     type: 'Object',
                 },
@@ -99,11 +105,11 @@
                 this.$.editDialog.open();
             },
             save: function(){
-                this.set('config.title',this.newTitle);
                 this.$.editDialog.close();
+                this.$.websocket.send({'event':'pages_group','path':this.path,'value':{'title':this.newTitle}})
             },
             delete: function(){
-                this.fire('delete')
+                this.$.websocket.send({'event':'pages_group','path':this.path,'value':null})
             },
         });
     </script>

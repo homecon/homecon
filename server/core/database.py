@@ -228,7 +228,7 @@ class Table(object):
     def DELETE(self,where=''):
     
         query = 'DELETE FROM {} WHERE {}'.format(self.name,where)
-        cursor = self.database.execute_query( query, data )
+        cursor = self.database.execute_query( query )
 
         
         

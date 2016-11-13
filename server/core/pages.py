@@ -121,6 +121,26 @@ class Pages(BasePlugin):
 
         return group
 
+    def update_group(self,path,config):
+
+        group =  self._groups[path]
+        group['config']['title'] = config['title']
+        print('path=`{}`'.format(path))
+        self._db_groups.PUT(config=json.dumps(group['config']),where='path=\'{}\''.format(path))
+
+        return group
+
+    def delete_group(self,path):
+        """
+        """
+    
+        del self._groups[path]
+        self._db_groups.DELETE(where='path=\'{}\''.format(path))
+
+        # cascade
+        for page in self._pages.values():
+            if page['group'] == path:
+                self.delete_page(page['path'])
 
     def add_page_local(self,path,group,config,order):
         """
@@ -155,6 +175,18 @@ class Pages(BasePlugin):
         
         return page
 
+    def delete_page(self,path):
+        """
+        """
+    
+        del self._pages[path]
+        self._db_pages.DELETE(where='path=\'{}\''.format(path))
+
+        # cascade
+        for section in self._sections.values():
+            if section['page'] == path:
+                self.delete_section(section['path'])
+
 
     def add_section_local(self,path,page,config,order):
         """
@@ -181,6 +213,18 @@ class Pages(BasePlugin):
         section = self.add_section_local(path,page,config,order)
         
         return section
+
+    def delete_section(self,path):
+        """
+        """
+    
+        del self._sections[path]
+        self._db_sections.DELETE(where='path=\'{}\''.format(path))
+
+        # cascade
+        for widget in self._widgets.values():
+            if widget['section'] == path:
+                self.delete_widget(widget['path'])
 
 
     def add_widget_local(self,path,section,widgettype,config,order):
@@ -209,6 +253,14 @@ class Pages(BasePlugin):
         widget = self.add_widget_local(path,section,widgettype,config,order)
         
         return widget
+
+    def delete_widget(self,path):
+        """
+        """
+    
+        del self._widgets[path]
+        self._db_widgets.DELETE(where='path=\'{}\''.format(path))
+
 
 
     def get_menu(self):
@@ -304,6 +356,25 @@ class Pages(BasePlugin):
             self.fire('send_to',{'event':'pages_paths', 'path':'', 'value':pages, 'clients':[event.client]})
 
 
+    def listen_pages_group(self,event):
+
+        tokenpayload = jwt_decode(event.data['token'])
+        print(event.data)
+        if not 'path' in event.data and tokenpayload and tokenpayload['permission'] > 6:
+            # add
+            self.add_group({'title':'newgroup'})
+            self.fire('send_to',{'event':'pages_menu', 'path':'', 'value':self.get_menu(), 'clients':[event.client]})
+
+        elif 'path' in event.data and 'value' in event.data and event.data['value'] is None and tokenpayload and tokenpayload['permission'] > 6:
+            # delete
+            self.delete_group(event.data['path'])
+            self.fire('send_to',{'event':'pages_menu', 'path':'', 'value':self.get_menu(), 'clients':[event.client]})
+
+        elif 'path' in event.data and 'value' in event.data and not event.data['value'] is None and tokenpayload and tokenpayload['permission'] > 6:
+            # update
+            self.update_group(event.data['path'],event.data['value'])
+            self.fire('send_to',{'event':'pages_menu', 'path':'', 'value':self.get_menu(), 'clients':[event.client]})
+
     def listen_pages_page(self,event):
 
         tokenpayload = jwt_decode(event.data['token'])
@@ -334,7 +405,6 @@ class Pages(BasePlugin):
             section = self.get_section(event.data['path'])
             self.fire('send_to',{'event':'pages_section', 'path':section['path'], 'value':section, 'clients':[event.client]})
 
-    
 
     def listen_pages_widget(self,event):
 
@@ -344,9 +414,6 @@ class Pages(BasePlugin):
             # get
             widget = self.get_widget(event.data['path'])
             self.fire('send_to',{'event':'pages_widget', 'path':widget['path'], 'value':widget, 'clients':[event.client]})
-
-
-
 
 
 
