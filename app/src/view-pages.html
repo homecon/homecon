@@ -53,7 +53,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             }
         </style>
 
-        <homecon-web-socket-object id="websocketPages" event="pages_paths" data="{{pagesPaths}}"></homecon-web-socket-object>
+        <homecon-web-socket-object id="websocketPages" event="pages_paths" path="" data="{{pagesPaths}}"></homecon-web-socket-object>
 
 <!--        <iron-localstorage name="sections" value="{{sections}}" on-iron-localstorage-load-empty="_initializeSections"></iron-localstorage>
         <iron-localstorage name="pages" value="{{pages}}" on-iron-localstorage-load-empty="_initializePages"></iron-localstorage>
@@ -94,7 +94,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             },
 
             observers: [
-                '_routePageChanged(routeData.group,routeData.page,pagesPaths)',
+                '_routePageChanged(routeData.*,pagesPaths)',
             ],
 
             ready: function(){
@@ -213,8 +213,13 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 }
             },
 
-            _routePageChanged: function(group,page,pagesPaths){
-                this.path = group+'/'+page || 'home/home';
+            _routePageChanged: function(routeDataChangeRecord,pagesPaths){
+                if( typeof routeDataChangeRecord.value.group == 'undefined' || typeof routeDataChangeRecord.value.page == 'undefined'){
+                    this.path = 'home/home';
+                }
+                else{
+                    this.path = routeDataChangeRecord.value.group+'/'+routeDataChangeRecord.value.page
+                }
             },
 
 /*

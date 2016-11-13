@@ -290,7 +290,7 @@ class Pages(BasePlugin):
         
         tokenpayload = jwt_decode(event.data['token'])
         
-        if tokenpayload['permission'] > 1:
+        if tokenpayload and tokenpayload['permission'] > 1:
             self.fire('send_to',{'event':'pages_menu', 'path':'', 'value':self.get_menu(), 'clients':[event.client]})
 
 
@@ -298,15 +298,17 @@ class Pages(BasePlugin):
         
         tokenpayload = jwt_decode(event.data['token'])
         
-        if tokenpayload['permission'] > 1:
-            self.fire('send_to',{'event':'pages_paths', 'path':'', 'value':[page['path'] for page in self._pages.values()], 'clients':[event.client]})
+        if tokenpayload and tokenpayload['permission'] > 1:
+            pages = [page['path'] for page in self._pages.values()]
+            pages = sorted(pages,key=lambda x:self._pages[x]['order'])
+            self.fire('send_to',{'event':'pages_paths', 'path':'', 'value':pages, 'clients':[event.client]})
 
 
     def listen_pages_page(self,event):
 
         tokenpayload = jwt_decode(event.data['token'])
 
-        if not 'value' in event.data and tokenpayload['permission'] > 1:
+        if not 'value' in event.data and tokenpayload and tokenpayload['permission'] > 1:
             # get
             if event.data['path'] in self._pages:
                 page = self.get_page(event.data['path'])
@@ -314,7 +316,7 @@ class Pages(BasePlugin):
             else:
                 logging.warning('{} not in pages'.format(event.data['path']))
     
-        elif not event.data['value'] == '' and tokenpayload['permission'] > 6:
+        elif not event.data['value'] == '' and tokenpayload and tokenpayload['permission'] > 6:
             # set
             print('set')
             #self.set_page(event.data['path'],event.data['value']['config'])
@@ -327,7 +329,7 @@ class Pages(BasePlugin):
 
         tokenpayload = jwt_decode(event.data['token'])
 
-        if not 'value' in event.data and tokenpayload['permission'] > 1:
+        if not 'value' in event.data and tokenpayload and tokenpayload['permission'] > 1:
             # get
             section = self.get_section(event.data['path'])
             self.fire('send_to',{'event':'pages_section', 'path':section['path'], 'value':section, 'clients':[event.client]})
@@ -338,7 +340,7 @@ class Pages(BasePlugin):
 
         tokenpayload = jwt_decode(event.data['token'])
 
-        if not 'value' in event.data and tokenpayload['permission'] > 1:
+        if not 'value' in event.data and tokenpayload and tokenpayload['permission'] > 1:
             # get
             widget = self.get_widget(event.data['path'])
             self.fire('send_to',{'event':'pages_widget', 'path':widget['path'], 'value':widget, 'clients':[event.client]})

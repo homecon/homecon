@@ -277,7 +277,7 @@ class Authentication(BasePlugin):
             iat = datetime.datetime.utcnow()
             exp = iat + datetime.timedelta(seconds=self._token_exp)
 
-            groupids = [group['id'] for group in self.user_groups[user['id']]]
+            groupids = [groupid for groupid in self.user_groups[user['id']]]
             payload = {'userid': user['id'], 'groupids': groupids, 'username':user['username'], 'permission':self.user_permission(user['id']), 'exp':exp, 'iat':iat}
 
             return jwt_encode(payload)

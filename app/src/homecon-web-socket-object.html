@@ -30,7 +30,6 @@
                 },
                 path: {
                     type: String,
-                    value: '',
                     observer: '_pathChanged',
                 },
                 data: {
@@ -53,10 +52,10 @@
                 this.listen(window.homeconWebSocket, 'homecon-web-socket-message', 'onMessage');
 
                 if(this.auto){
-                    this.listen(window.homeconWebSocket, 'homecon-web-socket-connected', 'onConnected');
+                    this.listen(window.homeconAuthentication, 'homecon-authenticated', 'onAuthenticated');
 
                     // send without value key to start monitoring
-                    if(window.homeconWebSocket.connected && !(this.event == 'state' && this.path == '')){
+                    if(window.homeconAuthentication.authenticated && typeof this.path != 'undefined'){
                         this.send();
                     }
                 }
@@ -64,7 +63,7 @@
 
             onMessage: function(e,d){
                 // check if the message matches the template
-                if(d['event']==this.event && d['path']==this.path){
+                if(d['event']==this.event && (this.path=='' || d['path']==this.path)){
                     // avoid looping forever
                     this.observe = false;
                     // extract data from the message
@@ -76,7 +75,7 @@
                 }
             },
 
-            onConnected: function(e){
+            onAuthenticated: function(e){
                 if(this.auto){
                     this.send();
                 }
@@ -95,13 +94,13 @@
             },
 
             _dataChanged: function(data,olddata){
-                if(this.auto && this.observe && window.homeconWebSocket.connected && data != olddata && !(data == '' && typeof olddata == 'undefined') && !(this.event == 'state' && this.path == '')){
+                if(this.auto && this.observe && window.homeconWebSocket.connected && window.homeconAuthentication.authenticated && typeof this.path != 'undefined' && typeof this.event != 'undefined' && !(data == '' && typeof olddata == 'undefined') ){
                     this.debounce('sendDataDebounce', this._sendData, this.debounce); 
                 }
             },
             _pathChanged: function(path, oldpath){
-                if(this.auto && this.observe && window.homeconWebSocket.connected && !(path == '')){
-                    this.debounce('sendDataDebounce', this.send, this.debounce); 
+                if(this.auto && this.observe && window.homeconWebSocket.connected && window.homeconAuthentication.authenticated && !(path == '')){
+                    this.debounce('sendDataDebounce', this.send, this.debounce);
                 }
             },
         });

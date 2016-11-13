@@ -25,8 +25,6 @@
         </style>
         
         
-        <homecon-web-socket-object id="websocketPagesMenu" event="pages_menu" data="{{groups}}" auto></homecon-web-socket-object>
-
         <sortable-js on-update="_updateSectionsOrder" disabled="{{!edit}}">
             <template is="dom-repeat" id="groups" items="{{groups}}" as="group">
                 <homecon-pages-menu-group config="{{group.config}}" on-change-state="changeState" edit="{{edit}}" on-delete="deleteGroup">
@@ -62,7 +60,10 @@
                 edit:{
                     type: 'Boolean',
                     value: false
-                }
+                },
+                menu:{
+                    type: 'Array',
+                },
             },
             changeState : function(e){
                 var children = Polymer.dom(this.root).querySelectorAll('homecon-pages-menu-section');

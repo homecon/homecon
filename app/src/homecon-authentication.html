@@ -16,8 +16,10 @@
         </style>
 
         <iron-localstorage name="homecon-token" value="{{token}}" on-iron-localstorage-load-empty="_initializeDefaultToken"></iron-localstorage>
+
         <homecon-web-socket-object id="request_token" event="request_token" path="" data="{{token}}" data-key="token"></homecon-web-socket-object>
-        <homecon-web-socket-object id="authenticate" event="authenticate" path="" data="{{authenticated}}"></homecon-web-socket-object>
+        <homecon-web-socket-object id="authenticate" event="authenticate" path="" data="{{authenticated}}" data-key="authenticated"></homecon-web-socket-object>
+        <homecon-web-socket-object id="authenticate" event="logout" path="" on-change="{{logoutChanged}}"></homecon-web-socket-object>
 
     </template>
 
@@ -29,7 +31,8 @@
                 authenticated: {
                     type: Boolean,
                     notify: true,
-                    value: false
+                    //value: false,
+                    observer: '_authenticatedChanged'
                 },
                 token: {
                     type: String,
@@ -54,36 +57,26 @@
                 // attatch the component to the window
                 window.homeconAuthentication = this;
 
-                this.listen(window.homeconWebSocket, 'homecon-web-socket-message', 'onMessage');
-            },
-            
-            onMessage: function(e,d){
-                if(d['event'] == 'request_token'){
-                    this.token = d['token'];
-                }
-                if(d['event'] == 'authenticate'){
-                    this.authenticated = d['authenticated'];
-                }
-                if(d['event'] == 'logout'){
-                    this.token = '';
-                }
+                //this.listen(window.homeconWebSocket, 'homecon-web-socket-message', 'onMessage');
             },
 
             login: function(){
                 // Send a message to HomeCon
-                console.log('login');
-                window.homeconWebSocket.send({'event':'authenticate','token':this.token});
+                if(this.token != ''){
+                    console.log('login');
+                    window.homeconWebSocket.send({'event':'authenticate','token':this.token});
+                }
             },
 
             logout: function(){
                 console.log('logout');
                 if(this.connected){
                     window.homeconWebSocket.send({'event':'logout','token':this.token});
+                    
                 }
-                else{
-                    this.token = '';
-                }
+                this.token = '';
             },
+
 
             _connectedChanged: function(connected){
                 if(connected){
@@ -105,6 +98,16 @@
                     this.tokenPayload = {};
                     this.authenticated = false;
                 }
+            },
+
+            _authenticatedChanged: function(authenticated){
+                if(authenticated){
+                    this.fire('homecon-authenticated');
+                }
+            },
+
+            _logoutChanged: function(data){
+                this.token = '';
             },
 
             _initializeDefaultToken: function(){

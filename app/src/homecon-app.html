@@ -174,18 +174,20 @@
 
 
         <!-- Drawer -->
+        <homecon-web-socket-object id="websocketPagesMenu" event="pages_menu" path="" data="{{menuGroups}}" auto></homecon-web-socket-object>
+
         <app-drawer id="drawer" class$="drawer [[loginClass]]">
             <div class="drawer-content">
 
                 <!-- Pages menu -->
-                <homecon-pages-menu edit="[[edit]]"></homecon-pages-menu>
+                <homecon-pages-menu edit="[[edit]]" groups="[[menuGroups]]"></homecon-pages-menu>
 
             </div>
         </app-drawer>
 
         <div class$="drawer-content persistent [[loginClass]]">
             <!-- Pages menu -->
-            <homecon-pages-menu edit="[[edit]]"></homecon-pages-menu>
+            <homecon-pages-menu edit="[[edit]]" groups="[[menuGroups]]"></homecon-pages-menu>
         </div>
 
 
@@ -244,27 +246,32 @@
         },
 
         _routePageChanged: function(page){
-
-            if(!this.authenticated && page != 'login'){
-                this.set('routeData.page','login');
+            if( typeof this.authenticated != 'undefined'){
+                if(!this.authenticated && page != 'login'){
+                    this.set('routeData.page','login');
+                }
             }
 
-            this.page = page || 'pages';
+            this.page = page || 'login';
+
             if(this.page=='login'){
                 this.loginClass = 'login'
             }
             else{
                 this.loginClass = ''
             }
-
+            
             this._closeDrawer();
             this._closeMenu();
             window.scrollTo(0, 0);
         },
 
         _authenticatedChanged: function(authenticated){
+            console.log('authenticatedchanges')
             if(authenticated){
-                this.set('routeData.page','pages');
+                if(this.routeData.page == 'login' || this.routeData.page == ''){
+                    this.set('routeData.page','pages');
+                }
             }
             else{
                 this.set('routeData.page','login');
