@@ -1,0 +1,182 @@
+<!--
+@license
+Copyright (c) 2016 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/paper-material/paper-material.html">
+<link rel="import" href="../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../bower_components/iron-icon/iron-icon.html">
+<link rel="import" href="../bower_components/iron-icons/iron-icons.html">
+
+<link rel="import" href="homecon-web-socket-object.html">
+<link rel="import" href="homecon-web-socket-sender.html">
+<link rel="import" href="homecon-edit-dialog.html">
+
+
+<dom-module id="homecon-states">
+
+    <template>
+
+        <style include="iron-flex iron-flex-alignment">
+            :host {
+                display: block;
+            }
+            paper-material.state{
+                padding-left: 16px;
+                padding-right: 16px;
+                padding-bottom: 4px;
+                padding-top: 4px;
+                background-color: var(--secondary-background-color);
+                margin-bottom: 8px;
+            }
+            .plugin {
+                cursor: pointer;
+            }
+            .state {
+                cursor: pointer;
+            }
+        </style>
+
+        <homecon-web-socket-sender id="websocket"></homecon-web-socket-sender>
+
+        <homecon-web-socket-object id="websocketStatesConfigKeys" event="list_state_config_keys" path="" data="{{statesConfigKeys}}" auto></homecon-web-socket-object>
+        <homecon-web-socket-object id="websocketStatesList" event="list_states" path="" data="{{states}}" auto></homecon-web-socket-object>
+
+        <template is="dom-repeat" items="{{states}}" as="state">
+            <paper-material class="horizontal layout center state" on-tap="editStateDialog">
+                <div class="path flex">{{state.path}}</div>
+                <div class="label flex">{{state.config.label}}</div>
+            </paper-material>
+        </template>
+
+        <paper-button raised noink="true" on-tap="addStateDialog">add state</paper-button>
+
+        <homecon-edit-dialog id="editStateDialog" on-save="editState">
+            <template is="dom-if" if="{{!editStateBoolean}}">
+                <paper-input id="pathInput" label="path:" value="{{newPath}}"></paper-input>
+            </template>
+
+            <template is="dom-if" if="{{editStateBoolean}}">
+                <h2>{{newPath}}</h2>
+            </template>
+
+            <template is="dom-repeat" items="{{newConfig}}" as="pluginconfig">
+                <h3>{{pluginconfig.name}}</h3>
+                <template is="dom-repeat" items="{{pluginconfig.properties}}" as="property">
+                    <paper-input label="{{property.key}}: " value="{{property.value}}"></paper-input>
+                </template>
+            </template>
+
+            <template is="dom-if" if="{{editStateBoolean}}">
+                <paper-button on-tap="delete">Delete</paper-button>
+            </template>
+
+        </homecon-edit-dialog>
+
+    </template>
+
+    <script>
+        Polymer({
+            is: 'homecon-states',
+
+            properties: {
+                states: {
+                    type: 'Object',
+                    notify: true,
+                },
+            },
+
+            _configToNewConfig: function(config){
+                var newConfig = []
+
+                this.statesConfigKeys.forEach(function(pluginconfig){
+                    var properties = []
+                    pluginconfig.keys.forEach(function(key){
+                        var value = ''
+                        if(typeof config != 'undefined' && key in config){
+                            value = config[key];
+                            if(typeof value != 'string'){
+                                value = JSON.stringify(value)
+                            }
+                        }
+                        properties.push({'key':key,'value':value})
+                    });
+                    newConfig.push({'name':pluginconfig.name,'properties':properties})
+                });
+
+                return newConfig
+            },
+
+            _newConfigToConfig: function(newconfig){
+                var config = {};
+
+                newconfig.forEach(function(pluginconfig){
+                    pluginconfig.properties.forEach(function(property){
+                        if(property.value != ''){
+                            try{
+                                var value = JSON.parse(property.value);
+                            }
+                            catch(e){
+                                var value = property.value;
+                            }
+                            config[property.key] = value;
+                        }
+                    });
+                   
+                });
+
+                return config;
+            },
+
+            addStateDialog: function(e){
+                this.editStateBoolean = false;
+
+                this.newPath = '';
+                this.newConfig = this._configToNewConfig()
+
+                this.$.editStateDialog.open()
+            },
+
+            editStateDialog: function(e){
+                this.editStateBoolean = true;
+
+                var state = e.model.__data__.state;
+                this.newPath = state.path;
+                this.newConfig = this._configToNewConfig(state.config)
+
+                this.$.editStateDialog.open()
+            },
+
+            editState: function(e){
+                this.$.editStateDialog.close();
+
+                config = this._newConfigToConfig(this.newConfig)
+
+                if(this.editStateBoolean){
+                    this.$.websocket.send({'event':'edit_state','path':this.newPath,'config':config});
+                }
+                else{
+                    this.$.websocket.send({'event':'add_state','path':this.newPath,'config':config});
+                }
+            },
+
+            deleteState: function(e){
+                e.stopPropagation()
+
+                this.$.websocket.send({'event':'delete_state','path':this.newPath});
+            },
+
+
+
+
+        });
+    </script>
+
+</dom-module>

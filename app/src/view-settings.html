@@ -20,7 +20,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="homecon-web-socket-object.html">
 <link rel="import" href="homecon-web-socket-sender.html">
 <link rel="import" href="homecon-edit-dialog.html">
-
+<link rel="import" href="homecon-states.html">
 
 <dom-module id="view-settings">
 
@@ -108,44 +108,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 Edit plugin
             </homecon-edit-dialog>
 
-
-
-            <!-- states -->
             <paper-material>
                 <h1>States</h1>
-                <homecon-web-socket-object auto id="websocketStatesConfigKeys" event="list_state_config_keys" data="{{configKeysList}}"></homecon-web-socket-object>
-                <homecon-web-socket-object auto id="websocketStatesList" event="list_states" data="{{statesList}}"></homecon-web-socket-object>
-
-                <template is="dom-repeat" items="{{statesList}}" as="state">
-                    <paper-material class="horizontal layout center state" on-tap="editStateDialog">
-                        {{state.path}}
-                    </paper-material>
-                </template>
-
-                <paper-button raised noink="true" on-tap="addStateDialog">add state</paper-button>
+                <homecon-states states="{{states}}"></homecon-states>
             </paper-material>
-
-
-
-            <homecon-edit-dialog id="addStateDialog" on-save="addState">
-                <paper-input label="path:" value="{{newPath}}"></paper-input>
-                
-                <template is="dom-repeat" items="{{newConfigProperties}}" as="property">
-                    <paper-input label="{{property.key}}: " value="{{property.value}}"></paper-input>
-                </template>
-            </homecon-edit-dialog>
-
-            <homecon-edit-dialog id="editStateDialog" on-save="editState">
-                <paper-input label="path:" value="{{newPath}}" disabled></paper-input>
-                
-                <template is="dom-repeat" items="{{newConfigKeysList}}" as="pluginconfig">
-                    {{pluginconfig.name}}
-                    <template is="dom-repeat" items="{{pluginconfig.properties}}" as="property">
-                        <paper-input label="{{property.key}}: " value="{{property.value}}"></paper-input>
-                    </template>
-                </template>
-            </homecon-edit-dialog>
-
 
         </homecon-page>
 
@@ -157,9 +123,17 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
             properties: {
                 states: {
-                    type: 'Object',
+                    type: 'Array',
                     notify: true,
                 },
+                plugins: {
+                    type: 'Array',
+                    notify: true,
+                },
+            },
+
+            ready: function(){
+                window.homeconSettings = this;
             },
 
             editPluginDialog: function(e){
@@ -169,95 +143,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             editPlugin: function(e){
 
             },
-
-
-            addStateDialog: function(e){
-
-                this.newConfigProperties = [
-                    {'key':'type', 'value': ''},
-                    {'key':'quantity', 'value': ''},
-                    {'key':'unit', 'value': ''},
-                    {'key':'label', 'value': ''},
-                    {'key':'description', 'value': ''},
-                ]
-                this.$.addStateDialog.open()
-            },
-
-            addState: function(e){
-
-                this.$.addStateDialog.close();
-
-                var config = {}
-
-                this.newConfigProperties.forEach(function(property){
-                    config[property.key] = property.value;
-                });
-
-                this.$.websocket.send({'event':'add_state','path':this.newPath,'config':config});
-            },
-
-            editStateDialog: function(e){
-                var state = e.model.__data__.state;
-                this.newPath = state.path;
-
-                // create a temporary config properties object
-                var newConfigKeysList = []
-                this.configKeysList.forEach(function(pluginconfig){
-                    var properties = []
-                    pluginconfig.keys.forEach(function(key){
-                        var value = ''
-                        if(key in state.config){
-                            value = state.config[key];
-                            if(typeof value != 'string'){
-                                value = JSON.stringify(value)
-                            }
-                        }
-                        properties.push({'key':key,'value':value})
-                    });
-                    newConfigKeysList.push({'name':pluginconfig.name,'properties':properties})
-                });
-                this.newConfigKeysList = newConfigKeysList
-
-                this.$.editStateDialog.open()
-            },
-
-            editState: function(e){
-
-                this.$.editStateDialog.close();
-
-                var config = {};
-
-                this.newConfigKeysList.forEach(function(pluginconfig){
-                    pluginconfig.properties.forEach(function(property){
-                        if(property.value != ''){
-                            try{
-                                var value = JSON.parse(property.value);
-                            }
-                            catch(e){
-                                var value = property.value;
-                            }
-                            config[property.key] = value;
-                        }
-                    });
-                   
-                });
-
-                this.$.websocket.send({'event':'edit_state','path':this.newPath,'config':config});
-            },
-
-            deleteState: function(e){
-                e.stopPropagation()
-                
-                var pageindex = parseInt(e.model.__data__.index);
-                var pagesectionindex = this._indexFromId(this.pages[pageindex].pagesections,e.target.widget.pagesection);
-
-                var widgetindex = this._indexFromId(this.pages[pageindex].pagesections[pagesectionindex].widgets,e.target.widget.id);
-                
-                if(widgetindex>-1){
-                    this.splice('pages.'+pageindex+'.pagesections.'+pagesectionindex+'.widgets',widgetindex,1);
-                }
-            },
-
 
 
 
