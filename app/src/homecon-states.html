@@ -58,14 +58,24 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
         <paper-button raised noink="true" on-tap="addStateDialog">add state</paper-button>
 
-        <homecon-edit-dialog id="editStateDialog" on-save="editState">
-            <template is="dom-if" if="{{!editStateBoolean}}">
-                <paper-input id="pathInput" label="path:" value="{{newPath}}"></paper-input>
-            </template>
 
-            <template is="dom-if" if="{{editStateBoolean}}">
-                <h2>{{newPath}}</h2>
-            </template>
+        <homecon-edit-dialog id="addStateDialog" on-save="editState">
+            <h2>Add state</h2>
+            <paper-input id="pathInput" label="path:" value="{{newPath}}"></paper-input>
+
+            <paper-dropdown-menu label="type">
+                <paper-menu class="dropdown-content" attr-for-selected="value" selected="{{newType}}">
+                    <template is="dom-repeat" items="{{stateTypes}}" as="type">
+                        <paper-item value="{{type}}">{{type}}</paper-item>
+                    </template>
+                </paper-menu>
+            </paper-dropdown-menu>
+
+        </homecon-edit-dialog>
+
+
+        <homecon-edit-dialog id="editStateDialog" on-save="editState">
+            <h2>{{newPath}}</h2>
 
             <template is="dom-repeat" items="{{newConfig}}" as="pluginconfig">
                 <h3>{{pluginconfig.name}}</h3>
@@ -136,12 +146,23 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             },
 
             addStateDialog: function(e){
-                this.editStateBoolean = false;
 
                 this.newPath = '';
-                this.newConfig = this._configToNewConfig()
+                this.newType = 'simple';
 
-                this.$.editStateDialog.open()
+                this.$.addStateDialog.open()
+            },
+
+            addState: function(e){
+                this.$.editStateDialog.close();
+
+                config = this._newConfigToConfig(this.newConfig)
+                if(this.newType == 'simple'){
+                    this.$.websocket.send({'event':'add_state','path':this.newPath,'config':{}});
+                }
+                else{
+                    this.$.websocket.send({'event':'add_type_state','path':this.newPath,'type':this.newType});
+                }
             },
 
             editStateDialog: function(e){
@@ -159,12 +180,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
                 config = this._newConfigToConfig(this.newConfig)
 
-                if(this.editStateBoolean){
-                    this.$.websocket.send({'event':'edit_state','path':this.newPath,'config':config});
-                }
-                else{
-                    this.$.websocket.send({'event':'add_state','path':this.newPath,'config':config});
-                }
+                this.$.websocket.send({'event':'edit_state','path':this.newPath,'config':config});
             },
 
             deleteState: function(e){

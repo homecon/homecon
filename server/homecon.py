@@ -76,23 +76,18 @@ class HomeCon(object):
         # start core components
         ########################################################################
         self.states = core.states.States(self._queue)
-        self.websocket = core.websocket.Websocket(self._queue)
-        self.authentication = core.authentication.Authentication(self._queue)
-        self.pages = core.pages.Pages(self._queue)
-        self.schedules = core.schedules.Schedules(self._queue)
-
+        self.components = core.components.Components(self._queue,self.states)
 
         # start plugins
-        self.plugins = core.plugin.Plugins(self._queue)
-
-        self.coreplugins = [
-            self.plugins,
-            self.states,
-            self.websocket,
-            self.authentication,
-            self.pages,
-            self.schedules,
-        ]
+        self.coreplugins = {
+            'states': core.plugins.states.States(self._queue,self.states,self.components),
+            'components': core.plugins.components.Components(self._queue,self.states,self.components),
+            'plugins': core.plugins.plugins.Plugins(self._queue,self.states,self.components),
+            'websocket': core.plugins.websocket.Websocket(self._queue,self.states,self.components),
+            'authentication': core.plugins.authentication.Authentication(self._queue,self.states,self.components),
+            'pages': core.plugins.pages.Pages(self._queue,self.states,self.components),
+            'schedules': core.plugins.schedules.Schedules(self._queue,self.states,self.components),
+        }
 
 
         logging.info('HomeCon Initialized')
@@ -123,7 +118,7 @@ class HomeCon(object):
             event = await self._queue.get()
             logging.debug(event)
 
-            for plugin in self.coreplugins:
+            for plugin in self.coreplugins.values():
                 self._loop.call_soon_threadsafe(plugin._listen, event)
 
             for plugin in self.plugins.values():

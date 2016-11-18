@@ -8,10 +8,10 @@ import datetime
 import pytz
 import uuid
 
-from . import database
-from .plugin import BasePlugin
+from .. import database
+from ..plugin import Plugin
 
-class Schedules(BasePlugin):
+class Schedules(Plugin):
     """
     Class to control the HomeCon scheduling
     
@@ -262,7 +262,7 @@ class Scheduled(object):
 
 
 
-class Actions(BasePlugin):
+class Actions(Plugin):
     def initialize(self):
 
         self._actions = {}

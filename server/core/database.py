@@ -172,9 +172,9 @@ class Table(object):
             where = 'WHERE ' + ' AND '.join(where)
             
         data = tuple(data)
-                    
-        query = 'SELECT {} FROM {} {}'.format(columns,self.name,where)
         
+        query = 'SELECT {} FROM {} {}'.format(columns,self.name,where)
+
         if not order is None:
             query = query + ' ORDER BY '+order
             if desc:

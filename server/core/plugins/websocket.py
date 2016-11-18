@@ -10,10 +10,10 @@ import asyncws
 
 
 
-from .plugin import BasePlugin
+from ..plugin import Plugin
 
 
-class Websocket(BasePlugin):
+class Websocket(Plugin):
     def initialize(self):
 
         self.clients = []

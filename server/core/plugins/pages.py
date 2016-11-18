@@ -5,11 +5,11 @@ import logging
 import json
 import uuid
 
-from . import database
-from .plugin import BasePlugin
+from .. import database
+from ..plugin import Plugin
 from .authentication import jwt_decode
 
-class Pages(BasePlugin):
+class Pages(Plugin):
     """
     Notes
     -----

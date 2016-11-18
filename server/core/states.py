@@ -1,36 +1,22 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-import logging
-import copy
 import json
+import copy
 import inspect
 
 from . import database
-from .plugin import BasePlugin
+from . import plugin
 
-class States(BasePlugin):
+class States(plugin.BasePlugin):
     """
-    Class to control the HomeCon states
-    
-    Each 'state' in the building should be reflected by a HomeCon state. This 
-    can be the status of a light (on/off), the temperature in a room, the solar 
-    irradiation, ...
-    
-    A state is identified by a string, its path. The predefined HomeCon States are 
-    structured as if they were actual paths to folders on a unix system, using
-    slashes (:code`/`). e.g. :code`settings/latitude`.
-    
-    Unlike a folder structure, the paths remain simple strings so 
-    'parent folders' do not need to exists.
-    
-    The format is not manatory, any characters can be used. However, when using
-    this format, parent or child states can be retrieved are available and for 
-    dependent expressions some regular expression syntax can be used.
-    
+    a container class for states with access to the database
+
     """
 
-    def initialize(self):
+    def __init__(self,queue):
+        super(States,self).__init__(queue)
+
         self._states = {}
         self._db = database.Database(database='homecon.db')
         self._db_states = database.Table(self._db,'states',[
@@ -42,27 +28,12 @@ class States(BasePlugin):
         # get all states from the database
         result = self._db_states.GET()
         for state in result:
-            self.add_local(state['path'],config=json.loads(state['config']))
-
-        # add settings states
-        self.add('settings/latitude', config={'type': 'number', 'quantity':'angle', 'unit':'deg','label':'latitude', 'description':'HomeCon latitude'})
-        self.add('settings/longitude',config={'type': 'number', 'quantity':'angle', 'unit':'deg','label':'longitude','description':'HomeCon longitude'})
-        self.add('settings/elevation',config={'type': 'number', 'quantity':'height','unit':'m',  'label':'elevation','description':'HomeCon elevation'})
-        self.add('settings/timezone', config={'type': 'string', 'quantity':'',      'unit':'',   'label':'time zone','description':'HomeCon time zone'})
+            self.add(state['path'],config=json.loads(state['config']))
 
 
-    def add_local(self,path,config=None):
+    def add(self,path,config=None):
         """
-        Add a state to the plugin but not to the database but tries to load the
-        value from the database
-
-        Parameters
-        ----------
-        path : string
-            the state path
-        
-        config : dict
-            state configuration dictionary
+        add a state
 
         """
 
@@ -99,7 +70,11 @@ class States(BasePlugin):
             if 'writegroups' not in config:
                 config['writegroups'] = [1]
 
+            # check if the state is in the database and add it if not
+            if len( self._db_states.GET(path=path) ) == 0:
+                self._db_states.POST(path=path,config=json.dumps(config))
 
+            # create the state
             state = State(self,path,config=config)
             self._states[path] = state
 
@@ -113,156 +88,17 @@ class States(BasePlugin):
         else:
             return False
 
-    def add(self,path,config=None):
-        """
-        add a state
-
-        """
-
-        self._db_states.POST(path=path,config=json.dumps(config))
-
-        state = self.add_local(path,config=config)
-
-        return state
-
-
-    def get(self,path):
-        """
-        gets a state given its path
-        
-        Parameters
-        ----------
-        path : string
-            the state path
-
-        Returns
-        -------
-        state : State
-            the state or :code`None`if the state is unknown
-
-        """
-
-        if path in self._states:
-            return self._states[path]
-        else:
-            logging.error('State {} is not defined'.format(path))
-            return None
-
-    def get_states_list(self):
-        """
-        Returns a list of states which can be edited
-        """
-
-        stateslist = []
-        for state in self._states.values():
-            if not state.path.split('/')[0] in ['settings','plugins']:
-                stateslist.append({'path':state.path,'config':state.config})
-
-        newlist = sorted(stateslist, key=lambda k: k['path'])
-
-        return newlist
-
-
-    def listen_list_states(self,event):
-        if event.type == 'list_states':
-
-            self.fire('send_to',{'event':'list_states', 'path':'', 'value':self.get_states_list(), 'clients':[event.client]})
-
-
-    def listen_add_state(self,event):
-        state = self.add(event.data['path'],event.data['config'])
-
-        if state:
-            self.fire('state_added',{'state':state})
-            self.fire('send_to',{'event':'list_states', 'path':'', 'value':self.get_states_list(), 'clients':[event.client]})
-
-
-    def listen_edit_state(self,event):
-        if event.data['path'] in self._states:
-
-            state = self._states[event.data['path']]
-
-            config = dict(state.config)
-            for key,val in event.data['config'].items():
-                config[key] = val
-
-            state.config = config
-
-
-            self.fire('send_to',{'event':'list_states', 'path':'', 'value':self.get_states_list(), 'clients':[event.client]})
-
-
-    def listen_state_changed(self,event):
-        self.fire('send',{'event':'state', 'path':event.data['state'].path, 'value':event.data['state'].value, 'readusers':event.data['state'].config['readusers'], 'readgroups':event.data['state'].config['readgroups']},source=self)
-
-
-    def listen_state(self,event):
-        # get or set a state
-        if 'path' in event.data:
-            state = self.get(event.data['path'])
-
-            if not state is None:
-                tokenpayload = event.client.tokenpayload  # event.data['token']  fixme, retrieve the payload from the token
-
-                
-                if 'value' in event.data:
-                    # set
-                    permitted = False
-                    if tokenpayload['userid'] in state.config['writeusers']:
-                        permitted = True
-                    else:
-                        for g in tokenpayload['groupids']:
-                            if g in state.config['writegroups']:
-                                permitted = True
-                                break
-
-                    if permitted:
-                        state.set(event.data['value'],event.source)
-                    else:
-                        logging.warning('User {} on client {} attempted to change the value of {} but is not permitted'.format(tokenpayload['userid'],event.client.address,state.path))
-
-                else:
-                    # get
-                    permitted = False
-                    if tokenpayload['userid'] in state.config['readusers']:
-                        permitted = True
-                    else:
-                        for g in tokenpayload['groupids']:
-                            if g in state.config['readgroups']:
-                                permitted = True
-                                break
-
-                    if permitted:
-                        self.fire('send_to',{'event':'state', 'path':state.path, 'value':state.value, 'clients':[event.client]})
-                    else:
-                        logging.warning('User {} attempted to change the value of {} but is not permitted'.format(tokenpayload['userid'],state.path))
-
-
-    def listen_send_states_to(self,event):
-        for client in event.data['clients']:
-            tokenpayload = client.tokenpayload  # event.data['token']  fixme, retrieve the payload from the token
-
-            for state in self._states.values():
-                permitted = False
-                if tokenpayload['userid'] in state.config['readusers']:
-
-                    permitted = True
-                else:
-                    for g in tokenpayload['groupids']:
-                        if g in state.config['readgroups']:
-                            permitted = True
-                            break
-
-                if permitted:
-                    self.fire('send_to',{'event':'state', 'path':state.path, 'value':state.value, 'clients':[client]})
-
 
     def __getitem__(self,path):
-        return self.get(path)
+        return self._states[path]
 
 
     def __iter__(self):
         return iter(self._states)
+
+
+    def __contains__(self,path):
+        return path in self._states
 
 
     def keys(self):
@@ -275,7 +111,6 @@ class States(BasePlugin):
 
     def values(self):
         return self._states.values()
-
 
 
 
@@ -368,7 +203,7 @@ class State(object):
 
         if '/' in self._path:
             parentpath = '/'.join(self._path.split('/')[:-1])
-            parent = self._states.get(parentpath)
+            parent = self._states[parentpath]
             return parent
         else:
             return None

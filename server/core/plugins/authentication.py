@@ -6,9 +6,9 @@ import datetime
 import passlib.hash
 import jwt
 
-from . import database
-from .plugin import BasePlugin
-from . import config
+from .. import database
+from .. import plugin
+from .. import config
 
 
 
@@ -53,7 +53,7 @@ def jwt_decode(token):
 
 
 
-class Authentication(BasePlugin):
+class Authentication(plugin.Plugin):
     """
     Authentication class
 

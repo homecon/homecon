@@ -6,9 +6,10 @@
 
 <link rel="import" href="../../bower_components/paper-icon-button/paper-icon-button.html">
 
-<link rel="import" href="../homecon-edit-dialog.html">
-<link rel="import" href="../homecon-icon-select.html">
 <link rel="import" href="../homecon-web-socket-object.html">
+<link rel="import" href="../homecon-edit-dialog.html">
+<link rel="import" href="../homecon-state-select.html">
+<link rel="import" href="../homecon-icon-select.html">
 
 <dom-module is="homecon-widget-switch">
     <template>
@@ -52,6 +53,7 @@
         <homecon-edit-dialog id="editDialog" on-save="save">
             <paper-input label="Label:" value="{{newLabel}}"></paper-input>
             <paper-input label="path:" value="{{newPath}}"></paper-input>
+            <homecon-state-select path="{{newPath}}"></homecon-state-select>
             <paper-input label="value on:" value="{{newValueOn}}"></paper-input>
             <paper-input label="value off:" value="{{newValueOff}}"></paper-input>
             <homecon-icon-select icon="{{newIcon}}"></homecon-icon-select>

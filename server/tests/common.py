@@ -31,7 +31,7 @@ import asyncio
 from websocket import create_connection
 
 sys.path.append(os.path.abspath('..'))
-from homecon import HomeCon
+#from homecon import HomeCon
 
 class HomeConTestCase(unittest.TestCase):
     
@@ -40,48 +40,6 @@ class HomeConTestCase(unittest.TestCase):
 
     if not os.path.exists('log'):
         os.mkdir('log')
-
-
-    @classmethod
-    def setUpClass(cls):
-        """
-        Executed before the tests
-        Set up smarthome and homecon
-        """
-        print('\nSetting up test environment')
-
-        # copy the homecon plugin to the smarthome plugins folder
-        #if os.path.exists(os.path.join(cls.smarthomedir,'plugins','homecon')):
-        #    shutil.rmtree(os.path.join(cls.smarthomedir,'plugins','homecon'))
-
-        #shutil.copytree(cls.homecondir, os.path.join(cls.smarthomedir,'plugins','homecon') )
-
-        # setup the config files for testing
-        #f = open(os.path.join(cls.smarthomedir,'etc/smarthome.conf'), 'w')
-        #f.write('lat = 50.894914\nlon = 4.341551\nelev = 100\ntz = \'Europe/Brussels\'')
-        #f.close()
-
-        #f = open(os.path.join(cls.smarthomedir,'etc/plugin.conf'), 'w')
-        #f.write('[homecon]\n    class_name = HomeCon\n    class_path = plugins.homecon\n    db_name = homecon_test\n    db_user=homecon_test\n    db_pass=passwordusedfortesting')
-        #f.close()
-
-        #f = open(os.path.join(cls.smarthomedir,'etc/logic.conf'), 'w').close()
-
-
-    @classmethod
-    def tearDownClass(cls):
-        """
-        Executed after the tests
-        Return smarthome to its original state
-        """
-        print('\nTearing down test environment')
-
-        # undo changes to the smarthome repo
-        #os.remove(os.path.join(cls.smarthomedir,'etc/smarthome.conf'))
-        #os.remove(os.path.join(cls.smarthomedir,'etc/plugin.conf'))
-        #os.remove(os.path.join(cls.smarthomedir,'etc/logic.conf'))
-
-        #shutil.rmtree(os.path.join(cls.smarthomedir,'plugins','homecon'))
 
 
     def create_database_connection(self):

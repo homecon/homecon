@@ -29,18 +29,21 @@ from common import HomeConTestCase, Client
 sys.path.append(os.path.abspath('..'))
 
 from core.states import States
+from core.components import Components, Component
 
 
-class StatesTests(HomeConTestCase):
+class ComponentsTests(HomeConTestCase):
     
     def test_add(self):
         queue = asyncio.Queue()
 
         self.clear_database()
         states = States(queue)
-        states.add('mystate')
+        components = Components(queue,states)
+        components.add('mycomponent',Component)
 
-        self.assertEqual(states['mystate'].path, 'mystate')
+        self.assertEqual(components['mycomponent'].path, 'mycomponent')
+
 
 
     def test_reinitialize(self):
@@ -48,39 +51,12 @@ class StatesTests(HomeConTestCase):
 
         self.clear_database()
         states = States(queue)
-        states.add('mystate')
+        components = Components(queue,states)
+        components.add('mycomponent',Component)
         
-        states = States(queue)
+        components = Components(queue,states)
+        # testing not possible as component adding requires events to be fired
 
-        self.assertEqual(states['mystate'].path, 'mystate')
-
-
-    def test_children(self):
-        queue = asyncio.Queue()
-
-        self.clear_database()
-        states = States(queue)
-        states.add('parent')
-        states.add('parent/child0')
-        states.add('parent/child1')
-
-        children = states['parent'].children
-
-        self.assertIn(states['parent/child0'], children)
-        self.assertIn(states['parent/child1'], children)
-
-
-    def test_parent(self):
-        queue = asyncio.Queue()
-
-        self.clear_database()
-        states = States(queue)
-        states.add('parent')
-        states.add('parent/child')
-
-        parent = states['parent/child'].parent
-
-        self.assertEqual(states['parent'], parent)
 
 
 if __name__ == '__main__':
