@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+
+import logging
 import asyncio
 import os
 import sys
@@ -140,6 +142,9 @@ class Plugin(BasePlugin):
         """
         pass
 
+    def register_component(self,componentclass):
+        self._components.register(componentclass)
+
     def components(self):
         """
         Redefinable method which should return a list of components defined by the plugin and enables the app to edit the component
@@ -167,6 +172,7 @@ class Plugin(BasePlugin):
         """
 
         return []
+
 
     def _listen(self,event):
         """

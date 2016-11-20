@@ -17,6 +17,7 @@ pip install ephem
 pip install passlib
 pip install PyJWT
 pip install websocket-client
+pip install asyncws
 ```
 
 ## Unit tests

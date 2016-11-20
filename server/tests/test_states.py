@@ -37,7 +37,7 @@ class StatesTests(HomeConTestCase):
         queue = asyncio.Queue()
 
         self.clear_database()
-        states = States(queue)
+        states = States()
         states.add('mystate')
 
         self.assertEqual(states['mystate'].path, 'mystate')
@@ -47,10 +47,10 @@ class StatesTests(HomeConTestCase):
         queue = asyncio.Queue()
 
         self.clear_database()
-        states = States(queue)
+        states = States()
         states.add('mystate')
         
-        states = States(queue)
+        states = States()
 
         self.assertEqual(states['mystate'].path, 'mystate')
 
@@ -59,7 +59,7 @@ class StatesTests(HomeConTestCase):
         queue = asyncio.Queue()
 
         self.clear_database()
-        states = States(queue)
+        states = States()
         states.add('parent')
         states.add('parent/child0')
         states.add('parent/child1')
@@ -74,7 +74,7 @@ class StatesTests(HomeConTestCase):
         queue = asyncio.Queue()
 
         self.clear_database()
-        states = States(queue)
+        states = States()
         states.add('parent')
         states.add('parent/child')
 

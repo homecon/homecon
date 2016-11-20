@@ -38,9 +38,10 @@ class ComponentsTests(HomeConTestCase):
         queue = asyncio.Queue()
 
         self.clear_database()
-        states = States(queue)
-        components = Components(queue,states)
-        components.add('mycomponent',Component)
+        states = States()
+        components = Components(states)
+        components.register(Component)
+        components.add('mycomponent','component')
 
         self.assertEqual(components['mycomponent'].path, 'mycomponent')
 
@@ -50,13 +51,16 @@ class ComponentsTests(HomeConTestCase):
         queue = asyncio.Queue()
 
         self.clear_database()
-        states = States(queue)
-        components = Components(queue,states)
-        components.add('mycomponent',Component)
+        states = States()
+        components = Components(states)
+        components.register(Component)
+        components.add('mycomponent','component')
         
-        components = Components(queue,states)
-        # testing not possible as component adding requires events to be fired
+        components = Components(states)
+        components.register(Component)
+        components.load()
 
+        self.assertEqual(components['mycomponent'].path, 'mycomponent')
 
 
 if __name__ == '__main__':

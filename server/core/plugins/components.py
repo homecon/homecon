@@ -31,6 +31,13 @@ class Components(plugin.Plugin):
     
     """
 
+    def initialize(self):
+        self.register_component(Value)
+        self.register_component(Light)
+        self.register_component(Dimminglight)
+        self.register_component(Shading)
+
+
     def list(self):
         """
         Returns a list of components
@@ -38,33 +45,39 @@ class Components(plugin.Plugin):
 
         componentslist = []
         for component in self._components.values():
-            componentslist.append({'path':component.path,'type':component.type,'config':component.config,'states':[states['state'].path for states in component.states.values()]})
+            componentslist.append({'path':component.path,'type':component.type,'config':[{'key':key,'value':val} for key,val in component.config.items()],'states':[states['state'].path for states in component.states.values()]})
 
         sortedlist = sorted(componentslist, key=lambda k: k['path'])
 
         return sortedlist
 
+    def list_types(self):
+        typeslist = []
+        for key,val in self._components.types():
+            typeslist.append({'type':key})
+
+
+        sortedlist = sorted(typeslist, key=lambda k: k['type'])
+
+        return sortedlist
+
+
+    def listen_component_types(self,event):
+            self.fire('send_to',{'event':'component_types', 'path':'', 'value':self.list_types(), 'clients':[event.client]})
+
 
     def listen_list_components(self,event):
-        if event.type == 'list_states':
-
             self.fire('send_to',{'event':'list_components', 'path':'', 'value':self.list(), 'clients':[event.client]})
 
 
     def listen_add_component(self,event):
-        if event.data['type']=='value':
-            component = self._components.add(event.data['path'],Value,event.data['config'])
-        elif event.data['type']=='light':
-            component = self._components.add(event.data['path'],Light,event.data['config'])
-        elif event.data['type']=='dimminglight':
-            component = self._components.add(event.data['path'],Dimminglight,event.data['config'])
-        elif event.data['type']=='shading':
-            component = self._components.add(event.data['path'],Shading,event.data['config'])
 
+        component = self._components.add(event.data['path'],event.data['type'],event.data['config'])
+        
         if component:
             self.fire('component_added',{'component':component})
             self.fire('send_to',{'event':'list_components', 'path':'', 'value':self.list(), 'clients':[event.client]})
-
+            self.fire('list_states',{},client=event.client)
 
     def listen_edit_component(self,event):
         if event.data['path'] in self._components:
@@ -75,7 +88,7 @@ class Components(plugin.Plugin):
             for key,val in event.data['config'].items():
                 config[key] = val
 
-            self._component._db_component.PUT(config=json.dumps(config), where='path=\'{}\''.format(event.data['path']))
+            self._components._db_components.PUT(config=json.dumps(config), where='path=\'{}\''.format(event.data['path']))
             component.config = config
 
             self.fire('send_to',{'event':'list_components', 'path':'', 'value':self.list(), 'clients':[event.client]})

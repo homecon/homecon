@@ -2,6 +2,7 @@
 <link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout-classes.html">
 <link rel="import" href="../bower_components/iron-form/iron-form.html">
 
+<link rel="import" href="../bower_components/paper-dialog-scrollable/paper-dialog-scrollable.html">
 <link rel="import" href="../bower_components/paper-dialog/paper-dialog.html">
 <link rel="import" href="../bower_components/paper-button/paper-button.html">
 <link rel="import" href="../bower_components/neon-animation/animations/scale-up-animation.html">
@@ -15,7 +16,8 @@
             }
         </style>
         
-        <paper-dialog id="dialog" entry-animation="scale-up-animation" exit-animation="fade-out-animation">
+        <paper-dialog id="dialog" entry-animation="scale-up-animation" exit-animation="fade-out-animation" dynamic-align>
+            <paper-dialog-scrollable>
             <form id="form" is="iron-form" on-iron-form-submit="save" action="/">
                 <content></content>
                 <div class="horizontal layout">
@@ -23,7 +25,8 @@
                     <paper-button raised on-tap="close">cancel</paper-button>
                 </div>
             </form>
-        </paper-dialog>    
+            </paper-dialog-scrollable>
+        </paper-dialog>
 
             
     </template>
@@ -44,8 +47,9 @@
             save: function(){
                 this.fire('save');
             },
-            
-
+            center: function(){
+                this.$.dialog.center();
+            }
         });
     </script>
 </dom-module>

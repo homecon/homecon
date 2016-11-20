@@ -75,8 +75,8 @@ class HomeCon(object):
         ########################################################################
         # start core components
         ########################################################################
-        self.states = core.states.States(self._queue)
-        self.components = core.components.Components(self._queue,self.states)
+        self.states = core.states.States()
+        self.components = core.components.Components(self.states)
 
         # start plugins
         self.coreplugins = {
@@ -89,6 +89,8 @@ class HomeCon(object):
             'schedules': core.plugins.schedules.Schedules(self._queue,self.states,self.components),
         }
 
+        # load components
+        self.components.load()
 
         logging.info('HomeCon Initialized')
 
@@ -121,7 +123,7 @@ class HomeCon(object):
             for plugin in self.coreplugins.values():
                 self._loop.call_soon_threadsafe(plugin._listen, event)
 
-            for plugin in self.plugins.values():
+            for plugin in self.coreplugins['plugins'].values():
                 self._loop.call_soon_threadsafe(plugin._listen, event)
 
 

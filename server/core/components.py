@@ -1,48 +1,68 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+import logging
 import json
 
 from . import database
 from . import plugin
 
-class Components(plugin.BasePlugin):
+class Components(object):
     """
     a container class for components with access to the database
 
     """
 
-    def __init__(self,queue,states):
-        super(Components,self).__init__(queue)
+    def __init__(self,states):
+        #super(Components,self).__init__(queue)
 
         self._states = states
+        self._component_types = {}
         self._components = {}
         self._db = database.Database(database='homecon.db')
         self._db_components = database.Table(self._db,'components',[
             {'name':'path',    'type':'char(255)',  'null': '',  'default':'',  'unique':'UNIQUE'},
-            {'name':'type',   'type':'char(127)',  'null': '',  'default':'',  'unique':''},
+            {'name':'type',    'type':'char(127)',  'null': '',  'default':'',  'unique':''},
             {'name':'config',  'type':'char(511)',  'null': '',  'default':'',  'unique':''},
         ])
 
+
+    def load(self):
+        """
+        Loads all components from the database
+
+        """
+        
         # get all components from the database
         result = self._db_components.GET()
         for component in result:
-            self.fire('add_component',data={'path':component['path'],'type':component['type'],'config':component['config']})
+            self.add(component['path'],component['type'],config=json.loads(component['config']))
 
 
-    def add(self,path,componentclass,config=None):
+    def register(self,componentclass):
+        """
+        Register a component type
+
+        """
+
+        self._component_types[componentclass.__name__.lower()] = componentclass
+
+    def types(self):
+        return self._component_types.items()
+
+    def add(self,path,type,config=None):
         """
         add a component
 
         """
-        if not path in self._components:
-
+        if not path in self._components and type in self._component_types:
+            
             # check if the component is in the database and add it if not
             if len( self._db_components.GET(path=path) ) == 0:
-                self._db_components.POST( path=path,type=componentclass.__name__,config=json.dumps(config) )
+                self._db_components.POST( path=path,type=type,config=json.dumps(config) )
 
             # create the component
-            component = componentclass(path,self._states,config=config)
+            component = self._component_types[type](path,self._states,config=config)
             self._components[path] = component
 
             return component

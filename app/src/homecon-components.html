@@ -1,0 +1,216 @@
+<!--
+@license
+Copyright (c) 2016 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/paper-material/paper-material.html">
+<link rel="import" href="../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../bower_components/iron-icon/iron-icon.html">
+<link rel="import" href="../bower_components/iron-icons/iron-icons.html">
+
+<link rel="import" href="homecon-web-socket-object.html">
+<link rel="import" href="homecon-web-socket-sender.html">
+<link rel="import" href="homecon-edit-dialog.html">
+<link rel="import" href="homecon-section.html">
+
+<dom-module id="homecon-components">
+
+    <template>
+
+        <style include="iron-flex iron-flex-alignment">
+            :host {
+                display: block;
+            }
+            paper-material.state{
+                padding-left: 16px;
+                padding-right: 16px;
+                padding-bottom: 4px;
+                padding-top: 4px;
+                background-color: var(--secondary-background-color);
+                margin-bottom: 8px;
+            }
+            .plugin {
+                cursor: pointer;
+            }
+            .state {
+                cursor: pointer;
+            }
+        </style>
+
+        <homecon-web-socket-sender id="websocket"></homecon-web-socket-sender>
+
+        <homecon-web-socket-object id="websocketComponentsTypes" event="component_types" path="" data="{{componentTypes}}" auto></homecon-web-socket-object>
+        <homecon-web-socket-object id="websocketComponentsList" event="list_components" path="" data="{{components}}" auto></homecon-web-socket-object>
+        <homecon-web-socket-object id="websocketStatesList" event="list_states" path="" data="{{states}}" auto></homecon-web-socket-object>
+
+        <template is="dom-repeat" items="{{components}}" as="component">
+            <paper-material class="horizontal layout center state" on-tap="editComponentDialog">
+                <div class="path flex">{{component.path}}</div>
+                <div class="label flex">{{component.type}}</div>
+            </paper-material>
+        </template>
+
+        <paper-button raised noink="true" on-tap="addComponentDialog">add component</paper-button>
+
+
+        <homecon-edit-dialog id="addComponentDialog" on-save="addComponent">
+            <h2>Add component</h2>
+            <paper-input id="pathInput" label="path:" value="{{newPath}}"></paper-input>
+
+            <paper-dropdown-menu label="type">
+                <paper-menu class="dropdown-content" attr-for-selected="value" selected="{{newType}}">
+                    <template is="dom-repeat" items="{{componentTypes}}" as="type">
+                        <paper-item value="{{type.type}}">{{type.type}}</paper-item>
+                    </template>
+                </paper-menu>
+            </paper-dropdown-menu>
+
+        </homecon-edit-dialog>
+
+
+        <homecon-edit-dialog id="editComponentDialog" on-save="editComponent" on-state-changed="centerEditComponentDialog">
+            <h2>{{newPath}}</h2>
+
+            <template is="dom-repeat" items="{{newConfig}}" as="property">
+                <paper-input label="{{property.key}}: " value="{{property.value}}"></paper-input>
+            </template>
+
+            <h3>States</h3>
+            <template is="dom-repeat" items="{{newStates}}" as="state">
+
+                <homecon-section type="collapsible" title="{{state.path}}">
+                    <template is="dom-repeat" items="{{state.config}}" as="property">
+                        <paper-input label="{{property.key}}: " value="{{property.value}}"></paper-input>
+                    </template>
+                </homecon-section>
+
+            </template>
+
+
+            <paper-button on-tap="delete">Delete</paper-button>
+
+        </homecon-edit-dialog>
+
+    </template>
+
+    <script>
+        Polymer({
+            is: 'homecon-components',
+
+            properties: {
+                states: {
+                    type: 'Object',
+                    notify: true,
+                },
+                components: {
+                    type: 'Object',
+                    notify: true,
+                },
+            },
+
+            _configToNewConfig: function(config){
+                var newConfig = []
+
+                this.componentConfigKeys.forEach(function(pluginconfig){
+                    var properties = []
+                    pluginconfig.keys.forEach(function(key){
+                        var value = ''
+                        if(typeof config != 'undefined' && key in config){
+                            value = config[key];
+                            if(typeof value != 'string'){
+                                value = JSON.stringify(value)
+                            }
+                        }
+                        properties.push({'key':key,'value':value})
+                    });
+                    newConfig.push({'name':pluginconfig.name,'properties':properties})
+                });
+
+                return newConfig
+            },
+
+            _newConfigToConfig: function(newconfig){
+                var config = {};
+
+                newconfig.forEach(function(property){
+                    if(property.value != ''){
+                        try{
+                            var value = JSON.parse(property.value);
+                        }
+                        catch(e){
+                            var value = property.value;
+                        }
+                        config[property.key] = value;
+                    }
+                });
+
+                return config;
+            },
+
+            addComponentDialog: function(e){
+
+                this.newPath = '';
+                this.newType = 'value';
+
+                this.$.addComponentDialog.open()
+            },
+
+            addComponent: function(e){
+                this.$.addComponentDialog.close();
+
+                this.$.websocket.send({'event':'add_component','path':this.newPath,'type':this.newType,'config':{}});
+        
+            },
+
+            editComponentDialog: function(e){
+
+                var component = e.model.__data__.component;
+                this.newPath = component.path;
+
+                var statesObject = {}
+                this.states.forEach(function(state){
+                    statesObject[state.path] = state;
+                });
+
+                var newStates = []
+                component.states.forEach(function(statePath){
+                    newStates.push( statesObject[statePath] );
+                });
+                this.newStates = newStates;
+
+                this.newConfig = component.config;
+
+                this.$.editComponentDialog.open()
+            },
+
+            editComponent: function(e){
+                this.$.editComponentDialog.close();
+                console.log(this.newConfig)
+                config = this._newConfigToConfig(this.newConfig)
+
+                this.$.websocket.send({'event':'edit_component','path':this.newPath,'config':config});
+            },
+
+            deleteComponent: function(e){
+                e.stopPropagation()
+
+                this.$.websocket.send({'event':'delete_component','path':this.newPath});
+            },
+
+            centerEditComponentDialog: function(e){
+                this.$.editComponentDialog.center();
+            }
+
+
+
+        });
+    </script>
+
+</dom-module>

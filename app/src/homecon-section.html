@@ -79,11 +79,15 @@
                 },
                 opened:{
                     type: 'Boolean',
-                    value: true,
+                    value: false,
                 },
             },
             changeState: function(){
                 this.opened = !this.opened;
+                var that = this;
+                setTimeout(function(){
+                    that.fire('state-changed');
+                },200);
             },
             openEditDialog: function(){
                 this.newType = this.section.config.type;

@@ -62,15 +62,14 @@ class States(plugin.Plugin):
             logging.error('State {} is not defined'.format(path))
             return None
 
-    def get_states_list(self):
+    def list(self):
         """
         Returns a list of states which can be edited
         """
 
         stateslist = []
         for state in self._states.values():
-            if not state.path.split('/')[0] in ['settings','plugins']:
-                stateslist.append({'path':state.path,'config':state.config})
+            stateslist.append({'path':state.path,'config':[{'key':key,'value':val} for key,val in state.config.items()]})
 
         newlist = sorted(stateslist, key=lambda k: k['path'])
 
@@ -80,7 +79,7 @@ class States(plugin.Plugin):
     def listen_list_states(self,event):
         if event.type == 'list_states':
 
-            self.fire('send_to',{'event':'list_states', 'path':'', 'value':self.get_states_list(), 'clients':[event.client]})
+            self.fire('send_to',{'event':'list_states', 'path':'', 'value':self.list(), 'clients':[event.client]})
 
 
     def listen_add_state(self,event):
@@ -88,7 +87,7 @@ class States(plugin.Plugin):
 
         if state:
             self.fire('state_added',{'state':state})
-            self.fire('send_to',{'event':'list_states', 'path':'', 'value':self.get_states_list(), 'clients':[event.client]})
+            self.fire('send_to',{'event':'list_states', 'path':'', 'value':self.list(), 'clients':[event.client]})
 
 
     def listen_edit_state(self,event):
