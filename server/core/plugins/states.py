@@ -69,7 +69,7 @@ class States(plugin.Plugin):
 
         stateslist = []
         for state in self._states.values():
-            stateslist.append({'path':state.path,'config':[{'key':key,'value':val} for key,val in state.config.items()]})
+            stateslist.append({'path':state.path,'config':sorted([{'key':key,'value':val} for key,val in state.config.items()],key=lambda x:x['key'])})
 
         newlist = sorted(stateslist, key=lambda k: k['path'])
 
@@ -101,8 +101,7 @@ class States(plugin.Plugin):
 
             state.config = config
 
-
-            self.fire('send_to',{'event':'list_states', 'path':'', 'value':self.get_states_list(), 'clients':[event.client]})
+            self.fire('send_to',{'event':'list_states', 'path':'', 'value':self.list(), 'clients':[event.client]})
 
 
     def listen_state_changed(self,event):

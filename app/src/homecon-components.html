@@ -116,7 +116,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             },
 
             _configToNewConfig: function(config){
-                var newConfig = []
+                /*var newConfig = []
 
                 this.componentConfigKeys.forEach(function(pluginconfig){
                     var properties = []
@@ -131,8 +131,16 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                         properties.push({'key':key,'value':value})
                     });
                     newConfig.push({'name':pluginconfig.name,'properties':properties})
-                });
+                });*/
 
+                newConfig = []
+                config.forEach(function(property){
+                    value = property.value;
+                    if(typeof value != 'string'){
+                        value = JSON.stringify(value)
+                    }
+                    newConfig.push({'key':property.key,'value':value})
+                });
                 return newConfig
             },
 
@@ -180,22 +188,32 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 });
 
                 var newStates = []
+                var that = this;
                 component.states.forEach(function(statePath){
-                    newStates.push( statesObject[statePath] );
+                    var newstate = {}
+                    newstate['path'] = statesObject[statePath]['path']
+                    newstate['config'] = that._configToNewConfig(statesObject[statePath]['config'])
+                    newStates.push( newstate );
                 });
                 this.newStates = newStates;
 
-                this.newConfig = component.config;
+                this.newConfig = this._configToNewConfig(component.config);
 
                 this.$.editComponentDialog.open()
             },
 
             editComponent: function(e){
                 this.$.editComponentDialog.close();
-                console.log(this.newConfig)
                 config = this._newConfigToConfig(this.newConfig)
 
                 this.$.websocket.send({'event':'edit_component','path':this.newPath,'config':config});
+
+                console.log(this.newStates)
+                var that = this;
+                this.newStates.forEach(function(state){
+                    var config = that._newConfigToConfig(state.config);
+                    that.$.websocket.send({'event':'edit_state','path':state.path,'config':config});
+                });
             },
 
             deleteComponent: function(e){
