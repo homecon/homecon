@@ -15,7 +15,7 @@
         </style>
 
         <homecon-web-socket-sender id="websocket"></homecon-web-socket-sender>
-        <homecon-web-socket-object id="websocketPage" event="pages_page" path="{{path}}" data="{{page}}" auto></homecon-web-socket-object>
+        <homecon-web-socket-object id="websocketPage" event="pages_page" path="{{path}}" data="{{page}}"></homecon-web-socket-object>
 
         <homecon-page>
 
@@ -52,12 +52,25 @@
                     value: false,
                 },
             },
+            ready: function(){
+                this.loaded = false;
+            },
+
+            load: function(){
+                if( !this.loaded ){
+                    this.$.websocketPage.send();
+                    this.loaded = true;
+                }
+            },
+
             addSection: function(){
                 this.$.websocket.send({'event':'pages_section','page':this.path})
             },
+
             _filterHome: function(item){
                 return item.path != 'home/home';
             },
+
             _hiddenClass: function(edit){
                 if(edit){
                     return '';

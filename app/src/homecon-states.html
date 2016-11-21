@@ -46,8 +46,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
         <homecon-web-socket-sender id="websocket"></homecon-web-socket-sender>
 
-        <homecon-web-socket-object id="websocketStatesConfigKeys" event="list_state_config_keys" path="" data="{{statesConfigKeys}}" auto></homecon-web-socket-object>
-        <homecon-web-socket-object id="websocketStatesList" event="list_states" path="" data="{{states}}" auto></homecon-web-socket-object>
+        <homecon-web-socket-object id="websocketStatesConfigKeys" event="list_state_config_keys" path="" data="{{statesConfigKeys}}"></homecon-web-socket-object>
+        <homecon-web-socket-object id="websocketStatesList" event="list_states" path="" data="{{states}}"></homecon-web-socket-object>
 
         <template is="dom-repeat" items="{{states}}" as="state">
             <paper-material class="horizontal layout center state" on-tap="editStateDialog">
@@ -189,7 +189,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 this.$.websocket.send({'event':'delete_state','path':this.newPath});
             },
 
-
+            load: function(){
+                this.websocketStatesConfigKeys.send();
+                this.websocketStatesList.send();
+            },
 
 
         });

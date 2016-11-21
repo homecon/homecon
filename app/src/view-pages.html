@@ -61,9 +61,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
         <app-route route="{{route}}" pattern="/:group/:page" data="{{routeData}}" tail="{{subroute}}"></app-route>
 
-        <iron-pages selected="[[path]]" attr-for-selected="path">
+        <iron-pages id="ironpages" selected="[[path]]" attr-for-selected="path">
 
-            <template is="dom-repeat" id="pages" items="{{pagesPaths}}" as="pagePath">
+            <template is="dom-repeat" id="pages" items="{{pagesPaths}}" as="pagePath" on-dom-change="_loadPage">
                 <homecon-pages-page path="{{pagePath}}" edit="{{edit}}"></homecon-page>
             </template>
 
@@ -219,6 +219,20 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 }
                 else{
                     this.path = routeDataChangeRecord.value.group+'/'+routeDataChangeRecord.value.page
+                }
+
+                // load pages through the websocket only when necessary
+                this._loadPage()
+            },
+
+            _loadPage: function(){
+
+                var children = this.$.ironpages.children
+                for(var i=0;i<children.length;i++){
+                    if(children[i].path == this.path){
+                        children[i].load();
+                        break;
+                    }
                 }
             },
 

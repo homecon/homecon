@@ -196,7 +196,7 @@
             <iron-pages selected="[[page]]" attr-for-selected="name">
                 <view-login name="login"></view-login>
                 <view-pages name="pages" authenticated="[[authenticated]]" route="[[subroute]]" edit="[[edit]]"></view-pages>
-                <view-settings name="settings"></view-settings>
+                <view-settings id="settings" name="settings"></view-settings>
                 <view-editor name="editor" edit="{{edit}}" pages-path="{{pagesPath}}"></view-editor>
                 <view-users name="users"></view-users>
             </iron-pages>
@@ -264,6 +264,15 @@
             this._closeDrawer();
             this._closeMenu();
             window.scrollTo(0, 0);
+
+            this._load();
+        },
+
+        _load: function(){
+            // load objects through the websocket only when necessary
+            if(this.page=='settings'){
+                this.$.settings.load();
+            }
         },
 
         _authenticatedChanged: function(authenticated){
@@ -275,6 +284,7 @@
             else{
                 this.set('routeData.page','login');
             }
+            this._load();
         },
 
         _pageChanged: function(page){

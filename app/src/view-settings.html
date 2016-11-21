@@ -110,7 +110,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
             <paper-material>
                 <h1>Components</h1>
-                <homecon-components states="{{states}}" components="{{components}}"></homecon-components>
+                <homecon-components id="components" states="{{states}}" components="{{components}}"></homecon-components>
             </paper-material>
 
         </homecon-page>
@@ -144,7 +144,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
             },
 
-
+            load: function(){
+                this.$.components.load()
+            }
 
         });
     </script>

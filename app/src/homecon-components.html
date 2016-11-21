@@ -46,9 +46,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
         <homecon-web-socket-sender id="websocket"></homecon-web-socket-sender>
 
-        <homecon-web-socket-object id="websocketComponentsTypes" event="component_types" path="" data="{{componentTypes}}" auto></homecon-web-socket-object>
-        <homecon-web-socket-object id="websocketComponentsList" event="list_components" path="" data="{{components}}" auto></homecon-web-socket-object>
-        <homecon-web-socket-object id="websocketStatesList" event="list_states" path="" data="{{states}}" auto></homecon-web-socket-object>
+        <homecon-web-socket-object id="websocketComponentsTypes" event="component_types" path="" data="{{componentTypes}}"></homecon-web-socket-object>
+        <homecon-web-socket-object id="websocketComponentsList" event="list_components" path="" data="{{components}}"></homecon-web-socket-object>
+        <homecon-web-socket-object id="websocketStatesList" event="list_states" path="" data="{{states}}"></homecon-web-socket-object>
 
         <template is="dom-repeat" items="{{components}}" as="component">
             <paper-material class="horizontal layout center state" on-tap="editComponentDialog">
@@ -206,9 +206,13 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
             centerEditComponentDialog: function(e){
                 this.$.editComponentDialog.center();
-            }
+            },
 
-
+            load: function(){
+                this.$.websocketComponentsTypes.send();
+                this.$.websocketComponentsList.send();
+                this.$.websocketStatesList.send();
+            },
 
         });
     </script>
