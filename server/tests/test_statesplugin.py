@@ -42,7 +42,7 @@ class StatesPluginTests(HomeConTestCase):
 
         queue = asyncio.Queue()
         states = States(queue)
-        components = Components(queue,states)
+        components = Components(states)
 
         statesPlugin = StatesPlugin(queue,states,components)
         s = states.add('somestate')
@@ -65,7 +65,7 @@ class StatesPluginTests(HomeConTestCase):
         self.clear_database()
         queue = asyncio.Queue()
         states = States(queue)
-        components = Components(queue,states)
+        components = Components(states)
 
         statesPlugin = StatesPlugin(queue,states,components)
         event = Event('add_state',{'path':'mystate','config':{'prop1':'val1'}},self,None)
@@ -79,7 +79,7 @@ class StatesPluginTests(HomeConTestCase):
         self.clear_database()
         queue = asyncio.Queue()
         states = States(queue)
-        components = Components(queue,states)
+        components = Components(states)
 
         statesPlugin = StatesPlugin(queue,states,components)
         states.add('somestate',config={'prop1':'val1'})
@@ -104,7 +104,7 @@ class StatesPluginTests(HomeConTestCase):
         self.clear_database()
         queue = asyncio.Queue()
         states = States(queue)
-        components = Components(queue,states)
+        components = Components(states)
 
         statesPlugin = StatesPlugin(queue,states,components)
         states.add('somestate',config={'prop1':'val1'})

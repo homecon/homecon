@@ -38,7 +38,7 @@ class ComponentsTests(HomeConTestCase):
         queue = asyncio.Queue()
 
         self.clear_database()
-        states = States()
+        states = States(queue)
         components = Components(states)
         components.register(Component)
         components.add('mycomponent','component')
@@ -51,7 +51,7 @@ class ComponentsTests(HomeConTestCase):
         queue = asyncio.Queue()
 
         self.clear_database()
-        states = States()
+        states = States(queue)
         components = Components(states)
         components.register(Component)
         components.add('mycomponent','component')

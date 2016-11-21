@@ -8,14 +8,14 @@ import inspect
 from . import database
 from . import plugin
 
-class States(object):
+class States(plugin.BasePlugin):
     """
     a container class for states with access to the database
 
     """
 
-    def __init__(self):
-        #super(States,self).__init__(queue)
+    def __init__(self,queue):
+        super(States,self).__init__(queue)
 
         self._states = {}
         self._db = database.Database(database='homecon.db')

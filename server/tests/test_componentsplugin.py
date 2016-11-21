@@ -41,7 +41,7 @@ class ComponentsPluginTests(HomeConTestCase):
         self.clear_database()
         queue = asyncio.Queue()
         states = States(queue)
-        components = Components(queue,states)
+        components = Components(states)
 
         componentsPlugin = ComponentsPlugin(queue,states,components)
 
@@ -50,7 +50,7 @@ class ComponentsPluginTests(HomeConTestCase):
         self.clear_database()
         queue = asyncio.Queue()
         states = States(queue)
-        components = Components(queue,states)
+        components = Components(states)
 
         componentsPlugin = ComponentsPlugin(queue,states,components)
         event = Event('add_component',{'path':'mycomponent','type':'value','config':{'prop1':'val1'}},self,None)
@@ -64,7 +64,7 @@ class ComponentsPluginTests(HomeConTestCase):
         self.clear_database()
         queue = asyncio.Queue()
         states = States(queue)
-        components = Components(queue,states)
+        components = Components(states)
 
         componentsPlugin = ComponentsPlugin(queue,states,components)
         event = Event('add_component',{'path':'mycomponent1','type':'value','config':{'prop1':'val1'}},self,None)

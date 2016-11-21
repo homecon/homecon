@@ -75,7 +75,7 @@ class HomeCon(object):
         ########################################################################
         # start core components
         ########################################################################
-        self.states = core.states.States()
+        self.states = core.states.States(self._queue)
         self.components = core.components.Components(self.states)
 
         # start plugins
