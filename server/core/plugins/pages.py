@@ -327,6 +327,10 @@ class Pages(Plugin):
 
         return groups
 
+    def get_pages_paths(self):
+        pages = [page['path'] for page in self._pages.values()]
+        pages = sorted(pages,key=lambda x:self._pages[x]['order'])
+        return pages
 
     def get_page(self,path):
         """
@@ -390,9 +394,7 @@ class Pages(Plugin):
         tokenpayload = jwt_decode(event.data['token'])
         
         if tokenpayload and tokenpayload['permission'] > 1:
-            pages = [page['path'] for page in self._pages.values()]
-            pages = sorted(pages,key=lambda x:self._pages[x]['order'])
-            self.fire('send_to',{'event':'pages_paths', 'path':'', 'value':pages, 'clients':[event.client]})
+            self.fire('send_to',{'event':'pages_paths', 'path':'', 'value':self.get_pages_paths(), 'clients':[event.client]})
 
 
     def listen_pages_group(self,event):
@@ -430,7 +432,9 @@ class Pages(Plugin):
             # delete
             self.delete_page(event.data['path'])
             self.fire('send_to',{'event':'pages_menu', 'path':'', 'value':self.get_menu(), 'clients':[event.client]})
-
+            self.fire('send_to',{'event':'pages_paths', 'path':'', 'value':self.get_pages_paths(), 'clients':[event.client]})
+            self.fire('send_to',{'event':'pages_page', 'path':page['path'], 'value':page, 'clients':[event.client]})
+            
         elif 'path' in event.data and 'value' in event.data and not event.data['value'] is None and tokenpayload and tokenpayload['permission'] > 6:
             # update
             page = self._pages[event.data['path']]
@@ -439,10 +443,12 @@ class Pages(Plugin):
             self.fire('send_to',{'event':'pages_menu', 'path':'', 'value':self.get_menu(), 'clients':[event.client]})
             self.fire('send_to',{'event':'pages_page', 'path':page['path'], 'value':page, 'clients':[event.client]})
 
+
         elif not 'path' in event.data and tokenpayload and tokenpayload['permission'] > 6:
             # add
             self.add_page(event.data['group'],{'title':'newpage','icon':'blank'})
             self.fire('send_to',{'event':'pages_menu', 'path':'', 'value':self.get_menu(), 'clients':[event.client]})
+            self.fire('send_to',{'event':'pages_paths', 'path':'', 'value':self.get_pages_paths(), 'clients':[event.client]})
 
 
     def listen_pages_section(self,event):
