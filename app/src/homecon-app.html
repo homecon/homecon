@@ -220,6 +220,7 @@
         observers: [
             '_routePageChanged(routeData.page)',
             '_authenticatedChanged(authenticated)',
+            '_editChanged(edit)',
         ],
 
         ready: function(){
@@ -246,6 +247,13 @@
             this.$.menu.toggle();
         },
 
+        _load: function(){
+            // load objects through the websocket only when necessary
+            if(this.page=='settings'){
+                this.$.settings.load();
+            }
+        },
+
         _routePageChanged: function(page){
             if( typeof this.authenticated != 'undefined'){
                 if(!this.authenticated && page != 'login'){
@@ -269,9 +277,8 @@
             this._load();
         },
 
-        _load: function(){
-            // load objects through the websocket only when necessary
-            if(this.page=='settings'){
+        _editChanged: function(edit){
+            if(edit){
                 this.$.settings.load();
             }
         },

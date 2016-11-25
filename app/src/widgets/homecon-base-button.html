@@ -1,0 +1,52 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+
+
+<link rel="import" href="../../bower_components/paper-button/paper-button.html">
+
+<link rel="import" href="../homecon-web-socket-sender.html">
+
+<dom-module is="homecon-base-button">
+    <template>
+        <style>
+            :host{
+                display: inline-block;
+                position: relative;
+            }
+            .button {
+                @apply(--button-style);
+            }
+        </style>
+        
+        <homecon-web-socket-sender id="websocket"></homecon-web-socket-sender>
+        
+        <paper-button class="button" raised="[[raised]]" on-tap="call"><content></content></paper-button>
+
+    </template>
+    <script>
+        Polymer({
+            is: 'homecon-base-button',
+            properties: {
+                event:{
+                    type: 'String',
+                },
+                data:{
+                    type: 'Object',
+                },
+                raised:{
+                    type: 'Boolean',
+                    value: false,
+                },
+            },
+
+            call: function(){
+                var data = {'event':this.event};
+                var tempdata = this.data;
+
+                for(key in tempdata){
+                    data[key] = tempdata[key];
+                }
+                this.$.websocket.send(data);
+            },
+        });
+    </script>
+</dom-module>

@@ -1,0 +1,135 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout-classes.html">
+<link rel="import" href="../../bower_components/iron-icon/iron-icon.html">
+<link rel="import" href="../../bower_components/iron-icons/iron-icons.html">
+<link rel="import" href="../../bower_components/iron-icons/editor-icons.html">
+
+<link rel="import" href="../../bower_components/paper-icon-button/paper-icon-button.html">
+
+<link rel="import" href="../homecon-edit-dialog.html">
+<link rel="import" href="../homecon-component-select.html">
+
+<link rel="import" href="homecon-base-button.html">
+<link rel="import" href="homecon-base-slider.html">
+
+<dom-module is="homecon-widget-shading">
+    <template>
+        <style include="iron-flex iron-flex-alignment">
+            :host{
+                display: block;
+                position: relative;
+                width: 100%;
+            }
+            .icon{
+                width: 60px;
+                height: 60px;
+            }
+            .label{
+                font-size: 1.2em;
+                font-weight: 700;
+            }
+            .edit{
+                position: absolute;
+                top: -10px;
+                right: -10px;
+                color: var(--button-text-color);
+            }
+        </style>
+        
+        <div class="horizontal layout">
+            <div>
+                <homecon-base-button event="state" data="{{_upData(config)}}">
+                    <img class="icon" src="/images/icon/ffffff/fts_shutter_10.png">
+                </homecon-base-button>
+            </div>
+            <div class="flex">
+                <div class="vertical layout center-justified">
+                    <div class="label">{{config.label}}</div>
+                    <homecon-base-slider path="{{_positionPath(config)}}"></homecon-base-slider>
+                </div>
+            </div>
+            <div>
+                <homecon-base-button event="state" data="{{_downData(config)}}">
+                    <img class="icon" src="/images/icon/ffffff/fts_shutter_100.png">
+                </homecon-base-button>
+            </div>
+        </div>
+
+        <div class="edit" hidden="{{!edit}}">
+            <paper-icon-button icon="editor:mode-edit" noink="true" on-tap="openEditDialog"></paper-icon-button>
+        </div>
+        
+        <homecon-edit-dialog id="editDialog" on-save="save">
+            <paper-input label="Label:" value="{{newLabel}}"></paper-input>
+            <homecon-component-select id="componentSelect" path="{{newPath}}"></homecon-component-select>
+            <paper-input label="value up:" value="{{newValueUp}}"></paper-input>
+            <paper-input label="value down:" value="{{newValueDown}}"></paper-input>
+            <paper-button on-tap="delete">Delete</paper-button>
+        </homecon-edit-dialog>
+
+    </template>
+    <script>
+        Polymer({
+            is: 'homecon-widget-shading',
+            properties: {
+                config: {
+                    type: 'Object',
+                    value: {'label':'new shading','path':'','valueUp':0,'valueDown':100},
+                },
+                edit: {
+                    type: 'Boolean',
+                    value: false
+                },
+                classes: {
+                    type: 'String',
+                    value: 'fullwidth',
+                },
+            },
+            
+            ready: function(){
+                this.color = 'ffffff';
+            },
+
+            _positionPath: function(config){
+                return config.path+'/position';
+            },
+
+            _upData: function(config){
+                return {'path':config.path+'/position','value':config.valueUp}
+            },
+
+            _downData: function(config){
+                return {'path':config.path+'/position','value':config.valueDown}
+            },
+
+            openEditDialog: function(){
+                this.set('newLabel',this.config.label);
+                this.set('newPath',this.config.path);
+                this.$.componentSelect.reload();
+                this.set('newIcon',this.config.icon);
+                this.set('newValueUp',this.config.valueOn);
+                this.set('newValueDown',this.config.valueOff);
+                this.$.editDialog.open();
+            },
+
+            save: function(e){
+                e.stopPropagation()
+
+                this.$.editDialog.close();
+                this.fire('edit-widget',{
+                    'label':this.newLabel,
+                    'path':this.newPath,
+                    'icon':this.newIcon,
+                    'valueUp':this.newValueUp,
+                    'valueDown':this.newValueDown,
+                });
+            },
+
+            delete: function(e){
+                e.stopPropagation()
+                this.fire('delete')
+            },
+
+        });
+    </script>
+</dom-module>

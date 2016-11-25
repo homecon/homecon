@@ -5,6 +5,7 @@
 
 <link rel="import" href="widgets/homecon-widget-button.html">
 <link rel="import" href="widgets/homecon-widget-switch.html">
+<link rel="import" href="widgets/homecon-widget-shading.html">
 
 <dom-module is="homecon-pages-widget">
     <template>
@@ -52,8 +53,8 @@
                 //this.importHref( this.resolveUrl(type+'.html'), null, null, true );
 
                 var widget = document.createElement('homecon-widget-'+type);
-                if(this.widget.config['initialize']){
-                    widget.config['initialize'] = false;
+                if(typeof this.widget.config['initialized'] == 'undefined'){
+                    widget.config['initialized'] = true;
                     this.$.websocketWidget.send({'config':widget.config});
                 }
                 else{

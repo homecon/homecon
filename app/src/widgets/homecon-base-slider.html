@@ -1,0 +1,55 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+
+<link rel="import" href="../../bower_components/paper-slider/paper-slider.html">
+
+<link rel="import" href="../homecon-web-socket-object.html">
+
+<dom-module is="homecon-base-slider">
+    <template>
+        <style>
+            :host {
+                display: block;
+                position: relative;
+            }
+            paper-slider {
+                width: 100%;
+                --paper-slider-container-color: #1d1d1d;
+                --paper-slider-active-color: #f79a1f;
+                --paper-slider-knob-color: #333333;
+                --paper-slider-height: 10px;
+            }
+        </style>
+        
+        <homecon-web-socket-object id="websocketObject" event="state" path="{{path}}" data="{{value}}"></homecon-web-socket-object>
+        
+        <paper-slider min="[[min]]" max="[[max]]" value="{{value}}" on-change="call"></paper-slider>
+
+    </template>
+    <script>
+        Polymer({
+            is: 'homecon-base-slider',
+            properties: {
+                path: {
+                    type: 'String',
+                },
+                value: {
+                    type: 'Number',
+                },
+                min: {
+                    type: 'Number',
+                    value: 0,
+                },
+                max: {
+                    type: 'Number',
+                    value: 100,
+                },
+            },
+
+            call: function(){
+                this.$.websocketObject.send(this.value);
+            },
+
+
+        });
+    </script>
+</dom-module>

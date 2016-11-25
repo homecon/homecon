@@ -1,0 +1,44 @@
+<link rel="import" href="../bower_components/polymer/polymer.html">
+
+<link rel="import" href="../bower_components/paper-dropdown-menu/paper-dropdown-menu.html">
+<link rel="import" href="../bower_components/paper-menu/paper-menu.html">
+<link rel="import" href="../bower_components/paper-item/paper-item.html">
+
+
+<dom-module is="homecon-component-select">
+    <template>
+        <style>
+            :host{
+            }
+        </style>
+        
+        <paper-dropdown-menu label="component">
+            <paper-menu class="dropdown-content" attr-for-selected="value" selected="{{path}}">
+                <template is="dom-repeat" items="{{components}}" as="component">
+                    <paper-item value="{{component.path}}">{{component.path}}</paper-item>
+                </template>
+            </paper-menu>
+        </paper-dropdown-menu>
+        
+    </template>
+    <script>
+        Polymer({
+            is: 'homecon-component-select',
+            properties: {
+                path: {
+                    type: 'String',
+                    notify: true,
+                },
+                filter: {
+                    type: 'String',
+                    value: '',
+                },
+            },
+            
+            reload: function(){
+                this.components = window.homeconSettings.components;
+            },
+
+        });
+    </script>
+</dom-module>

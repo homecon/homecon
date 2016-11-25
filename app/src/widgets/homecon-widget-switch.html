@@ -8,7 +8,7 @@
 
 <link rel="import" href="../homecon-web-socket-object.html">
 <link rel="import" href="../homecon-edit-dialog.html">
-<link rel="import" href="../homecon-state-select.html">
+<link rel="import" href="../homecon-component-select.html">
 <link rel="import" href="../homecon-icon-select.html">
 
 <dom-module is="homecon-widget-switch">
@@ -39,7 +39,7 @@
             }
         </style>
         
-        <homecon-web-socket-object id="websocketObject" event="state" path="[[config.path]]" data="{{value}}"></homecon-web-socket-object>
+        <homecon-web-socket-object id="websocketObject" event="state" path="[[config.path]]/value" data="{{value}}"></homecon-web-socket-object>
         
         <paper-button noink class="button horizontal layout start-justified" on-tap="call">
             <img class="icon" src="/images/icon/[[color]]/[[parseIcon(config.icon)]].png">
@@ -52,8 +52,7 @@
         
         <homecon-edit-dialog id="editDialog" on-save="save">
             <paper-input label="Label:" value="{{newLabel}}"></paper-input>
-            <paper-input label="path:" value="{{newPath}}"></paper-input>
-            <homecon-state-select path="{{newPath}}"></homecon-state-select>
+            <homecon-component-select id="componentSelect" path="{{newPath}}"></homecon-component-select>
             <paper-input label="value on:" value="{{newValueOn}}"></paper-input>
             <paper-input label="value off:" value="{{newValueOff}}"></paper-input>
             <homecon-icon-select icon="{{newIcon}}"></homecon-icon-select>
@@ -103,6 +102,7 @@
             openEditDialog: function(){
                 this.set('newLabel',this.config.label);
                 this.set('newPath',this.config.path);
+                this.$.componentSelect.reload();
                 this.set('newIcon',this.config.icon);
                 this.set('newValueOn',this.config.valueOn);
                 this.set('newValueOff',this.config.valueOff);

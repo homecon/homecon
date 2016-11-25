@@ -68,8 +68,9 @@
         <homecon-edit-dialog id="addWidgetDialog" on-save="addWidget">
             <paper-dropdown-menu label="widget type">
                 <paper-menu class="dropdown-content" attr-for-selected="value" selected="{{widgetType}}">
-                    <paper-item value="button">Button</paper-item>
-                    <paper-item value="switch">Switch</paper-item>
+                    <template is="dom-repeat" items="{{widgets}}" as="widget">
+                        <paper-item value="{{widget}}">{{widget}}</paper-item>
+                    </template>
                 </paper-menu>
             </paper-dropdown-menu>
         </homecon-edit-dialog>
@@ -85,7 +86,11 @@
                 edit:{
                     type: 'Boolean',
                     value: false,
-                }
+                },
+                widgets: {
+                    type: 'Array',
+                    value: ['switch','button','shading'],
+                },
             },
             openEditDialog: function(){
                 this.newType = this.section.config.type;
