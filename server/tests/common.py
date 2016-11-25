@@ -56,6 +56,11 @@ class HomeConTestCase(unittest.TestCase):
         except:
             pass
 
+        try:
+            os.remove('homecon_measurements.db')
+        except:
+            pass
+
     def start_homecon(self,sleep=1,clear_log=True,print_log=False):
         """
         starts homecon
