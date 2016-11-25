@@ -8,4 +8,5 @@ from . import authentication
 from . import websocket
 from . import pages
 from . import schedules
+from . import measurements
 

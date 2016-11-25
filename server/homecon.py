@@ -87,6 +87,7 @@ class HomeCon(object):
             'authentication': core.plugins.authentication.Authentication(self._queue,self.states,self.components),
             'pages': core.plugins.pages.Pages(self._queue,self.states,self.components),
             'schedules': core.plugins.schedules.Schedules(self._queue,self.states,self.components),
+            'measurements': core.plugins.measurements.Measurements(self._queue,self.states,self.components),
         }
 
         # load components

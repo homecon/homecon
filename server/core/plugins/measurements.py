@@ -53,7 +53,7 @@ class Measurements(plugin.Plugin):
         return int( datetime.datetime.now().timestamp() )
     
 
-    def add(self,path,value):
+    def add(self,path,value,readusers=None,readgroups=None):
         """
         Parameters
         ----------
@@ -82,7 +82,13 @@ class Measurements(plugin.Plugin):
             for i in ind:
                 del self.measurements[path][i]
 
-            self.fire('send',{'event':'append_measurement', 'path':event.data['path'], 'value':{'time':time,'value':value}})
+            if readusers is None:
+                readusers = []
+
+            if readgroups is None:
+                readgroups = []
+
+            self.fire('send',{'event':'append_measurement', 'path':path, 'value':{'time':time,'value':value}, 'readusers':readusers, 'readgroups':readgroups})
 
 
     def get(self,path):
@@ -101,14 +107,14 @@ class Measurements(plugin.Plugin):
 
     def listen_state_changed(self,event):
  
-        self.add(event.data['path'],event.data['value'])
+        self.add(event.data['state'].path,event.data['state'].value,readusers=event.data['state'].config['readusers'],readgroups=event.data['state'].config['readgroups'])
 
 
     def listen_measurement(self,event):
         """
         retrieve a list of measurements
         """
-
+        
         data = self.get(event.data['path'])
         self.fire('send_to',{'event':'measurement', 'path':event.data['path'], 'value':data, 'clients':[event.client]})
         
