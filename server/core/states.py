@@ -31,6 +31,13 @@ class States(plugin.BasePlugin):
             self.add(state['path'],config=json.loads(state['config']))
 
 
+        # add settings states
+        self.add('settings/location/latitude', config={'type': 'number', 'quantity':'angle', 'unit':'deg','label':'latitude', 'description':'HomeCon latitude'})
+        self.add('settings/location/longitude',config={'type': 'number', 'quantity':'angle', 'unit':'deg','label':'longitude','description':'HomeCon longitude'})
+        self.add('settings/location/elevation',config={'type': 'number', 'quantity':'height','unit':'m',  'label':'elevation','description':'HomeCon elevation'})
+        self.add('settings/location/timezone', config={'type': 'string', 'quantity':'',      'unit':'',   'label':'time zone','description':'HomeCon time zone'})
+
+
     def add(self,path,config=None):
         """
         add a state

@@ -191,7 +191,7 @@ class Schedules(Plugin):
 
 
     def listen_state_changed(self,event):
-        if event.data['state'].path == 'settings/timezone':
+        if event.data['state'].path == 'settings/location/timezone':
             try:
                 self.timezone = pytz.timezone(event.data['value'])
             except:

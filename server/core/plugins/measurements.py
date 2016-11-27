@@ -106,8 +106,8 @@ class Measurements(plugin.Plugin):
 
 
     def listen_state_changed(self,event):
- 
-        self.add(event.data['state'].path,event.data['state'].value,readusers=event.data['state'].config['readusers'],readgroups=event.data['state'].config['readgroups'])
+        if 'log' in event.data['state'].config and event.data['state'].config['log']:
+            self.add(event.data['state'].path,event.data['state'].value,readusers=event.data['state'].config['readusers'],readgroups=event.data['state'].config['readgroups'])
 
 
     def listen_measurement(self,event):

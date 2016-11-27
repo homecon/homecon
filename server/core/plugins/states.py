@@ -28,17 +28,7 @@ class States(plugin.Plugin):
     """
 
     def initialize(self):
-        
-
-        # add settings states
-        self._states.add('settings/latitude', config={'type': 'number', 'quantity':'angle', 'unit':'deg','label':'latitude', 'description':'HomeCon latitude'})
-        self._states.add('settings/longitude',config={'type': 'number', 'quantity':'angle', 'unit':'deg','label':'longitude','description':'HomeCon longitude'})
-        self._states.add('settings/elevation',config={'type': 'number', 'quantity':'height','unit':'m',  'label':'elevation','description':'HomeCon elevation'})
-        self._states.add('settings/timezone', config={'type': 'string', 'quantity':'',      'unit':'',   'label':'time zone','description':'HomeCon time zone'})
-
-
-
-
+        pass
 
     def get(self,path):
         """
