@@ -37,7 +37,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         <homecon-page>
 
             <homecon-page-header title="Editor" icon="pagebuilder_pagebuilder"></homecon-page-header>
-            <homecon-section type="raised">
+            <homecon-section id="editorSection" type="raised">
                 <paper-toggle-button active={{edit}}>Edit</paper-toggle-button>
             </homecon-section>
             
@@ -55,6 +55,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                     notify: true,
                 },
             },
+            ready: function(){
+                // hack to get the editor section to resize correctly
+                this.$.editorSection.opened=false;
+                this.$.editorSection.opened=true;
+            }
         });
     </script>
 

@@ -8,10 +8,18 @@
                 position: relative;
                 width: 100%;
 
-                margin: 8px 0px;
+                margin: 8px 0px 16px 0px;
             }
             #header{
                 display: block;
+
+                font-size: 16px;
+                font-family: sans-serif;
+                font-weight: 700;
+
+                text-decoration: none;
+            }
+            #header.collapsible{
                 cursor: pointer;
 
                 min-height: 12px;
@@ -23,18 +31,20 @@
                 border-width: 1px;
                 border-radius: 5px;
 
-                font-size: 16px;
-                font-family: sans-serif;
-                font-weight: 700;
                 color: var(--header-text-color);
                 text-shadow: 0 1px 0 var(--header-text-shadow-color);
-                text-decoration: none;
             }
-            #header.opened{
+            #header.collapsible.opened{
                 border-radius: 5px 5px 0px 0px;
             }
-            #header:hover{
+            #header.collapsible:hover{
                 background-color: var(--header-background-color-hover);
+            }
+            #header.raised{
+                position: absolute;
+                top: -10px;
+                left: 20px;
+                color: var(--primary-text-color);
             }
             #content{
                 padding: 16px;
@@ -51,20 +61,20 @@
                 box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.14), 0 1px 5px 0 rgba(0, 0, 0, 0.12), 0 3px 1px -2px rgba(0, 0, 0, 0.2);
                 border-radius: 5px;
             }
-            .hidden{
-                display: none !important;
-            }
+            
         </style>
 
-        <a id="header" class$="header {{_collapsibleClass(type)}} {{_openedClass(opened)}}" on-click="changeState">
+        <a id="header" class$="header {{_headerClass(type)}} {{_openedClass(opened)}}" on-click="changeState">
             {{title}}
         </a>
 
-        <iron-collapse opened="{{opened}}">
+        <iron-collapse id="collapsible" opened="{{opened}}">
             <div id="content" class$="{{type}}">
                 <content></content>
             </div>
         </iron-collapse>
+
+
 
     </template>
     <script>
@@ -73,15 +83,16 @@
             properties: {
                 type: {
                     type: 'String',
+                    observer: '_typeChanged',
                 },
                 title: {
                     type: 'String',
                 },
                 opened:{
                     type: 'Boolean',
-                    value: false,
                 },
             },
+
             changeState: function(){
                 this.opened = !this.opened;
                 var that = this;
@@ -89,11 +100,7 @@
                     that.fire('state-changed');
                 },200);
             },
-            openEditDialog: function(){
-                this.newType = this.section.config.type;
-                this.newTitle = this.section.config.title;
-                this.$.editDialog.open();
-            },
+
             _openedClass: function(opened){
                 if(opened){
                     return "opened"
@@ -102,13 +109,23 @@
                     return "";
                 }
             },
-            _collapsibleClass: function(type){
+
+            _typeChanged: function(type){
                 if(type!='collapsible'){
                     this.opened = true;
-                    return "hidden"
+                }
+            },
+
+            _isCollapsible: function(type){
+                return type == 'collapsible';
+            },
+
+            _headerClass: function(type){
+                if(type!='collapsible'){
+                    return "raised"
                 }
                 else{
-                    return "";
+                    return "collapsible";
                 }
             },
         });
