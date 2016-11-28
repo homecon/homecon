@@ -37,6 +37,7 @@ class Components(plugin.Plugin):
         self.register_component(Dimminglight)
         self.register_component(Shading)
 
+        logging.debug('Components plugin Initialized')
 
     def list(self):
         """

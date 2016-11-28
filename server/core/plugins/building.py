@@ -11,7 +11,7 @@ import uuid
 from .. import database
 from ..plugin import Plugin
 
-class Schedules(Plugin):
+class Building(Plugin):
     """
     Class to control the HomeCon scheduling
     

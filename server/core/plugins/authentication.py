@@ -129,7 +129,7 @@ class Authentication(plugin.Plugin):
         self.add_user_to_group(self.usernames['admin'],self.groupnames['default'])
         self.add_user_to_group(self.usernames['admin'],self.groupnames['admin'])
 
-      
+        logging.debug('Authentication plugin Initialized')
 
     def add_user(self,username,password,permission):
         """

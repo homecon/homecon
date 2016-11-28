@@ -80,18 +80,21 @@ class HomeCon(object):
 
         # start plugins
         self.coreplugins = {
-            'states': core.plugins.states.States(self._queue,self.states,self.components),
-            'components': core.plugins.components.Components(self._queue,self.states,self.components),
+            'states': core.plugins.states.States(self._queue,self.states,self.components),                # load states 1st
+            'components': core.plugins.components.Components(self._queue,self.states,self.components),    # load components 2nd
             'plugins': core.plugins.plugins.Plugins(self._queue,self.states,self.components),
-            'websocket': core.plugins.websocket.Websocket(self._queue,self.states,self.components),
             'authentication': core.plugins.authentication.Authentication(self._queue,self.states,self.components),
             'pages': core.plugins.pages.Pages(self._queue,self.states,self.components),
             'schedules': core.plugins.schedules.Schedules(self._queue,self.states,self.components),
             'measurements': core.plugins.measurements.Measurements(self._queue,self.states,self.components),
+            'weather': core.plugins.weather.Weather(self._queue,self.states,self.components),
         }
 
         # load components
         self.components.load()
+
+        # load the websocket
+        self.coreplugins['websocket'] = core.plugins.websocket.Websocket(self._queue,self.states,self.components)
 
         logging.info('HomeCon Initialized')
 

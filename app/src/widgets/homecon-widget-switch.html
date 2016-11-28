@@ -39,7 +39,7 @@
             }
         </style>
         
-        <homecon-web-socket-object id="websocketObject" event="state" path="[[config.path]]/value" data="{{value}}"></homecon-web-socket-object>
+        <homecon-web-socket-object id="websocketObject" event="state" path="[[config.path]]/value" data="{{value}}" auto></homecon-web-socket-object>
         
         <paper-button noink class="button horizontal layout start-justified" on-tap="call">
             <img class="icon" src="/images/icon/[[color]]/[[parseIcon(config.icon)]].png">

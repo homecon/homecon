@@ -69,7 +69,7 @@ class Websocket(Plugin):
         self.server = self._loop.run_until_complete( servergenerator )
 
 
-        logging.info('Websocket started')
+        logging.debug('Websocket plugin initialized')
 
 
     def log_data(self,address,data):
@@ -147,6 +147,9 @@ class Client(object):
     @asyncio.coroutine
     def send(self,message):
         yield from self.websocket.send(json.dumps(message))
+
+    def __repr__(self):
+        return self.address
 
 
 class DummyAdminClient(object):

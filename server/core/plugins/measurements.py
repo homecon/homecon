@@ -44,6 +44,7 @@ class Measurements(plugin.Plugin):
         self.maxtimedelta = 7*24*3600
         self.measurements = {}
 
+        logging.debug('Measurements plugin Initialized')
 
     def time(self):
         """

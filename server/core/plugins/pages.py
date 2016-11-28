@@ -85,9 +85,15 @@ class Pages(Plugin):
             self.add_page('groundfloor',{'title':'Kitchen','icon':'scene_dinner'})
 
         if len(self._sections) == 0:
-            self.add_section('home/home',{'type':'collapsible'})
+            s = self.add_section('home/home',{'type':'transparent'})
+
+            self.add_widget(self,s['path'],'weather-forecast-block',config={'daily':True, 'timeoffset':0},order=None)
+            self.add_widget(self,s['path'],'weather-forecast-block',config={'daily':True, 'timeoffset':24},order=None)
+            self.add_widget(self,s['path'],'weather-forecast-block',config={'daily':True, 'timeoffset':48},order=None)
+            self.add_widget(self,s['path'],'weather-forecast-block',config={'daily':True, 'timeoffset':72},order=None)
 
 
+        logging.debug('Pages plugin Initialized')
 
     def add_group_local(self,path,config,order):
         """

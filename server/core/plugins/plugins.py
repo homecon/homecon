@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+
+import logging
 import asyncio
 import os
 import sys
@@ -32,6 +34,7 @@ class Plugins(Plugin):
         for p in result:
             self._start_plugin(p['name'])
 
+        logging.debug('Plugins plugin Initialized')
 
     def get_plugins_list(self):
         """

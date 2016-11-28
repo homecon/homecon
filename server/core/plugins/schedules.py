@@ -39,6 +39,7 @@ class Schedules(Plugin):
         for schedule in result:
             self.add_local( schedule['path'],json.loads(schedule['config']),json.loads(schedule['value']) )
 
+        logging.debug('Schedules plugin Initialized')
 
     def add_local(self,path,config,value):
         """

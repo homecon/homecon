@@ -9,4 +9,4 @@ from . import websocket
 from . import pages
 from . import schedules
 from . import measurements
-
+from . import weather

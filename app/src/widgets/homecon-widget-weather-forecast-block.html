@@ -1,0 +1,147 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout-classes.html">
+<link rel="import" href="../../bower_components/iron-icon/iron-icon.html">
+<link rel="import" href="../../bower_components/iron-icons/iron-icons.html">
+<link rel="import" href="../../bower_components/iron-icons/editor-icons.html">
+
+
+<link rel="import" href="../homecon-web-socket-object.html">
+<link rel="import" href="../homecon-edit-dialog.html">
+
+<dom-module is="homecon-widget-weather-forecast-block">
+    <template>
+        <style include="iron-flex iron-flex-alignment">
+            :host{
+                display: inline-block;
+                position: relative;
+            }
+            .icon{
+                min-height: 60px;
+            }
+            .edit{
+                position: absolute;
+                top: -10px;
+                right: -10px;
+                color: var(--button-text-color);
+            }
+            .value{
+                text-align: center;
+            }
+
+        </style>
+        
+        <homecon-web-socket-object id="websocketObject" event="state" path="[[_path(config)]]" data="{{forecast}}" auto></homecon-web-socket-object>
+        
+        <div>
+            <img class="icon" src="/images/weather/[[_parseIcon(forecast.icon)]].png">
+            <div class="value time"></div>
+            <div class="value">Temperature: [[_temperature(config,forecast)]]</div>
+            <div class="value">Wind: [[_wind(forecast)]]</div>
+            <div class="value">Clouds: [[_clouds(forecast)]]</div>
+        </div>
+
+        <div class="edit" hidden="{{!edit}}">
+            <paper-icon-button icon="editor:mode-edit" noink="true" on-tap="openEditDialog"></paper-icon-button>
+        </div>
+        
+        <homecon-edit-dialog id="editDialog" on-save="save">
+            <paper-input label="Label:" value="{{newLabel}}"></paper-input>
+
+            <paper-button on-tap="delete">Delete</paper-button>
+        </homecon-edit-dialog>
+
+    </template>
+    <script>
+        Polymer({
+            is: 'homecon-widget-weather-forecast-block',
+            properties: {
+                config: {
+                    type: 'Object',
+                    value: {'label':'new forecast block','daily':true,'timedelta':0},
+                },
+                edit: {
+                    type: 'Boolean',
+                    value: false
+                },
+                classes: {
+                    type: 'String',
+                    value: 'quarterwidth',
+                },
+            },
+
+            ready: function(){
+            },
+
+            openEditDialog: function(){
+                this.set('newLabel',this.config.label);
+                this.set('newDaily',this.config.daily);
+                this.set('newTimedelta',this.config.timedelta);
+                this.$.editDialog.open();
+            },
+
+            save: function(e){
+                e.stopPropagation()
+
+                this.$.editDialog.close();
+                this.fire('edit-widget',{
+                    'label': this.newLabel,
+                    'daily':this.newDaily,
+                    'timedelta':this.timedelta,
+                });
+            },
+
+            delete: function(e){
+                e.stopPropagation()
+                this.fire('delete')
+            },
+
+            moveUp: function(){
+                this.fire('move-up')
+            },
+
+            moveDown: function(){
+                this.fire('move-down')
+            },
+
+            _path: function(config){
+                var path = 'weather/forecast/'
+                if(config.daily){
+                    path += 'daily/' + parseInt(config.timedelta/24)
+                }
+                else{
+                    path += 'hourly/' + parseInt(config.timedelta)
+                }
+                return path
+            },
+
+            _parseIcon: function(icon){
+                return 'sun_2';
+                if(icon==''){
+                    return 'blank';
+                }
+                else{
+                    return icon;
+                }
+            },
+
+            _temperature: function(config,forecast){
+                if(config.daily){
+                    return forecast.temperature_day + 'degC';
+                }
+                else{
+                    return forecast.temperature + 'degC';
+                }
+            },
+
+            _wind: function(forecast){
+                dir = 'NE'
+                return forecast.wind_speed + ' m/s ' + dir
+            },
+
+            _clouds: function(forecast){
+                return parseInt(forecast.clouds*100) + ' %'
+            },
+
+        });
+    </script>
+</dom-module>

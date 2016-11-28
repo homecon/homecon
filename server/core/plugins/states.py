@@ -28,7 +28,7 @@ class States(plugin.Plugin):
     """
 
     def initialize(self):
-        pass
+        logging.debug('States plugin Initialized')
 
     def get(self,path):
         """

@@ -1,5 +1,6 @@
 
 <link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout-classes.html">
 <link rel="import" href="../bower_components/app-route/app-location.html">
 <link rel="import" href="../bower_components/app-route/app-route.html">
 <link rel="import" href="../bower_components/app-layout/app-drawer/app-drawer.html">
@@ -27,7 +28,7 @@
 
     <template>
 
-        <style>
+        <style include="iron-flex iron-flex-alignment">
             :host{
                 display: block;
                 --toolbar-background-color: #000000;
@@ -85,6 +86,12 @@
 
             .header .title{
                 margin-left: 10px;
+                
+            }
+
+            .header .title a:link, .header .title a:visited, .header .title a:hover, .header .title a:active{
+                text-decoration: none;
+                color: var(--primary-text-color);
             }
 
             .drawer{
@@ -158,7 +165,7 @@
         <app-header fixed shadow class$="header [[loginClass]]">
             <app-toolbar>
                 <paper-icon-button class="drawer-toggle" icon="icons:menu" on-tap="_toggleDrawer"></paper-icon-button>
-                <div title class="title">Homecon</div>
+                <div class="title"><a class="home" href="/pages/home/home">Homecon</a></div>
                 <div class="flex"></div>
                 <paper-icon-button class="menu-toggle" icon="icons:more-vert" on-tap="_toggleMenu"></paper-icon-button>
             </app-toolbar>
@@ -293,6 +300,10 @@
                 this.set('routeData.page','login');
             }
             this._load();
+        },
+
+        _home: function(){
+            this.set('routeData.page','pages/home/home');
         },
 
         _pageChanged: function(page){
