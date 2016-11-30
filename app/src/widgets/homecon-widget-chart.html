@@ -4,12 +4,13 @@
 <link rel="import" href="../../bower_components/iron-icons/iron-icons.html">
 <link rel="import" href="../../bower_components/iron-icons/editor-icons.html">
 <link rel="import" href="../../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../../bower_components/paper-toggle-button/paper-toggle-button.html">
 <link rel="import" href="../../bower_components/paper-button/paper-button.html">
-<link rel="import" href="../../bower_components/google-chart/google-chart.html">
 
 <link rel="import" href="../homecon-web-socket-object.html">
 <link rel="import" href="../homecon-edit-dialog.html">
 
+<script src="../../bower_components/highcharts/highcharts.js"></script>
 
 <dom-module is="homecon-widget-chart">
     <template>
@@ -35,7 +36,7 @@
         
         <homecon-web-socket-object id="websocketObject" event="timeseries" path="[[config.path]]" data="{{data}}" auto></homecon-web-socket-object>
 
-        <google-chart id="chart" type="line" data='[[parsedData]]'></google-chart>
+        <div id="container"></div>
 
         <div class="edit" hidden="{{!edit}}">
             <paper-icon-button icon="editor:mode-edit" noink="true" on-tap="openEditDialog"></paper-icon-button>
@@ -72,25 +73,70 @@
 
             ready: function(){
 
+                var container = this.$.container;
+                this.chart = Highcharts.chart(container, {
+                    chart: {
+                        type: 'line'
+                    },
+                    title: {
+                        text: 'The title'
+                    },
+                    xAxis: {
+                        type: 'datetime',
+                        dateTimeLabelFormats: {
+                            month: '%e. %b',
+                            year: '%b'
+                        },
+                        title: {
+                            text: 'xlabel'
+                        }
+                    },
+                    yAxis: {
+                        title: {
+                            text: 'ylabel'
+                        },
+                        min: 0
+                    },
+                    tooltip: {
+                        headerFormat: '<b>{series.name}</b><br>',
+                        pointFormat: '{point.x:%e. %b}: {point.y:.2f}'
+                    },
+
+                    plotOptions: {
+                        spline: {
+                            marker: {
+                                enabled: true
+                            }
+                        }
+                    },
+                    series: []
+                });
+
             },
 
             _dataChanged: function(data){
-                var header = ['time','value']
 
-                var parsedData = [];
-                parsedData.push(header);
-                for(var i=0;i<data.length;i++){
-                    parsedData.push([new Date(data[i][0]*1000),data[i][1]]);
+                var add = true;
+                for(var i=0;i<this.chart.series.length;i++){
+                    if(this.chart.series[i]._path == this.config.path){
+                        add = false;
+                        var series = this.chart.series[i];
+                        break;
+                    }
+                }
+                if(add){
+                    var series = this.chart.addSeries({});
+                    
+                    series._path = this.config.path;
                 }
 
-                this.parsedData = parsedData;
-
-                this.$.chart.options = {
-                    explorer: {
-                        maxZoomOut:2,
-                        keepInBounds: true
+                for(var i=0;i<data.length;i++){
+                    if( !(data[i].time*1000 in series.xData) ){
+                        series.addPoint([data[i].time*1000,data[i].value]);
                     }
-                };
+                }
+
+                console.log(series)
             },
 
             openEditDialog: function(){
