@@ -111,13 +111,13 @@ class Measurements(plugin.Plugin):
             self.add(event.data['state'].path,event.data['state'].value,readusers=event.data['state'].config['readusers'],readgroups=event.data['state'].config['readgroups'])
 
 
-    def listen_measurement(self,event):
+    def listen_timeseries(self,event):
         """
         retrieve a list of measurements
         """
         
         data = self.get(event.data['path'])
-        self.fire('send_to',{'event':'measurement', 'path':event.data['path'], 'value':data, 'clients':[event.client]})
+        self.fire('send_to',{'event':'timeseries', 'path':event.data['path'], 'value':data, 'clients':[event.client]})
         
 
 
