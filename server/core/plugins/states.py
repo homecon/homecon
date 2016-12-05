@@ -119,7 +119,8 @@ class States(plugin.Plugin):
                                 break
 
                     if permitted:
-                        state.set(event.data['value'],event.source)
+                        self._loop.create_task(state.set(event.data['value'],source=event.source))
+
                     else:
                         logging.warning('User {} on client {} attempted to change the value of {} but is not permitted'.format(tokenpayload['userid'],event.client.address,state.path))
 

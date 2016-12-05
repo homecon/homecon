@@ -4,6 +4,7 @@
 import json
 import copy
 import inspect
+import asyncio
 
 from . import database
 from . import plugin
@@ -156,7 +157,7 @@ class State(object):
         self._value = None
 
 
-    def set(self,value,source=None):
+    async def set(self,value,source=None):
         oldvalue = copy.copy(self._value)
         self._value = value
 
@@ -164,6 +165,7 @@ class State(object):
         self._states._db_states.PUT(value=json.dumps(value), where='path=\'{}\''.format(self._path))
 
         self._states.fire('state_changed',{'state':self,'value':self._value,'oldvalue':oldvalue},source)
+        await asyncio.sleep(0.01) # avoid flooding asyncio
 
     def get(self):
         return self._value
@@ -181,8 +183,8 @@ class State(object):
     @value.setter
     def value(self, value):
         # get the source from inspection
+        self._states._loop.create_task(self.set(value,source=self))
         
-        self.set(value,source=self)
 
     @property
     def path(self):

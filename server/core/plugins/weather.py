@@ -7,6 +7,8 @@ import urllib.request
 import json
 import concurrent.futures
 import asyncio
+import aiohttp
+import time
 
 from .. import plugin
 
@@ -58,7 +60,7 @@ class Weather(plugin.Plugin):
             timestamp_when = int( (dt_when-dt_ref).total_seconds() )
 
             # check the last load time to avoid frequent loading upon restarts
-            if self._states['weather/forecast/lastupdate'].value is None or self._states['weather/forecast/lastupdate'].value < timestamp_now-1:
+            if self._states['weather/forecast/lastupdate'].value is None or self._states['weather/forecast/lastupdate'].value < timestamp_now-300:
 
                 # load the forecast
                 if self._states['settings/weather/service'].value == 'darksky':
@@ -67,7 +69,7 @@ class Weather(plugin.Plugin):
                 self._states['weather/forecast/lastupdate'].value = timestamp_now
 
 
-            # sleep untill the next call
+            # sleep until the next call
             await asyncio.sleep(timestamp_when-timestamp_now)
 
             #when = self._loop.time() + timestamp_when - timestamp_now
@@ -88,48 +90,23 @@ class Weather(plugin.Plugin):
 
             timestamplist = [timestamp+i*24*3600 for i in range(7)]
 
-            forecast_daily = []
-            forecast_hourly = []
-
-            for timestamp in timestamplist:
+            forecast_daily = range(7)
+            forecast_hourly = range(7*24)
+ 
+            for i,timestamp in enumerate(timestamplist):
                 url = 'https://api.darksky.net/forecast/{}/{},{},{}?units=si'.format(self._states['settings/weather/apikey'].value,self._states['settings/location/latitude'].value,self._states['settings/location/longitude'].value,timestamp)
                 
-                with urllib.request.urlopen(url) as connection:
-                    response = json.loads(connection.read().decode('utf-8'))
+                async with aiohttp.ClientSession() as session:
+                    async with session.get(url) as resp:
+                        response = json.loads(await resp.text())
 
-                    # daily values
-                    data = response['daily']['data'][0]
+                        # daily values
+                        data = response['daily']['data'][0]
 
-                    forecast = {}
-                    forecast['timestamp'] = data['time']
-                    forecast['temperature_day'] = data['temperatureMax']
-                    forecast['temperature_night'] = data['temperatureMin']
-                    forecast['pressure'] = data['pressure']
-                    forecast['humidity'] = data['humidity']
-                    forecast['icon'] = data['icon']
-                    try:
-                        forecast['clouds'] = data['cloudCover']
-                    except:
-                        forecast['clouds'] = 0
-                    forecast['wind_speed'] = data['windSpeed']
-                    forecast['wind_direction'] = data['windBearing']
-                    try:
-                        forecast['precipitation_intensity'] = data['precipIntensity']
-                    except:
-                        forecast['precipitation_intensity'] = 0
-                    try:
-                        forecast['precipitation_probability'] = data['precipProbability']
-                    except:
-                        forecast['precipitation_probability'] = 0
-
-                    forecast_daily.append(forecast)
-                    
-
-                    # hourly values
-                    for data in response['hourly']['data']:
                         forecast = {}
                         forecast['timestamp'] = data['time']
-                        forecast['temperature'] = data['temperature']
+                        forecast['temperature_day'] = data['temperatureMax']
+                        forecast['temperature_night'] = data['temperatureMin']
                         forecast['pressure'] = data['pressure']
                         forecast['humidity'] = data['humidity']
                         forecast['icon'] = data['icon']
@@ -148,15 +125,36 @@ class Weather(plugin.Plugin):
                         except:
                             forecast['precipitation_probability'] = 0
 
-                        forecast_hourly.append(forecast)
+                        #forecast_daily.append(forecast)
+                        await self._states['weather/forecast/daily/{}'.format(i)].set( forecast )
 
-            # set the states
-            for i,forecast in enumerate(forecast_daily):
-                self._states['weather/forecast/daily/{}'.format(i)].value = forecast
-            
-            for i,forecast in enumerate(forecast_hourly[:24]):
-                self._states['weather/forecast/hourly/{}'.format(i)].value = forecast
-            
+
+                        # hourly values
+                        for j,data in enumerate(response['hourly']['data']):
+                            forecast = {}
+                            forecast['timestamp'] = data['time']
+                            forecast['temperature'] = data['temperature']
+                            forecast['pressure'] = data['pressure']
+                            forecast['humidity'] = data['humidity']
+                            forecast['icon'] = data['icon']
+                            try:
+                                forecast['clouds'] = data['cloudCover']
+                            except:
+                                forecast['clouds'] = 0
+                            forecast['wind_speed'] = data['windSpeed']
+                            forecast['wind_direction'] = data['windBearing']
+                            try:
+                                forecast['precipitation_intensity'] = data['precipIntensity']
+                            except:
+                                forecast['precipitation_intensity'] = 0
+                            try:
+                                forecast['precipitation_probability'] = data['precipProbability']
+                            except:
+                                forecast['precipitation_probability'] = 0
+
+                            #forecast_hourly.append(forecast)
+                            await self._states['weather/forecast/hourly/{}'.format(i*24+j)].set( forecast )
+
             logging.debug('Weather forecast loaded from darksky.net')
 
         except Exception as e:
