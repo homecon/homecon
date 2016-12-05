@@ -35,6 +35,7 @@
         </style>
         
         <homecon-web-socket-object id="websocketObject" event="timeseries" path="[[config.path]]" data="{{data}}" auto></homecon-web-socket-object>
+        <homecon-web-socket-object id="websocketObject" event="append_timeseries" path="[[config.path]]" data="{{appendData}}"></homecon-web-socket-object>
 
         <div id="container"></div>
 
@@ -69,6 +70,7 @@
             
             observers: [
                 '_dataChanged(data)',
+                '_appendDataChanged(appendData)',
             ],
 
             ready: function(){
@@ -115,7 +117,6 @@
             },
 
             _dataChanged: function(data){
-
                 var add = true;
                 for(var i=0;i<this.chart.series.length;i++){
                     if(this.chart.series[i]._path == this.config.path){
@@ -126,17 +127,22 @@
                 }
                 if(add){
                     var series = this.chart.addSeries({});
-                    
+
                     series._path = this.config.path;
                 }
 
                 for(var i=0;i<data.length;i++){
-                    if( !(data[i].time*1000 in series.xData) ){
-                        series.addPoint([data[i].time*1000,data[i].value]);
+                    // try not to add double data
+                    if( series.xData.length==0 || data[i][0]*1000 >= series.xData[series.xData.length-1] ){
+                        series.addPoint([data[i][0]*1000,data[i][1]]);
                     }
                 }
 
-                console.log(series)
+            },
+            _appendDataChanged: function(appendData){
+                console.log(appendData);
+                this.push('data',appendData);
+                console.log(this.data);
             },
 
             openEditDialog: function(){

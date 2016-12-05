@@ -70,12 +70,12 @@ class Measurements(plugin.Plugin):
         self._db_measurements.POST(time=time,path=path,value=value)
 
         if path in self.measurements:
-            self.measurements[path].append({'time':time,'value':value})
+            self.measurements[path].append([time,value])
             
             # remove values older then maxtimedelta
             ind = []
             for i,data in enumerate(self.measurements[path]):
-                if data['time'] < time - self.maxtimedelta:
+                if data[0] < time - self.maxtimedelta:
                     ind.append(i)
                 else:
                     break
@@ -89,7 +89,7 @@ class Measurements(plugin.Plugin):
             if readgroups is None:
                 readgroups = []
 
-            self.fire('send',{'event':'append_measurement', 'path':path, 'value':{'time':time,'value':value}, 'readusers':readusers, 'readgroups':readgroups})
+            self.fire('send',{'event':'append_timeseries', 'path':path, 'value':[time,value], 'readusers':readusers, 'readgroups':readgroups})
 
 
     def get(self,path):
@@ -101,7 +101,7 @@ class Measurements(plugin.Plugin):
             
             self.measurements[path] = []
             for d in data:
-                self.measurements[path].append({'time':d['time'],'value':json.loads(d['value'])})
+                self.measurements[path].append([d['time'],json.loads(d['value'])])
 
         return self.measurements[path]
 

@@ -77,6 +77,9 @@ class States(plugin.BasePlugin):
             if 'writegroups' not in config:
                 config['writegroups'] = [1]
 
+            if 'log' not in config:
+                config['log'] = True
+
             # check if the state is in the database and add it if not
             if len( self._db_states.GET(path=path) ) == 0:
                 self._db_states.POST(path=path,config=json.dumps(config))
