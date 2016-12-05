@@ -18,6 +18,7 @@ pip install passlib
 pip install PyJWT
 pip install websocket-client
 pip install asyncws
+pip install aiohttp
 ```
 
 ## Unit tests
