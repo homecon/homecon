@@ -32,13 +32,6 @@ class States(plugin.BasePlugin):
             self.add(state['path'],config=json.loads(state['config']))
 
 
-        # add settings states
-        self.add('settings/location/latitude', config={'type': 'number', 'quantity':'angle', 'unit':'deg','label':'latitude', 'description':'HomeCon latitude'})
-        self.add('settings/location/longitude',config={'type': 'number', 'quantity':'angle', 'unit':'deg','label':'longitude','description':'HomeCon longitude'})
-        self.add('settings/location/elevation',config={'type': 'number', 'quantity':'height','unit':'m',  'label':'elevation','description':'HomeCon elevation'})
-        self.add('settings/location/timezone', config={'type': 'string', 'quantity':'',      'unit':'',   'label':'time zone','description':'HomeCon time zone'})
-
-
     def add(self,path,config=None):
         """
         add a state
@@ -159,22 +152,30 @@ class State(object):
 
     async def set(self,value,source=None):
         oldvalue = copy.copy(self._value)
-        self._value = value
 
-        # update the value in the database
-        self._states._db_states.PUT(value=json.dumps(value), where='path=\'{}\''.format(self._path))
+        if not value == oldvalue:
+            self._value = value
 
-        self._states.fire('state_changed',{'state':self,'value':self._value,'oldvalue':oldvalue},source)
-        await asyncio.sleep(0.01) # avoid flooding asyncio
+            # update the value in the database
+            self._states._db_states.PUT(value=json.dumps(value), where='path=\'{}\''.format(self._path))
+
+            self._states.fire('state_changed',{'state':self,'value':self._value,'oldvalue':oldvalue},source)
+            await asyncio.sleep(0.01) # avoid flooding asyncio
 
     def get(self):
         return self._value
 
     def get_value_from_db(self):
         result = self._states._db_states.GET(path=self.path,columns=['value'])
-        value = result[0]['value']
-        if not value is None:
-            self._value = json.loads(value)
+        jsonvalue = result[0]['value']
+
+        if not jsonvalue is None:
+            value = json.loads(jsonvalue)
+
+            if 'type' in self._config and self._config['type']=='number':
+                value = float(value)
+
+            self._value = value
 
     @property
     def value(self):
@@ -183,7 +184,10 @@ class State(object):
     @value.setter
     def value(self, value):
         # get the source from inspection
-        self._states._loop.create_task(self.set(value,source=self))
+        stack = inspect.stack()
+        source = stack[1][0].f_locals["self"].__class__
+
+        self._states._loop.create_task(self.set(value,source=source))
         
 
     @property

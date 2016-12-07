@@ -19,6 +19,7 @@ pip install PyJWT
 pip install websocket-client
 pip install asyncws
 pip install aiohttp
+pip install numpy
 ```
 
 ## Unit tests
