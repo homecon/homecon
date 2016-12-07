@@ -222,7 +222,7 @@ class Weather(plugin.Plugin):
         -------
         azimut : number
             sun azimut in degrees
-            0deg is S, 90deg is W, 180deg is N, 270deg is E
+            0deg is N, 90deg is E, 180deg is S, 270deg is W
 
         altitude : number
             sun altitude in degrees
@@ -251,7 +251,7 @@ class Weather(plugin.Plugin):
         azimut = sun.az*180/np.pi
         altitude = sun.alt*180/np.pi
 
-        return (azimut,altitude)
+        return azimut,altitude
 
 
 
@@ -274,7 +274,7 @@ class Weather(plugin.Plugin):
         if utcdatetime == None:
             utcdatetime = datetime.datetime.utcnow()
 
-        (azimut,altitude) = self.sunposition(utcdatetime)
+        azimut,altitude = self.sunposition(utcdatetime)
 
         # air mass between the observer and the sun
         if 6.07995 + np.radians(altitude) > 0:
@@ -306,15 +306,15 @@ class Weather(plugin.Plugin):
         else:
             I_diffuse = 0
 
-        return (I_direct,I_diffuse)
+        return I_direct,I_diffuse
 
 
 
     def listen_state_changed(self,event):
         if event.data['state'].path == 'weather/sun/altitude' or event.data['state'].path == 'weather/clouds':
-
             # update the irradiance
-            (I_direct,I_diffuse) = self.clearskyirrradiance()
+            I_direct,I_diffuse = self.clearskyirrradiance()
+
             self._states['weather/irradiancedirect'].value = I_direct#*(1-self._states['weather/clouds'].value)
             self._states['weather/irradiancediffuse'].value = I_diffuse#*(1-self._states['weather/clouds'].value)
 

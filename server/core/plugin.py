@@ -191,17 +191,17 @@ class Plugin(BasePlugin):
         event : Event
             an Event instance
             
+        Notes
+        -----
+        Source checking to avoid infinite loops needs to be done in the plugin
+        listener method
+
         """
 
-        # check if this plugin is the source and stop execution if so
-        if not event.source == self:
-            #self.listen(event)
-            #getattr(self,'listen')(event)
-
-            if event.type in self.listeners:
-                #executor.submit(self.listeners[event.type], event)
-                #asyncio.ensure_future(self._loop.run_in_executor(executor, self.listeners[event.type], event))
-                self.listeners[event.type](event)
+        if event.type in self.listeners:
+            #executor.submit(self.listeners[event.type], event)
+            #asyncio.ensure_future(self._loop.run_in_executor(executor, self.listeners[event.type], event))
+            self.listeners[event.type](event)
 
 
 
