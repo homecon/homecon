@@ -26,7 +26,7 @@ class Weather(plugin.Plugin):
         self.executor = concurrent.futures.ThreadPoolExecutor(7)
 
         # register components
-        self.register_component(Temperaturesensor)
+        self.register_component(Ambienttemperaturesensor)
         self.register_component(Irradiancesensor)
 
 
@@ -46,7 +46,7 @@ class Weather(plugin.Plugin):
 
         # add weather states
         self._states.add('weather/temperature',       config={'type': 'number', 'quantity':'temperature', 'unit':'°C'  , 'label':'Ambient', 'description':''})
-        self._states.add('weather/clouds',            config={'type': 'number', 'quantity':''           , 'unit':''    , 'label':'Clouds' , 'description':''})
+        self._states.add('weather/cloudcover',        config={'type': 'number', 'quantity':''           , 'unit':''    , 'label':'Cloud cover' , 'description':''})
 
         self._states.add('weather/sun/azimut',            config={'type': 'number', 'quantity':'angle' , 'unit':'°', 'label':'Azimut' , 'description':''})
         self._states.add('weather/sun/altitude',          config={'type': 'number', 'quantity':'angle' , 'unit':'°', 'label':'Azimut' , 'description':''})
@@ -87,7 +87,7 @@ class Weather(plugin.Plugin):
                     await self.darksky_forecast()
 
                 self._states['weather/forecast/lastupdate'].value = timestamp_now
-
+                
 
             # sleep until the next call
             await asyncio.sleep(timestamp_when-timestamp_now)
@@ -158,9 +158,9 @@ class Weather(plugin.Plugin):
                         forecast['humidity'] = data['humidity']
                         forecast['icon'] = data['icon']
                         try:
-                            forecast['clouds'] = data['cloudCover']
+                            forecast['cloudcover'] = data['cloudCover']
                         except:
-                            forecast['clouds'] = 0
+                            forecast['cloudcover'] = 0
                         forecast['wind_speed'] = data['windSpeed']
                         forecast['wind_direction'] = data['windBearing']
                         try:
@@ -185,9 +185,9 @@ class Weather(plugin.Plugin):
                             forecast['humidity'] = data['humidity']
                             forecast['icon'] = data['icon']
                             try:
-                                forecast['clouds'] = data['cloudCover']
+                                forecast['cloudcover'] = data['cloudCover']
                             except:
-                                forecast['clouds'] = 0
+                                forecast['cloudcover'] = 0
                             forecast['wind_speed'] = data['windSpeed']
                             forecast['wind_direction'] = data['windBearing']
                             try:
@@ -239,42 +239,64 @@ class Weather(plugin.Plugin):
 
         # create an ephem observer
         obs = ephem.Observer()
-        
-        obs.lat = self._states['settings/location/latitude'].value*np.pi/180     #N+
-        obs.lon =self._states['settings/location/longitude'].value*np.pi/180     #E+
-        obs.elev = self._states['settings/location/elevation'].value
-        obs.date = utcdatetime
 
-        sun = ephem.Sun(obs)
-        sun.compute(obs)
-        
-        azimut = sun.az*180/np.pi
-        altitude = sun.alt*180/np.pi
+        lat = self._states['settings/location/latitude'].value    # N+
+        lon = self._states['settings/location/longitude'].value   # E+
+        elev = self._states['settings/location/elevation'].value
 
-        return azimut,altitude
+        if elev is None:
+            elev = 0
+            logging.warning('No elevation supplied, assuming 0 m')
+
+        azimuth = None
+        altitude = None
+
+        if not lat is None and not lon is None:
+            obs.lat = np.radians(lat)
+            obs.lon = np.radians(lon)
+            obs.elev = elev
+            obs.date = utcdatetime
+
+            sun = ephem.Sun(obs)
+            sun.compute(obs)
+            
+            azimuth = sun.az*180/np.pi
+            altitude = sun.alt*180/np.pi
+
+        return azimuth,altitude
 
 
 
     def clearskyirrradiance(self,utcdatetime=None):
         """
         Compute the clear sky theoretical direct and diffuse solar irradiance
-        at a certain time at the current location according to [1]
+        at a certain time at the current location according to [1] results are
+        similar to [2]
 
         Parameters
         ----------
         utcdatetime : datetime.datetime
             the datetime when to compute the irradiance
 
+        Returns
+        -------
+        I_direct_normal : number
+            direct normal irrradiance (W/m2)
+
+        I_diffuse_horizontal : number
+            diffuse horrizontal irrradiance (W/m2)
+
         Notes
         -----
-        [1] ASHRAE Fundamentals p. x.x
+        [1] ASHRAE 2009, H28, p9-11.
+        [2] ASHRAE 2005, H31
 
         """
 
         if utcdatetime == None:
             utcdatetime = datetime.datetime.utcnow()
 
-        azimut,altitude = self.sunposition(utcdatetime)
+        azimuth,altitude = self.sunposition(utcdatetime)
 
         # air mass between the observer and the sun
         if 6.07995 + np.radians(altitude) > 0:
@@ -297,31 +319,263 @@ class Weather(plugin.Plugin):
         ad = 0.202 + 0.852*tau_b - 0.007*tau_d -0.357*tau_b*tau_d;
 
         if altitude > 0:
-            I_direct = E0*np.exp(-tau_b*m**ab);
+            I_direct_normal = E0*np.exp(-tau_b*m**ab);
+        else:
+            I_direct_normal = 0
+
+        if altitude > -2:
+            I_diffuse_horizontal = E0*np.exp(-tau_d*m**ad);
+        else:
+            I_diffuse_horizontal = 0
+
+        return I_direct_normal,I_diffuse_horizontal
+
+
+    def incidentirradiance(self,I_direct_normal,I_diffuse_horizontal,solar_azimuth,solar_altitude,surface_azimuth,surface_tilt):
+        """
+        Method returns irradiation on a tilted surface according to ASHRAE
+
+        Parameters
+        ----------
+        I_direct_normal : number
+            local beam irradiation (W/m2)
+
+        I_diffuse_horizontal : number
+            local diffuse irradiation (W/m2)
+
+        solar_azimuth : number
+            solar azimuth angle from N in E direction (0=N, 90=E, 180=S, -270 = W) (deg)
+
+        solar_altitude : number
+            solar altitude angle (deg)
+
+        surface_azimuth: number
+            surface normal azimuth angle from N in E direction (0=N, 90=E, 180=S, 270 = W) (deg)
+
+        surface_tilt: number
+            surface tilt angle (0: facing up, pi/2: vertical, pi: facing down) (deg)
+
+        output:
+        I_tot : number
+            total irradiance on tilted surface  (W/m2)
+
+        I_direct: 
+            Direct irradiance on tilted surface  (W/m2)
+
+        I_diffuse: 
+            Diffuse irradiance on tilted surface  (W/m2)
+
+        I_ground: 
+            Ground reflected radiation on tilted surface  (W/m2)
+
+        """
+
+        # surface solar azimuth (-pi/2< gamma < pi/2, else surface is in shade)
+        gamma = solar_azimuth-surface_azimuth
+
+        # incidence
+        cos_theta = np.cos(solar_altitude)*np.cos(gamma)*np.sin(surface_tilt) + np.sin(solar_altitude)*np.cos(surface_tilt)
+
+        # beam irradiation
+        if cos_theta > 0:
+            I_direct = I_direct_normal*cos_theta
         else:
             I_direct = 0
 
-        if altitude > -2:
-            I_diffuse = E0*np.exp(-tau_d*m**ad);
+        # diffuse irradiation
+        Y = max(0.45, 0.55 + 0.437*cos_theta+ 0.313*cos_theta**2)
+        if surface_tilt < np.pi/2:
+            I_diffuse = I_diffuse_horizontal*(Y*np.sin(surface_tilt) + np.cos(surface_tilt))
         else:
-            I_diffuse = 0
+            I_diffuse = I_diffuse_horizontal*Y*np.sin(surface_tilt)
 
-        return I_direct,I_diffuse
+        # ground reflected radiation
+        rho_g = 0.2
+        I_ground = (I_direct_normal*np.sin(solar_altitude) + I_diffuse_horizontal)*rho_g*(1-np.cos(surface_tilt))/2
 
+        # total irradiation
+        I_tot = (I_direct + I_diffuse + I_ground)
+
+        return I_tot, I_direct, I_diffuse, I_ground
+
+
+
+    def cloudyskyirrradiance(self,I_direct_clearsky,I_diffuse_clearsky,cloudcover,utcdatetime=None):
+        """
+        Correction of the direct normal and diffuse horizontal irradiance using
+        the the cloudcover fraction in accordance with [3] and [4].
+        Credits to Damien Picard for the literature and coding
+
+        Parameters
+        ----------
+        I_direct_clearsky : number
+            direct clearsky solar irradiance
+
+        I_diffuse_clearsky : number
+            diffuse clearsky solar irradiance
+
+        cloudcover : number
+            fraction of the sky covered by clouds
+
+        utcdatetime : number
+            the datetime when to compute the irradiance
+
+        Returns
+        -------
+        I_direct_cloudy : number
+            direct solar normal irradiance corrected by cloud coverage
+
+        I_diffuse_cloudy : number
+            diffuse solar horizontal irradiance corrected by cloud coverage
+
+        Notes
+        -----
+        [3] K. Kimura and D. G. Stephenson, Solar radiation on cloudy days. Res.
+            Paper 418, Division of Building Research, National Research Council,
+            Ottawa (1969).
+        [4] R. Brinsfield, M. Yaramanogly, F. Wheaton, Ground level solar
+            radiation prediction model including cloud cover effects, Solar
+            Energy, Volume 33, Issue 6, 1984, Pages 493-499
+
+        """
+
+        if utcdatetime == None:
+            utcdatetime = datetime.datetime.utcnow()
+
+        # irradiance on a horizontal surface
+        solar_azimuth,solar_altitude = self.sunposition(utcdatetime=utcdatetime)
+        I_tot, I_direct, I_diffuse, I_ground = self.incidentirradiance(I_direct_clearsky,I_diffuse_clearsky,solar_azimuth,solar_altitude,0,0)
+
+
+        # month of the year.
+        n = float(utcdatetime.strftime('%m'))
+
+        if I_tot > 0.1:
+            # Data from table 1 of [1]. Month of december and march are repeated for interpolation.
+            P = np.interp(n, [-1., 3., 6., 9., 12., 15. ], [1.14, 1.06, 0.96, 0.95, 1.14, 1.06])
+            Q = np.interp(n, [-1., 3., 6., 9., 12., 15. ], [0.003, 0.012, 0.033, 0.030, 0.003, 0.012])
+            R = np.interp(n, [-1., 3., 6., 9., 12., 15. ], [-0.0082, -0.0084, -0.0106, -0.0108, -0.0082, -0.0084])
+
+            # Cloud coverage and cloud coverage factor
+            CC = cloudcover*10.
+            CCF = P + Q*CC + R*CC**2
+
+            # Correction for horizontal surface, according to [1]
+            I_tot_cloudy = (I_tot - I_ground) * CCF                # equation 1, [1]: total radiation on horizontal surface, corrected with cloud coverage factor
+                                                                   # Notice: CCF can be > 1 (higher radiation than average) and has a maximum at CC = 2-3 (see Fig.3, [1])
+            I_direct_cloudy = I_direct_clearsky*(1-cloudcover)     # Direct radiation is proportional to cloud fraction (eq. 12, [1])
+            I_diffuse_cloudy = I_tot_cloudy - I_direct_cloudy      # Diffuse radiation = total radiation - direct radiation (equivalent to eq. 13, [1])
+
+        else:
+            I_direct_cloudy = I_direct_clearsky
+            I_diffuse_cloudy = I_diffuse_clearsky
+
+        return I_direct_cloudy , I_diffuse
+
+
+
+    def ambienttemperature(self):
+        """
+        Estimate the ambient temperature from the forecast and measurements
+
+        """
+
+        dt_ref = datetime.datetime(1970, 1, 1)
+        dt_now = datetime.datetime.utcnow()
+        timestamp_now = (dt_now-dt_ref).total_seconds()
+
+        # get the prediction closest to now
+        timestamps = []
+        values = []
+        for i in range(48):
+            forecast = self._states['weather/forecast/hourly/{}'.format(i)].value
+
+            if not forecast is None:
+                timestamps.append(forecast['timestamp'])
+                values.append(forecast['temperature'])
+
+                if forecast['timestamp'] > timestamp_now:
+                    break
+
+        if len(timestamps)>0:
+            value_forecast = np.interp(timestamp_now,timestamps,values)
+        else:
+            value_forecast = None
+
+        # get ambient temperature measurements
+
+
+        # combine
+        value = np.round(value_forecast,decimals=2)
+
+        return value
+
+
+    def cloudcover(self):
+        """
+        Estimate the cloudcover from the forecast and measurements
+
+        """
+        dt_ref = datetime.datetime(1970, 1, 1)
+        dt_now = datetime.datetime.utcnow()
+        timestamp_now = (dt_now-dt_ref).total_seconds()
+
+        # get the prediction closest to now
+        timestamps = []
+        values = []
+        for i in range(48):
+            forecast = self._states['weather/forecast/hourly/{}'.format(i)].value
+
+            if not forecast is None:
+                timestamps.append(forecast['timestamp'])
+                values.append(forecast['cloudcover'])
+
+                if forecast['timestamp'] > timestamp_now:
+                    break
+
+        if len(timestamps)>0:
+            value_forecast = np.interp(timestamp_now,timestamps,values)
+        else:
+            value_forecast = None
+
+        # get cloudcover measurements
+
+
+        # combine
+        value = np.round(value_forecast,decimals=2)
+
+        return value
 
 
     def listen_state_changed(self,event):
-        if event.data['state'].path == 'weather/sun/altitude' or event.data['state'].path == 'weather/clouds':
+
+        if event.data['state'].path == 'weather/sun/altitude' or event.data['state'].path == 'weather/cloudcover':
             # update the irradiance
-            I_direct,I_diffuse = self.clearskyirrradiance()
+            I_direct_clearsky,I_diffuse_clearsky = self.clearskyirrradiance()
 
-            self._states['weather/irradiancedirect'].value = I_direct#*(1-self._states['weather/clouds'].value)
-            self._states['weather/irradiancediffuse'].value = I_diffuse#*(1-self._states['weather/clouds'].value)
+            cloudcover = 0
+            if not self._states['weather/cloudcover'].value is None:
+                cloudcover = self._states['weather/cloudcover'].value
+
+            I_direct_cloudy,I_diffuse_cloudy = self.cloudyskyirrradiance(I_direct_clearsky,I_diffuse_clearsky,self._states['weather/cloudcover'].value)
+
+            self._states['weather/irradiancedirect'].value = I_direct_cloudy
+            self._states['weather/irradiancediffuse'].value = I_diffuse_cloudy
+
+
+        if event.data['state'].path.startswith('weather/forecast/hourly/48') or False:
+            print(event)
+            self._states['weather/temperature'].value = self.ambienttemperature()
+
+
+        if event.data['state'].path.startswith('weather/forecast/hourly/48') or False:
+            self._states['weather/cloudcover'].value = self.cloudcover()
 
 
 
 
-class Temperaturesensor(components.Component):
+
+class Ambienttemperaturesensor(components.Component):
     """
     a class implementing a temperature sensor
     
@@ -330,7 +584,9 @@ class Temperaturesensor(components.Component):
     def initialize(self):
         self.states = {
             'value': {
-                'default_config': {},
+                'default_config': {
+                    'confidence': 0.5,
+                },
                 'fixed_config': {},
             },
         }
@@ -350,6 +606,7 @@ class Irradiancesensor(components.Component):
                 'default_config': {
                     'orientation': 0,
                     'tilt': 0,
+                    'confidence': 0.5,
                 },
                 'fixed_config': {},
             },

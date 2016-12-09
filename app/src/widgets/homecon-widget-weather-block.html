@@ -49,7 +49,7 @@
         <homecon-edit-dialog id="editDialog" on-save="save">
             <paper-input label="Label:" value="{{newLabel}}"></paper-input>
             <paper-toggle-button active={{newDaily}}>Daily</paper-toggle-button>
-            <paper-input label="Time offset:" value="{{newTimedelta}}"></paper-input>
+            <paper-input label="Time offset:" value="{{newTimeoffset}}"></paper-input>
             <paper-button on-tap="delete">Delete</paper-button>
         </homecon-edit-dialog>
 
@@ -60,7 +60,7 @@
             properties: {
                 config: {
                     type: 'Object',
-                    value: {'label':'new forecast block','daily':true,'timedelta':0},
+                    value: {'label':'new weather block','daily':true,'timeoffset':0},
                 },
                 edit: {
                     type: 'Boolean',
@@ -78,7 +78,7 @@
             openEditDialog: function(){
                 this.set('newLabel',this.config.label);
                 this.set('newDaily',this.config.daily);
-                this.set('newTimedelta',this.config.timedelta);
+                this.set('newTimeoffset',this.config.timeoffset);
                 this.$.editDialog.open();
             },
 
@@ -89,7 +89,7 @@
                 this.fire('edit-widget',{
                     'label': this.newLabel,
                     'daily':this.newDaily,
-                    'timedelta':this.newTimedelta,
+                    'timeoffset':this.newTimeoffset,
                 });
             },
 
@@ -109,10 +109,10 @@
             _path: function(config){
                 var path = 'weather/forecast/'
                 if(config.daily){
-                    path += 'daily/' + parseInt(config.timedelta/24)
+                    path += 'daily/' + parseInt(config.timeoffset/24)
                 }
                 else{
-                    path += 'hourly/' + parseInt(config.timedelta)
+                    path += 'hourly/' + parseInt(config.timeoffset)
                 }
                 return path
             },
@@ -161,7 +161,7 @@
                     'thunderstorm': 'cloud_10'
                 };
 
-                if(forecast.icon in icons){
+                if(forecast != null && forecast.icon in icons){
                     return icons[forecast.icon];
                 }
                 else{
@@ -170,37 +170,44 @@
             },
 
             _time: function(config,forecast){
-                var date = new Date(forecast.timestamp*1000);
-                days = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat']
-                if(config.daily){
-                    dayofthemonth = date.getDate()
-                    if(dayofthemonth<10){
-                        dayofthemonth = '0' + dayofthemonth
+                if(forecast != null){
+                    var date = new Date(forecast.timestamp*1000);
+                    days = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+                    if(config.daily){
+                        dayofthemonth = date.getDate();
+                        if(dayofthemonth<10){
+                            dayofthemonth = '0' + dayofthemonth;
+                        }
+                        month = date.getMonth()+1
+                        if(month<10){
+                            month = '0' + month;
+                        }
+                        return days[date.getDay()] + ' ' + dayofthemonth + '-' + month;
                     }
-                    month = date.getMonth()+1
-                    if(month<10){
-                        month = '0' + month
+                    else{
+                        return date.getHour();
                     }
-                    return days[date.getDay()] + ' ' + dayofthemonth + '-' + month;
-                }
-                else{
-                    return date.getHour();
                 }
             },
 
             _temperature: function(forecast){
-                return forecast.temperature_day.toFixed(1) + '°C';
+                if(forecast != null){
+                    return forecast.temperature_day.toFixed(1) + '°C';
+                }
             },
 
             _wind: function(forecast){
-                var dirs = ['N','NE','E','SE','S','SW','W','NW','N']
-
-                var dir = dirs[Math.round(forecast.wind_direction/360*8)]
-                return (forecast.wind_speed*3.6).toFixed(1) + ' km/h ' + dir
+                var dirs = ['N','NE','E','SE','S','SW','W','NW','N'];
+                if(forecast != null){
+                    var dir = dirs[Math.round(forecast.wind_direction/360*8)];
+                    return (forecast.wind_speed*3.6).toFixed(1) + ' km/h ' + dir;
+                }
             },
 
             _clouds: function(forecast){
-                return parseInt(forecast.clouds*100) + ' %'
+                if(forecast != null){
+                    return parseInt(forecast.cloudcover*100) + ' %';
+                }
             },
 
         });

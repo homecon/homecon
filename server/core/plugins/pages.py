@@ -87,10 +87,10 @@ class Pages(Plugin):
         if len(self._sections) == 0:
             s = self.add_section('home/home',{'type':'transparent'})
 
-            self.add_widget(self,s['path'],'weather-forecast-block',config={'daily':True, 'timeoffset':0},order=None)
-            self.add_widget(self,s['path'],'weather-forecast-block',config={'daily':True, 'timeoffset':24},order=None)
-            self.add_widget(self,s['path'],'weather-forecast-block',config={'daily':True, 'timeoffset':48},order=None)
-            self.add_widget(self,s['path'],'weather-forecast-block',config={'daily':True, 'timeoffset':72},order=None)
+            self.add_widget(s['path'],'weather-block',config={'daily':True, 'timeoffset':0},order=None)
+            self.add_widget(s['path'],'weather-block',config={'daily':True, 'timeoffset':24},order=None)
+            self.add_widget(s['path'],'weather-block',config={'daily':True, 'timeoffset':48},order=None)
+            self.add_widget(s['path'],'weather-block',config={'daily':True, 'timeoffset':72},order=None)
 
 
         logging.debug('Pages plugin Initialized')

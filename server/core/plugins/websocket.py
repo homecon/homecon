@@ -105,16 +105,18 @@ class Websocket(Plugin):
         senddata = {key:val for key,val in event.data.items() if not (key=='readusers' or key=='readgroups')}
 
         for client in self.clients:
-            permitted = False
-            if client.tokenpayload['userid'] in event.data['readusers']:
-                permitted = True
-            else:
-                for g in client.tokenpayload['groupids']:
-                    if g in event.data['readgroups']:
-                        permitted = True
-                        break
-            if permitted:
-                asyncio.ensure_future( client.send(senddata) )
+
+            if client.tokenpayload:
+                permitted = False
+                if client.tokenpayload['userid'] in event.data['readusers']:
+                    permitted = True
+                else:
+                    for g in client.tokenpayload['groupids']:
+                        if g in event.data['readgroups']:
+                            permitted = True
+                            break
+                if permitted:
+                    asyncio.ensure_future( client.send(senddata) )
 
 
     def listen_send_to(self,event):
