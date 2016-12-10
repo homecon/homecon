@@ -48,8 +48,8 @@ class Weather(plugin.Plugin):
         self._states.add('weather/temperature',       config={'type': 'number', 'quantity':'temperature', 'unit':'°C'  , 'label':'Ambient', 'description':''})
         self._states.add('weather/cloudcover',        config={'type': 'number', 'quantity':''           , 'unit':''    , 'label':'Cloud cover' , 'description':''})
 
-        self._states.add('weather/sun/azimut',            config={'type': 'number', 'quantity':'angle' , 'unit':'°', 'label':'Azimut' , 'description':''})
-        self._states.add('weather/sun/altitude',          config={'type': 'number', 'quantity':'angle' , 'unit':'°', 'label':'Azimut' , 'description':''})
+        self._states.add('weather/sun/azimuth',           config={'type': 'number', 'quantity':'angle' , 'unit':'°', 'label':'Azimuth' , 'description':''})
+        self._states.add('weather/sun/altitude',          config={'type': 'number', 'quantity':'angle' , 'unit':'°', 'label':'Altitude' , 'description':''})
 
         self._states.add('weather/irradiancedirect',  config={'type': 'number', 'quantity':'irradiance' , 'unit':'W/m2', 'label':'Direct' , 'description':''})
         self._states.add('weather/irradiancediffuse', config={'type': 'number', 'quantity':'irradiance' , 'unit':'W/m2', 'label':'Diffuse', 'description':''})
@@ -80,13 +80,13 @@ class Weather(plugin.Plugin):
             timestamp_when = int( (dt_when-dt_ref).total_seconds() )
 
             # check the last load time to avoid frequent loading upon restarts
-            if self._states['weather/forecast/lastupdate'].value is None or self._states['weather/forecast/lastupdate'].value < timestamp_now-300:
+            if self._states['weather/forecast/lastupdate'].value is None or self._states['weather/forecast/lastupdate'].value < timestamp_now-600:
 
                 # load the forecast
                 if self._states['settings/weather/service'].value == 'darksky':
                     await self.darksky_forecast()
 
-                self._states['weather/forecast/lastupdate'].value = timestamp_now
+                self._states['weather/forecast/lastupdate'].value = round(timestamp_now)
                 
 
             # sleep until the next call
@@ -115,9 +115,9 @@ class Weather(plugin.Plugin):
 
             # calculate the suns position
 
-            azimut,altitude = self.sunposition()
-            self._states['weather/sun/azimut'].value = azimut
-            self._states['weather/sun/altitude'].value = altitude
+            azimuth,altitude = self.sunposition()
+            self._states['weather/sun/azimuth'].value = round(azimuth,2)
+            self._states['weather/sun/altitude'].value = round(altitude,2)
 
             # sleep until the next call
             await asyncio.sleep(timestamp_when-timestamp_now)
@@ -220,8 +220,8 @@ class Weather(plugin.Plugin):
 
         Returns
         -------
-        azimut : number
-            sun azimut in degrees
+        azimuth : number
+            sun azimuth in degrees
             0deg is N, 90deg is E, 180deg is S, 270deg is W
 
         altitude : number
@@ -374,7 +374,7 @@ class Weather(plugin.Plugin):
         gamma = solar_azimuth-surface_azimuth
 
         # incidence
-        cos_theta = np.cos(solar_altitude)*np.cos(gamma)*np.sin(surface_tilt) + np.sin(solar_altitude)*np.cos(surface_tilt)
+        cos_theta = np.cos(np.radians(solar_altitude))*np.cos(np.radians(gamma))*np.sin(np.radians(surface_tilt)) + np.sin(np.radians(solar_altitude))*np.cos(np.radians(surface_tilt))
 
         # beam irradiation
         if cos_theta > 0:
@@ -384,14 +384,14 @@ class Weather(plugin.Plugin):
 
         # diffuse irradiation
         Y = max(0.45, 0.55 + 0.437*cos_theta+ 0.313*cos_theta**2)
-        if surface_tilt < np.pi/2:
-            I_diffuse = I_diffuse_horizontal*(Y*np.sin(surface_tilt) + np.cos(surface_tilt))
+        if surface_tilt < 90:
+            I_diffuse = I_diffuse_horizontal*(Y*np.sin(np.radians(surface_tilt)) + np.cos(np.radians(surface_tilt)))
         else:
-            I_diffuse = I_diffuse_horizontal*Y*np.sin(surface_tilt)
+            I_diffuse = I_diffuse_horizontal*Y*np.sin(np.radians(surface_tilt))
 
         # ground reflected radiation
         rho_g = 0.2
-        I_ground = (I_direct_normal*np.sin(solar_altitude) + I_diffuse_horizontal)*rho_g*(1-np.cos(surface_tilt))/2
+        I_ground = (I_direct_normal*np.sin(np.radians(solar_altitude)) + I_diffuse_horizontal)*rho_g*(1-np.cos(np.radians(surface_tilt)))/2
 
         # total irradiation
         I_tot = (I_direct + I_diffuse + I_ground)
@@ -439,18 +439,22 @@ class Weather(plugin.Plugin):
 
         """
 
-        if utcdatetime == None:
-            utcdatetime = datetime.datetime.utcnow()
-
         # irradiance on a horizontal surface
         solar_azimuth,solar_altitude = self.sunposition(utcdatetime=utcdatetime)
         I_tot, I_direct, I_diffuse, I_ground = self.incidentirradiance(I_direct_clearsky,I_diffuse_clearsky,solar_azimuth,solar_altitude,0,0)
 
 
-        # month of the year.
-        n = float(utcdatetime.strftime('%m'))
-
+        print(I_tot)
+        print(I_direct)
         if I_tot > 0.1:
+
+            if utcdatetime == None:
+                utcdatetime = datetime.datetime.utcnow()
+
+            # month of the year.
+            n = float(utcdatetime.strftime('%m'))
+
+
             # Data from table 1 of [1]. Month of december and march are repeated for interpolation.
             P = np.interp(n, [-1., 3., 6., 9., 12., 15. ], [1.14, 1.06, 0.96, 0.95, 1.14, 1.06])
             Q = np.interp(n, [-1., 3., 6., 9., 12., 15. ], [0.003, 0.012, 0.033, 0.030, 0.003, 0.012])
@@ -506,7 +510,7 @@ class Weather(plugin.Plugin):
 
 
         # combine
-        value = np.round(value_forecast,decimals=2)
+        value = value_forecast
 
         return value
 
@@ -542,7 +546,7 @@ class Weather(plugin.Plugin):
 
 
         # combine
-        value = np.round(value_forecast,decimals=2)
+        value = value_forecast
 
         return value
 
@@ -559,17 +563,17 @@ class Weather(plugin.Plugin):
 
             I_direct_cloudy,I_diffuse_cloudy = self.cloudyskyirrradiance(I_direct_clearsky,I_diffuse_clearsky,self._states['weather/cloudcover'].value)
 
-            self._states['weather/irradiancedirect'].value = I_direct_cloudy
-            self._states['weather/irradiancediffuse'].value = I_diffuse_cloudy
+            self._states['weather/irradiancedirect'].value = round(I_direct_cloudy,2)
+            self._states['weather/irradiancediffuse'].value = round(I_diffuse_cloudy,2)
 
 
         if event.data['state'].path.startswith('weather/forecast/hourly/48') or False:
             print(event)
-            self._states['weather/temperature'].value = self.ambienttemperature()
+            self._states['weather/temperature'].value = round(self.ambienttemperature(),2)
 
 
         if event.data['state'].path.startswith('weather/forecast/hourly/48') or False:
-            self._states['weather/cloudcover'].value = self.cloudcover()
+            self._states['weather/cloudcover'].value = round(self.cloudcover(),3)
 
 
 

@@ -8,8 +8,6 @@ import asyncio
 
 import asyncws
 
-
-
 from ..plugin import Plugin
 
 

@@ -34,8 +34,8 @@
 
         </style>
         
-        <homecon-web-socket-object id="websocketObject" event="timeseries" path="[[config.path]]" data="{{data}}" auto></homecon-web-socket-object>
-        <homecon-web-socket-object id="appendWebsocketObject" event="append_timeseries" path="[[config.path]]" data="{{appendData}}"></homecon-web-socket-object>
+        <homecon-web-socket-object id="websocketObject" event="timeseries" path="[[config.path]]" data="{{initialdata}}" auto debug></homecon-web-socket-object>
+        <homecon-web-socket-object id="appendWebsocketObject" event="append_timeseries" path="[[config.path]]" data="{{appendData}}" on-change="_appendDataChanged"></homecon-web-socket-object>
 
         <div id="container"></div>
 
@@ -69,80 +69,93 @@
             },
             
             observers: [
-                '_dataChanged(data)',
-                '_appendDataChanged(appendData)',
+                '_initialdataChanged(initialdata)',
             ],
 
             ready: function(){
 
+                Highcharts.setOptions({global: { useUTC: false } });
+
                 var container = this.$.container;
                 this.chart = Highcharts.chart(container, {
                     chart: {
-                        type: 'line'
+                        type: 'line',
+                        zoomType: 'x',
                     },
                     title: {
-                        text: 'The title'
+                        text: 'The title',
                     },
                     xAxis: {
                         type: 'datetime',
                         dateTimeLabelFormats: {
                             month: '%e. %b',
-                            year: '%b'
+                            year: '%b',
                         },
                         title: {
-                            text: 'xlabel'
+                            text: 'xlabel',
                         }
                     },
                     yAxis: {
                         title: {
-                            text: 'ylabel'
+                            text: 'ylabel',
                         },
-                        min: 0
                     },
                     tooltip: {
                         headerFormat: '<b>{series.name}</b><br>',
-                        pointFormat: '{point.x:%e. %b}: {point.y:.2f}'
+                        pointFormat: '{point.x:%e. %b}: {point.y:.2f}',
                     },
 
                     plotOptions: {
                         spline: {
                             marker: {
-                                enabled: true
+                                enabled: true,
                             }
                         }
                     },
-                    series: []
+                    series: [],
                 });
 
             },
 
-            _dataChanged: function(data){
-                var add = true;
+            _getSeries: function(path){
                 for(var i=0;i<this.chart.series.length;i++){
                     if(this.chart.series[i]._path == this.config.path){
-                        add = false;
-                        var series = this.chart.series[i];
-                        break;
+                        return this.chart.series[i];
                     }
                 }
-                if(add){
-                    var series = this.chart.addSeries({});
+                return null
+            },
 
+            _initialdataChanged: function(initialdata){
+                this.data = initialdata.slice();
+                
+                var series = this._getSeries(this.config.path);
+
+                if( series == null){
+                    // add a new series
+                    series = this.chart.addSeries({});
                     series._path = this.config.path;
                 }
-
-                for(var i=0;i<data.length;i++){
-                    // try not to add double data
-                    if( series.xData.length==0 || data[i][0]*1000 >= series.xData[series.xData.length-1] ){
-                        series.addPoint([data[i][0]*1000,data[i][1]]);
-                    }
+                else{
+                    // remove the old data
+                    chart.series[0].setData([]);
                 }
 
+                // add the data
+                
+                var chartdata = []
+                for(var i=0;i<initialdata.length;i++){
+                    chartdata.push([initialdata[i][0]*1000,initialdata[i][1]]);
+                }
+                series.setData(chartdata)
             },
-            _appendDataChanged: function(appendData){
-                console.log(appendData);
+
+            _appendDataChanged: function(event,appendData){
                 this.push('data',appendData);
-                console.log(this.data);
+
+                var series = this._getSeries(this.config.path);
+                series.addPoint([appendData[0]*1000,appendData[1]]);
+
             },
 
             openEditDialog: function(){

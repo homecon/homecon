@@ -46,9 +46,10 @@
                 },
             },
             observers: [
-                'updateWidget(widget.type,widget.config)'
+                'updateWidget(widget.type)'
             ],
-            updateWidget: function(type,config){
+            updateWidget: function(type){
+
                 var container = this.$.container;
 
                 // import the widget
