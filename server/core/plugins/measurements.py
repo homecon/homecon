@@ -116,8 +116,9 @@ class Measurements(plugin.Plugin):
         retrieve a list of measurements
         """
         
-        data = self.get(event.data['path'])
-        self.fire('send_to',{'event':'timeseries', 'path':event.data['path'], 'value':data, 'clients':[event.client]})
+        if not 'value' in event.data:
+            data = self.get(event.data['path'])
+            self.fire('send_to',{'event':'timeseries', 'path':event.data['path'], 'value':data, 'clients':[event.client]})
         
 
 

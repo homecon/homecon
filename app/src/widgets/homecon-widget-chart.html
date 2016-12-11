@@ -9,8 +9,8 @@
 
 <link rel="import" href="../homecon-web-socket-object.html">
 <link rel="import" href="../homecon-edit-dialog.html">
+<link rel="import" href="highcharts-behavior.html">
 
-<script src="../../bower_components/highcharts/highcharts.js"></script>
 
 <dom-module is="homecon-widget-chart">
     <template>
@@ -34,8 +34,10 @@
 
         </style>
         
-        <homecon-web-socket-object id="websocketObject" event="timeseries" path="[[config.path]]" data="{{initialdata}}" auto debug></homecon-web-socket-object>
-        <homecon-web-socket-object id="appendWebsocketObject" event="append_timeseries" path="[[config.path]]" data="{{appendData}}" on-change="_appendDataChanged"></homecon-web-socket-object>
+        <template is="dom-repeat" items="{{config.pathlist}}" as="path">
+            <homecon-web-socket-object id="websocketObject" event="timeseries" path="[[path]]" auto on-change="_initialDataChanged"></homecon-web-socket-object>
+            <homecon-web-socket-object id="appendWebsocketObject" event="append_timeseries" path="[[path]]" on-change="_appendDataChanged"></homecon-web-socket-object>
+        </template>
 
         <div id="container"></div>
 
@@ -44,8 +46,8 @@
         </div>
         
         <homecon-edit-dialog id="editDialog" on-save="save">
-            <paper-input label="Label:" value="{{newLabel}}"></paper-input>
-            <paper-input label="Paths:" value="{{newPath}}"></paper-input>
+            <paper-input label="Title:" value="{{newTitle}}"></paper-input>
+            <paper-input label="Paths:" value="{{newPathlist}}"></paper-input>
             <paper-button on-tap="delete">Delete</paper-button>
         </homecon-edit-dialog>
 
@@ -53,10 +55,11 @@
     <script>
         Polymer({
             is: 'homecon-widget-chart',
+            behaviors: [HighchartsBehavior],
             properties: {
                 config: {
                     type: 'Object',
-                    value: {'label':'new chart','path':''},
+                    value: {'title':'new chart','pathslist':[]},
                 },
                 edit: {
                     type: 'Boolean',
@@ -68,99 +71,53 @@
                 },
             },
             
-            observers: [
-                '_initialdataChanged(initialdata)',
-            ],
-
             ready: function(){
-
-                Highcharts.setOptions({global: { useUTC: false } });
-
-                var container = this.$.container;
-                this.chart = Highcharts.chart(container, {
-                    chart: {
-                        type: 'line',
-                        zoomType: 'x',
-                    },
-                    title: {
-                        text: 'The title',
-                    },
-                    xAxis: {
-                        type: 'datetime',
-                        dateTimeLabelFormats: {
-                            month: '%e. %b',
-                            year: '%b',
-                        },
-                        title: {
-                            text: 'xlabel',
-                        }
-                    },
-                    yAxis: {
-                        title: {
-                            text: 'ylabel',
-                        },
-                    },
-                    tooltip: {
-                        headerFormat: '<b>{series.name}</b><br>',
-                        pointFormat: '{point.x:%e. %b}: {point.y:.2f}',
-                    },
-
-                    plotOptions: {
-                        spline: {
-                            marker: {
-                                enabled: true,
-                            }
-                        }
-                    },
-                    series: [],
-                });
-
+                this.data = [];
+                this._createChart(this.$.container)
             },
 
             _getSeries: function(path){
                 for(var i=0;i<this.chart.series.length;i++){
-                    if(this.chart.series[i]._path == this.config.path){
+                    if(this.chart.series[i]._path == path){
                         return this.chart.series[i];
                     }
                 }
                 return null
             },
 
-            _initialdataChanged: function(initialdata){
-                this.data = initialdata.slice();
+            _initialDataChanged: function(event,initialData){
                 
-                var series = this._getSeries(this.config.path);
+                var path = event.model.__data__.path;
 
-                if( series == null){
+                var series = this._getSeries(path);
+
+                if( series == null ){
                     // add a new series
                     series = this.chart.addSeries({});
-                    series._path = this.config.path;
-                }
-                else{
-                    // remove the old data
-                    series.setData([]);
+                    series._path = path;
                 }
 
                 // add the data
-                
                 var chartdata = []
-                for(var i=0;i<initialdata.length;i++){
-                    chartdata.push([initialdata[i][0]*1000,initialdata[i][1]]);
+                for(var i=0;i<initialData.length;i++){
+                    chartdata.push([initialData[i][0]*1000,initialData[i][1]]);
                 }
                 series.setData(chartdata)
             },
 
             _appendDataChanged: function(event,appendData){
-                this.push('data',appendData);
 
-                var series = this._getSeries(this.config.path);
-                series.addPoint([appendData[0]*1000,appendData[1]]);
+                var path = event.model.__data__.path;
 
+                var series = this._getSeries(path);
+                if( series != null ){
+                    series.addPoint([appendData[0]*1000,appendData[1]]);
+                }
             },
 
             openEditDialog: function(){
-                this.set('newLabel',this.config.label);
-                this.set('newPath',this.config.path);
+                this.set('newTitle',this.config.title);
+                this.set('newPathlist',JSON.stringify(this.config.pathlist));
                 this.$.editDialog.open();
             },
 
@@ -169,8 +126,8 @@
 
                 this.$.editDialog.close();
                 this.fire('edit-widget',{
-                    'label': this.newLabel,
-                    'path':this.newPath,
+                    'title': this.newTitle,
+                    'pathlist': JSON.parse(this.newPathlist),
                 });
             },
 
@@ -186,8 +143,6 @@
             moveDown: function(){
                 this.fire('move-down')
             },
-
-            
 
         });
     </script>

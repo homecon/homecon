@@ -83,11 +83,16 @@ class Weather(plugin.Plugin):
             if self._states['weather/forecast/lastupdate'].value is None or self._states['weather/forecast/lastupdate'].value < timestamp_now-600:
 
                 # load the forecast
+                success = False
                 if self._states['settings/weather/service'].value == 'darksky':
-                    await self.darksky_forecast()
+                    success = await self.darksky_forecast()
 
-                self._states['weather/forecast/lastupdate'].value = round(timestamp_now)
-                
+                if success:
+                    self._states['weather/forecast/lastupdate'].value = round(timestamp_now)
+
+                    self._states['weather/temperature'].value = round(self.ambienttemperature(),2)
+                    self._states['weather/cloudcover'].value = round(self.cloudcover(),3)
+
 
             # sleep until the next call
             await asyncio.sleep(timestamp_when-timestamp_now)
@@ -204,9 +209,12 @@ class Weather(plugin.Plugin):
 
             logging.debug('Weather forecast loaded from darksky.net')
 
+            return True
+
         except Exception as e:
             logging.error('Could not load data from Darksky.net: {}'.format(e))
 
+            return False
 
     def sunposition(self,utcdatetime=None):
         """
@@ -567,13 +575,7 @@ class Weather(plugin.Plugin):
             self._states['weather/irradiancediffuse'].value = round(I_diffuse_cloudy,2)
 
 
-        if event.data['state'].path.startswith('weather/forecast/hourly/48') or False:
-            print(event)
-            self._states['weather/temperature'].value = round(self.ambienttemperature(),2)
 
-
-        if event.data['state'].path.startswith('weather/forecast/hourly/48') or False:
-            self._states['weather/cloudcover'].value = round(self.cloudcover(),3)
 
 
 
