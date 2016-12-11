@@ -5,6 +5,7 @@ import json
 import copy
 import inspect
 import asyncio
+import math
 
 from . import database
 from . import plugin
@@ -174,6 +175,9 @@ class State(object):
 
             if 'type' in self._config and self._config['type']=='number':
                 value = float(value)
+
+                if math.isnan(value):
+                    value = None
 
             self._value = value
 

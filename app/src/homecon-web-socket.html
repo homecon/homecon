@@ -115,7 +115,7 @@
                 this.fire('homecon-web-socket-connected');
             },
 
-            _handleClose: function(){
+            _handleClose: function(e){
                 console.log('Connection Closed');
                 this.connected = false;
             },
@@ -124,9 +124,8 @@
                 this.fire('homecon-web-socket-message',d);
             },
 
-            _handleError: function(){
-                console.log('No Connection to HomeCon');
-                
+            _handleError: function(e){
+                console.log('Error in HomeCon connection: '+ e.detail);
             },
 
         });

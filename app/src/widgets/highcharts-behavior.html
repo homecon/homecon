@@ -38,6 +38,17 @@
             return null
         },
 
+        _resizeChart: function(){
+            var w = Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
+            
+            if(w > 766){
+                // fixed sidebar
+                w = 0.6*w;
+            }
+            w = w-2*20-2*30;
+            this.chart.setSize(w, 400);
+        },
+
         _createChart: function(container){
             // Global options
             Highcharts.setOptions({global: { useUTC: false } });
@@ -50,8 +61,8 @@
                   backgroundColor: {
                      linearGradient: { x1: 0, y1: 0, x2: 1, y2: 1 },
                      stops: [
-                        [0, '#202020'],
-                        [1, '#141414']
+                        [0, '#181818'],
+                        [1, '#101010']
                      ]
                   },
                   style: {

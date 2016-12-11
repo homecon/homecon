@@ -78,7 +78,13 @@
 
             ready: function(){
                 this.data = [];
-                this._createChart(this.$.container)
+                this._createChart(this.$.container);
+
+                var that = this;
+                that._resizeChart();
+                window.addEventListener("resize", function(){
+                    that._resizeChart();
+                });
             },
 
             _configChanged: function(config,chart){

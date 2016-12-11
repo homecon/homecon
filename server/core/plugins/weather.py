@@ -97,9 +97,6 @@ class Weather(plugin.Plugin):
             # sleep until the next call
             await asyncio.sleep(timestamp_when-timestamp_now)
 
-            #when = self._loop.time() + timestamp_when - timestamp_now
-            #self._loop.call_at(when,self.forecast)
-
 
 
     async def schedule_sunposition(self):
@@ -248,21 +245,21 @@ class Weather(plugin.Plugin):
         # create an ephem observer
         obs = ephem.Observer()
 
-        lat = self._states['settings/location/latitude'].value    # N+
-        lon = self._states['settings/location/longitude'].value   # E+
-        elev = self._states['settings/location/elevation'].value
+        latitude = self._states['settings/location/latitude'].value    # N+
+        longitude = self._states['settings/location/longitude'].value   # E+
+        elevation = self._states['settings/location/elevation'].value
 
-        if elev is None:
-            elev = 0
+        if elevation is None:
+            elevation = 0
             logging.warning('No elevation supplied, assuming 0 m')
 
         azimuth = None
         altitude = None
 
-        if not lat is None and not lon is None:
-            obs.lat = np.radians(lat)
-            obs.lon = np.radians(lon)
-            obs.elev = elev
+        if not latitude is None and not longitude is None:
+            obs.lat = np.radians(latitude)
+            obs.lon = np.radians(longitude)
+            obs.elev = elevation
             obs.date = utcdatetime
 
             sun = ephem.Sun(obs)
@@ -320,19 +317,19 @@ class Weather(plugin.Plugin):
         E0 = Esc*(1 + 0.033*np.cos(2*np.pi*(n-3)/365))
 
         # optical depths
-        tau_b = np.interp(n,np.cumsum([-10,31,31,28,31,30,31,30,31,31,30,31,30,31]),[0.320,0.325,0.349,0.383,0.395,0.448,0.505,0.556,0.593,0.431,0.373,0.339,0.320,0.325]);
-        tau_d = np.interp(n,np.cumsum([-10,31,31,28,31,30,31,30,31,31,30,31,30,31]),[2.514,2.461,2.316,2.176,2.175,2.028,1.892,1.779,1.679,2.151,2.317,2.422,2.514,2.461]);
+        tau_b = np.interp(n,np.cumsum([-10,31,31,28,31,30,31,30,31,31,30,31,30,31]),[0.320,0.325,0.349,0.383,0.395,0.448,0.505,0.556,0.593,0.431,0.373,0.339,0.320,0.325])
+        tau_d = np.interp(n,np.cumsum([-10,31,31,28,31,30,31,30,31,31,30,31,30,31]),[2.514,2.461,2.316,2.176,2.175,2.028,1.892,1.779,1.679,2.151,2.317,2.422,2.514,2.461])
 
-        ab = 1.219 - 0.043*tau_b - 0.151*tau_d - 0.204*tau_b*tau_d; 
-        ad = 0.202 + 0.852*tau_b - 0.007*tau_d -0.357*tau_b*tau_d;
+        ab = 1.219 - 0.043*tau_b - 0.151*tau_d - 0.204*tau_b*tau_d
+        ad = 0.202 + 0.852*tau_b - 0.007*tau_d -0.357*tau_b*tau_d
 
-        if altitude > 0:
-            I_direct_normal = E0*np.exp(-tau_b*m**ab);
+        if m>=0:
+            I_direct_normal = E0*np.exp(-tau_b*m**ab)
         else:
             I_direct_normal = 0
 
-        if altitude > -2:
-            I_diffuse_horizontal = E0*np.exp(-tau_d*m**ad);
+        if m>=0:
+            I_diffuse_horizontal = E0*np.exp(-tau_d*m**ad)
         else:
             I_diffuse_horizontal = 0
 
@@ -452,8 +449,6 @@ class Weather(plugin.Plugin):
         I_tot, I_direct, I_diffuse, I_ground = self.incidentirradiance(I_direct_clearsky,I_diffuse_clearsky,solar_azimuth,solar_altitude,0,0)
 
 
-        print(I_tot)
-        print(I_direct)
         if I_tot > 0.1:
 
             if utcdatetime == None:

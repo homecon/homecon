@@ -149,6 +149,21 @@ class HomeConTestCase(unittest.TestCase):
         self.clear_database()
 
 
+    def assertIsNotNaN(self, value, msg=None):
+        """
+        Fail if provided value is NaN
+        """
+        standardMsg = "Provided value is NaN"
+        try:
+            if math.isnan(value):
+                self.fail(self._formatMessage(msg, standardMsg))
+        except:
+            pass
+
+
+
+
+
 class Client(object):
     """
     A convienient wrapper for creating a websocket connection
