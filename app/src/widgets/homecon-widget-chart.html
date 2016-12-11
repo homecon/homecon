@@ -37,6 +37,7 @@
         <template is="dom-repeat" items="{{config.pathlist}}" as="path">
             <homecon-web-socket-object id="websocketObject" event="timeseries" path="[[path]]" auto on-change="_initialDataChanged"></homecon-web-socket-object>
             <homecon-web-socket-object id="appendWebsocketObject" event="append_timeseries" path="[[path]]" on-change="_appendDataChanged"></homecon-web-socket-object>
+            <homecon-web-socket-object id="configWebsocketObject" event="state_config" path="[[path]]" auto on-change="_stateConfigChanged"></homecon-web-socket-object>
         </template>
 
         <div id="container"></div>
@@ -67,22 +68,21 @@
                 },
                 classes: {
                     type: 'String',
-                    value: 'fullwidth',
+                    value: 'fullwidth center',
                 },
             },
-            
+
+            observers: [
+                '_configChanged(config.*,chart)',
+            ],
+
             ready: function(){
                 this.data = [];
                 this._createChart(this.$.container)
             },
 
-            _getSeries: function(path){
-                for(var i=0;i<this.chart.series.length;i++){
-                    if(this.chart.series[i]._path == path){
-                        return this.chart.series[i];
-                    }
-                }
-                return null
+            _configChanged: function(config,chart){
+                this._setTitle(this.config.title);
             },
 
             _initialDataChanged: function(event,initialData){
@@ -113,6 +113,13 @@
                 if( series != null ){
                     series.addPoint([appendData[0]*1000,appendData[1]]);
                 }
+            },
+
+            _stateConfigChanged: function(event,stateConfig){
+                var path = event.model.__data__.path;
+
+                this._setLegend(path,stateConfig['label'])
+                this._setYLabel(stateConfig['unit'])
             },
 
             openEditDialog: function(){

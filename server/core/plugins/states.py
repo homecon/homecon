@@ -101,6 +101,25 @@ class States(plugin.Plugin):
             state.config = config
 
             self.fire('send_to',{'event':'list_states', 'path':'', 'value':self.list(), 'clients':[event.client]})
+    
+
+    def listen_state_config(self,event):
+        if event.data['path'] in self._states:
+
+            state = self._states[event.data['path']]
+
+            if not 'value' in event.data:
+                self.fire('send_to',{'event':'state_config', 'path':state.path, 'value':state.config, 'clients':[event.client]})
+
+            else:
+                logger.warning('listen_state_config, edit state config :' + state.path)
+                #config = dict(state.config)
+                #for key,val in event.data['config'].items():
+                #    config[key] = val
+
+                #state.config = config
+                #self.fire('send_to',{'event':'state_config', 'path':state.path, 'value':state.config, 'clients':[event.client]})
+                #self.fire('send_to',{'event':'list_states', 'path':'', 'value':self.list(), 'clients':[event.client]})
 
 
     def listen_state_changed(self,event):

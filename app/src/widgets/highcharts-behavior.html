@@ -3,6 +3,41 @@
 <script>
     HighchartsBehavior = {
 
+        _setXLabel: function(label){
+            this.chart.xAxis[0].axisTitle.attr({
+                text: label
+            });
+        },
+
+        _setYLabel: function(label){
+            this.chart.yAxis[0].axisTitle.attr({
+                text: label
+            });
+        },
+
+        _setTitle: function(title){
+            this.chart.setTitle({
+                text: title
+            });
+        },
+
+        _setLegend: function(path,label){
+            var series = this._getSeries(path);
+            if(series != null){
+                series.update({name:label}, false);
+                this.chart.redraw();
+            }
+        },
+
+        _getSeries: function(path){
+            for(var i=0;i<this.chart.series.length;i++){
+                if(this.chart.series[i]._path == path){
+                    return this.chart.series[i];
+                }
+            }
+            return null
+        },
+
         _createChart: function(container){
             // Global options
             Highcharts.setOptions({global: { useUTC: false } });
@@ -15,8 +50,8 @@
                   backgroundColor: {
                      linearGradient: { x1: 0, y1: 0, x2: 1, y2: 1 },
                      stops: [
-                        [0, '#2a2a2b'],
-                        [1, '#3e3e40']
+                        [0, '#202020'],
+                        [1, '#141414']
                      ]
                   },
                   style: {
@@ -27,14 +62,12 @@
                title: {
                   style: {
                      color: '#E0E0E3',
-                     textTransform: 'uppercase',
-                     fontSize: '20px'
+                     fontSize: '16px'
                   }
                },
                subtitle: {
                   style: {
                      color: '#E0E0E3',
-                     textTransform: 'uppercase'
                   }
                },
                xAxis: {
@@ -227,12 +260,12 @@
                         year: '%b',
                     },
                     title: {
-                        text: 'xlabel',
+                        text: ' ',
                     }
                 },
                 yAxis: {
                     title: {
-                        text: 'ylabel',
+                        text: '-',
                     },
                 },
                 tooltip: {
@@ -240,13 +273,13 @@
                     pointFormat: '{point.x:%e. %b}: {point.y:.2f}',
                 },
 
-                plotOptions: {
+                /*plotOptions: {
                     spline: {
                         marker: {
                             enabled: true,
                         }
                     }
-                },
+                },*/
                 series: [],
             });
         },

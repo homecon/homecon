@@ -112,7 +112,7 @@ class Weather(plugin.Plugin):
             # timestamps
             dt_ref = datetime.datetime(1970, 1, 1)
             dt_now = datetime.datetime.utcnow()
-            dt_when = dt_now + datetime.timedelta(minutes=1)
+            dt_when = dt_now + datetime.timedelta(minutes=2)
 
             timestamp_now = int( (dt_now-dt_ref).total_seconds() )
             timestamp_when = int( (dt_when-dt_ref).total_seconds() )
