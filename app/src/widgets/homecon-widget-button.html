@@ -11,6 +11,8 @@
 <link rel="import" href="../homecon-icon-select.html">
 <link rel="import" href="../homecon-web-socket-sender.html">
 
+<link rel="import" href="homecon-base-button.html">
+
 <dom-module is="homecon-widget-button">
     <template>
         <style include="iron-flex iron-flex-alignment">
@@ -34,7 +36,7 @@
         
         <homecon-web-socket-sender id="websocket"></homecon-web-socket-sender>
         
-        <paper-button class="button" raised on-tap="call">{{config.label}}</paper-button>
+        <homecon-base-button class="button" event="[[config.event]]" data="[[config.data]]" raised="true" >{{config.label}}</homecon-base-button>
         
         <div class="edit" hidden="{{!edit}}">
             <paper-icon-button icon="editor:mode-edit" noink="true" on-tap="openEditDialog"></paper-icon-button>
@@ -61,15 +63,6 @@
                     type: 'Boolean',
                     value: false
                 },
-            },
-
-            call: function(){
-                var data = {'event':this.config.event}
-
-                for(key in this.config.data){
-                    data[key] = this.config.data[key]
-                }
-                this.$.websocket.send(data);
             },
 
             openEditDialog: function(){

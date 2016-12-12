@@ -1,0 +1,86 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+
+<link rel="import" href="../homecon-web-socket-object.html">
+
+<dom-module is="homecon-base-status-light">
+    <template>
+        <style>
+            :host{
+                display: inline-block;
+                position: relative;
+            }
+            .icon{
+                max-width: 26px;
+                max-height: 26px;
+            }
+        </style>
+        
+        <homecon-web-socket-object id="websocketObject" event="state" path="{{path}}" data="{{value}}"></homecon-web-socket-object>
+        
+        <img class="icon" src="/images/icon/[[color]]/[[icon]].png">
+
+    </template>
+    <script>
+        Polymer({
+            is: 'homecon-base-status-light',
+            properties: {
+                path: {
+                    type: 'String',
+                },
+                value: {
+                    type: 'Number',
+                    value: 0,
+                },
+                valueOn: {
+                    type: 'Number',
+                    value: 1,
+                },
+                valueOff: {
+                    type: 'Number',
+                    value: 0,
+                },
+                icon: {
+                    type: 'String',
+                    value: 'light_light',
+                },
+                colorOn: {
+                    type: 'String',
+                    value: 'f79a1f',
+                },
+                colorOff: {
+                    type: 'String',
+                    value: 'ffffff',
+                },
+            },
+
+            observers: [
+                'valueChanged(value)',
+                'pathChanged(path)',
+            ],
+
+            ready: function(){
+                this.color = 'ffffff';
+            },
+
+            pathChanged: function(path){
+                if(path != ''){
+                    this.$.websocketObject.send();
+                }
+            },
+
+            valueChanged: function(value){
+                if(value >= this.valueOn){
+                   this.color = this.colorOn;
+                }
+                else{
+                   this.color = this.colorOff;
+                }
+            },
+
+            send: function(value){
+                this.$.websocketObject.send(value);
+            },
+
+        });
+    </script>
+</dom-module>
