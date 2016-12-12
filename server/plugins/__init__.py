@@ -4,7 +4,7 @@
 import os
 import sys
 
-# make some objects from the lib folder available for plugins
+# make some objects from the core folder available for plugins
 sys.path.insert(0, os.path.abspath('..'))
 
 from core.plugin import Plugin
