@@ -7,6 +7,7 @@ import json
 import datetime
 import pytz
 import uuid
+import asyncio
 
 from .. import database
 from ..plugin import Plugin
@@ -23,7 +24,6 @@ class Schedules(Plugin):
 
         """
         self._schedules = {}
-        self._scheduled = {}
 
         self.timezone = pytz.utc
 
@@ -37,136 +37,118 @@ class Schedules(Plugin):
         # get all schedules from the database
         result = self._db_schedules.GET()
         for schedule in result:
-            self.add_local( schedule['path'],json.loads(schedule['config']),json.loads(schedule['value']) )
+            self.add( schedule['path'], config=json.loads(schedule['config']), value=json.loads(schedule['value']), id=schedule['id'])
+
+
+        # schedule schedule running
+        self._loop.create_task(self.schedule_schedules())
+
 
         logging.debug('Schedules plugin Initialized')
 
-    def add_local(self,path,config,value):
-        """
-        Adds a schedule but does not add it to the database
 
-        """
-
-        schedule = Schedule(self,path,config,value)
-        self._schedules[path] = schedule
-        self.schedule(schedule)
-
-        return schedule
-
-
-    def add(self,path,config,value):
+    def add(self,path,config=None,value=None,id=None):
         """
         Add a schedule to the plugin and the database
 
         """
-        self._db_schedules.POST(path=path,config=json.dumps(config),value=json.dumps(value))
+        # check the config
+        if config is None:
+            config = {}
+        if not 'filter' in config:
+            config['filter'] = ''
+ 
+        # check value
+        if value is None:
+            value = {}
+        if not 'year' in value:
+            value['year'] = None
+        if not 'month' in value:
+            value['month'] = None
+        if not 'day' in value:
+            value['day'] = None
+        if not 'hour' in value:
+            value['hour'] = 0
+        if not 'minute' in value:
+            value['minute'] = 0
+        if not 'sun' in value:
+            value['sun'] = True
+        if not 'mon' in value:
+            value['mon'] = True
+        if not 'tue' in value:
+            value['tue'] = True
+        if not 'wed' in value:
+            value['wed'] = True
+        if not 'thu' in value:
+            value['thu'] = True
+        if not 'fri' in value:
+            value['fri'] = True
+        if not 'sat' in value:
+            value['sat'] = True
 
-        schedule = self.add_local(path,config,value)
+
+        # check if the schedule is in the database and add it if not
+        if len( self._db_schedules.GET(path=path) ) == 0:
+            self._db_schedules.POST(path=path,config=json.dumps(config),value=json.dumps(value))
+
+        if id is None:
+            result = self._db_schedules.GET(path=path)
+            id = result[0]['id']
+
+        schedule = Schedule(self,path,config,value,id)
+        self._schedules[path] = schedule
 
         return schedule
 
-    def schedule(self,schedule):
+    def delete(self,path):
+
+        # remove the schedule from the database
+        self._db_schedules.DELETE(path=path)
+        # remove the schedule from the local reference
+        del self._schedules[path]
+
+
+    async def schedule_schedules(self):
         """
-        Schedule or reschedule an alarm for execution
+        Schedule schedule checking
 
         """
 
-        # cancel the old scheduling
-        if schedule.path in self._scheduled:
-            self._scheduled[schedule.path].cancel()
-            del self._scheduled[schedule.path]
+        while True:
+            # timestamps
+            dt_ref = datetime.datetime(1970, 1, 1)
+            dt_now = datetime.datetime.utcnow()
+            dt_when = (dt_now + datetime.timedelta(minutes=1)).replace(second=0,microsecond=0)
+
+            timestamp_when = int( (dt_when-dt_ref).total_seconds() )
+
+            dt = pytz.utc.localize( dt_now ).astimezone(self.timezone)
+            for path,schedule in self._schedules.items():
+                if schedule.match(dt):
+                    self._loop.call_soon_threadsafe(schedule.run)
 
 
-        # schedule the alarm
-        dt_ref = datetime.datetime(1970, 1, 1)
-        dt_now = datetime.datetime.utcnow()
+            # sleep until the next call
+            timestamp_now = int( (datetime.datetime.utcnow()-dt_ref).total_seconds() )
+            if timestamp_when-timestamp_now > 0:
+                await asyncio.sleep(timestamp_when-timestamp_now)
 
 
-        timestamp_now = (dt_now-dt_ref).total_seconds()
+    def get_schedules_list(self,filter=None):
 
-
-        # no match found for the next time, reschedule?
-        never_matches = False
-
-        if schedule.value['mon']==False and schedule.value['tue']==False and schedule.value['wed']==False and schedule.value['thu']==False and schedule.value['fri']==False and schedule.value['sat']==False and schedule.value['sun']==False:
-            never_matches = True
-
-        if not schedule.value['year'] is None and not schedule.value['month'] is None and not schedule.value['day'] is None and not schedule.value['hour'] is None and not schedule.value['minute'] is None:
-            dt_when = self.timezone.localize( datetime.datetime(schedule.value['year'],schedule.value['month'],schedule.value['day'],schedule.value['hour'],schedule.value['minute']) )
-            timestamp_when = (dt_when-dt_ref).total_seconds()
-            if timestamp_when > timestamp_now:
-                never_matches = True
-
-
-        if never_matches:
-            logging.debug('Could not schedule {}, event never occurs'.format(schedule.path))
-        
-        else:
-            # get the next execution time
-            timesdelta = 60
-
-            dt_when = dt_now.replace(second=0,microsecond=0)
-            timestamp_when = (dt_when-dt_ref).total_seconds()
-
-
-            for i in range(1441):
-                
-                timestamp_when += timesdelta
-                dt_when = pytz.utc.localize( datetime.datetime.utcfromtimestamp(timestamp_when) ).astimezone(self.timezone)
-                
-                match = True
-                if timestamp_when < timestamp_now + 5:  # 5 seconds extra
-                    match = False
-                elif not schedule.value['year'] is None and not schedule.value['year']==dt_when.year:
-                    match = False
-                elif not schedule.value['month'] is None and not schedule.value['month']==dt_when.month:
-                    match = False
-                elif not schedule.value['day'] is None and not schedule.value['day']==dt_when.day:
-                    match = False
-                elif not schedule.value['hour'] is None and not schedule.value['hour']==dt_when.hour:
-                    match = False
-                elif not schedule.value['minute'] is None and not schedule.value['minute']==dt_when.minute:
-                    match = False
-                elif not schedule.value['sun'] is None and not schedule.value['sun'] and dt_when.weekday()==0:
-                    match = False
-                elif not schedule.value['mon'] is None and not schedule.value['mon'] and dt_when.weekday()==1:
-                    match = False
-                elif not schedule.value['tue'] is None and not schedule.value['tue'] and dt_when.weekday()==2:
-                    match = False
-                elif not schedule.value['wed'] is None and not schedule.value['wed'] and dt_when.weekday()==3:
-                    match = False
-                elif not schedule.value['thu'] is None and not schedule.value['thu'] and dt_when.weekday()==4:
-                    match = False
-                elif not schedule.value['fri'] is None and not schedule.value['fri'] and dt_when.weekday()==5:
-                    match = False
-                elif not schedule.value['sat'] is None and not schedule.value['sat'] and dt_when.weekday()==6:
-                    match = False
-
-                if match:
-                    break
-
-
-            if not match:
-                logging.debug('Could not schedule {}, retry at {}'.format(schedule.path,dt_when))
-
-                when = self._loop.time() + timestamp_when - timestamp_now
-                self._loop.call_at(when,self.schedule,schedule)
-
-
-            else:
-                # call at
-                when = self._loop.time() + timestamp_when - timestamp_now
-                handle = self._loop.call_at(when,self.schedule,schedule)
-                self._scheduled[schedule.path] = Scheduled(timestamp_when,handle)
-
-                logging.debug('Scheduled {} to run at {}'.format(schedule.path,dt_when))
-
-
-
-    def get_schedules_list(self):
-        unsortedlist =  [s.serialize() for s in self._schedules]
+        unsortedlist =  [s.serialize() for s in self._schedules.values() if (filter is None or filter=='' or not 'filter' in s.config or s.config['filter'] == filter)]
         sortedlist = sorted(unsortedlist, key=lambda k: k['id'])
         return sortedlist
+
+
+    def listen_list_schedules(self,event):
+
+        if 'path' in event.data:
+            filter = event.data['path']
+        else:
+            filter = None
+
+        self.fire('send_to',{'event':'list_schedules', 'path':event.data['path'], 'value':self.get_schedules_list(filter=filter), 'clients':[event.client]})
 
 
     def listen_add_schedule(self,event):
@@ -174,17 +156,22 @@ class Schedules(Plugin):
         path = str(uuid.uuid4())
         schedule = self.add(path,event.data['config'],event.data['value'])
 
-        if state:
+        if schedule:
             self.fire('schedule_added',{'schedule':schedule})
-            self.fire('send_to',{'event':'list_schedules', 'path':'', 'value':self.get_schedules_list(), 'clients':[event.client]})
-    
+            filter = schedule.config['filter']
+            self.fire('send_to',{'event':'list_schedules', 'path':filter, 'value':self.get_schedules_list(filter=filter), 'clients':[event.client]})
+
 
     def listen_schedule(self,event):
         logging.warning('schedule is not implemented yet')
 
 
     def listen_delete_schedule(self,event):
-        logging.warning('delete schedule is not implemented yet')
+        filter = self._schedules[event.data['path']].config['filter']
+
+        self.delete(event.data['path'])
+        logging.debug('deleted schedule {}'.format(event.data['path']))
+        self.fire('send_to',{'event':'list_schedules', 'path':filter, 'value':self.get_schedules_list(filter=filter), 'clients':[event.client]})
 
 
     def listen_snooze_schedule(self,event):
@@ -203,13 +190,54 @@ class Schedules(Plugin):
 class Schedule(object):
     """
     """
-    def __init__(self,schedules,path,config,value):
+    def __init__(self,schedules,path,config,value,id):
 
         self._schedules = schedules
 
         self.path = path
         self.config = config
         self.value = value
+        self.id = id
+
+    def match(self,dt):
+        """
+        Check if the schedule should be run at a certain datetime
+
+        Parameters
+        ----------
+        dt : datetime.datetime
+            a localized datetime object
+
+        """
+
+        match = True
+        if not self.value['year'] is None and not self.value['year']==dt.year:
+            match = False
+        elif not self.value['month'] is None and not self.value['month']==dt.month:
+            match = False
+        elif not self.value['day'] is None and not self.value['day']==dt.day:
+            match = False
+        elif not self.value['hour'] is None and not self.value['hour']==dt.hour:
+            match = False
+        if not self.value['minute'] is None and not self.value['minute']==dt.minute:
+            match = False
+        elif not self.value['sun'] is None and not self.value['sun'] and dt.weekday()==0:
+            match = False
+        elif not self.value['mon'] is None and not self.value['mon'] and dt.weekday()==1:
+            match = False
+        elif not self.value['tue'] is None and not self.value['tue'] and dt.weekday()==2:
+            match = False
+        elif not self.value['wed'] is None and not self.value['wed'] and dt.weekday()==3:
+            match = False
+        elif not self.value['thu'] is None and not self.value['thu'] and dt.weekday()==4:
+            match = False
+        elif not self.value['fri'] is None and not self.value['fri'] and dt.weekday()==5:
+            match = False
+        elif not self.value['sat'] is None and not self.value['sat'] and dt.weekday()==6:
+            match = False
+
+        return match
+
 
 
     def run(self):
@@ -243,22 +271,12 @@ class Schedule(object):
         """
 
         data = {
+            'id': self.id,
             'path': self.path,
             'config': json.dumps(self.config),
             'value': json.dumps(self.value),
         }
         return data
-
-
-class Scheduled(object):
-    """
-    """
-    def __init__(self,timestamp,handle):
-        self.timestamp = timestamp
-        self.handle = handle
-
-    def cancel(self):
-        self.handle.cancel()
 
 
 
@@ -278,19 +296,7 @@ class Actions(Plugin):
         # get all actions from the database
         result = self._db_actions.GET()
         for action in result:
-            self.add_local(action['path'],json.loads(action['config']),json.loads(action['value']))
-
-
-    def add_local(self,path,config,value):
-        """
-        Add a schedule to the plugin but not to the database
-
-        """
-
-        action = Action(self._loop,path,config,value)
-        self._actions[action.path] = action
-
-        return action
+            self.add(action['path'],json.loads(action['config']),json.loads(action['value']))
 
 
     def add(self,path,config,value):
@@ -298,10 +304,11 @@ class Actions(Plugin):
         Add a schedule to the plugin and the database
 
         """
+        if len( self._db_actions.GET(path=path) ) == 0:
+            self._db_actions.POST(path=path,config=json.dumps(config),value=json.dumps(value))
 
-        self._db_actions.POST(path=path,config=json.dumps(config),value=json.dumps(value))
-
-        action = self.add_local(path,config,value)
+        action = Action(self._loop,path,config,value)
+        self._actions[action.path] = action
 
         return action
 

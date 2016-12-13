@@ -225,10 +225,33 @@ class Table(object):
 
         cursor = self.database.execute_query( query, data )
         
-    def DELETE(self,where=''):
-    
-        query = 'DELETE FROM {} WHERE {}'.format(self.name,where)
-        cursor = self.database.execute_query( query )
+    def DELETE(self,**kwargs):
+
+        # parse where statements in the kwargs
+        data = []
+        if len(kwargs) == 0:
+            where = ''
+        else:
+            where = []
+            for key,val in kwargs.items():
+                if key[-4:] == '__ge':
+                    where.append(key[:-4] + ' >= %s')
+                    data.append(val)
+                elif key[-4:] == '__le':
+                    where.append(key[:-4] + ' <= %s')
+                    data.append(val)
+                else:
+                    where.append(key + ' = %s')
+                    data.append(val)
+                    
+            where = 'WHERE ' + ' AND '.join(where)
+
+            
+        data = tuple(data)
+
+        query = 'DELETE FROM {} {}'.format(self.name,where)
+        print(query)
+        cursor = self.database.execute_query( query,data )
 
         
         
