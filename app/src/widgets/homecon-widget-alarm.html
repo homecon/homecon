@@ -10,6 +10,8 @@
 <link rel="import" href="../../bower_components/paper-material/paper-material.html">
 <link rel="import" href="../../bower_components/paper-dialog/paper-dialog.html">
 
+<link rel="import" href="../../bower_components/basic-time-picker/basic-time-picker.html">
+
 <link rel="import" href="../homecon-web-socket-object.html">
 <link rel="import" href="../homecon-web-socket-sender.html">
 <link rel="import" href="../homecon-edit-dialog.html">
@@ -33,12 +35,19 @@
             .time{
                 font-size: 45px;
                 cursor: pointer;
+                margin-right: 40px;
             }
             .delete{
                 position: absolute;
                 top: 10px;
                 right: 20px;
                 color: var(--button-text-color);
+            }
+            .repeat{
+                margin-right: 20px;
+            }
+            .repeat .day{
+                margin: 5px;
             }
             paper-button{
                 text-transform: none;
@@ -62,8 +71,23 @@
                     <div class="time" on-tap="editTime">
                         {{_parseTime(alarm.value)}}
                     </div>
-                    <div class="repeat">
-
+                    <div class="repeat horizontal layout center wrap">
+                        <div class="horizontal layout center wrap">
+                            <template is="dom-repeat" items="{{_getWeekDays(alarm)}}" as="day">
+                                <div class="day vertical layout center-justify">
+                                    <div>{{day.label}}</div>
+                                    <paper-toggle-button checked="{{day.value}}" on-change="_dayChanged"></paper-toggle-button>
+                                </div>
+                            </template>
+                        </div>
+                        <div class="horizontal layout center wrap">
+                            <template is="dom-repeat" items="{{_getWeekendDays(alarm)}}" as="day">
+                                <div class="day vertical layout center-justify">
+                                    <div>{{day.label}}</div>
+                                    <paper-toggle-button checked="{{day.value}}" on-change="_dayChanged"></paper-toggle-button>
+                                </div>
+                            </template>
+                        </div>
                     </div>
                 </div>
                 <paper-dropdown-menu label="Action">
@@ -169,10 +193,12 @@
 
             saveTime: function(e,d){
                 this.$.timepickerDialog.close();
-                console.log(this.editAlarm);
 
-                console.log(this.newHour)
-                console.log(this.newMinute)
+                var value = {}
+                value['hour'] = this.newHour;
+                value['minute'] = this.newMinute;
+                
+                this.$.websocket.send({'event':'schedule', 'path':this.editAlarm.path, 'value': value});
             },
 
             cancelTime: function(){
@@ -196,7 +222,57 @@
                 return time;
             },
 
+            _getWeekDays: function(alarm){
+                var value = JSON.parse(alarm.value);
 
+                var days = [
+                    {'day':'mon', 'label':'Mon', 'alarm':alarm},
+                    {'day':'tue', 'label':'Tue', 'alarm':alarm},
+                    {'day':'wed', 'label':'Wed', 'alarm':alarm},
+                    {'day':'thu', 'label':'Thu', 'alarm':alarm},
+                    {'day':'fri', 'label':'Fri', 'alarm':alarm},
+                ];
+
+                for(var i=0;i<days.length;i++){
+                    if(days[i].day in value){
+                        days[i].value = value[days[i].day];
+                    }
+                    else{
+                        days[i].value = false;
+                    }
+                }
+
+                return days;
+            },
+
+            _getWeekendDays: function(alarm){
+                var value = JSON.parse(alarm.value);
+
+                var days = [
+                    {'day':'sat', 'label':'Sat', 'alarm':alarm},
+                    {'day':'sun', 'label':'Sun', 'alarm':alarm},
+                ];
+
+                for(var i=0;i<days.length;i++){
+                    if(days[i].day in value){
+                        days[i].value = value[days[i].day];
+                    }
+                    else{
+                        days[i].value = false;
+                    }
+                }
+
+                return days;
+            },
+
+            _dayChanged: function(event){
+                var day = event.model.__data__.day;
+                var alarm = day.alarm;
+                var value = {}
+                value[day.day] = day.value;
+                
+                this.$.websocket.send({'event':'schedule', 'path':alarm.path, 'value': value});
+            },
         });
     </script>
 </dom-module>

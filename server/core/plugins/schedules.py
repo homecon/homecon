@@ -86,6 +86,9 @@ class Schedules(Plugin):
         if not 'sat' in value:
             value['sat'] = True
 
+        if not 'actions' in value:
+            value['actions'] = []
+
 
         # check if the schedule is in the database and add it if not
         if len( self._db_schedules.GET(path=path) ) == 0:
@@ -106,6 +109,40 @@ class Schedules(Plugin):
         self._db_schedules.DELETE(path=path)
         # remove the schedule from the local reference
         del self._schedules[path]
+
+
+    def update(self,path,value):
+        """
+        Updated the values of a schedule
+
+        Parameters
+        ----------
+        path : str
+            the schedule path
+
+        value : dict
+            a dicionary with values for the schedule
+
+        """
+
+        if path in self._schedules:
+            schedule = self._schedules[path]
+
+            for key,val in value.items():
+                if key in schedule.value:
+                    if key in ['hour','minute']:
+                        val = int(val)
+
+                    schedule.value[key] = val
+
+            # update the database
+            self._db_schedules.PUT(value=json.dumps(schedule.value), where='path=\'{}\''.format(schedule.path))
+
+            return schedule
+
+        else:
+            return False
+
 
 
     async def schedule_schedules(self):
@@ -163,7 +200,14 @@ class Schedules(Plugin):
 
 
     def listen_schedule(self,event):
-        logging.warning('schedule is not implemented yet')
+        if 'path' in event.data:
+            schedule = self.update(event.data['path'],event.data['value'])
+
+            if schedule:
+                filter = schedule.config['filter']
+                self.fire('send_to',{'event':'list_schedules', 'path':filter, 'value':self.get_schedules_list(filter=filter), 'clients':[event.client]})
+            else:
+                logging.error('Schedule does not exist {}'.format(event.data['path']))
 
 
     def listen_delete_schedule(self,event):
