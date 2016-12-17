@@ -17,7 +17,6 @@ class States(object):
     """
 
     def __init__(self):
-        super(States,self).__init__()
 
         self._states = {}
         self._db = database.Database(database='homecon.db')
@@ -39,14 +38,8 @@ class States(object):
 
         """
 
-        if not path in self._states:
+        return State(self._states,self._db_states,path,config=config,db_entry=db_entry)
 
-            state = State(self,self._db_states,path,config=config,db_entry=db_entry)
-            self._states[path] = state
-
-            return state
-        else:
-            return False
 
 
     def __getitem__(self,path):
@@ -80,12 +73,20 @@ class BaseState(object):
 
     """
 
-    def __init__(self,plugin,db_table,path,config=None,value=None,db_entry=None):
+    def __new__(cls,pathdict,db_table,path,config=None,value=None,db_entry=None):
+        if path in pathdict:
+            return None
+        else:
+            return super(BaseState, cls).__new__(cls)
+
+
+    def __init__(self,pathdict,db_table,path,config=None,value=None,db_entry=None):
         """
         Parameters
         ----------
-        plugin : homecon.plugin.BasePlugin
-            A base plugin or plugin
+        pathdict : dict
+            A dictionary in which with paths as keys and BaseState objects as 
+            values
         
         db_table: homecon.database.table
             a database table where things are stored
@@ -104,20 +105,32 @@ class BaseState(object):
         
         """
 
-        self._plugin = plugin
+        self._dict = pathdict
         self._loop = asyncio.get_event_loop()
         self._db_table = db_table
         self._path = path
 
 
         if db_entry is None:
-            self._config = self._check_config(config)
-            self._value = self._check_value(value)
 
-            # post to the database
-            self._db_table.POST(path=self._path,config=json.dumps(self._config))
+            # check if the path allready exists in the database
+            result = self._db_table.GET(path=self._path)
+            if len(result) == 0:
+                self._config = self._check_config(config)
+                self._value = self._check_value(value)
 
-        else:
+                # post to the database
+                self._db_table.POST(path=self._path,config=json.dumps(self._config),value=json.dumps(self._value))
+
+                # get the id
+                result = self._db_table.GET(path=self._path)
+                self._id = result[0]['id']
+            else:
+                # create the db_entry
+                db_entry = result[0]
+
+
+        if not db_entry is None:
             # update the config from the database
             jsonconfig = db_entry['config']
             if not jsonconfig is None:
@@ -142,6 +155,12 @@ class BaseState(object):
 
             self._value = self._check_value(value)
 
+            # add an id value
+            self._id = db_entry['id']
+
+
+        # add self to _sice
+        self._dict[self._path] = self
 
     def fire_changed(self,value,oldvalue,source):
         """
@@ -149,9 +168,42 @@ class BaseState(object):
         pass
 
 
-    async def set(self,value,source=None):
+    def set(self,value,source=None):
+        
+        if source is None:
+            # get the source from inspection
+            stack = inspect.stack()
+            source = stack[1][0].f_locals["self"].__class__
+
+        self._loop.create_task(self.set_async(value,source=source))
+
+
+    def get(self):
+        return self._value
+
+
+    def serialize(self):
+        """
+        return a dict representation of the instance
+
+        """
+
+        data = {
+            'id': self.id,
+            'path': self.path,
+            'config': json.dumps(self.config),
+            'value': json.dumps(self.value),
+        }
+        return data
+
+
+    async def set_async(self,value,source=None):
         oldvalue = copy.copy(self._value)
 
+        # make sure value is valid
+        value = self._check_value(value)
+
+        # if the new and old value are different update and put in the database
         if not value == oldvalue:
             self._value = value
 
@@ -161,8 +213,10 @@ class BaseState(object):
             self.fire_changed(self._value,oldvalue,source)
             await asyncio.sleep(0.01) # avoid flooding asyncio
 
-    def get(self):
-        return self._value
+
+    @property
+    def id(self):
+        return self._id
 
     @property
     def value(self):
@@ -170,12 +224,7 @@ class BaseState(object):
 
     @value.setter
     def value(self, value):
-        # get the source from inspection
-        stack = inspect.stack()
-        source = stack[1][0].f_locals["self"].__class__
-
-        self._loop.create_task(self.set(value,source=source))
-        
+        self.set(value)
 
     @property
     def path(self):
@@ -207,8 +256,8 @@ class BaseState(object):
         if '/' in self._path:
             parentpath = '/'.join(self._path.split('/')[:-1])
 
-            if parentpath in self._plugin:
-                return self._plugin[parentpath]
+            if parentpath in self._dict:
+                return self._dict[parentpath]
 
         return None
 
@@ -230,7 +279,7 @@ class BaseState(object):
         """
 
         children = []
-        for path,state in self._plugin.items():
+        for path,state in self._dict.items():
             if self._path in path:
                 if len(self._path.split('/')) == len(path.split('/'))-1:
                     children.append(state)
@@ -288,8 +337,10 @@ class State(BaseState):
         """
         events.fire('state_changed',{'state':self,'value':value,'oldvalue':oldvalue},source,None)
 
-    def _check_config(self,config):
 
+    def _check_config(self,config):
+        """
+        """
         config = super(State,self)._check_config(config)
 
         if 'type' not in config:

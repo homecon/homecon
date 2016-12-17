@@ -29,28 +29,45 @@ class Actions(Plugin):
         # get all actions from the database
         result = self._db_actions.GET()
         for db_entry in result:
-            self.add(db_entry['path'],db_entry=db_entry)
-
-
-    def add(self,path,config=None,db_entry=None):
-        """
-        Add an action to the plugin and the database
-
-        """
-
-        if not path in self._actions:
-
-            action = Action(self,self._db_actions,path,config=config,db_entry=db_entry)
-            self._actions[action.path] = action
-
-            return action
-        else:
-            return False
+            Action(self._actions,self._db_actions,db_entry['path'],db_entry=db_entry)
 
 
     def listen_run_action(self,event):
         if event.data['path'] in self._actions:
             self._actions[event.data['path']].run(source=event.source)
+
+
+    def listen_add_action(self,event):
+        
+        action = Action(self._actions,self._db_actions,event.data['path'],config=event.data['config'])
+
+        if schedule:
+            self.fire('schedule_added',{'schedule':schedule})
+            filter = schedule.config['filter']
+            self.fire('send_to',{'event':'list_schedules', 'path':filter, 'value':self.get_schedules_list(filter=filter), 'clients':[event.client]})
+
+    def listen_action(self,event)
+
+        if 'path' in event.data:
+            # get or set an action
+            if 'value' in event.data:
+                # set
+                if event.data['path'] in self._actions:
+                    action = self._actions[event.data['path']]
+
+                    value = dict(action.value)
+                    for key,val in event.data['value'].items():
+                        value[key] = val
+
+                    action.set(value,source=event.source)
+
+            else:
+                # get
+                if event.data['path'] in self._actions:
+                    action = self._actions[event.data['path']]
+                    self.fire('send_to',{'event':'action', 'path':event.data['path'], 'value':action.value, 'clients':[event.client]})
+        else:
+            logging.error('Action does not exist {}'.format(event.data['path']))
 
 
     def __getitem__(self,path):
@@ -105,18 +122,15 @@ class Action(BaseState):
             self._loop.call_later(delay,functools.partial(self.fire, 'state', {'path':path, 'value':value}, source=source))
 
 
-    def serialize(self):
-        """
-        return a dict representation of the instance
+    def _check_value(self,config):
 
-        """
+        value= super(Schedule,self)._check_value(value)
 
-        data = {
-            'path': self.path,
-            'config': json.dumps(self.config),
-            'value': json.dumps(self.value),
-        }
-        return data
+        if not 'filter' in value:
+            value['filter'] = ''
+
+        return value
+
 
     def __repr__(self):
         return '<action {} value={}>'.format(self._path,self._value)

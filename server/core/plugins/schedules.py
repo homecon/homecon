@@ -10,6 +10,7 @@ import uuid
 import asyncio
 
 from .. import database
+from .. import events
 from ..states import BaseState
 from ..plugin import Plugin
 
@@ -38,8 +39,7 @@ class Schedules(Plugin):
         # get all schedules from the database
         result = self._db_schedules.GET()
         for db_entry in result:
-            self.add( db_entry['path'], db_entry=db_entry)
-
+            Schedule(self._schedules,self._db_schedules,db_entry['path'],db_entry=db_entry)
 
         # schedule schedule running
         self._loop.create_task(self.schedule_schedules())
@@ -48,36 +48,6 @@ class Schedules(Plugin):
         logging.debug('Schedules plugin Initialized')
 
 
-    def add(self,path,config=None,db_entry=None):
-        """
-        Add a schedule to the plugin and the database
-
-        """
-
-        if not path in self._schedules:
-
-            schedule = Schedule(self,self._db_schedules,path,config=config,db_entry=db_entry)
-            self._schedules[schedule.path] = schedule
-
-            return schedule
-        else:
-            return False
-
-
-
-
-        # check if the schedule is in the database and add it if not
-        if len( self._db_schedules.GET(path=path) ) == 0:
-            self._db_schedules.POST(path=path,config=json.dumps(config),value=json.dumps(value))
-
-        if id is None:
-            result = self._db_schedules.GET(path=path)
-            id = result[0]['id']
-
-        schedule = Schedule(self,path,config,value,id)
-        self._schedules[path] = schedule
-
-        return schedule
 
     def delete(self,path):
 
@@ -149,9 +119,11 @@ class Schedules(Plugin):
 
     def get_schedules_list(self,filter=None):
 
-        unsortedlist =  [s.serialize() for s in self._schedules.values() if (filter is None or filter=='' or not 'filter' in s.config or s.config['filter'] == filter)]
-        sortedlist = sorted(unsortedlist, key=lambda k: k['id'])
-        return sortedlist
+        unsortedlist =  [(s.path,s.id) for s in self._schedules.values() if (filter is None or filter=='' or not 'filter' in s.config or s.config['filter'] == filter)]
+        sortedlist = sorted(unsortedlist, key=lambda k: k[1])
+        pathlist = [s[0] for s in sortedlist]
+
+        return pathlist
 
 
     def listen_list_schedules(self,event):
@@ -167,7 +139,7 @@ class Schedules(Plugin):
     def listen_add_schedule(self,event):
 
         path = str(uuid.uuid4())
-        schedule = self.add(path,event.data['config'],event.data['value'])
+        schedule = Schedule(self._schedules,self._db_schedules,path,config=event.data['config'])
 
         if schedule:
             self.fire('schedule_added',{'schedule':schedule})
@@ -182,24 +154,25 @@ class Schedules(Plugin):
             if 'value' in event.data:
                 # set
                 if event.data['path'] in self._schedules:
-                    schedule = self._schedules[path]
+                    schedule = self._schedules[event.data['path']]
 
                     value = dict(schedule.value)
                     for key,val in event.data['value'].items():
-                        if key in schedule.value:
-                            if key in ['hour','minute']:
-                                val = int(val)
+                        if key in ['hour','minute']:
+                            val = int(val)
 
                         value[key] = val
 
-                    self._loop.create_task(schedule.set(value,source=event.source))
+                    schedule.set(value,source=event.source)
 
-
-            if schedule:
-                filter = schedule.config['filter']
-                self.fire('send_to',{'event':'list_schedules', 'path':filter, 'value':self.get_schedules_list(filter=filter), 'clients':[event.client]})
             else:
-                logging.error('Schedule does not exist {}'.format(event.data['path']))
+                # get
+                if event.data['path'] in self._schedules:
+                    schedule = self._schedules[event.data['path']]
+                    self.fire('send_to',{'event':'schedule', 'path':event.data['path'], 'value':schedule.value, 'clients':[event.client]})
+
+        else:
+            logging.error('Schedule does not exist {}'.format(event.data['path']))
 
 
     def listen_delete_schedule(self,event):
@@ -211,7 +184,7 @@ class Schedules(Plugin):
 
 
     def listen_schedule_changed(self,event):
-        self.fire('send',{'event':'schedule', 'path':event.data['schedule'].path, 'value':event.data['schedule'].value},source=self)
+        self.fire('send',{'event':'schedule', 'path':event.data['schedule'].path, 'value':event.data['schedule'].value, 'readusers':event.data['schedule'].config['readusers'], 'readgroups':event.data['schedule'].config['readgroups']},source=self)
 
 
     def listen_snooze_schedule(self,event):
@@ -230,21 +203,11 @@ class Schedules(Plugin):
 class Schedule(BaseState):
     """
     """
-    def __init__(self,plugin,db_table,path,config=None,value=None,db_entry=None):
-        super(Schedule,self).__init__(plugin,db_table,path,config=config,value=value,db_entry=db_entry)
-
-        if db_entry is None:
-            result = self.db_table.GET(path=path)
-            self.id = result[0]['id']
-
-        else:
-            self.id = db_entry['id']
-
 
     def fire_changed(self,value,oldvalue,source):
         """
         """
-        self._plugin.fire('schedule_changed',{'schedule':self,'value':value,'oldvalue':oldvalue},source)
+        events.fire('schedule_changed',{'schedule':self,'value':value,'oldvalue':oldvalue},source,None)
 
 
     def match(self,dt):
@@ -287,29 +250,17 @@ class Schedule(BaseState):
         return match
 
 
-
     def run(self):
         """
-        Run alarm actions and reschedule the alarm
-        
-        Parameters
-        ----------
-        state : homecon.core.states.State
-            a state object with type alarm
+        Run schedule actions
 
         """
 
         logging.debug('Running {} scheduled actions'.format(self.path))
 
-        # remove from the schedule
-        if self.path in self._schedules._scheduled:
-            del self._schedules._scheduled[self.path]
-
         # run the actions
-        self._schedules.fire('run_action',{'path':self.value['action']})
+        events.fire('run_action',{'path':self.value['action']},self,None)
 
-        # schedule the next execution
-        self._schedules.schedule(schedule)
 
     def _check_config(self,config):
 
@@ -358,18 +309,6 @@ class Schedule(BaseState):
         return value
 
 
-    def serialize(self):
-        """
-        return a dict representation of the instance
 
-        """
-
-        data = {
-            'id': self.id,
-            'path': self.path,
-            'config': json.dumps(self.config),
-            'value': json.dumps(self.value),
-        }
-        return data
 
 

@@ -106,13 +106,17 @@ class Websocket(Plugin):
 
             if client.tokenpayload:
                 permitted = False
-                if client.tokenpayload['userid'] in event.data['readusers']:
+
+                if not 'readusers' in event.data and not 'readgroups' in event.data:
                     permitted = True
                 else:
-                    for g in client.tokenpayload['groupids']:
-                        if g in event.data['readgroups']:
-                            permitted = True
-                            break
+                    if client.tokenpayload['userid'] in event.data['readusers']:
+                        permitted = True
+                    else:
+                        for g in client.tokenpayload['groupids']:
+                            if g in event.data['readgroups']:
+                                permitted = True
+                                break
                 if permitted:
                     asyncio.ensure_future( client.send(senddata) )
 

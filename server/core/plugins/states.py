@@ -153,7 +153,7 @@ class States(plugin.Plugin):
                         if 'type' in state.config and state.config['type'] == 'number':
                             value = float(value)
 
-                        self._loop.create_task(state.set(value,source=event.source))
+                        state.set(value,source=event.source)
 
                     else:
                         logging.warning('User {} on client {} attempted to change the value of {} but is not permitted'.format(tokenpayload['userid'],event.client.address,state.path))

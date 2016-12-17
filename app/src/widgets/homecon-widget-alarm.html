@@ -16,6 +16,7 @@
 <link rel="import" href="../homecon-web-socket-sender.html">
 <link rel="import" href="../homecon-edit-dialog.html">
 
+<link rel="import" href="homecon-base-alarm.html">
 
 <dom-module is="homecon-widget-alarm">
     <template>
@@ -26,28 +27,12 @@
             }
             .alarm{
                 position: relative;
-                border: solid 1px;
-                border-radius: 5px;
-                border-color:  #2f2f2f;
-                padding: 10px;
-                margin-bottom: 4px;
-            }
-            .time{
-                font-size: 45px;
-                cursor: pointer;
-                margin-right: 40px;
             }
             .delete{
                 position: absolute;
                 top: 10px;
                 right: 20px;
                 color: var(--button-text-color);
-            }
-            .repeat{
-                margin-right: 20px;
-            }
-            .repeat .day{
-                margin: 5px;
             }
             paper-button{
                 text-transform: none;
@@ -62,41 +47,13 @@
 
         </style>
         
-        <homecon-web-socket-object id="websocketObject" event="list_schedules" path="[[config.filter]]" data="{{alarms}}" auto></homecon-web-socket-object>
+        <homecon-web-socket-object id="websocketObject" event="list_schedules" path="[[config.filter]]" data="{{paths}}" auto></homecon-web-socket-object>
         <homecon-web-socket-sender id="websocket"></homecon-web-socket-sender>
 
-        <template is="dom-repeat" items="{{alarms}}" as="alarm">
+        <template is="dom-repeat" items="{{paths}}" as="path">
+
             <div class="alarm vertical layout">
-                <div class="horizontal layout wrap">
-                    <div class="time" on-tap="editTime">
-                        {{_parseTime(alarm.value)}}
-                    </div>
-                    <div class="repeat horizontal layout center wrap">
-                        <div class="horizontal layout center wrap">
-                            <template is="dom-repeat" items="{{_getWeekDays(alarm)}}" as="day">
-                                <div class="day vertical layout center-justify">
-                                    <div>{{day.label}}</div>
-                                    <paper-toggle-button checked="{{day.value}}" on-change="_dayChanged"></paper-toggle-button>
-                                </div>
-                            </template>
-                        </div>
-                        <div class="horizontal layout center wrap">
-                            <template is="dom-repeat" items="{{_getWeekendDays(alarm)}}" as="day">
-                                <div class="day vertical layout center-justify">
-                                    <div>{{day.label}}</div>
-                                    <paper-toggle-button checked="{{day.value}}" on-change="_dayChanged"></paper-toggle-button>
-                                </div>
-                            </template>
-                        </div>
-                    </div>
-                </div>
-                <paper-dropdown-menu label="Action">
-                    <paper-menu class="dropdown-content" attr-for-selected="value" selected="{{path}}">
-                        <template is="dom-repeat" items="{{actions}}" as="state">
-                            <paper-item value="{{action.path}}">{{action.path}}</paper-item>
-                        </template>
-                    </paper-menu>
-                </paper-dropdown-menu>
+                <homecon-base-alarm path="{{path}}"></homecon-base-alarm>
                 <div class="delete">
                     <paper-icon-button icon="icons:delete" noink="true" on-tap="deleteAlarm"></paper-icon-button>
                 </div>
@@ -104,17 +61,6 @@
         </template>
 
         <paper-button class="button" on-tap="addAlarm" raised="true"> Add Alarm</paper-button>
-
-        <paper-dialog id="timepickerDialog">
-            Pick time
-            <paper-input label="Hour" value="{{newHour}}"></paper-input>
-            <paper-input label="Minute" value="{{newMinute}}"></paper-input>
-            <div class="horizontal layout">
-                <paper-button raised on-tap="cancelTime">Cancel</paper-button>
-                <paper-button raised on-tap="saveTime">Save</paper-button>
-            </div>
-        </paper-dialog>
-
 
         <div class="edit" hidden="{{!edit}}">
             <paper-icon-button icon="editor:mode-edit" noink="true" on-tap="openEditDialog"></paper-icon-button>
@@ -133,7 +79,7 @@
             properties: {
                 config: {
                     type: 'Object',
-                    value: {'label':'new alarm section','filter':null},
+                    value: {'label':'new alarm section','filter':''},
                 },
                 edit: {
                     type: 'Boolean',
@@ -146,10 +92,6 @@
             },
 
             ready: function(){
-            },
-
-            addAlarm: function(){
-                this.$.websocketObject.send()
             },
 
             openEditDialog: function(){
@@ -178,101 +120,10 @@
             },
 
             deleteAlarm: function(e){
-                alarm = e.model.__data__.alarm;
-                this.$.websocket.send({'event':'delete_schedule','path':alarm.path});
+                path = e.model.__data__.path;
+                this.$.websocket.send({'event':'delete_schedule','path':path});
             },
 
-            editTime: function(e){
-                this.editAlarm = e.model.__data__.alarm;
-                value = JSON.parse(this.editAlarm.value);
-
-                this.newHour = value['hour']
-                this.newMinute = value['minute']
-                this.$.timepickerDialog.open()
-            },
-
-            saveTime: function(e,d){
-                this.$.timepickerDialog.close();
-
-                var value = {}
-                value['hour'] = this.newHour;
-                value['minute'] = this.newMinute;
-                
-                this.$.websocket.send({'event':'schedule', 'path':this.editAlarm.path, 'value': value});
-            },
-
-            cancelTime: function(){
-                this.$.timepickerDialog.close();
-            },
-
-            _parseTime: function(value){
-                var time = '';
-                value = JSON.parse(value);
-                if(value['hour'] != null && value['minute'] != null){
-                    var hh = String(value['hour']);
-                    if(value['hour'] < 10){
-                        hh = '0' + hh;
-                    }
-                    var mm = String(value['minute']);
-                    if(value['minute'] < 10){
-                        mm = '0' + mm;
-                    }
-                    time = hh+':'+mm;
-                }
-                return time;
-            },
-
-            _getWeekDays: function(alarm){
-                var value = JSON.parse(alarm.value);
-
-                var days = [
-                    {'day':'mon', 'label':'Mon', 'alarm':alarm},
-                    {'day':'tue', 'label':'Tue', 'alarm':alarm},
-                    {'day':'wed', 'label':'Wed', 'alarm':alarm},
-                    {'day':'thu', 'label':'Thu', 'alarm':alarm},
-                    {'day':'fri', 'label':'Fri', 'alarm':alarm},
-                ];
-
-                for(var i=0;i<days.length;i++){
-                    if(days[i].day in value){
-                        days[i].value = value[days[i].day];
-                    }
-                    else{
-                        days[i].value = false;
-                    }
-                }
-
-                return days;
-            },
-
-            _getWeekendDays: function(alarm){
-                var value = JSON.parse(alarm.value);
-
-                var days = [
-                    {'day':'sat', 'label':'Sat', 'alarm':alarm},
-                    {'day':'sun', 'label':'Sun', 'alarm':alarm},
-                ];
-
-                for(var i=0;i<days.length;i++){
-                    if(days[i].day in value){
-                        days[i].value = value[days[i].day];
-                    }
-                    else{
-                        days[i].value = false;
-                    }
-                }
-
-                return days;
-            },
-
-            _dayChanged: function(event){
-                var day = event.model.__data__.day;
-                var alarm = day.alarm;
-                var value = {}
-                value[day.day] = day.value;
-                
-                this.$.websocket.send({'event':'schedule', 'path':alarm.path, 'value': value});
-            },
         });
     </script>
 </dom-module>

@@ -38,6 +38,7 @@ class Plugin(object):
 
     """
 
+
     def __init__(self):
         """
         Initialize a plugin instance
@@ -65,6 +66,7 @@ class Plugin(object):
         self.get_listeners()
 
         self.initialize()
+
 
     def get_listeners(self):
         self.listeners = {}
