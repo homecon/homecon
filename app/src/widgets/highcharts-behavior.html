@@ -22,20 +22,11 @@
         },
 
         _setLegend: function(path,label){
-            var series = this._getSeries(path);
-            if(series != null){
+            if(path in this.pathToSeries){
+                var series = this.pathToSeries[path];
                 series.update({name:label}, false);
                 this.chart.redraw();
             }
-        },
-
-        _getSeries: function(path){
-            for(var i=0;i<this.chart.series.length;i++){
-                if(this.chart.series[i]._path == path){
-                    return this.chart.series[i];
-                }
-            }
-            return null
         },
 
         _resizeChart: function(){
