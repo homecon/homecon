@@ -8,27 +8,12 @@ import sys
 
 from concurrent.futures import ThreadPoolExecutor
 
-from . import database
+from .event import Event
 
 sys.path.append(os.path.abspath('..'))
 
 # the worker thread pool
 executor = ThreadPoolExecutor(10)
-
-class Event(object):
-    def __init__(self,event_type,data,source,client):
-        self.type = event_type
-        self.data = data
-        self.source = source
-        self.client = client
-
-    def __str__(self):
-        newdata = dict(self.data)
-        for key in ['password','token']:
-            if key in newdata:
-                newdata[key] = '***'
-
-        return 'Event: {}, data: {}, source: {}, client: {}'.format(self.type,newdata.__repr__(),self.source.__class__.__name__,self.client.__repr__())
 
 
 class BasePlugin(object):
@@ -82,6 +67,23 @@ class BasePlugin(object):
         self._loop.call_soon_threadsafe(do_create_task)
 
 
+    def __getitem__(self,path):
+        return None
+
+    def __iter__(self):
+        return iter([])
+
+    def __contains__(self,path):
+        return False
+
+    def keys(self):
+        return []
+
+    def items(self):
+        return []
+
+    def values(self):
+        return []
 
 
 class Plugin(BasePlugin):

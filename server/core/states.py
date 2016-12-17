@@ -29,11 +29,11 @@ class States(plugin.BasePlugin):
 
         # get all states from the database
         result = self._db_states.GET()
-        for state in result:
-            self.add(state['path'],config=json.loads(state['config']))
+        for db_entry in result:
+            self.add(db_entry['path'],db_entry=db_entry)
 
 
-    def add(self,path,config=None):
+    def add(self,path,config=None,db_entry=None):
         """
         add a state
 
@@ -41,53 +41,8 @@ class States(plugin.BasePlugin):
 
         if not path in self._states:
 
-            # check the config
-            if config is None:
-                config = {}
-
-            if 'type' not in config:
-                config['type'] = ''
-
-            if 'quantity' not in config:
-                config['quantity'] = ''
-
-            if 'unit' not in config:
-                config['unit'] = ''
-
-            if 'label' not in config:
-                config['label'] = ''
-
-            if 'description' not in config:
-                config['description'] = ''
-
-            if 'readusers' not in config:
-                config['readusers'] = []
-
-            if 'writeusers' not in config:
-                config['writeusers'] = []
-
-            if 'readgroups' not in config:
-                config['readgroups'] = [1]
-
-            if 'writegroups' not in config:
-                config['writegroups'] = [1]
-
-            if 'log' not in config:
-                config['log'] = True
-
-            # check if the state is in the database and add it if not
-            if len( self._db_states.GET(path=path) ) == 0:
-                self._db_states.POST(path=path,config=json.dumps(config))
-
-            # create the state
-            state = State(self,path,config=config)
+            state = State(self,self._db_states,path,config=config,db_entry=db_entry)
             self._states[path] = state
-
-            # update the value from the database
-            try:
-                state.get_value_from_db()
-            except:
-                pass
 
             return state
         else:
@@ -118,37 +73,80 @@ class States(plugin.BasePlugin):
         return self._states.values()
 
 
-
-class State(object):
+class BaseState(object):
     """
-    A class representing a single state
+    A base class for objects identified by a path with a config and a value
+    attribute which are backed by the database
 
     """
 
-    def __init__(self,states,path,config=None):
+    def __init__(self,plugin,db_table,path,config=None,value=None,db_entry=None):
         """
         Parameters
         ----------
-        states : States object
-            the states object
+        plugin : homecon.plugin.BasePlugin
+            A base plugin or plugin
         
+        db_table: homecon.database.table
+            a database table where things are stored
+            the database table must have a path, config and value column
+
         path : string
             the item identifier relations between states (parent - child) can be
             indicated with dots
+
+        db_entry : dict
+            if the state was loaded from the database, the database entry must
+            be supplied as a dictionary with `config` and `value` keys
 
         config : dict
             dictionary configuring the state
         
         """
-        self._states = states
+
+        self._plugin = plugin
+        self._loop = asyncio.get_event_loop()
+        self._db_table = db_table
         self._path = path
 
-        if config == None:
-            self._config = {}
-        else:
-            self._config = config 
 
-        self._value = None
+        if db_entry is None:
+            self._config = self._check_config(config)
+            self._value = self._check_value(value)
+
+            # post to the database
+            self._db_table.POST(path=self._path,config=json.dumps(self._config))
+
+        else:
+            # update the config from the database
+            jsonconfig = db_entry['config']
+            if not jsonconfig is None:
+                config = json.loads(jsonconfig)
+            else:
+                config = None
+
+            self._config = self._check_config(config)
+
+            # update the value from the database
+            jsonvalue = db_entry['value']
+            if not jsonvalue is None:
+                value = json.loads(jsonvalue)
+
+                if 'type' in self._config and self._config['type']=='number':
+                    value = float(value)
+
+                    if math.isnan(value):
+                        value = None
+            else:
+                value = None
+
+            self._value = self._check_value(value)
+
+
+    def fire_changed(self,value,oldvalue,source):
+        """
+        """
+        pass
 
 
     async def set(self,value,source=None):
@@ -158,28 +156,13 @@ class State(object):
             self._value = value
 
             # update the value in the database
-            self._states._db_states.PUT(value=json.dumps(value), where='path=\'{}\''.format(self._path))
+            self._db_table.PUT(value=json.dumps(value), where='path=\'{}\''.format(self._path))
 
-            self._states.fire('state_changed',{'state':self,'value':self._value,'oldvalue':oldvalue},source)
+            self.fire_changed(self._value,oldvalue,source)
             await asyncio.sleep(0.01) # avoid flooding asyncio
 
     def get(self):
         return self._value
-
-    def get_value_from_db(self):
-        result = self._states._db_states.GET(path=self.path,columns=['value'])
-        jsonvalue = result[0]['value']
-
-        if not jsonvalue is None:
-            value = json.loads(jsonvalue)
-
-            if 'type' in self._config and self._config['type']=='number':
-                value = float(value)
-
-                if math.isnan(value):
-                    value = None
-
-            self._value = value
 
     @property
     def value(self):
@@ -191,7 +174,7 @@ class State(object):
         stack = inspect.stack()
         source = stack[1][0].f_locals["self"].__class__
 
-        self._states._loop.create_task(self.set(value,source=source))
+        self._loop.create_task(self.set(value,source=source))
         
 
     @property
@@ -204,7 +187,7 @@ class State(object):
 
     @config.setter
     def config(self, config):
-        self._states._db_states.PUT(config=json.dumps(config), where='path=\'{}\''.format(self._path))
+        self._db_table.PUT(config=json.dumps(config), where='path=\'{}\''.format(self._path))
         self._config=config
 
     @property
@@ -223,10 +206,11 @@ class State(object):
 
         if '/' in self._path:
             parentpath = '/'.join(self._path.split('/')[:-1])
-            parent = self._states[parentpath]
-            return parent
-        else:
-            return None
+
+            if parentpath in self._plugin:
+                return self._plugin[parentpath]
+
+        return None
 
 
     @property
@@ -246,13 +230,40 @@ class State(object):
         """
 
         children = []
-        for path,state in self._states.items():
+        for path,state in self._plugin.items():
             if self._path in path:
                 if len(self._path.split('/')) == len(path.split('/'))-1:
                     children.append(state)
 
         return children
 
+
+    def _check_config(self,config):
+        """
+        Checks the config for required keys
+
+        """
+
+        if config is None:
+            config = {}
+        if 'readusers' not in config:
+            config['readusers'] = []
+        if 'writeusers' not in config:
+            config['writeusers'] = []
+        if 'readgroups' not in config:
+            config['readgroups'] = [1]
+        if 'writegroups' not in config:
+            config['writegroups'] = [1]
+
+        return config
+
+    def _check_value(self,value):
+        """
+        Checks the value for required keys
+
+        """
+
+        return value
 
     def __call__(self):
         return self._value
@@ -263,7 +274,40 @@ class State(object):
 
 
     def __repr__(self):
-        return '<state {} value={}>'.format(self._path,self._value)
+        return '<BaseState {} value={}>'.format(self._path,self._value)
 
 
-        
+class State(BaseState):
+    """
+    A class representing a single state
+
+    """
+
+    def fire_changed(self,value,oldvalue,source):
+        """
+        """
+        self._plugin.fire('state_changed',{'state':self,'value':value,'oldvalue':oldvalue},source)
+
+    def _check_config(self,config):
+
+        config = super(State,self)._check_config(config)
+
+        if 'type' not in config:
+            config['type'] = ''
+        if 'quantity' not in config:
+            config['quantity'] = ''
+        if 'unit' not in config:
+            config['unit'] = ''
+        if 'label' not in config:
+            config['label'] = ''
+        if 'description' not in config:
+            config['description'] = ''
+        if 'log' not in config:
+            config['log'] = True
+
+        return config
+
+    def __repr__(self):
+        return '<State {} value={}>'.format(self._path,self._value)
+
+

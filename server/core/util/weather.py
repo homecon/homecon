@@ -125,12 +125,12 @@ def clearskyirrradiance(solar_azimuth,solar_altitude,utcdatetime=None):
     ad = 0.202 + 0.852*tau_b - 0.007*tau_d -0.357*tau_b*tau_d
 
     if m>=0:
-        I_direct_clearsky = E0*np.exp(-tau_b*m**ab)
+        I_direct_clearsky = max(0,E0*np.exp(-tau_b*m**ab))
     else:
         I_direct_clearsky = 0
 
     if m>=0:
-        I_diffuse_clearsky = E0*np.exp(-tau_d*m**ad)
+        I_diffuse_clearsky = max(0,E0*np.exp(-tau_d*m**ad))
     else:
         I_diffuse_clearsky = 0
 
@@ -273,10 +273,11 @@ def cloudyskyirrradiance(I_direct_clearsky,I_diffuse_clearsky,cloudcover,solar_a
         I_total_horizontal_cloudy = (I_total_horizontal_clearsky - I_ground_horizontal_clearsky) * CCF
 
         # Direct radiation is proportional to cloud fraction (eq. 12, [1])
-        I_direct_cloudy = I_direct_clearsky*(1-cloudcover)  
-   
+        I_direct_cloudy = max(0,I_direct_clearsky*(1-cloudcover))
+        I_direct_horizontal_cloudy = max(0,I_direct_horizontal_clearsky*(1-cloudcover))
+
         # Diffuse radiation = total radiation - direct radiation (equivalent to eq. 13, [1])
-        I_diffuse_cloudy = I_total_horizontal_cloudy - I_direct_cloudy      
+        I_diffuse_cloudy = max(0,I_total_horizontal_cloudy - I_direct_horizontal_cloudy)
 
     else:
         I_direct_cloudy = I_direct_clearsky

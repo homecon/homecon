@@ -10,6 +10,7 @@ import uuid
 import asyncio
 
 from .. import database
+from ..states import BaseState
 from ..plugin import Plugin
 
 class Schedules(Plugin):
@@ -36,8 +37,8 @@ class Schedules(Plugin):
 
         # get all schedules from the database
         result = self._db_schedules.GET()
-        for schedule in result:
-            self.add( schedule['path'], config=json.loads(schedule['config']), value=json.loads(schedule['value']), id=schedule['id'])
+        for db_entry in result:
+            self.add( db_entry['path'], db_entry=db_entry)
 
 
         # schedule schedule running
@@ -47,47 +48,62 @@ class Schedules(Plugin):
         logging.debug('Schedules plugin Initialized')
 
 
-    def add(self,path,config=None,value=None,id=None):
+    def add(self,path,config=None,db_entry=None):
         """
         Add a schedule to the plugin and the database
 
         """
-        # check the config
-        if config is None:
-            config = {}
-        if not 'filter' in config:
-            config['filter'] = ''
- 
-        # check value
-        if value is None:
-            value = {}
-        if not 'year' in value:
-            value['year'] = None
-        if not 'month' in value:
-            value['month'] = None
-        if not 'day' in value:
-            value['day'] = None
-        if not 'hour' in value:
-            value['hour'] = 0
-        if not 'minute' in value:
-            value['minute'] = 0
-        if not 'sun' in value:
-            value['sun'] = True
-        if not 'mon' in value:
-            value['mon'] = True
-        if not 'tue' in value:
-            value['tue'] = True
-        if not 'wed' in value:
-            value['wed'] = True
-        if not 'thu' in value:
-            value['thu'] = True
-        if not 'fri' in value:
-            value['fri'] = True
-        if not 'sat' in value:
-            value['sat'] = True
 
-        if not 'actions' in value:
-            value['actions'] = []
+        if not path in self._schedules:
+
+            if db_entry is None:
+
+                # create a config
+                if config is None:
+                    config = {}
+                if not 'filter' in config:
+                    config['filter'] = ''
+         
+                # create a value
+                value = {}
+                if not 'year' in value:
+                    value['year'] = None
+                if not 'month' in value:
+                    value['month'] = None
+                if not 'day' in value:
+                    value['day'] = None
+                if not 'hour' in value:
+                    value['hour'] = 0
+                if not 'minute' in value:
+                    value['minute'] = 0
+                if not 'sun' in value:
+                    value['sun'] = True
+                if not 'mon' in value:
+                    value['mon'] = True
+                if not 'tue' in value:
+                    value['tue'] = True
+                if not 'wed' in value:
+                    value['wed'] = True
+                if not 'thu' in value:
+                    value['thu'] = True
+                if not 'fri' in value:
+                    value['fri'] = True
+                if not 'sat' in value:
+                    value['sat'] = True
+
+                if not 'action' in value:
+                    value['action'] = ''
+            else:
+                value = None
+
+            schedule = Schedule(self,self._db_schedules,path,config=config,value=value,db_entry=db_entry)
+            self._schedules[schedule.path] = schedule
+
+            return schedule
+        else:
+            return False
+
+
 
 
         # check if the schedule is in the database and add it if not
@@ -200,8 +216,24 @@ class Schedules(Plugin):
 
 
     def listen_schedule(self,event):
+
         if 'path' in event.data:
-            schedule = self.update(event.data['path'],event.data['value'])
+            # get or set a schedule
+            if 'value' in event.data:
+                # set
+                if event.data['path'] in self._schedules:
+                    schedule = self._schedules[path]
+
+                    value = dict(schedule.value)
+                    for key,val in event.data['value'].items():
+                        if key in schedule.value:
+                            if key in ['hour','minute']:
+                                val = int(val)
+
+                        value[key] = val
+
+                    self._loop.create_task(schedule.set(value,source=event.source))
+
 
             if schedule:
                 filter = schedule.config['filter']
@@ -218,6 +250,10 @@ class Schedules(Plugin):
         self.fire('send_to',{'event':'list_schedules', 'path':filter, 'value':self.get_schedules_list(filter=filter), 'clients':[event.client]})
 
 
+    def listen_schedule_changed(self,event):
+        self.fire('send',{'event':'schedule', 'path':event.data['schedule'].path, 'value':event.data['schedule'].value},source=self)
+
+
     def listen_snooze_schedule(self,event):
         logging.warning('snooze schedule is not implemented yet')
 
@@ -231,17 +267,25 @@ class Schedules(Plugin):
 
 
 
-class Schedule(object):
+class Schedule(BaseState):
     """
     """
-    def __init__(self,schedules,path,config,value,id):
+    def __init__(self,plugin,db_table,path,config=None,value=None,db_entry=None):
+        super(Schedule,self).__init__(plugin,db_table,path,config=config,value=value,db_entry=db_entry)
 
-        self._schedules = schedules
+        if db_entry is None:
+            result = self.db_table.GET(path=path)
+            self.id = result[0]['id']
 
-        self.path = path
-        self.config = config
-        self.value = value
-        self.id = id
+        else:
+            self.id = db_entry['id']
+
+
+    def fire_changed(self,value,oldvalue,source):
+        """
+        """
+        self._plugin.fire('schedule_changed',{'schedule':self,'value':value,'oldvalue':oldvalue},source)
+
 
     def match(self,dt):
         """
@@ -321,94 +365,5 @@ class Schedule(object):
             'value': json.dumps(self.value),
         }
         return data
-
-
-
-
-class Actions(Plugin):
-    def initialize(self):
-
-        self._actions = {}
-
-        self._db = database.Database(database='homecon.db')
-        self._db_actions = database.Table(self._db,'actions',[
-            {'name':'path',   'type':'char(255)',  'null': '',  'default':'',  'unique':'UNIQUE'},
-            {'name':'config', 'type':'char(511)',  'null': '',  'default':'',  'unique':''},
-            {'name':'value',  'type':'char(255)',  'null': '',  'default':'',  'unique':''},
-        ])
-
-        # get all actions from the database
-        result = self._db_actions.GET()
-        for action in result:
-            self.add(action['path'],json.loads(action['config']),json.loads(action['value']))
-
-
-    def add(self,path,config,value):
-        """
-        Add a schedule to the plugin and the database
-
-        """
-        if len( self._db_actions.GET(path=path) ) == 0:
-            self._db_actions.POST(path=path,config=json.dumps(config),value=json.dumps(value))
-
-        action = Action(self._loop,path,config,value)
-        self._actions[action.path] = action
-
-        return action
-
-
-    def listen_run_action(self,event):
-        if event.data['path'] in self._actions:
-            self._actions[event.data['path']].run(source=event.source)
-
-
-
-class Action(object):
-    """
-    """
-    def __init__(self,loop,path,config,value):
-
-        self._loop = loop
-
-        self.path = path
-        self.config = config
-        self.value = value
-
-
-    def run(self,source=None):
-        """
-        Runs an action defined in a state
-
-        Parameters
-        ----------
-        action : Action instance
-            an Action instance defining the action to be run
-
-        """
-
-        if source is None:
-            source = self
-
-        for a in self.value:
-            path = a[0]
-            value = a[1]
-            delay = a[2]
-
-            self._loop.call_later(delay,functools.partial(self.fire, 'state', {'path':path, 'value':value}, source=source))
-
-
-    def serialize(self):
-        """
-        return a dict representation of the instance
-
-        """
-
-        data = {
-            'path': self.path,
-            'config': json.dumps(self.config),
-            'value': json.dumps(self.value),
-        }
-        return data
-
 
 

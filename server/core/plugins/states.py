@@ -82,7 +82,7 @@ class States(plugin.Plugin):
 
 
     def listen_add_state(self,event):
-        state = self._states.add(event.data['path'],event.data['config'])
+        state = self._states.add(event.data['path'],config=event.data['config'])
 
         if state:
             self.fire('state_added',{'state':state})
@@ -101,7 +101,7 @@ class States(plugin.Plugin):
             state.config = config
 
             self.fire('send_to',{'event':'list_states', 'path':'', 'value':self.list(), 'clients':[event.client]})
-    
+
 
     def listen_state_config(self,event):
         if event.data['path'] in self._states:
@@ -127,8 +127,9 @@ class States(plugin.Plugin):
 
 
     def listen_state(self,event):
-        # get or set a state
+        
         if 'path' in event.data:
+            # get or set a state
             state = self.get(event.data['path'])
 
             if not state is None:
