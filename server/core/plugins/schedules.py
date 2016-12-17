@@ -56,47 +56,7 @@ class Schedules(Plugin):
 
         if not path in self._schedules:
 
-            if db_entry is None:
-
-                # create a config
-                if config is None:
-                    config = {}
-                if not 'filter' in config:
-                    config['filter'] = ''
-         
-                # create a value
-                value = {}
-                if not 'year' in value:
-                    value['year'] = None
-                if not 'month' in value:
-                    value['month'] = None
-                if not 'day' in value:
-                    value['day'] = None
-                if not 'hour' in value:
-                    value['hour'] = 0
-                if not 'minute' in value:
-                    value['minute'] = 0
-                if not 'sun' in value:
-                    value['sun'] = True
-                if not 'mon' in value:
-                    value['mon'] = True
-                if not 'tue' in value:
-                    value['tue'] = True
-                if not 'wed' in value:
-                    value['wed'] = True
-                if not 'thu' in value:
-                    value['thu'] = True
-                if not 'fri' in value:
-                    value['fri'] = True
-                if not 'sat' in value:
-                    value['sat'] = True
-
-                if not 'action' in value:
-                    value['action'] = ''
-            else:
-                value = None
-
-            schedule = Schedule(self,self._db_schedules,path,config=config,value=value,db_entry=db_entry)
+            schedule = Schedule(self,self._db_schedules,path,config=config,db_entry=db_entry)
             self._schedules[schedule.path] = schedule
 
             return schedule
@@ -350,6 +310,52 @@ class Schedule(BaseState):
 
         # schedule the next execution
         self._schedules.schedule(schedule)
+
+    def _check_config(self,config):
+
+        config= super(Schedule,self)._check_config(config)
+
+        if not 'filter' in config:
+            config['filter'] = ''
+
+        return config
+
+
+    def _check_value(self,value):
+
+        value = super(Schedule,self)._check_value(value)
+
+        if value is None:
+            value = {}
+        if not 'year' in value:
+            value['year'] = None
+        if not 'month' in value:
+            value['month'] = None
+        if not 'day' in value:
+            value['day'] = None
+        if not 'hour' in value:
+            value['hour'] = 0
+        if not 'minute' in value:
+            value['minute'] = 0
+        if not 'sun' in value:
+            value['sun'] = True
+        if not 'mon' in value:
+            value['mon'] = True
+        if not 'tue' in value:
+            value['tue'] = True
+        if not 'wed' in value:
+            value['wed'] = True
+        if not 'thu' in value:
+            value['thu'] = True
+        if not 'fri' in value:
+            value['fri'] = True
+        if not 'sat' in value:
+            value['sat'] = True
+
+        if not 'action' in value:
+            value['action'] = ''
+
+        return value
 
 
     def serialize(self):

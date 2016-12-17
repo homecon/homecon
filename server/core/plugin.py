@@ -8,7 +8,9 @@ import sys
 
 from concurrent.futures import ThreadPoolExecutor
 
-from .event import Event
+from . import events
+from . import states
+from . import components
 
 sys.path.append(os.path.abspath('..'))
 
@@ -16,77 +18,8 @@ sys.path.append(os.path.abspath('..'))
 executor = ThreadPoolExecutor(10)
 
 
-class BasePlugin(object):
-    """
-    A class defining a base plugin
-    """
-    def __init__(self,queue):
-        """
-        Initialize a plugin instance
-        
-        Parameters
-        ---------
-        queue : event queue
-            the main homecon event queue
-            
-        """
 
-        self._queue = queue
-        self._loop = asyncio.get_event_loop()
-
-
-    def fire(self,event_type,data,source=None,client=None):
-        """
-        Add the event to the que
-        
-        Parameters
-        ----------
-        event_type : string
-            the event type
-
-        data : dict
-            the data describing the event
-        
-        source : string
-            the source of the event
-            
-        """
-        
-        if source==None:
-            source = self
-
-        event = Event(event_type,data,source,client)
-
-        async def do_fire(event):
-            await self._queue.put(event)
-
-
-        def do_create_task():
-            self._loop.create_task(do_fire(event))
-
-        self._loop.call_soon_threadsafe(do_create_task)
-
-
-    def __getitem__(self,path):
-        return None
-
-    def __iter__(self):
-        return iter([])
-
-    def __contains__(self,path):
-        return False
-
-    def keys(self):
-        return []
-
-    def items(self):
-        return []
-
-    def values(self):
-        return []
-
-
-class Plugin(BasePlugin):
+class Plugin(object):
     """
     A class for defining plugins with listener methods
 
@@ -105,7 +38,7 @@ class Plugin(BasePlugin):
 
     """
 
-    def __init__(self,queue,states,components):
+    def __init__(self):
         """
         Initialize a plugin instance
         
@@ -122,9 +55,9 @@ class Plugin(BasePlugin):
             
         """
 
-        self._queue = queue
-        self._states = states
-        self._components = components
+        self._queue = events.queue
+        self._states = states.states
+        self._components = components.components
 
         self._loop = asyncio.get_event_loop()
         self.config_keys = []
@@ -149,8 +82,10 @@ class Plugin(BasePlugin):
         """
         pass
 
+
     def register_component(self,componentclass):
         self._components.register(componentclass)
+
 
     def components(self):
         """
@@ -181,6 +116,58 @@ class Plugin(BasePlugin):
         return []
 
 
+    def fire(self,event_type,data,source=None,client=None):
+        """
+        Add the event to the que
+        
+        Parameters
+        ----------
+        event_type : string
+            the event type
+
+        data : dict
+            the data describing the event
+        
+        source : string
+            the source of the event
+            
+        """
+        """
+        if source==None:
+
+            source = self
+
+
+
+        event = events.Event(event_type,data,source,client)
+
+
+
+        async def do_fire(event):
+
+            await self._queue.put(event)
+
+
+
+
+
+        def do_create_task():
+
+            self._loop.create_task(do_fire(event))
+
+
+
+        self._loop.call_soon_threadsafe(do_create_task)
+
+
+        """
+        if source==None:
+            source = self
+
+
+        events.fire(event_type,data,source,client)
+
+
     def _listen(self,event):
         """
         Base listener method called when an event is taken from the que
@@ -206,5 +193,21 @@ class Plugin(BasePlugin):
             self.listeners[event.type](event)
 
 
+    def __getitem__(self,path):
+        return None
 
+    def __iter__(self):
+        return iter([])
+
+    def __contains__(self,path):
+        return False
+
+    def keys(self):
+        return []
+
+    def items(self):
+        return []
+
+    def values(self):
+        return []
 

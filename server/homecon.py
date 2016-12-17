@@ -60,41 +60,39 @@ class HomeCon(object):
 
 
         ########################################################################
-        # create the event loop
+        # get the event loop and queue
         ########################################################################
-        loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(loop)
         self._loop = asyncio.get_event_loop()
 
         if loglevel == 'debug':
             self._loop.set_debug(True)
 
-        self._queue = asyncio.Queue(loop=self._loop)
+        self._queue = core.events.queue #asyncio.Queue(loop=self._loop)
 
 
         ########################################################################
         # start core components
         ########################################################################
-        self.states = core.states.States(self._queue)
-        self.components = core.components.Components(self.states)
+        self.states = core.states.states
+        self.components = core.components.components
 
         # start plugins
         self.coreplugins = {
-            'states': core.plugins.states.States(self._queue,self.states,self.components),                # load states 1st
-            'components': core.plugins.components.Components(self._queue,self.states,self.components),    # load components 2nd
-            'plugins': core.plugins.plugins.Plugins(self._queue,self.states,self.components),
-            'authentication': core.plugins.authentication.Authentication(self._queue,self.states,self.components),
-            'pages': core.plugins.pages.Pages(self._queue,self.states,self.components),
-            'schedules': core.plugins.schedules.Schedules(self._queue,self.states,self.components),
-            'measurements': core.plugins.measurements.Measurements(self._queue,self.states,self.components),
-            'weather': core.plugins.weather.Weather(self._queue,self.states,self.components),
+            'states': core.plugins.states.States(),                # load states 1st
+            'components': core.plugins.components.Components(),    # load components 2nd
+            'plugins': core.plugins.plugins.Plugins(),
+            'authentication': core.plugins.authentication.Authentication(),
+            'pages': core.plugins.pages.Pages(),
+            'schedules': core.plugins.schedules.Schedules(),
+            'measurements': core.plugins.measurements.Measurements(),
+            'weather': core.plugins.weather.Weather(),
         }
 
         # load components
         self.components.load()
 
         # load the websocket
-        self.coreplugins['websocket'] = core.plugins.websocket.Websocket(self._queue,self.states,self.components)
+        self.coreplugins['websocket'] = core.plugins.websocket.Websocket()
 
         logging.info('HomeCon Initialized')
 

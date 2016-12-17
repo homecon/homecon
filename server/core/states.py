@@ -8,16 +8,16 @@ import asyncio
 import math
 
 from . import database
-from . import plugin
+from . import events
 
-class States(plugin.BasePlugin):
+class States(object):
     """
     a container class for states with access to the database
 
     """
 
-    def __init__(self,queue):
-        super(States,self).__init__(queue)
+    def __init__(self):
+        super(States,self).__init__()
 
         self._states = {}
         self._db = database.Database(database='homecon.db')
@@ -286,7 +286,7 @@ class State(BaseState):
     def fire_changed(self,value,oldvalue,source):
         """
         """
-        self._plugin.fire('state_changed',{'state':self,'value':value,'oldvalue':oldvalue},source)
+        events.fire('state_changed',{'state':self,'value':value,'oldvalue':oldvalue},source,None)
 
     def _check_config(self,config):
 
@@ -309,5 +309,11 @@ class State(BaseState):
 
     def __repr__(self):
         return '<State {} value={}>'.format(self._path,self._value)
+
+
+
+
+# create the states object
+states = States()
 
 

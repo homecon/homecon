@@ -5,7 +5,8 @@ import logging
 import json
 
 from . import database
-from . import plugin
+from . import events
+from . import states
 
 class Components(object):
     """
@@ -13,10 +14,10 @@ class Components(object):
 
     """
 
-    def __init__(self,states):
+    def __init__(self):
         #super(Components,self).__init__(queue)
 
-        self._states = states
+        self._states = states.states
         self._component_types = {}
         self._components = {}
         self._db = database.Database(database='homecon.db')
@@ -151,3 +152,6 @@ class Component(object):
         }
         return json.dumps(repr)
 
+
+# create the components object
+components = Components()
