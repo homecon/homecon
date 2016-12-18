@@ -169,7 +169,20 @@ class BaseState(object):
 
 
     def set(self,value,source=None):
-        
+        """
+        Sets the value by creating a task to set the value
+
+        Parameters
+        ----------
+        value : 
+            the new value
+
+        source : class
+            a class, the source setting the value, if not supplied it is 
+            determined by ispection
+
+        """
+
         if source is None:
             # get the source from inspection
             stack = inspect.stack()
@@ -178,7 +191,53 @@ class BaseState(object):
         self._loop.create_task(self.set_async(value,source=source))
 
 
+    async def set_async(self,value,source=None):
+        """
+        Sets the value async, should be awaited for
+
+        Parameters
+        ----------
+        value : 
+            the new value
+
+        source : class
+            a class, the source setting the value, if not supplied it is 
+            determined by ispection
+
+        Example
+        -------
+        state = states['somepath']
+        await state.set_async(10)
+
+        """
+
+        oldvalue = copy.copy(self._value)
+
+        # make sure value is valid
+        value = self._check_value(value)
+
+        # if the new and old value are different update and put in the database
+        if not value == oldvalue:
+            self._value = value
+
+            # update the value in the database
+            self._db_table.PUT(value=json.dumps(value), where='path=\'{}\''.format(self._path))
+
+            # check the source
+            if source is None:
+                # get the source from inspection
+                stack = inspect.stack()
+                source = stack[1][0].f_locals["self"].__class__
+
+            self.fire_changed(self._value,oldvalue,source)
+            await asyncio.sleep(0.01) # avoid flooding asyncio
+
+
     def get(self):
+        """
+        Returns the current value
+
+        """
         return self._value
 
 
@@ -197,21 +256,6 @@ class BaseState(object):
         return data
 
 
-    async def set_async(self,value,source=None):
-        oldvalue = copy.copy(self._value)
-
-        # make sure value is valid
-        value = self._check_value(value)
-
-        # if the new and old value are different update and put in the database
-        if not value == oldvalue:
-            self._value = value
-
-            # update the value in the database
-            self._db_table.PUT(value=json.dumps(value), where='path=\'{}\''.format(self._path))
-
-            self.fire_changed(self._value,oldvalue,source)
-            await asyncio.sleep(0.01) # avoid flooding asyncio
 
 
     @property
@@ -359,7 +403,11 @@ class State(BaseState):
         return config
 
     def __repr__(self):
-        return '<State {} value={}>'.format(self._path,self._value)
+        formattedvalue = '{}'.format(self._value)
+        if len(formattedvalue) > 10:
+            formattedvalue = formattedvalue[:9] + ' ... ' + formattedvalue[-1]
+
+        return '<State {} value={}>'.format(self._path,formattedvalue)
 
 
 
