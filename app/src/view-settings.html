@@ -21,6 +21,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="homecon-web-socket-sender.html">
 <link rel="import" href="homecon-edit-dialog.html">
 <link rel="import" href="homecon-components.html">
+<link rel="import" href="homecon-actions.html">
 
 <dom-module id="view-settings">
 
@@ -125,6 +126,13 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 <h1>Components</h1>
                 <homecon-components id="components" states="{{states}}" components="{{components}}"></homecon-components>
             </paper-material>
+
+
+            <paper-material>
+                <h1>Actions</h1>
+                <homecon-actions id="actions" actions="{{actions}}"></homecon-actions>
+            </paper-material>
+
 
         </homecon-page>
 

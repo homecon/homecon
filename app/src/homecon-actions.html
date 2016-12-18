@@ -1,0 +1,146 @@
+
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/paper-material/paper-material.html">
+<link rel="import" href="../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../bower_components/iron-icon/iron-icon.html">
+<link rel="import" href="../bower_components/iron-icons/iron-icons.html">
+
+<link rel="import" href="homecon-web-socket-object.html">
+<link rel="import" href="homecon-web-socket-sender.html">
+<link rel="import" href="homecon-edit-dialog.html">
+<link rel="import" href="homecon-section.html">
+
+<dom-module id="homecon-actions">
+
+    <template>
+
+        <style include="iron-flex iron-flex-alignment">
+            :host {
+                display: block;
+            }
+            .action {
+                padding-left: 16px;
+                padding-right: 16px;
+                padding-bottom: 4px;
+                padding-top: 4px;
+                background-color: var(--secondary-background-color);
+                margin-bottom: 8px;
+                cursor: pointer;
+            }
+            .event{
+                width: 15%;
+                margin-right: 5px;
+            }
+            .delay{
+                width: 10%;
+                margin-left: 5px;
+            }
+        </style>
+
+        <homecon-web-socket-sender id="websocket"></homecon-web-socket-sender>
+
+        <homecon-web-socket-object id="websocketObjectsList" event="list_actions" path="" data="{{actions}}" auto></homecon-web-socket-object>
+        <homecon-web-socket-object id="websocketObject" event="action" path="{{path}}" data="{{action}}" on-change="actionChanged"></homecon-web-socket-object>
+
+        <template is="dom-repeat" items="{{actions}}" as="path">
+            <paper-material class="action horizontal layout center" on-tap="editActionDialog">
+                <div class="path flex">{{path}}</div>
+            </paper-material>
+        </template>
+
+        <paper-button raised noink="true" on-tap="addActionDialog">add action</paper-button>
+
+        <homecon-edit-dialog id="addActionDialog" on-save="addAction">
+            <h2>Add action</h2>
+            <paper-input id="pathInput" label="Name:" value="{{newPath}}"></paper-input>
+        </homecon-edit-dialog>
+
+
+        <homecon-edit-dialog id="editActionDialog" on-save="editAction">
+            <h2>{{newPath}}</h2>
+
+            <template is="dom-repeat" items="{{newValue}}" as="event">
+                <div class="horizontal layout wrap">
+                    <paper-input class="event" label="Event: " value="{{event.event}}"></paper-input>
+                    <paper-input class="flex data" label="Data: "  value="{{event.data}}"></paper-input>
+                    <paper-input class="delay" label="Delay: " value="{{event.delay}}"></paper-input>
+                </div>
+            </template>
+
+            <paper-button on-tap="addEvent">add event</paper-button>
+
+            <paper-button on-tap="deleteAction">Delete</paper-button>
+
+        </homecon-edit-dialog>
+
+    </template>
+
+    <script>
+        Polymer({
+            is: 'homecon-actions',
+
+            properties: {
+                actions: {
+                    type: 'Array',
+                    notify: true,
+                },
+            },
+
+            addActionDialog: function(e){
+                this.newPath = '';
+
+                this.$.addActionDialog.open()
+            },
+
+            addAction: function(e){
+                this.$.addActionDialog.close();
+
+                this.$.websocket.send({'event':'add_action','path':this.newPath});
+            },
+
+            editActionDialog: function(e){
+                this.path = e.model.__data__.path;
+                this.$.websocketObject.send();
+
+                this.newPath = e.model.__data__.path;
+                this.newValue = [];
+
+                this.$.editActionDialog.open();
+
+                var that = this;
+            },
+
+            actionChanged: function(e,d){
+                this.newValue = d;
+
+                var that = this;
+            },
+
+            addEvent: function(e,d){
+                this.push('newValue',{event:'', data: '',delay: 0});
+                this.centerEditActionDialog();
+            },
+
+            editAction: function(e){
+                this.$.editActionDialog.close();
+
+                this.$.websocketObject.send(this.newValue);
+
+            },
+
+            deleteAction: function(e){
+                e.stopPropagation()
+
+                this.$.editActionDialog.close();
+                this.$.websocket.send({'event':'delete_action','path':this.newPath});
+            },
+
+            centerEditActionDialog: function(e){
+                this.$.editActionDialog.center();
+            },
+
+        });
+    </script>
+
+</dom-module>

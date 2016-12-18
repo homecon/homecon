@@ -84,6 +84,7 @@ class HomeCon(object):
             'authentication': core.plugins.authentication.Authentication(),
             'pages': core.plugins.pages.Pages(),
             'schedules': core.plugins.schedules.Schedules(),
+            'actions': core.plugins.actions.Actions(),
             'measurements': core.plugins.measurements.Measurements(),
             'weather': core.plugins.weather.Weather(),
         }

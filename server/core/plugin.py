@@ -258,7 +258,17 @@ class ObjectPlugin(Plugin):
             else:
                 path = str(uuid.uuid4())
 
-            obj = self.objectclass(self._objectdict,self._db_objects,path,config=event.data['config'])
+            if 'config' in event.data:
+                config = event.data['config']
+            else:
+                config = None
+
+            if 'value' in event.data:
+                value = event.data['value']
+            else:
+                value = None
+
+            obj = self.objectclass(self._objectdict,self._db_objects,path,config=config,value=value)
 
             if obj:
                 self.fire('{}_added'.format(self.objectname),{self.objectname: obj})
@@ -306,9 +316,12 @@ class ObjectPlugin(Plugin):
 
                     if 'value' in event.data:
                         # set
-                        value = dict(obj.value)
-                        for key,val in event.data['value'].items():
-                            value[key] = val
+                        if isinstance(event.data['value'], dict):
+                            value = dict(obj.value)
+                            for key,val in event.data['value'].items():
+                                value[key] = val
+                        else:
+                            value = event.data['value']
 
                         obj.set(value,source=event.source)
 
