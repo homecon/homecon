@@ -12,191 +12,10 @@ import asyncio
 from .. import database
 from .. import events
 from ..states import BaseState
-from ..plugin import Plugin
-
-class Schedules(Plugin):
-    """
-    Class to control the HomeCon scheduling
-    
-    """
-
-    def initialize(self):
-        """
-        Initialize
-
-        """
-        self._schedules = {}
-
-        self.timezone = pytz.utc
-
-        self._db = database.Database(database='homecon.db')
-        self._db_schedules = database.Table(self._db,'schedules',[
-            {'name':'path',   'type':'char(255)',  'null': '',  'default':'',  'unique':'UNIQUE'},
-            {'name':'config', 'type':'char(511)',  'null': '',  'default':'',  'unique':''},
-            {'name':'value',  'type':'char(255)',  'null': '',  'default':'',  'unique':''},
-        ])
-
-        # get all schedules from the database
-        result = self._db_schedules.GET()
-        for db_entry in result:
-            Schedule(self._schedules,self._db_schedules,db_entry['path'],db_entry=db_entry)
-
-        # schedule schedule running
-        self._loop.create_task(self.schedule_schedules())
-
-
-        logging.debug('Schedules plugin Initialized')
+from ..plugin import ObjectPlugin
 
 
 
-    def delete(self,path):
-
-        # remove the schedule from the database
-        self._db_schedules.DELETE(path=path)
-        # remove the schedule from the local reference
-        del self._schedules[path]
-
-
-    def update(self,path,value):
-        """
-        Updated the values of a schedule
-
-        Parameters
-        ----------
-        path : str
-            the schedule path
-
-        value : dict
-            a dicionary with values for the schedule
-
-        """
-
-        if path in self._schedules:
-            schedule = self._schedules[path]
-
-            for key,val in value.items():
-                if key in schedule.value:
-                    if key in ['hour','minute']:
-                        val = int(val)
-
-                    schedule.value[key] = val
-
-            # update the database
-            self._db_schedules.PUT(value=json.dumps(schedule.value), where='path=\'{}\''.format(schedule.path))
-
-            return schedule
-
-        else:
-            return False
-
-
-
-    async def schedule_schedules(self):
-        """
-        Schedule schedule checking
-
-        """
-
-        while True:
-            # timestamps
-            dt_ref = datetime.datetime(1970, 1, 1)
-            dt_now = datetime.datetime.utcnow()
-            dt_when = (dt_now + datetime.timedelta(minutes=1)).replace(second=0,microsecond=0)
-
-            timestamp_when = int( (dt_when-dt_ref).total_seconds() )
-
-            dt = pytz.utc.localize( dt_now ).astimezone(self.timezone)
-            for path,schedule in self._schedules.items():
-                if schedule.match(dt):
-                    self._loop.call_soon_threadsafe(schedule.run)
-
-
-            # sleep until the next call
-            timestamp_now = int( (datetime.datetime.utcnow()-dt_ref).total_seconds() )
-            if timestamp_when-timestamp_now > 0:
-                await asyncio.sleep(timestamp_when-timestamp_now)
-
-
-    def get_schedules_list(self,filter=None):
-
-        unsortedlist =  [(s.path,s.id) for s in self._schedules.values() if (filter is None or filter=='' or not 'filter' in s.config or s.config['filter'] == filter)]
-        sortedlist = sorted(unsortedlist, key=lambda k: k[1])
-        pathlist = [s[0] for s in sortedlist]
-
-        return pathlist
-
-
-    def listen_list_schedules(self,event):
-
-        if 'path' in event.data:
-            filter = event.data['path']
-        else:
-            filter = None
-
-        self.fire('send_to',{'event':'list_schedules', 'path':event.data['path'], 'value':self.get_schedules_list(filter=filter), 'clients':[event.client]})
-
-
-    def listen_add_schedule(self,event):
-
-        path = str(uuid.uuid4())
-        schedule = Schedule(self._schedules,self._db_schedules,path,config=event.data['config'])
-
-        if schedule:
-            self.fire('schedule_added',{'schedule':schedule})
-            filter = schedule.config['filter']
-            self.fire('send_to',{'event':'list_schedules', 'path':filter, 'value':self.get_schedules_list(filter=filter), 'clients':[event.client]})
-
-
-    def listen_schedule(self,event):
-
-        if 'path' in event.data:
-            # get or set a schedule
-            if 'value' in event.data:
-                # set
-                if event.data['path'] in self._schedules:
-                    schedule = self._schedules[event.data['path']]
-
-                    value = dict(schedule.value)
-                    for key,val in event.data['value'].items():
-                        if key in ['hour','minute']:
-                            val = int(val)
-
-                        value[key] = val
-
-                    schedule.set(value,source=event.source)
-
-            else:
-                # get
-                if event.data['path'] in self._schedules:
-                    schedule = self._schedules[event.data['path']]
-                    self.fire('send_to',{'event':'schedule', 'path':event.data['path'], 'value':schedule.value, 'clients':[event.client]})
-
-        else:
-            logging.error('Schedule does not exist {}'.format(event.data['path']))
-
-
-    def listen_delete_schedule(self,event):
-        filter = self._schedules[event.data['path']].config['filter']
-
-        self.delete(event.data['path'])
-        logging.debug('deleted schedule {}'.format(event.data['path']))
-        self.fire('send_to',{'event':'list_schedules', 'path':filter, 'value':self.get_schedules_list(filter=filter), 'clients':[event.client]})
-
-
-    def listen_schedule_changed(self,event):
-        self.fire('send',{'event':'schedule', 'path':event.data['schedule'].path, 'value':event.data['schedule'].value, 'readusers':event.data['schedule'].config['readusers'], 'readgroups':event.data['schedule'].config['readgroups']},source=self)
-
-
-    def listen_snooze_schedule(self,event):
-        logging.warning('snooze schedule is not implemented yet')
-
-
-    def listen_state_changed(self,event):
-        if event.data['state'].path == 'settings/location/timezone':
-            try:
-                self.timezone = pytz.timezone(event.data['value'])
-            except:
-                logging.error('timezone {} is not available in pytz'.format(event.data['value']))
 
 
 
@@ -225,6 +44,7 @@ class Schedule(BaseState):
         if not self.value['year'] is None and not self.value['year']==dt.year:
             match = False
         elif not self.value['month'] is None and not self.value['month']==dt.month:
+
             match = False
         elif not self.value['day'] is None and not self.value['day']==dt.day:
             match = False
@@ -293,6 +113,7 @@ class Schedule(BaseState):
         if not 'mon' in value:
             value['mon'] = True
         if not 'tue' in value:
+
             value['tue'] = True
         if not 'wed' in value:
             value['wed'] = True
@@ -306,8 +127,120 @@ class Schedule(BaseState):
         if not 'action' in value:
             value['action'] = ''
 
+
+        value['hour'] = int(value['hour'])
+        value['minute'] = int(value['minute'])
+
+
         return value
 
+
+
+
+
+class Schedules(ObjectPlugin):
+    """
+    Class to control the HomeCon scheduling
+    
+    """
+
+    objectclass = Schedule
+    objectname = 'schedule'
+
+    def initialize(self):
+        """
+        Initialize
+
+        """
+
+        # define the default timezone
+        self.timezone = pytz.utc
+
+        # schedule schedule running
+        self._loop.create_task(self.schedule_schedules())
+
+        logging.debug('Schedules plugin Initialized')
+
+
+    async def schedule_schedules(self):
+        """
+        Schedule schedule checking
+
+        """
+
+        while True:
+            # timestamps
+            dt_ref = datetime.datetime(1970, 1, 1)
+            dt_now = datetime.datetime.utcnow()
+            dt_when = (dt_now + datetime.timedelta(minutes=1)).replace(second=0,microsecond=0)
+
+            timestamp_when = int( (dt_when-dt_ref).total_seconds() )
+
+            dt = pytz.utc.localize( dt_now ).astimezone(self.timezone)
+            for path,schedule in self.items():
+                if schedule.match(dt):
+                    self._loop.call_soon_threadsafe(schedule.run)
+
+
+            # sleep until the next call
+            timestamp_now = int( (datetime.datetime.utcnow()-dt_ref).total_seconds() )
+            if timestamp_when-timestamp_now > 0:
+                await asyncio.sleep(timestamp_when-timestamp_now)
+
+
+    def list(self,filter=None):
+
+        unsortedlist =  [obj.serialize() for obj in self.values() if (filter is None or filter=='' or not 'filter' in obj.config or obj.config['filter'] == filter)]
+        sortedlist = sorted(unsortedlist, key=lambda obj: obj['id'])
+        pathlist = [obj['path'] for obj in sortedlist]
+
+        return pathlist
+
+
+    def listen_add_schedule(self,event):
+
+        path = str(uuid.uuid4())
+        obj = self.objectclass(self._objectdict,self._db_objects,path,config=event.data['config'])
+
+        if obj:
+            self.fire('schedule_added',{'schedule':obj})
+            filter = obj.config['filter']
+            self.fire('send_to',{'event':'list_schedules', 'path':filter, 'value':self.list(filter=filter), 'clients':[event.client]})
+
+
+    def listen_delete_schedule(self,event):
+        filter = self[event.data['path']].config['filter']
+
+
+        if 'path' in event.data:
+            if event.data['path'] in self:
+
+                obj = self[event.data['path']]
+                obj.delete()
+
+                logging.debug('deleted {} {}'.format(self.objectname.capitalize(), event.data['path']))
+
+                self.fire('send',{'event':'list_{}s'.format(self.objectname), 'path':'', 'value':self.list(filter=filter)})
+
+            else:
+                logging.error('{} does not exist {}'.format(self.objectname.capitalize(),event.data['path']))
+
+
+
+    def listen_schedule_changed(self,event):
+        self.fire('send',{'event':'schedule', 'path':event.data['schedule'].path, 'value':event.data['schedule'].value, 'readusers':event.data['schedule'].config['readusers'], 'readgroups':event.data['schedule'].config['readgroups']},source=self)
+
+
+    def listen_snooze_schedule(self,event):
+        logging.warning('snooze schedule is not implemented yet')
+
+
+    def listen_state_changed(self,event):
+        if event.data['state'].path == 'settings/location/timezone':
+            try:
+                self.timezone = pytz.timezone(event.data['value'])
+            except:
+                logging.error('timezone {} is not available in pytz'.format(event.data['value']))
 
 
 

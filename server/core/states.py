@@ -240,6 +240,14 @@ class BaseState(object):
         """
         return self._value
 
+    def delete(self):
+
+        self._db_table.DELETE(path=self._path)
+
+        # remove the object from the local reference
+        del self._dict[self._path]
+
+
 
     def serialize(self):
         """

@@ -5,12 +5,14 @@ import logging
 import asyncio
 import os
 import sys
+import uuid
 
 from concurrent.futures import ThreadPoolExecutor
 
 from . import events
 from . import states
 from . import components
+from . import database
 
 sys.path.append(os.path.abspath('..'))
 
@@ -212,4 +214,151 @@ class Plugin(object):
 
     def values(self):
         return []
+
+
+
+
+class ObjectPlugin(Plugin):
+    """
+    A plugin including an object list and usefull listeners
+    
+    objectclass and objectname must be defined in a child class
+
+    """
+
+    objectclass = states.State
+    objectname = 'state'
+
+    def __init__(self):
+
+
+        self._objectdict = {}
+
+        self._db = database.Database(database='homecon.db')
+        self._db_objects = database.Table(self._db,self.objectname,[
+            {'name':'path',   'type':'char(255)',  'null': '',  'default':'',  'unique':'UNIQUE'},
+            {'name':'config', 'type':'char(511)',  'null': '',  'default':'',  'unique':''},
+            {'name':'value',  'type':'char(255)',  'null': '',  'default':'',  'unique':''},
+        ])
+
+        # get all objects from the database
+        result = self._db_objects.GET()
+        for db_entry in result:
+            self.objectclass(self._objectdict,self._db_objects,db_entry['path'],db_entry=db_entry)
+
+
+
+        # add listener methods
+        def listen_add_object(cls, event):
+            """
+            add
+            """
+            if 'path' in event.data:
+                path = event.data['path']
+            else:
+                path = str(uuid.uuid4())
+
+            obj = self.objectclass(self._objectdict,self._db_objects,path,config=event.data['config'])
+
+            if obj:
+                self.fire('{}_added'.format(self.objectname),{self.objectname: obj})
+                self.fire('send',{'event':'list_{}s'.format(self.objectname), 'path':'', 'value':self.list()})
+
+
+        def listen_delete_object(cls,event):
+            """
+            delete
+            """
+            if 'path' in event.data:
+                if event.data['path'] in self:
+
+                    obj = self[event.data['path']]
+                    obj.delete()
+
+                    logging.debug('deleted {} {}'.format(self.objectname.capitalize(), event.data['path']))
+
+                    self.fire('send',{'event':'list_{}s'.format(self.objectname), 'path':'', 'value':self.list()})
+
+                else:
+                    logging.error('{} does not exist {}'.format(self.objectname.capitalize(),event.data['path']))
+
+
+        def listen_list_objects(cls,event):
+            """
+            list
+            """
+            if 'path' in event.data:
+                filter = event.data['path']
+            else:
+                filter = None
+
+            self.fire('send_to',{'event':'list_{}s'.format(self.objectname), 'path':event.data['path'], 'value':self.list(filter=filter), 'clients':[event.client]})
+
+
+        def listen_object(cls,event):
+            """
+            get or set
+            """
+            if 'path' in event.data:
+                if event.data['path'] in self:
+                    # get or set
+                    obj = self[event.data['path']]
+
+                    if 'value' in event.data:
+                        # set
+                        value = dict(obj.value)
+                        for key,val in event.data['value'].items():
+                            value[key] = val
+
+                        obj.set(value,source=event.source)
+
+                    else:
+                        # get
+                        self.fire('send_to',{'event':self.objectname, 'path':event.data['path'], 'value':obj.value, 'clients':[event.client]})
+
+                else:
+                    logging.error('{} does not exist {}'.format(self.objectname.capitalize(), event.data['path']))
+
+
+        setattr(ObjectPlugin, 'listen_add_{}'.format(self.objectname), classmethod(listen_add_object))
+        setattr(ObjectPlugin, 'listen_delete_{}'.format(self.objectname), classmethod(listen_delete_object))
+        setattr(ObjectPlugin, 'listen_list_{}s'.format(self.objectname), classmethod(listen_list_objects))
+        setattr(ObjectPlugin, 'listen_{}'.format(self.objectname), classmethod(listen_object))
+
+
+        # run the parent init
+        super(ObjectPlugin,self).__init__()
+
+
+
+    def list(self,filter=None):
+        """
+        redefine if necessary
+        """
+        unsortedlist = [obj.serialize() for obj in self.values() if (filter is None or filter=='' or not 'filter' in obj.value or obj.value['filter'] == filter)]
+        sortedlist = sorted(unsortedlist, key=lambda obj: obj['path'])
+        pathlist = [obj['path'] for obj in sortedlist]
+
+        return pathlist
+
+
+    def __getitem__(self,path):
+        return self._objectdict[path]
+
+    def __iter__(self):
+        return iter(self._objectdict)
+
+    def __contains__(self,path):
+        return path in self._objectdict
+
+    def keys(self):
+        return self._objectdict.keys()
+
+    def items(self):
+        return self._objectdict.items()
+
+    def values(self):
+        return self._objectdict.values()
+
+
 
