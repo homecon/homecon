@@ -209,18 +209,17 @@ class Schedules(ObjectPlugin):
 
 
     def listen_delete_schedule(self,event):
-        filter = self[event.data['path']].config['filter']
-
 
         if 'path' in event.data:
             if event.data['path'] in self:
 
                 obj = self[event.data['path']]
+                filter = obj.config['filter']
                 obj.delete()
 
                 logging.debug('deleted {} {}'.format(self.objectname.capitalize(), event.data['path']))
 
-                self.fire('send',{'event':'list_{}s'.format(self.objectname), 'path':'', 'value':self.list(filter=filter)})
+                self.fire('send',{'event':'list_{}s'.format(self.objectname), 'path':filter, 'value':self.list(filter=filter)})
 
             else:
                 logging.error('{} does not exist {}'.format(self.objectname.capitalize(),event.data['path']))
