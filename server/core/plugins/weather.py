@@ -189,7 +189,8 @@ class Weather(plugin.Plugin):
                             forecast['precipitation_probability'] = 0
 
                         #forecast_daily.append(forecast)
-                        await self._states['weather/forecast/daily/{}'.format(i)].set( forecast )
+                        #print(self._states['weather/forecast/daily/{}'.format(i)])
+                        await self._states['weather/forecast/daily/{}'.format(i)].set_async( forecast )
 
 
                         # hourly values
@@ -216,7 +217,7 @@ class Weather(plugin.Plugin):
                                 forecast['precipitation_probability'] = 0
 
                             #forecast_hourly.append(forecast)
-                            await self._states['weather/forecast/hourly/{}'.format(i*24+j)].set( forecast )
+                            await self._states['weather/forecast/hourly/{}'.format(i*24+j)].set_async( forecast )
 
             logging.debug('Weather forecast loaded from darksky.net')
 
