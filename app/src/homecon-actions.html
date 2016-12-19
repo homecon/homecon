@@ -40,7 +40,7 @@
 
         <homecon-web-socket-sender id="websocket"></homecon-web-socket-sender>
 
-        <homecon-web-socket-object id="websocketObjectsList" event="list_actions" path="" data="{{actions}}" auto></homecon-web-socket-object>
+        <homecon-web-socket-object id="websocketObjectsList" event="list_actions" path="" data="{{actions}}"></homecon-web-socket-object>
         <homecon-web-socket-object id="websocketObject" event="action" path="{{path}}" data="{{action}}" on-change="actionChanged"></homecon-web-socket-object>
 
         <template is="dom-repeat" items="{{actions}}" as="path">
@@ -111,10 +111,8 @@
                 var that = this;
             },
 
-            actionChanged: function(e,d){
-                this.newValue = d;
-
-                var that = this;
+            actionChanged: function(event,data){
+                this.newValue = data;
             },
 
             addEvent: function(e,d){
@@ -125,7 +123,8 @@
             editAction: function(e){
                 this.$.editActionDialog.close();
 
-                this.$.websocketObject.send(this.newValue);
+                var value = this.newValue;
+                this.$.websocketObject.send(value);
 
             },
 
@@ -140,6 +139,9 @@
                 this.$.editActionDialog.center();
             },
 
+            load: function(){
+                this.$.websocketObjectsList.send();
+            },
         });
     </script>
 

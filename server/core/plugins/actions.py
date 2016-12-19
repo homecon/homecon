@@ -13,8 +13,8 @@ from .. import database
 from .. import events
 from ..states import BaseState
 from ..plugin import ObjectPlugin
-
-
+from .authentication import servertoken
+from .authentication import jwt_decode
 
 class Action(BaseState):
     """
@@ -50,12 +50,13 @@ class Action(BaseState):
 
         client = None
 
-        for a in self.value:
-            event = a[0]
-            data  = a[1]
-            delay = a[2]
+        for action in self.value:
+            data = json.loads(action['data'])
 
-            self._loop.call_later(delay,functools.partial(events.fire, event, data, source, client))
+            # add the server token to the data, this token has the highest permission so every event will be processed
+            data['token'] = servertoken
+
+            self._loop.call_later(float(action['delay']),functools.partial(events.fire, action['event'], data, source, client))
 
 
     def _check_value(self,value):

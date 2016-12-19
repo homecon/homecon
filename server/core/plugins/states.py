@@ -5,6 +5,7 @@ import logging
 import json
 
 from .. import plugin
+from .authentication import jwt_decode
 
 class States(plugin.Plugin):
     """
@@ -133,13 +134,12 @@ class States(plugin.Plugin):
             state = self.get(event.data['path'])
 
             if not state is None:
-                tokenpayload = event.client.tokenpayload  # event.data['token']  fixme, retrieve the payload from the token
+                tokenpayload = jwt_decode(event.data['token'])
 
-                
                 if 'value' in event.data:
                     # set
                     permitted = False
-                    if tokenpayload['userid'] in state.config['writeusers']:
+                    if tokenpayload and tokenpayload['userid'] in state.config['writeusers']:
                         permitted = True
                     else:
                         for g in tokenpayload['groupids']:
@@ -161,9 +161,9 @@ class States(plugin.Plugin):
                 else:
                     # get
                     permitted = False
-                    if tokenpayload['userid'] in state.config['readusers']:
+                    if tokenpayload and tokenpayload['userid'] in state.config['readusers']:
                         permitted = True
-                    else:
+                    elif tokenpayload:
                         for g in tokenpayload['groupids']:
                             if g in state.config['readgroups']:
                                 permitted = True
@@ -177,14 +177,13 @@ class States(plugin.Plugin):
 
     def listen_send_states_to(self,event):
         for client in event.data['clients']:
-            tokenpayload = client.tokenpayload  # event.data['token']  fixme, retrieve the payload from the token
+            tokenpayload = jwt_decode(event.data['token'])
 
             for state in self._states.values():
                 permitted = False
-                if tokenpayload['userid'] in state.config['readusers']:
-
+                if tokenpayload and tokenpayload['userid'] in state.config['readusers']:
                     permitted = True
-                else:
+                elif tokenpayload:
                     for g in tokenpayload['groupids']:
                         if g in state.config['readgroups']:
                             permitted = True

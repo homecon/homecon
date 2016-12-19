@@ -154,20 +154,24 @@ class Schedules(ObjectPlugin):
         """
 
         # define the default timezone
-        self.timezone = pytz.utc
+        try:
+            self.timezone = pytz.timezone(self._states['settings/location/timezone'].value)
+        except:
+            self.timezone = pytz.utc
+        
 
         # schedule schedule running
-        self._loop.create_task(self.schedule_schedules())
+        self._loop.create_task(self.run_schedules())
 
         logging.debug('Schedules plugin Initialized')
+        
 
-
-    async def schedule_schedules(self):
+    async def run_schedules(self):
         """
-        Schedule schedule checking
+        run schedule checking
 
         """
-
+        print(self.timezone)
         while True:
             # timestamps
             dt_ref = datetime.datetime(1970, 1, 1)
@@ -177,6 +181,7 @@ class Schedules(ObjectPlugin):
             timestamp_when = int( (dt_when-dt_ref).total_seconds() )
 
             dt = pytz.utc.localize( dt_now ).astimezone(self.timezone)
+            print(dt)
             for path,schedule in self.items():
                 if schedule.match(dt):
                     self._loop.call_soon_threadsafe(schedule.run)

@@ -46,6 +46,7 @@
         </style>
         
         <homecon-web-socket-object id="websocketObject" event="schedule" path="{{path}}" data="{{alarm}}" auto></homecon-web-socket-object>
+
         <div class="alarm vertical layout">
             <div class="horizontal layout wrap">
                 <div class="time" on-tap="editTime">
@@ -71,9 +72,9 @@
                 </div>
             </div>
             <paper-dropdown-menu label="Action">
-                <paper-menu class="dropdown-content" attr-for-selected="value" selected="{{path}}">
-                    <template is="dom-repeat" items="{{actions}}" as="state">
-                        <paper-item value="{{action.path}}">{{action.path}}</paper-item>
+                <paper-menu class="dropdown-content" attr-for-selected="value" selected="{{alarm.action}}" on-iron-select="_actionChanged">
+                    <template is="dom-repeat" items="{{actions}}" as="action">
+                        <paper-item value="{{action}}">{{action}}</paper-item>
                     </template>
                 </paper-menu>
             </paper-dropdown-menu>
@@ -96,6 +97,9 @@
             properties: {
                 path: {
                     type: 'String',
+                },
+                actions: {
+                    type: 'Array',
                 },
             },
 
@@ -189,6 +193,12 @@
                 value[day.day] = day.value;
                 
                 this.$.websocketObject.send(value);
+            },
+
+            _actionChanged: function(event,data){
+                console.log(event)
+                console.log(this.alarm.action)
+                this.$.websocketObject.send({'action':this.alarm.action});
             },
         });
     </script>

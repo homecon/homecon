@@ -51,6 +51,8 @@ def jwt_decode(token):
         return False
 
 
+servertoken = jwt_encode({'userid': -1, 'groupids': [1], 'username':'', 'permission':9})
+
 
 
 class Authentication(plugin.Plugin):

@@ -47,13 +47,15 @@
 
         </style>
         
-        <homecon-web-socket-object id="websocketObject" event="list_schedules" path="[[config.filter]]" data="{{paths}}" auto></homecon-web-socket-object>
+        <homecon-web-socket-object event="list_schedules" path="[[config.filter]]" data="{{alarms}}" auto></homecon-web-socket-object>
+        <homecon-web-socket-object event="list_actions" path="[[config.filter]]" data="{{actions}}" auto></homecon-web-socket-object>
+
         <homecon-web-socket-sender id="websocket"></homecon-web-socket-sender>
 
-        <template is="dom-repeat" items="{{paths}}" as="path">
+        <template is="dom-repeat" items="{{alarms}}" as="path">
 
             <div class="alarm vertical layout">
-                <homecon-base-alarm path="{{path}}"></homecon-base-alarm>
+                <homecon-base-alarm path="{{path}}" actions="{{actions}}"></homecon-base-alarm>
                 <div class="delete">
                     <paper-icon-button icon="icons:delete" noink="true" on-tap="deleteAlarm"></paper-icon-button>
                 </div>
