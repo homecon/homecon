@@ -144,7 +144,7 @@ class Pages(Plugin):
         """
     
         del self._groups[path]
-        self._db_groups.DELETE(where='path=\'{}\''.format(path))
+        self._db_groups.DELETE(path=path)
 
         # cascade
         for page in self._pages.values():
@@ -201,7 +201,7 @@ class Pages(Plugin):
         """
     
         del self._pages[path]
-        self._db_pages.DELETE(where='path=\'{}\''.format(path))
+        self._db_pages.DELETE(path=path)
 
         # cascade
         for section in self._sections.values():
@@ -252,7 +252,7 @@ class Pages(Plugin):
         """
     
         del self._sections[path]
-        self._db_sections.DELETE(where='path=\'{}\''.format(path))
+        self._db_sections.DELETE(path=path)
 
         # cascade
         for widget in self._widgets.values():
@@ -304,7 +304,7 @@ class Pages(Plugin):
         """
     
         del self._widgets[path]
-        self._db_widgets.DELETE(where='path=\'{}\''.format(path))
+        self._db_widgets.DELETE(path=path)
 
 
 
@@ -439,7 +439,6 @@ class Pages(Plugin):
             self.delete_page(event.data['path'])
             self.fire('send_to',{'event':'pages_menu', 'path':'', 'value':self.get_menu(), 'clients':[event.client]})
             self.fire('send_to',{'event':'pages_paths', 'path':'', 'value':self.get_pages_paths(), 'clients':[event.client]})
-            self.fire('send_to',{'event':'pages_page', 'path':page['path'], 'value':page, 'clients':[event.client]})
             
         elif 'path' in event.data and 'value' in event.data and not event.data['value'] is None and tokenpayload and tokenpayload['permission'] > 6:
             # update

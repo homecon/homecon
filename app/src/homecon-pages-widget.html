@@ -60,6 +60,9 @@
                 var widget = document.createElement('homecon-widget-'+type);
                 if(typeof this.widget.config['initialized'] == 'undefined'){
                     widget.config['initialized'] = true;
+                    for(var attrname in this.widget.config){
+                        widget.config[attrname] = this.widget.config[attrname];
+                    }
                     this.$.websocketWidget.send({'config':widget.config});
                 }
                 else{

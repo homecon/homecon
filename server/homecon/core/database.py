@@ -252,7 +252,6 @@ class Table(object):
         data = tuple(data)
 
         query = 'DELETE FROM {} {}'.format(self.name,where)
-        print(query)
         cursor = self.database.execute_query( query,data )
 
         

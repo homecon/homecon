@@ -135,7 +135,7 @@ class HomeCon(object):
 
         # demo mode
         if self.demo:
-            self.coreplugins['demo'] = core.plugins.demo.Demo()
+            self.coreplugins['demo'] = core.plugins.demo.Demo(self)
 
 
         logging.info('HomeCon object Initialized')
