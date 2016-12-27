@@ -20,7 +20,7 @@ class Pages(Plugin):
     def initialize(self):
 
 
-        self._db = database.Database(database='homecon.db')
+        self._db = database.Database(database=database.DB_NAME)
 
         self._db_groups = database.Table(self._db,'pages_groups',[
             {'name':'path',        'type':'char(255)',  'null': '',  'default':'',  'unique':'UNIQUE'},

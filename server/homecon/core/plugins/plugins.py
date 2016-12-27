@@ -18,7 +18,7 @@ class Plugins(Plugin):
         self.pluginfolder = 'plugins'
         self._plugins = {}
 
-        self._db = database.Database(database='homecon.db')
+        self._db = database.Database(database=database.DB_NAME)
         self._db_plugins = database.Table(self._db,'plugins',[
             {'name':'name', 'type':'char(255)', 'null': '', 'default':'', 'unique':'UNIQUE'},
         ])

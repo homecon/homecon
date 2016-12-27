@@ -20,7 +20,7 @@ class Components(object):
         self._states = states.states
         self._component_types = {}
         self._components = {}
-        self._db = database.Database(database='homecon.db')
+        self._db = database.Database(database=database.DB_NAME)
         self._db_components = database.Table(self._db,'components',[
             {'name':'path',    'type':'char(255)',  'null': '',  'default':'',  'unique':'UNIQUE'},
             {'name':'type',    'type':'char(127)',  'null': '',  'default':'',  'unique':''},

@@ -27,7 +27,7 @@ class Building(Plugin):
 
         self.timezone = pytz.utc
 
-        self._db = database.Database(database='homecon.db')
+        self._db = database.Database(database=database.DB_NAME)
         
 
         # get all schedules from the database

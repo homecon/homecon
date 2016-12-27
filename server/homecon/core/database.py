@@ -2,6 +2,8 @@
 # -*- coding: utf-8 -*-
 
 
+DB_NAME = 'homecon.db'
+DB_MEASUREMENTS_NAME = 'homecon_measurements.db'
 
 BACKEND = 'sqlite3'
 
@@ -10,7 +12,7 @@ if BACKEND == 'sqlite3':
 else:
     import pymysql
 
-    
+
 class Database(object):
     """
     Class for interfacing a sqlite3 or mysql database

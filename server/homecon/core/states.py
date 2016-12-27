@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+import logging
 import json
 import copy
 import inspect
@@ -19,7 +20,7 @@ class States(object):
     def __init__(self):
 
         self._states = {}
-        self._db = database.Database(database='homecon.db')
+        self._db = database.Database(database=database.DB_NAME)
         self._db_states = database.Table(self._db,'states',[
             {'name':'path',   'type':'char(255)',  'null': '',  'default':'',  'unique':'UNIQUE'},
             {'name':'config', 'type':'char(511)',  'null': '',  'default':'',  'unique':''},
@@ -145,7 +146,7 @@ class BaseState(object):
             if not jsonvalue is None:
                 value = json.loads(jsonvalue)
 
-                if 'type' in self._config and self._config['type']=='number':
+                if 'type' in self._config and self._config['type']=='number' and not value is None:
                     value = float(value)
 
                     if math.isnan(value):
@@ -422,5 +423,4 @@ class State(BaseState):
 
 # create the states object
 states = States()
-
 

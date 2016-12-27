@@ -140,7 +140,7 @@ class Dimminglight(Light):
     
     """
     def initialize(self):
-        super(self).initialize()
+        super(Dimminglight,self).initialize()
 
 class Shading(components.Component):
     """

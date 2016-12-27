@@ -81,7 +81,7 @@ class Authentication(plugin.Plugin):
         Initialize the authentication module
         """
         # create database tables
-        self._db = database.Database(database='homecon.db')
+        self._db = database.Database(database=database.DB_NAME)
         self._db_users = database.Table(self._db,'users',[
             {'name':'username',      'type':'char(255)',  'null': '',  'default':'',  'unique':'UNIQUE'},
             {'name':'password',      'type':'char(255)',  'null': '',  'default':'',  'unique':''},

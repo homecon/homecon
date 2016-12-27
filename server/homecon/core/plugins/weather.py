@@ -13,7 +13,7 @@ import numpy as np
 
 from .. import plugin
 from .. import components
-from ..util import weather
+from ...util import weather
 
 class Weather(plugin.Plugin):
     """
@@ -189,7 +189,6 @@ class Weather(plugin.Plugin):
                             forecast['precipitation_probability'] = 0
 
                         #forecast_daily.append(forecast)
-                        #print(self._states['weather/forecast/daily/{}'.format(i)])
                         await self._states['weather/forecast/daily/{}'.format(i)].set_async( forecast )
 
 

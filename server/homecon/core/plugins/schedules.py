@@ -171,7 +171,7 @@ class Schedules(ObjectPlugin):
         run schedule checking
 
         """
-        print(self.timezone)
+
         while True:
             # timestamps
             dt_ref = datetime.datetime(1970, 1, 1)
@@ -181,7 +181,7 @@ class Schedules(ObjectPlugin):
             timestamp_when = int( (dt_when-dt_ref).total_seconds() )
 
             dt = pytz.utc.localize( dt_now ).astimezone(self.timezone)
-            print(dt)
+
             for path,schedule in self.items():
                 if schedule.match(dt):
                     self._loop.call_soon_threadsafe(schedule.run)

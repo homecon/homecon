@@ -14,11 +14,8 @@ from . import states
 from . import components
 from . import database
 
-sys.path.append(os.path.abspath('..'))
-
 # the worker thread pool
 executor = ThreadPoolExecutor(10)
-
 
 
 class Plugin(object):

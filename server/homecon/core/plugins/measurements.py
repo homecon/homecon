@@ -34,7 +34,7 @@ class Measurements(plugin.Plugin):
     def initialize(self):
         
 
-        self._db = database.Database(database='homecon_measurements.db')
+        self._db = database.Database(database=database.DB_MEASUREMENTS_NAME)
         self._db_measurements = database.Table(self._db,'measurements',[
             {'name':'time',   'type':'INT',   'null': '',  'default':'',  'unique':''},
             {'name':'path',   'type':'TEXT',  'null': '',  'default':'',  'unique':''},
