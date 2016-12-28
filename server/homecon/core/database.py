@@ -2,9 +2,6 @@
 # -*- coding: utf-8 -*-
 
 
-DB_NAME = 'homecon.db'
-DB_MEASUREMENTS_NAME = 'homecon_measurements.db'
-
 BACKEND = 'sqlite3'
 
 if BACKEND == 'sqlite3':
@@ -99,14 +96,13 @@ class Table(object):
         
         self.database = database
         self.name = name
-        
+
         # create the table if it does not exist
         if BACKEND == 'sqlite3':
             query = 'CREATE TABLE IF NOT EXISTS {} (id INTEGER PRIMARY KEY)'.format(self.name)
         else:
             query = 'CREATE TABLE IF NOT EXISTS {} (id int(11) NOT NULL AUTO_INCREMENT, PRIMARY KEY (id))'.format(self.name)
         self.database.execute_query( query )
-        
 
         # load all existing columns
         query = 'SELECT * FROM {}'.format(self.name)
@@ -254,12 +250,15 @@ class Table(object):
         query = 'DELETE FROM {} {}'.format(self.name,where)
         cursor = self.database.execute_query( query,data )
 
-        
+
+# create database objects
+db = Database(database='homecon.db')
+measurements_db = Database(database='homecon_measurements.db')
         
 # Example usage
 if __name__ == '__main__':
 
-    db = Database(database = 'test.db')
+    db = Database(database='test.db')
     users = Table(db,'users',[
         {'name':'username',   'type':'char(255)', 'null': '',  'default':'',  'unique':'UNIQUE'},
         {'name':'password',   'type':'char(255)', 'null': '',  'default':'',  'unique':''},

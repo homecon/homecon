@@ -5,8 +5,8 @@ import logging
 import json
 
 from . import database
-from . import events
-from . import states
+from . import event
+from . import state
 
 class Components(object):
     """
@@ -17,11 +17,10 @@ class Components(object):
     def __init__(self):
         #super(Components,self).__init__(queue)
 
-        self._states = states.states
         self._component_types = {}
         self._components = {}
-        self._db = database.Database(database=database.DB_NAME)
-        self._db_components = database.Table(self._db,'components',[
+
+        self._db_components = database.Table(database.db,'components',[
             {'name':'path',    'type':'char(255)',  'null': '',  'default':'',  'unique':'UNIQUE'},
             {'name':'type',    'type':'char(127)',  'null': '',  'default':'',  'unique':''},
             {'name':'config',  'type':'char(511)',  'null': '',  'default':'',  'unique':''},
@@ -45,7 +44,6 @@ class Components(object):
         Register a component type
 
         """
-
         self._component_types[componentclass.__name__.lower()] = componentclass
 
     def types(self):
@@ -56,6 +54,7 @@ class Components(object):
         add a component
 
         """
+
         if not path in self._components and type in self._component_types:
             
             # check if the component is in the database and add it if not
@@ -114,8 +113,6 @@ class Component(object):
             the component identifier
 
         """
-        self._components = components
-        self._states = states.states
         self._path = path
         self.initialize()
 
@@ -123,12 +120,13 @@ class Component(object):
             for key,val in config.items():
                 self.config[key] = val
 
+
         # try to find the corresponding states and create them if required
         for path in self.states:
             fullpath = self._path + '/' + path
-
-            if fullpath in states.states:
-                self.states[path]['state'] = states.states[fullpath]
+            
+            if fullpath in state.states:
+                self.states[path]['state'] = state.states[fullpath]
             else:
                 config = {}
                 for key,val in self.states[path]['default_config'].items():
@@ -137,7 +135,7 @@ class Component(object):
                     config[key] = val
                 config['component'] = self._path
                     
-                self.states[path]['state'] = states.states.add(fullpath,config)
+                self.states[path]['state'] = state.states.add(fullpath,config)
 
 
     def initialize(self):
@@ -165,6 +163,6 @@ class Component(object):
         }
         return json.dumps(repr)
 
-
-# create the components object
+# create the components container
 components = Components()
+

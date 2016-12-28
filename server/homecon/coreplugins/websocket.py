@@ -8,10 +8,10 @@ import asyncio
 
 import asyncws
 
-from ..plugin import Plugin
+from .. import core
 
 
-class Websocket(Plugin):
+class Websocket(core.plugin.Plugin):
     def initialize(self):
 
         self.clients = []
@@ -46,7 +46,7 @@ class Websocket(Plugin):
                         self.log_data(address,data)
                         
                         if 'event' in data:
-                            self.fire(data['event'],data,client=client)
+                            core.event.fire(data['event'],data,source=self,client=client)
 
                         elif 'echo' in data:
                             yield from client.send(data)

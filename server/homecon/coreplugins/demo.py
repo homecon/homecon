@@ -8,17 +8,11 @@ import datetime
 import asyncio
 import numpy as np
 
-from .. import database
-from .. import events
-from ..plugin import Plugin
-from ...util import weather
+from .. import core
+from .. import util
 
 
-class Demo(Plugin):
-
-    def __init__(self,homecon):
-        self._homecon = homecon
-        super(Demo,self).__init__()
+class Demo(core.plugin.Plugin):
 
 
     def initialize(self):
@@ -30,10 +24,10 @@ class Demo(Plugin):
         self.longitude = 5.5833
         self.elevation = 74
 
-        self._states['settings/location/latitude'].value = self.latitude
-        self._states['settings/location/longitude'].value = self.longitude
-        self._states['settings/location/elevation'].value = self.elevation
-        self._states['settings/location/timezone'].value = 'Europe/Brussels'
+        core.states['settings/location/latitude'].value = self.latitude
+        core.states['settings/location/longitude'].value = self.longitude
+        core.states['settings/location/elevation'].value = self.elevation
+        core.states['settings/location/timezone'].value = 'Europe/Brussels'
 
 
         ########################################################################
@@ -41,27 +35,27 @@ class Demo(Plugin):
         ########################################################################
         logging.debug('Adding demo components')
 
-        self._components.add('living/light_dinnertable', 'light'       , {'type':'hallogen','power':35})
-        self._components.add('living/light_tv'         , 'light'       , {'type':'led','power':10})
-        self._components.add('living/light_couch'      , 'dimminglight', {'type':'led','power':15})
-        self._components.add('kitchen/light'           , 'light'       , {'type':'led','power':5})
-        self._components.add('bedroom/light'           , 'dimminglight', {'type':'led','power':20})
+        core.components.add('living/light_dinnertable', 'light'       , {'type':'hallogen','power':35})
+        core.components.add('living/light_tv'         , 'light'       , {'type':'led','power':10})
+        core.components.add('living/light_couch'      , 'dimminglight', {'type':'led','power':15})
+        core.components.add('kitchen/light'           , 'light'       , {'type':'led','power':5})
+        core.components.add('bedroom/light'           , 'dimminglight', {'type':'led','power':20})
 
 
-        self._components.add('living/window_west_1/screen'      ,'shading'       ,{})
-        self._components.add('living/window_west_2/screen'      ,'shading'       ,{})
-        self._components.add('kitchen/window_west/screen'       ,'shading'       ,{})
-        self._components.add('kitchen/window_south/screen'      ,'shading'       ,{})
+        core.components.add('living/window_west_1/screen'      ,'shading'       ,{})
+        core.components.add('living/window_west_2/screen'      ,'shading'       ,{})
+        core.components.add('kitchen/window_west/screen'       ,'shading'       ,{})
+        core.components.add('kitchen/window_south/screen'      ,'shading'       ,{})
 
-        self._components.add('bedroom/window_east/shutter'      ,'shading'       ,{})
-        self._components.add('bedroom/window_north/shutter'     ,'shading'       ,{})
+        core.components.add('bedroom/window_east/shutter'      ,'shading'       ,{})
+        core.components.add('bedroom/window_north/shutter'     ,'shading'       ,{})
 
 
         ########################################################################
         # add pages
         ########################################################################
         
-        pages = self._homecon.coreplugins['pages']
+        pages = core.plugins['pages']
 
         # delete all pages
         paths = [p for p in pages._widgets]
@@ -124,9 +118,7 @@ class Demo(Plugin):
         logging.debug('Adding demo measurements')
 
         # write data to homecon measurements database
-        _db = database.Database(database=database.DB_MEASUREMENTS_NAME)
-
-        connection,cursor = _db.create_cursor()
+        connection,cursor = core.measurements_db.create_cursor()
 
         for i,t in enumerate(weatherdata['timestamp']):
             cursor.execute('INSERT INTO measurements (`time`,`path`,`value`) VALUES ({},{},{})'.format(weatherdata['timestamp'][i],'\'weather/temperature\''      ,np.round(weatherdata['ambienttemperature'][i],2)))
@@ -138,6 +130,7 @@ class Demo(Plugin):
 
 
         connection.commit()
+        connection.close()
 
         logging.debug('Demo plugin initialized')
 
@@ -178,8 +171,8 @@ class Demo(Plugin):
             t_ref = datetime.datetime(1970, 1, 1)
             timestamp[i] = int( (t-t_ref).total_seconds() )
 
-            solar_azimuth[i],solar_altitude[i] = weather.sunposition(self.latitude,self.longitude,elevation=self.elevation,utcdatetime=t)
-            I_direct_clearsky[i],I_diffuse_clearsky[i] = weather.clearskyirrradiance(solar_azimuth[i],solar_altitude[i],utcdatetime=t)
+            solar_azimuth[i],solar_altitude[i] = util.weather.sunposition(self.latitude,self.longitude,elevation=self.elevation,utcdatetime=t)
+            I_direct_clearsky[i],I_diffuse_clearsky[i] = util.weather.clearskyirrradiance(solar_azimuth[i],solar_altitude[i],utcdatetime=t)
 
             # random variation in cloud cover
             if i == 0:
@@ -189,9 +182,9 @@ class Demo(Plugin):
             cloudcover[i] = min(1.,max(0., initial_cloudcover + 0.0001*(2*np.random.random()-1)*self.timestep ))
 
 
-            I_direct_cloudy[i],I_diffuse_cloudy[i] = weather.cloudyskyirrradiance(I_direct_clearsky[i],I_diffuse_clearsky[i],cloudcover[i],solar_azimuth[i],solar_altitude[i],utcdatetime=t)
+            I_direct_cloudy[i],I_diffuse_cloudy[i] = util.weather.cloudyskyirrradiance(I_direct_clearsky[i],I_diffuse_clearsky[i],cloudcover[i],solar_azimuth[i],solar_altitude[i],utcdatetime=t)
             
-            I_total_horizontal[i], I_direct_horizontal[i], I_diffuse_horizontal[i], I_ground_horizontal[i] = weather.incidentirradiance(I_direct_cloudy[i],I_diffuse_cloudy[i],solar_azimuth[i],solar_altitude[i],0,0)
+            I_total_horizontal[i], I_direct_horizontal[i], I_diffuse_horizontal[i], I_ground_horizontal[i] = util.weather.incidentirradiance(I_direct_cloudy[i],I_diffuse_cloudy[i],solar_azimuth[i],solar_altitude[i],0,0)
 
             # ambient temperature dependent on horizontal irradiance
             if i == 0:
@@ -199,7 +192,7 @@ class Demo(Plugin):
             else:
                 initial_ambienttemperature = ambienttemperature[i-1]
 
-            ambienttemperature[i] = initial_ambienttemperature + I_total_horizontal[i]*self.timestep/(30*24*3600) + (-10-initial_ambienttemperature)*self.timestep/(7*24*3600) + (2*np.random.random()-1)*self.timestep/(2*3600)
+            ambienttemperature[i] = initial_ambienttemperature + I_total_horizontal[i]*self.timestep/(15*24*3600) + (-10-initial_ambienttemperature)*self.timestep/(5*24*3600) + (2*np.random.random()-1)*self.timestep/(2*3600)
 
 
         utcdatetime_ref = datetime.datetime(1970, 1, 1)

@@ -6,10 +6,9 @@ import asyncio
 import os
 import sys
 
-from .. import database
-from ..plugin import Plugin
+from .. import core
 
-class Plugins(Plugin):
+class Plugins(core.plugin.Plugin):
     """
     A class to manage plugins dynamically
     """
@@ -18,13 +17,12 @@ class Plugins(Plugin):
         self.pluginfolder = 'plugins'
         self._plugins = {}
 
-        self._db = database.Database(database=database.DB_NAME)
-        self._db_plugins = database.Table(self._db,'plugins',[
+        self._db_plugins = core.database.Table(core.db,'plugins',[
             {'name':'name', 'type':'char(255)', 'null': '', 'default':'', 'unique':'UNIQUE'},
         ])
         
         # list all plugins in the pluginfolder
-        path = os.path.join( os.path.dirname(os.path.realpath(__file__)) ,'..','..',self.pluginfolder)
+        path = os.path.join( os.path.dirname(os.path.realpath(__file__)) ,'..',self.pluginfolder)
         self._availableplugins = [name for name in os.listdir(path) if os.path.isdir(os.path.join(path,name)) and not name=='__pycache__' ]
         
 
@@ -123,26 +121,26 @@ class Plugins(Plugin):
 
 
     def listen_list_plugins(self,event):
-        self.fire('send_to',{'event':'list_plugins', 'path':'', 'value':self.get_plugins_list(), 'clients':[event.client]})
+        core.event.fire('send_to',{'event':'list_plugins', 'path':'', 'value':self.get_plugins_list(), 'clients':[event.client]})
         
 
     def listen_list_state_config_keys(self,event):
-        self.fire('send_to',{'event':'list_state_config_keys', 'path':'', 'value':self.get_state_config_keys(), 'clients':[event.client]})
+        core.event.fire('send_to',{'event':'list_state_config_keys', 'path':'', 'value':self.get_state_config_keys(), 'clients':[event.client]})
 
 
     def listen_activate_plugin(self,event):
         if self.activate(event.data['plugin']):
-            self.fire('send_to',{'event':'list_plugins', 'path':'', 'value':self.get_plugins_list(), 'clients':[event.client]})
+            core.event.fire('send_to',{'event':'list_plugins', 'path':'', 'value':self.get_plugins_list(), 'clients':[event.client]})
 
 
     def listen_deactivate_plugin(self,event):
         if self.deactivate(event.data['plugin']):
-            self.fire('send_to',{'event':'list_plugins', 'path':'', 'value':self.get_plugins_list(), 'clients':[event.client]})
+            core.event.fire('send_to',{'event':'list_plugins', 'path':'', 'value':self.get_plugins_list(), 'clients':[event.client]})
 
 
     def listen_download_plugin(self,event):
         if self.download(event.data['url']):
-            self.fire('send_to',{'event':'list_plugins', 'path':'', 'value':self.get_plugins_list(), 'clients':[event.client]})
+            core.event.fire('send_to',{'event':'list_plugins', 'path':'', 'value':self.get_plugins_list(), 'clients':[event.client]})
 
 
     def _start_plugin(self,name,package=None):

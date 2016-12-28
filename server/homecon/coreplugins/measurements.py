@@ -22,10 +22,9 @@ import logging
 import json
 import datetime
 
-from .. import database
-from .. import plugin
+from .. import core
 
-class Measurements(plugin.Plugin):
+class Measurements(core.plugin.Plugin):
     """
     Class to control the HomeCon measurements
     
@@ -33,9 +32,7 @@ class Measurements(plugin.Plugin):
 
     def initialize(self):
         
-
-        self._db = database.Database(database=database.DB_MEASUREMENTS_NAME)
-        self._db_measurements = database.Table(self._db,'measurements',[
+        self._db_measurements = core.database.Table(core.measurements_db,'measurements',[
             {'name':'time',   'type':'INT',   'null': '',  'default':'',  'unique':''},
             {'name':'path',   'type':'TEXT',  'null': '',  'default':'',  'unique':''},
             {'name':'value',  'type':'TEXT',  'null': '',  'default':'',  'unique':''},
@@ -51,7 +48,7 @@ class Measurements(plugin.Plugin):
         returns a UTC timestamp
         """
 
-        return int( datetime.datetime.now().timestamp() )
+        return int( (datetime.datetime.utcnow()-datetime.datetime(1970,1,1)).total_seconds() )
     
 
     def add(self,path,value,readusers=None,readgroups=None):
@@ -89,7 +86,7 @@ class Measurements(plugin.Plugin):
             if readgroups is None:
                 readgroups = []
 
-            self.fire('send',{'event':'append_timeseries', 'path':path, 'value':[time,value], 'readusers':readusers, 'readgroups':readgroups})
+            core.event.fire('send',{'event':'append_timeseries', 'path':path, 'value':[time,value], 'readusers':readusers, 'readgroups':readgroups})
 
 
     def get(self,path):
@@ -118,7 +115,7 @@ class Measurements(plugin.Plugin):
         
         if not 'value' in event.data:
             data = self.get(event.data['path'])
-            self.fire('send_to',{'event':'timeseries', 'path':event.data['path'], 'value':data, 'clients':[event.client]})
+            core.event.fire('send_to',{'event':'timeseries', 'path':event.data['path'], 'value':data, 'clients':[event.client]})
         
 
 

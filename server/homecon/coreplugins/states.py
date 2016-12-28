@@ -4,10 +4,10 @@
 import logging
 import json
 
-from .. import plugin
+from .. import core
 from .authentication import jwt_decode
 
-class States(plugin.Plugin):
+class States(core.plugin.Plugin):
     """
     Class to control the HomeCon states
     
@@ -32,10 +32,10 @@ class States(plugin.Plugin):
 
 
         # add settings states
-        self._states.add('settings/location/latitude', config={'type': 'number', 'quantity':'angle', 'unit':'deg','label':'latitude', 'description':'HomeCon latitude'})
-        self._states.add('settings/location/longitude',config={'type': 'number', 'quantity':'angle', 'unit':'deg','label':'longitude','description':'HomeCon longitude'})
-        self._states.add('settings/location/elevation',config={'type': 'number', 'quantity':'height','unit':'m',  'label':'elevation','description':'HomeCon elevation'})
-        self._states.add('settings/location/timezone', config={'type': 'string', 'quantity':'',      'unit':'',   'label':'time zone','description':'HomeCon time zone'})
+        core.states.add('settings/location/latitude', config={'type': 'number', 'quantity':'angle', 'unit':'deg','label':'latitude', 'description':'HomeCon latitude'})
+        core.states.add('settings/location/longitude',config={'type': 'number', 'quantity':'angle', 'unit':'deg','label':'longitude','description':'HomeCon longitude'})
+        core.states.add('settings/location/elevation',config={'type': 'number', 'quantity':'height','unit':'m',  'label':'elevation','description':'HomeCon elevation'})
+        core.states.add('settings/location/timezone', config={'type': 'string', 'quantity':'',      'unit':'',   'label':'time zone','description':'HomeCon time zone'})
 
 
         logging.debug('States plugin Initialized')
@@ -56,8 +56,8 @@ class States(plugin.Plugin):
 
         """
 
-        if path in self._states:
-            return self._states[path]
+        if path in core.states:
+            return core.states[path]
         else:
             logging.error('State {} is not defined'.format(path))
             return None
@@ -68,7 +68,7 @@ class States(plugin.Plugin):
         """
 
         stateslist = []
-        for state in self._states.values():
+        for state in core.states.values():
             stateslist.append({'path':state.path,'config':sorted([{'key':key,'value':val} for key,val in state.config.items()],key=lambda x:x['key'])})
 
         newlist = sorted(stateslist, key=lambda k: k['path'])
@@ -79,21 +79,21 @@ class States(plugin.Plugin):
     def listen_list_states(self,event):
         if event.type == 'list_states':
 
-            self.fire('send_to',{'event':'list_states', 'path':'', 'value':self.list(), 'clients':[event.client]})
+            core.event.fire('send_to',{'event':'list_states', 'path':'', 'value':self.list(), 'clients':[event.client]})
 
 
     def listen_add_state(self,event):
-        state = self._states.add(event.data['path'],config=event.data['config'])
+        state = core.states.add(event.data['path'],config=event.data['config'])
 
         if state:
-            self.fire('state_added',{'state':state})
-            self.fire('send_to',{'event':'list_states', 'path':'', 'value':self.list(), 'clients':[event.client]})
+            core.event.fire('state_added',{'state':state})
+            core.event.fire('send_to',{'event':'list_states', 'path':'', 'value':self.list(), 'clients':[event.client]})
 
 
     def listen_edit_state(self,event):
-        if event.data['path'] in self._states:
+        if event.data['path'] in core.states:
 
-            state = self._states[event.data['path']]
+            state = core.states[event.data['path']]
 
             config = dict(state.config)
             for key,val in event.data['config'].items():
@@ -101,16 +101,16 @@ class States(plugin.Plugin):
 
             state.config = config
 
-            self.fire('send_to',{'event':'list_states', 'path':'', 'value':self.list(), 'clients':[event.client]})
+            core.event.fire('send_to',{'event':'list_states', 'path':'', 'value':self.list(), 'clients':[event.client]})
 
 
     def listen_state_config(self,event):
-        if event.data['path'] in self._states:
+        if event.data['path'] in core.states:
 
-            state = self._states[event.data['path']]
+            state = core.states[event.data['path']]
 
             if not 'value' in event.data:
-                self.fire('send_to',{'event':'state_config', 'path':state.path, 'value':state.config, 'clients':[event.client]})
+                core.event.fire('send_to',{'event':'state_config', 'path':state.path, 'value':state.config, 'clients':[event.client]})
 
             else:
                 logger.warning('listen_state_config, edit state config :' + state.path)
@@ -124,7 +124,7 @@ class States(plugin.Plugin):
 
 
     def listen_state_changed(self,event):
-        self.fire('send',{'event':'state', 'path':event.data['state'].path, 'value':event.data['state'].value, 'readusers':event.data['state'].config['readusers'], 'readgroups':event.data['state'].config['readgroups']},source=self)
+        core.event.fire('send',{'event':'state', 'path':event.data['state'].path, 'value':event.data['state'].value, 'readusers':event.data['state'].config['readusers'], 'readgroups':event.data['state'].config['readgroups']},source=self)
 
 
     def listen_state(self,event):
@@ -170,7 +170,7 @@ class States(plugin.Plugin):
                                 break
 
                     if permitted:
-                        self.fire('send_to',{'event':'state', 'path':state.path, 'value':state.value, 'clients':[event.client]})
+                        core.event.fire('send_to',{'event':'state', 'path':state.path, 'value':state.value, 'clients':[event.client]})
                     else:
                         logging.warning('User {} attempted to change the value of {} but is not permitted'.format(tokenpayload['userid'],state.path))
 
@@ -179,7 +179,7 @@ class States(plugin.Plugin):
         for client in event.data['clients']:
             tokenpayload = jwt_decode(event.data['token'])
 
-            for state in self._states.values():
+            for state in core.states.values():
                 permitted = False
                 if tokenpayload and tokenpayload['userid'] in state.config['readusers']:
                     permitted = True
@@ -190,7 +190,7 @@ class States(plugin.Plugin):
                             break
 
                 if permitted:
-                    self.fire('send_to',{'event':'state', 'path':state.path, 'value':state.value, 'clients':[client]})
+                    core.event.fire('send_to',{'event':'state', 'path':state.path, 'value':state.value, 'clients':[client]})
 
 
 

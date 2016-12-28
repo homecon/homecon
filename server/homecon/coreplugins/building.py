@@ -8,11 +8,10 @@ import datetime
 import pytz
 import uuid
 
-from .. import plugin
-from .. import components
-from ...util import weather
+from .. import core
+from .. import util
 
-class Building(plugin.Plugin):
+class Building(core.plugin.Plugin):
     """
     Class to define the HomeCon building
     
@@ -23,20 +22,13 @@ class Building(plugin.Plugin):
         Initialize
 
         """
-        # register components
-        self.register_component(Zone)
-        self.register_component(Window)
-        self.register_component(Shading)
-        self.register_component(Light)
-        self.register_component(Dimminglight)
-
         logging.debug('Building plugin initialized')
 
 
     def listen_state_changed(self,event):
 
         if not event.data['state'].component is None:
-            component = self._components[event.data['state'].component]
+            component = core.components[event.data['state'].component]
             if component.type == 'zonetemperaturesensor':
                 print('zonetemperaturesensor changed')
 
@@ -47,7 +39,7 @@ class Building(plugin.Plugin):
             print('irradiance changed')
 
 
-class Zone(components.Component):
+class Zone(core.component.Component):
     """
     a class implementing a building zone
     
@@ -68,8 +60,11 @@ class Zone(components.Component):
             'type': '',
         }
 
+core.components.register(Zone)
 
-class Zonetemperaturesensor(components.Component):
+
+
+class Zonetemperaturesensor(core.component.Component):
     """
     a class implementing a temperature sensor
     
@@ -88,9 +83,10 @@ class Zonetemperaturesensor(components.Component):
             'confidence': 0.5,
         }
 
+core.components.register(Zonetemperaturesensor)
 
 
-class Window(components.Component):
+class Window(core.component.Component):
     """
     a class implementing a window
     
@@ -134,8 +130,10 @@ class Window(components.Component):
 
         self.states['irradiation'].value = np.round(I*surface_area,1)
 
+core.components.register(Window)
 
-class Shading(components.Component):
+
+class Shading(core.component.Component):
     """
     a class implementing a window shading
     
@@ -167,8 +165,10 @@ class Shading(components.Component):
             'window': '',
         }
 
+core.components.register(Shading)
 
-class Light(components.Component):
+
+class Light(core.component.Component):
     """
     a class implementing an on/off light
     
@@ -187,6 +187,8 @@ class Light(components.Component):
             'zone': '',
         }
 
+core.components.register(Light)
+
 
 class Dimminglight(Light):
     """
@@ -195,5 +197,8 @@ class Dimminglight(Light):
     """
     def initialize(self):
         super(Dimminglight,self).initialize()
+
+core.components.register(Dimminglight)
+
 
 

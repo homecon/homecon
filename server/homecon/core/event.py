@@ -30,7 +30,7 @@ class Event(object):
 
 
 
-def fire(event_type,data,source,client):
+def fire(event_type,data,source=None,client=None):
     """
     Add the event to the queue
     

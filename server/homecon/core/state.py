@@ -9,7 +9,7 @@ import asyncio
 import math
 
 from . import database
-from . import events
+from . import event
 
 class States(object):
     """
@@ -20,8 +20,7 @@ class States(object):
     def __init__(self):
 
         self._states = {}
-        self._db = database.Database(database=database.DB_NAME)
-        self._db_states = database.Table(self._db,'states',[
+        self._db_states = database.Table(database.db,'states',[
             {'name':'path',   'type':'char(255)',  'null': '',  'default':'',  'unique':'UNIQUE'},
             {'name':'config', 'type':'char(511)',  'null': '',  'default':'',  'unique':''},
             {'name':'value',  'type':'char(255)',  'null': '',  'default':'',  'unique':''},
@@ -394,7 +393,7 @@ class State(BaseState):
     def fire_changed(self,value,oldvalue,source):
         """
         """
-        events.fire('state_changed',{'state':self,'value':value,'oldvalue':oldvalue},source,None)
+        event.fire('state_changed',{'state':self,'value':value,'oldvalue':oldvalue},source,None)
 
 
     def _check_config(self,config):
@@ -436,9 +435,5 @@ class State(BaseState):
 
         return '<State {} value={}>'.format(self._path,formattedvalue)
 
-
-
-
-# create the states object
+# create the components container
 states = States()
-

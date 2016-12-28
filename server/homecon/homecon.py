@@ -8,8 +8,9 @@ import time
 import asyncio
 import logging
 
-from . import util
 from . import core
+from . import util
+from . import coreplugins
 from . import plugins
 
 
@@ -79,22 +80,31 @@ class HomeCon(object):
         if self.demo:
             logging.info('Demo mode')
             # clear the databases
-            core.database.DB_NAME = 'homecon_demo.db'
-            core.database.DB_MEASUREMENTS_NAME = 'homecon_measurements_demo.db'
+            dbname = 'demo_homecon.db'
+            dbmeasurementsname = 'demo_homecon_measurements.db'
 
             try:
-                os.remove(core.database.DB_NAME)
+                os.remove(dbname)
             except:
                 pass
 
             try:
-                os.remove(core.database.DB_MEASUREMENTS_NAME)
+                os.remove(dbmeasurementsname)
             except:
                 pass
 
-            # update the references to the states and components database
-            core.states.states = core.states.States()
-            core.states.components = core.components.Components()
+            core.db = core.database.Database(database=dbname)
+            core.measurements_db = core.database.Database(database=dbmeasurementsname)
+
+            # update the database in states and components, this is pretty hacky
+            core.states = core.state.States()
+            tempcomponents = core.component.Components()
+
+            # reregister components
+            for componenttype in core.components._component_types.values():
+                tempcomponents.register(componenttype)
+
+            core.components = tempcomponents
 
 
         ########################################################################
@@ -105,16 +115,29 @@ class HomeCon(object):
         if self.loglevel == 'debug':
             self._loop.set_debug(True)
 
-        self._queue = core.events.queue #asyncio.Queue(loop=self._loop)
+        self._queue = core.event.queue #asyncio.Queue(loop=self._loop)
 
 
         ########################################################################
         # load core components
         ########################################################################
-        self.states = core.states.states
-        self.components = core.components.components
+        self.states = core.states
+        self.components = core.components
+        self.plugins = core.plugins
 
-        # load plugins
+        # load core plugins
+        self.plugins._add_core(coreplugins.states.States)            # load states 1st
+        self.plugins._add_core(coreplugins.components.Components)        # load components 2nd
+        self.plugins._add_core(coreplugins.plugins.Plugins)
+        self.plugins._add_core(coreplugins.authentication.Authentication)
+        self.plugins._add_core(coreplugins.pages.Pages)
+        self.plugins._add_core(coreplugins.schedules.Schedules)
+        self.plugins._add_core(coreplugins.actions.Actions)
+        self.plugins._add_core(coreplugins.measurements.Measurements)
+        self.plugins._add_core(coreplugins.weather.Weather)
+        self.plugins._add_core(coreplugins.building.Building)
+
+        """
         self.coreplugins = {
             'states': core.plugins.states.States(),                # load states 1st
             'components': core.plugins.components.Components(),    # load components 2nd
@@ -127,17 +150,17 @@ class HomeCon(object):
             'weather': core.plugins.weather.Weather(),
             'building': core.plugins.building.Building(),
         }
+        """
 
         # load components
         self.components.load()
 
         # load the websocket
-        self.coreplugins['websocket'] = core.plugins.websocket.Websocket()
+        self.plugins._add_core(coreplugins.websocket.Websocket)
 
         # demo mode
         if self.demo:
-            self.coreplugins['demo'] = core.plugins.demo.Demo(self)
-
+            self.plugins._add_core(coreplugins.demo.Demo)
 
         logging.info('HomeCon object Initialized')
 
@@ -169,10 +192,7 @@ class HomeCon(object):
             event = await self._queue.get()
             logging.debug(event)
 
-            for plugin in self.coreplugins.values():
-                self._loop.call_soon_threadsafe(plugin._listen, event)
-
-            for plugin in self.coreplugins['plugins'].values():
+            for plugin in self.plugins.values():
                 self._loop.call_soon_threadsafe(plugin._listen, event)
 
 

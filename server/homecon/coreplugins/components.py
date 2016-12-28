@@ -7,10 +7,9 @@ import json
 import inspect
 
 
-from .. import plugin
-from .. import components
+from .. import core
 
-class Components(plugin.Plugin):
+class Components(core.plugin.Plugin):
     """
     Class to control the HomeCon states
     
@@ -32,7 +31,6 @@ class Components(plugin.Plugin):
     """
 
     def initialize(self):
-        self.register_component(Value)
 
         logging.debug('Components plugin Initialized')
 
@@ -95,7 +93,7 @@ class Components(plugin.Plugin):
 
 
 
-class Value(components.Component):
+class Value(core.component.Component):
     """
     a class implementing an basic single value
     
@@ -110,5 +108,7 @@ class Value(components.Component):
         }
         self.config = {
         }
+
+core.components.register(Value)
 
 

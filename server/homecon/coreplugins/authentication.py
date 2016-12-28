@@ -6,11 +6,8 @@ import datetime
 import passlib.hash
 import jwt
 
-from .. import database
-from .. import plugin
-from .. import config
-
-
+from .. import core
+from ..core import config
 
 jwt_algorithm = 'HS256'
 
@@ -55,7 +52,7 @@ servertoken = jwt_encode({'userid': -1, 'groupids': [1], 'username':'', 'permiss
 
 
 
-class Authentication(plugin.Plugin):
+class Authentication(core.plugin.Plugin):
     """
     Authentication class
 
@@ -81,18 +78,17 @@ class Authentication(plugin.Plugin):
         Initialize the authentication module
         """
         # create database tables
-        self._db = database.Database(database=database.DB_NAME)
-        self._db_users = database.Table(self._db,'users',[
+        self._db_users = core.database.Table(core.db,'users',[
             {'name':'username',      'type':'char(255)',  'null': '',  'default':'',  'unique':'UNIQUE'},
             {'name':'password',      'type':'char(255)',  'null': '',  'default':'',  'unique':''},
             {'name':'permission',    'type':'int(2)',     'null': '',  'default':'',  'unique':''},
         ])
 
-        self._db_groups = database.Table(self._db,'groups',[
+        self._db_groups = core.database.Table(core.db,'groups',[
             {'name':'groupname',     'type':'char(255)',  'null': '',  'default':'',  'unique':'UNIQUE'},
             {'name':'permission',    'type':'int(2)',   'null': '',  'default':'',  'unique':''},
         ])
-        self._db_group_users = database.Table(self._db,'group_users',[
+        self._db_group_users = core.database.Table(core.db,'group_users',[
             {'name':'group',    'type':'int(8)',   'null': '',  'default':'',  'unique':''},
             {'name':'user',     'type':'int(8)',   'null': '',  'default':'',  'unique':''},
         ])
@@ -388,7 +384,7 @@ class Authentication(plugin.Plugin):
     def listen_request_token(self,event):
         token = self.request_token(event.data['username'],event.data['password'])
         if token:
-            self.fire('send_to',{'event':'request_token', 'token':token, 'clients':[event.client]})
+            core.event.fire('send_to',{'event':'request_token', 'token':token, 'clients':[event.client]})
 
 
     def listen_renew_token(self,event):
@@ -401,6 +397,6 @@ class Authentication(plugin.Plugin):
         payload = jwt_decode(event.data['token'])
         if payload:
             event.client.tokenpayload = payload
-            self.fire('send_to',{'event':'authenticate', 'authenticated':True, 'clients':[event.client]})
+            core.event.fire('send_to',{'event':'authenticate', 'authenticated':True, 'clients':[event.client]})
 
 

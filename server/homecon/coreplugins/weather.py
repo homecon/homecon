@@ -11,11 +11,10 @@ import aiohttp
 import ephem
 import numpy as np
 
-from .. import plugin
-from .. import components
-from ...util import weather
+from .. import core
+from .. import util
 
-class Weather(plugin.Plugin):
+class Weather(core.plugin.Plugin):
     """
     Class to control the HomeCon weather functions
     
@@ -26,34 +25,30 @@ class Weather(plugin.Plugin):
         # create a thread pool executor for loading api data
         self.executor = concurrent.futures.ThreadPoolExecutor(7)
 
-        # register components
-        self.register_component(Ambienttemperaturesensor)
-        self.register_component(Irradiancesensor)
-
 
         # add settings states
-        self._states.add('settings/weather/service', config={'type': 'string', 'quantity':'', 'unit':'','label':'', 'description':''})
-        self._states.add('settings/weather/apikey', config={'type': 'string', 'quantity':'', 'unit':'','label':'', 'description':''})
-        self._states.add('weather/forecast/lastupdate', config={'type': 'number', 'quantity':'', 'unit':'','label':'', 'description':''})
+        core.states.add('settings/weather/service', config={'type': 'string', 'quantity':'', 'unit':'','label':'', 'description':''})
+        core.states.add('settings/weather/apikey', config={'type': 'string', 'quantity':'', 'unit':'','label':'', 'description':''})
+        core.states.add('weather/forecast/lastupdate', config={'type': 'number', 'quantity':'', 'unit':'','label':'', 'description':''})
 
 
         # add forecast states
         for i in range(7):
-            self._states.add('weather/forecast/daily/{}'.format(i), config={'type': 'dict', 'quantity':'', 'unit':'','label':'', 'description':'', 'log':False})
+            core.states.add('weather/forecast/daily/{}'.format(i), config={'type': 'dict', 'quantity':'', 'unit':'','label':'', 'description':'', 'log':False})
         
         for i in range(24*7):
-            self._states.add('weather/forecast/hourly/{}'.format(i), config={'type': 'dict', 'quantity':'', 'unit':'','label':'', 'description':'', 'log':False})
+            core.states.add('weather/forecast/hourly/{}'.format(i), config={'type': 'dict', 'quantity':'', 'unit':'','label':'', 'description':'', 'log':False})
 
 
         # add weather states
-        self._states.add('weather/temperature',       config={'type': 'number', 'quantity':'temperature', 'unit':'°C'  , 'label':'Ambient', 'description':''})
-        self._states.add('weather/cloudcover',        config={'type': 'number', 'quantity':''           , 'unit':''    , 'label':'Cloud cover' , 'description':''})
+        core.states.add('weather/temperature',       config={'type': 'number', 'quantity':'temperature', 'unit':'°C'  , 'label':'Ambient', 'description':''})
+        core.states.add('weather/cloudcover',        config={'type': 'number', 'quantity':''           , 'unit':''    , 'label':'Cloud cover' , 'description':''})
 
-        self._states.add('weather/sun/azimuth',           config={'type': 'number', 'quantity':'angle' , 'unit':'°', 'label':'Azimuth' , 'description':''})
-        self._states.add('weather/sun/altitude',          config={'type': 'number', 'quantity':'angle' , 'unit':'°', 'label':'Altitude' , 'description':''})
+        core.states.add('weather/sun/azimuth',           config={'type': 'number', 'quantity':'angle' , 'unit':'°', 'label':'Azimuth' , 'description':''})
+        core.states.add('weather/sun/altitude',          config={'type': 'number', 'quantity':'angle' , 'unit':'°', 'label':'Altitude' , 'description':''})
 
-        self._states.add('weather/irradiancedirect',  config={'type': 'number', 'quantity':'irradiance' , 'unit':'W/m2', 'label':'Direct' , 'description':''})
-        self._states.add('weather/irradiancediffuse', config={'type': 'number', 'quantity':'irradiance' , 'unit':'W/m2', 'label':'Diffuse', 'description':''})
+        core.states.add('weather/irradiancedirect',  config={'type': 'number', 'quantity':'irradiance' , 'unit':'W/m2', 'label':'Direct' , 'description':''})
+        core.states.add('weather/irradiancediffuse', config={'type': 'number', 'quantity':'irradiance' , 'unit':'W/m2', 'label':'Diffuse', 'description':''})
 
 
         # schedule forecast loading
@@ -81,18 +76,18 @@ class Weather(plugin.Plugin):
             timestamp_when = int( (dt_when-dt_ref).total_seconds() )
 
             # check the last load time to avoid frequent loading upon restarts
-            if self._states['weather/forecast/lastupdate'].value is None or self._states['weather/forecast/lastupdate'].value < timestamp_now-600:
+            if core.states['weather/forecast/lastupdate'].value is None or core.states['weather/forecast/lastupdate'].value < timestamp_now-600:
 
                 # load the forecast
                 success = False
-                if self._states['settings/weather/service'].value == 'darksky':
+                if core.states['settings/weather/service'].value == 'darksky':
                     success = await self.darksky_forecast()
 
                 if success:
-                    self._states['weather/forecast/lastupdate'].value = round(timestamp_now)
+                    core.states['weather/forecast/lastupdate'].value = round(timestamp_now)
 
-                    self._states['weather/temperature'].value = round(self.ambienttemperature(),2)
-                    self._states['weather/cloudcover'].value = round(self.cloudcover(),3)
+                    core.states['weather/temperature'].value = round(self.ambienttemperature(),2)
+                    core.states['weather/cloudcover'].value = round(self.cloudcover(),3)
 
 
             # sleep until the next call
@@ -117,9 +112,9 @@ class Weather(plugin.Plugin):
 
 
             # calculate the suns position
-            latitude = self._states['settings/location/latitude'].value    # N+
-            longitude = self._states['settings/location/longitude'].value   # E+
-            elevation = self._states['settings/location/elevation'].value
+            latitude = core.states['settings/location/latitude'].value    # N+
+            longitude = core.states['settings/location/longitude'].value   # E+
+            elevation = core.states['settings/location/elevation'].value
 
             if elevation is None:
                 elevation = 0
@@ -128,12 +123,12 @@ class Weather(plugin.Plugin):
             azimuth = None
             altitude = None
             if not latitude is None and not longitude is None:
-                azimuth,altitude = weather.sunposition(latitude,longitude,elevation)
+                azimuth,altitude = util.weather.sunposition(latitude,longitude,elevation)
                 azimuth = round(float(azimuth),2)
                 altitude = round(float(altitude),2)
 
-            self._states['weather/sun/azimuth'].value = azimuth
-            self._states['weather/sun/altitude'].value = altitude
+            core.states['weather/sun/azimuth'].value = azimuth
+            core.states['weather/sun/altitude'].value = altitude
 
             # sleep until the next call
             await asyncio.sleep(timestamp_when-timestamp_now)
@@ -189,7 +184,7 @@ class Weather(plugin.Plugin):
                             forecast['precipitation_probability'] = 0
 
                         #forecast_daily.append(forecast)
-                        await self._states['weather/forecast/daily/{}'.format(i)].set_async( forecast )
+                        await core.states['weather/forecast/daily/{}'.format(i)].set_async( forecast )
 
 
                         # hourly values
@@ -216,7 +211,7 @@ class Weather(plugin.Plugin):
                                 forecast['precipitation_probability'] = 0
 
                             #forecast_hourly.append(forecast)
-                            await self._states['weather/forecast/hourly/{}'.format(i*24+j)].set_async( forecast )
+                            await core.states['weather/forecast/hourly/{}'.format(i*24+j)].set_async( forecast )
 
             logging.debug('Weather forecast loaded from darksky.net')
 
@@ -242,7 +237,7 @@ class Weather(plugin.Plugin):
         timestamps = []
         values = []
         for i in range(48):
-            forecast = self._states['weather/forecast/hourly/{}'.format(i)].value
+            forecast = core.states['weather/forecast/hourly/{}'.format(i)].value
 
             if not forecast is None:
                 timestamps.append(forecast['timestamp'])
@@ -278,7 +273,7 @@ class Weather(plugin.Plugin):
         timestamps = []
         values = []
         for i in range(48):
-            forecast = self._states['weather/forecast/hourly/{}'.format(i)].value
+            forecast = core.states['weather/forecast/hourly/{}'.format(i)].value
 
             if not forecast is None:
                 timestamps.append(forecast['timestamp'])
@@ -306,20 +301,20 @@ class Weather(plugin.Plugin):
         if event.data['state'].path == 'weather/sun/altitude' or event.data['state'].path == 'weather/cloudcover':
             
 
-            cloudcover = self._states['weather/cloudcover'].value
+            cloudcover = core.states['weather/cloudcover'].value
             if cloudcover is None:
                 cloudcover = 0
 
             # update the irradiance
-            solar_azimuth = self._states['weather/sun/azimuth'].value
-            solar_altitude = self._states['weather/sun/altitude'].value
+            solar_azimuth = core.states['weather/sun/azimuth'].value
+            solar_altitude = core.states['weather/sun/altitude'].value
 
             if not solar_azimuth is None and not solar_altitude is None:
 
-                I_direct_clearsky,I_diffuse_clearsky = weather.clearskyirrradiance(solar_azimuth,solar_altitude)
-                I_direct_cloudy,I_diffuse_cloudy = weather.cloudyskyirrradiance(I_direct_clearsky,I_diffuse_clearsky,cloudcover,solar_azimuth,solar_altitude)
-                self._states['weather/irradiancedirect'].value = round(float(I_direct_cloudy),2)
-                self._states['weather/irradiancediffuse'].value = round(float(I_diffuse_cloudy),2)
+                I_direct_clearsky,I_diffuse_clearsky = util.weather.clearskyirrradiance(solar_azimuth,solar_altitude)
+                I_direct_cloudy,I_diffuse_cloudy = util.weather.cloudyskyirrradiance(I_direct_clearsky,I_diffuse_clearsky,cloudcover,solar_azimuth,solar_altitude)
+                core.states['weather/irradiancedirect'].value = round(float(I_direct_cloudy),2)
+                core.states['weather/irradiancediffuse'].value = round(float(I_diffuse_cloudy),2)
 
 
 
@@ -328,7 +323,7 @@ class Weather(plugin.Plugin):
 
 
 
-class Ambienttemperaturesensor(components.Component):
+class Ambienttemperaturesensor(core.component.Component):
     """
     a class implementing a temperature sensor
     
@@ -337,8 +332,7 @@ class Ambienttemperaturesensor(components.Component):
     def initialize(self):
         self.states = {
             'value': {
-                'default_config': {
-                },
+                'default_config': {},
                 'fixed_config': {},
             },
         }
@@ -346,8 +340,10 @@ class Ambienttemperaturesensor(components.Component):
             'confidence': 0.5,
         }
 
+core.components.register(Ambienttemperaturesensor)
 
-class Irradiancesensor(components.Component):
+
+class Irradiancesensor(core.component.Component):
     """
     a class implementing a temperature sensor
     
@@ -365,5 +361,8 @@ class Irradiancesensor(components.Component):
             'tilt': 0,
             'confidence': 0.5,
         }
+
+core.components.register(Irradiancesensor)
+
 
 

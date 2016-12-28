@@ -7,15 +7,69 @@ import os
 import sys
 import uuid
 
+
 from concurrent.futures import ThreadPoolExecutor
 
-from . import events
-from . import states
-from . import components
+from . import event
+from . import state
+from . import component
 from . import database
 
 # the worker thread pool
 executor = ThreadPoolExecutor(10)
+
+
+class Plugins(object):
+    """
+    a container class for plugins with access to the database
+
+    """
+    def __init__(self):
+
+        self._coreplugins = {}
+        self._optionalplugins = {}
+        self._plugins = {}
+        self.pluginfolder = 'plugins'
+
+    def add(self,name):
+        pass
+
+
+    def _add_core(self,pluginclass):
+        """
+        add a core plugin, should not be used outside the main homecon file
+        """
+        path = pluginclass.__name__.lower()
+
+        plugin = pluginclass()
+        self._coreplugins[path] = plugin
+        self._plugins[path] = plugin
+
+
+    def __getitem__(self,path):
+        return self._plugins[path]
+
+
+    def __iter__(self):
+        return iter(self._plugins)
+
+
+    def __contains__(self,path):
+        return path in self._plugins
+
+
+    def keys(self):
+        return self._plugins.keys()
+
+
+    def items(self):
+        return self._plugins.items()
+
+
+    def values(self):
+        return self._plugins.values()
+
+
 
 
 class Plugin(object):
@@ -55,9 +109,9 @@ class Plugin(object):
             
         """
 
-        self._queue = events.queue
-        self._states = states.states
-        self._components = components.components
+        self._queue = event.queue
+        self._states = state.states
+        self._components = component.components
 
         self._loop = asyncio.get_event_loop()
         self.config_keys = []
@@ -166,7 +220,7 @@ class Plugin(object):
             source = self
 
 
-        events.fire(event_type,data,source,client)
+        event.fire(event_type,data,source,client)
 
 
     def _listen(self,event):
@@ -223,7 +277,7 @@ class ObjectPlugin(Plugin):
 
     """
 
-    objectclass = states.State
+    objectclass = state.State
     objectname = 'state'
 
     def __init__(self):
@@ -371,4 +425,5 @@ class ObjectPlugin(Plugin):
         return self._objectdict.values()
 
 
-
+# create the components container
+plugins = Plugins()

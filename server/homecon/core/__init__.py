@@ -1,7 +1,18 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from . import events
-from . import states
-from . import components
-from . import plugins
+from . import database
+from . import event
+from . import state
+from . import component
+from . import plugin
+
+
+# create a database
+db = database.db
+measurements_db = database.measurements_db
+
+# create container objects
+states = state.states
+components = component.components
+plugins = plugin.plugins

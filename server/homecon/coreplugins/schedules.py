@@ -9,24 +9,17 @@ import pytz
 import uuid
 import asyncio
 
-from .. import database
-from .. import events
-from ..states import BaseState
-from ..plugin import ObjectPlugin
+from .. import core
 
 
-
-
-
-
-class Schedule(BaseState):
+class Schedule(core.state.BaseState):
     """
     """
 
-    def fire_changed(self,value,oldvalue,source):
+    def fire_changed(self,value,oldvalue,source=None):
         """
         """
-        events.fire('schedule_changed',{'schedule':self,'value':value,'oldvalue':oldvalue},source,None)
+        core.event.fire('schedule_changed',{'schedule':self,'value':value,'oldvalue':oldvalue},source=source)
 
 
     def match(self,dt):
@@ -79,7 +72,7 @@ class Schedule(BaseState):
         logging.debug('Running {} scheduled actions'.format(self.path))
 
         # run the actions
-        events.fire('run_action',{'path':self.value['action']},self,None)
+        core.event.fire('run_action',{'path':self.value['action']},source=self)
 
 
     def _check_config(self,config):
@@ -138,7 +131,7 @@ class Schedule(BaseState):
 
 
 
-class Schedules(ObjectPlugin):
+class Schedules(core.plugin.ObjectPlugin):
     """
     Class to control the HomeCon scheduling
     
@@ -155,7 +148,7 @@ class Schedules(ObjectPlugin):
 
         # define the default timezone
         try:
-            self.timezone = pytz.timezone(self._states['settings/location/timezone'].value)
+            self.timezone = pytz.timezone(core.states['settings/location/timezone'].value)
         except:
             self.timezone = pytz.utc
         
@@ -208,9 +201,9 @@ class Schedules(ObjectPlugin):
         obj = self.objectclass(self._objectdict,self._db_objects,path,config=event.data['config'])
 
         if obj:
-            self.fire('schedule_added',{'schedule':obj})
+            core.event.fire('schedule_added',{'schedule':obj})
             filter = obj.config['filter']
-            self.fire('send_to',{'event':'list_schedules', 'path':filter, 'value':self.list(filter=filter), 'clients':[event.client]})
+            core.event.fire('send_to',{'event':'list_schedules', 'path':filter, 'value':self.list(filter=filter), 'clients':[event.client]})
 
 
     def listen_delete_schedule(self,event):
@@ -224,7 +217,7 @@ class Schedules(ObjectPlugin):
 
                 logging.debug('deleted {} {}'.format(self.objectname.capitalize(), event.data['path']))
 
-                self.fire('send',{'event':'list_{}s'.format(self.objectname), 'path':filter, 'value':self.list(filter=filter)})
+                core.event.fire('send',{'event':'list_{}s'.format(self.objectname), 'path':filter, 'value':self.list(filter=filter)})
 
             else:
                 logging.error('{} does not exist {}'.format(self.objectname.capitalize(),event.data['path']))
@@ -232,7 +225,7 @@ class Schedules(ObjectPlugin):
 
 
     def listen_schedule_changed(self,event):
-        self.fire('send',{'event':'schedule', 'path':event.data['schedule'].path, 'value':event.data['schedule'].value, 'readusers':event.data['schedule'].config['readusers'], 'readgroups':event.data['schedule'].config['readgroups']},source=self)
+        core.event.fire('send',{'event':'schedule', 'path':event.data['schedule'].path, 'value':event.data['schedule'].value, 'readusers':event.data['schedule'].config['readusers'], 'readgroups':event.data['schedule'].config['readgroups']})
 
 
     def listen_snooze_schedule(self,event):
