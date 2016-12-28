@@ -104,13 +104,15 @@ class BaseState(object):
         config : dict
             dictionary configuring the state
         
+        component : str
+            if the state belongs to a component, the path of the components can 
+            be passes
         """
 
         self._dict = pathdict
         self._loop = asyncio.get_event_loop()
         self._db_table = db_table
         self._path = path
-
 
         if db_entry is None:
 
@@ -354,8 +356,12 @@ class BaseState(object):
             config['writeusers'] = []
         if 'readgroups' not in config:
             config['readgroups'] = [1]
+        elif not 1 in config['readgroups']:
+            config['readgroups'].append(1)
         if 'writegroups' not in config:
             config['writegroups'] = [1]
+        elif not 1 in config['writegroups']:
+            config['writegroups'].append(1)
 
         return config
 
@@ -396,6 +402,12 @@ class State(BaseState):
         """
         config = super(State,self)._check_config(config)
 
+        if 'component' in config:
+            self._component = config['component']
+            del config['component']
+        else:
+            self._component = None
+
         if 'type' not in config:
             config['type'] = ''
         if 'quantity' not in config:
@@ -410,6 +422,12 @@ class State(BaseState):
             config['log'] = True
 
         return config
+
+
+    @property
+    def component(self):
+        return self._component
+
 
     def __repr__(self):
         formattedvalue = '{}'.format(self._value)

@@ -63,7 +63,7 @@ class Components(object):
                 self._db_components.POST( path=path,type=type,config=json.dumps(config) )
 
             # create the component
-            component = self._component_types[type](path,self._states,config=config)
+            component = self._component_types[type](self,path,config=config)
             self._components[path] = component
 
             return component
@@ -104,31 +104,40 @@ class Component(object):
     
     """
     
-    def __init__(self,path,states,config=None):
-        
-        self.path = path
+    def __init__(self,components,path,config=None):
+        """
+        Create a component
+    
+        Parameters
+        ----------
+        path : str
+            the component identifier
+
+        """
+        self._components = components
+        self._states = states.states
+        self._path = path
         self.initialize()
 
         if not config is None:
             for key,val in config.items():
                 self.config[key] = val
 
-
         # try to find the corresponding states and create them if required
         for path in self.states:
-            fullpath = self.path + '/' + path
+            fullpath = self._path + '/' + path
 
-            if fullpath in states:
-                self.states[path]['state'] = states[fullpath]
+            if fullpath in states.states:
+                self.states[path]['state'] = states.states[fullpath]
             else:
                 config = {}
                 for key,val in self.states[path]['default_config'].items():
                     config[key] = val
                 for key,val in self.states[path]['fixed_config'].items():
                     config[key] = val
+                config['component'] = self._path
                     
-                    
-                self.states[path]['state'] = states.add(fullpath,config)
+                self.states[path]['state'] = states.states.add(fullpath,config)
 
 
     def initialize(self):
@@ -142,6 +151,10 @@ class Component(object):
     @property
     def type(self):
         return self.__class__.__name__.lower()
+
+    @property
+    def path(self):
+        return self._path
 
     @classmethod
     def properties(cls):

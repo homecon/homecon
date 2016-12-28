@@ -33,9 +33,6 @@ class Components(plugin.Plugin):
 
     def initialize(self):
         self.register_component(Value)
-        self.register_component(Light)
-        self.register_component(Dimminglight)
-        self.register_component(Shading)
 
         logging.debug('Components plugin Initialized')
 
@@ -112,64 +109,6 @@ class Value(components.Component):
             },
         }
         self.config = {
-        }
-
-
-class Light(components.Component):
-    """
-    a class implementing an on/off light
-    
-    """
-
-    def initialize(self):
-        self.states = {
-            'value': {
-                'default_config': {},
-                'fixed_config': {},
-            },
-        }
-        self.config = {
-            'type': '',
-            'power': '',
-        }
-
-
-class Dimminglight(Light):
-    """
-    a class implementing an dimmable light
-    
-    """
-    def initialize(self):
-        super(Dimminglight,self).initialize()
-
-class Shading(components.Component):
-    """
-    a class implementing a window shading
-    
-    """
-    
-    def initialize(self):
-        self.states = {
-            'position': {
-                'default_config': {},
-                'fixed_config': {},
-            },
-            'move': {
-                'default_config': {},
-                'fixed_config': {},
-            },
-            'stop': {
-                'default_config': {},
-                'fixed_config': {},
-            },
-            'auto': {
-                'default_config': {},
-                'fixed_config': {},
-            },
-        }
-        self.config = {
-            'type': '',
-            'power': '',
         }
 
 

@@ -125,6 +125,7 @@ class HomeCon(object):
             'actions': core.plugins.actions.Actions(),
             'measurements': core.plugins.measurements.Measurements(),
             'weather': core.plugins.weather.Weather(),
+            'building': core.plugins.building.Building(),
         }
 
         # load components

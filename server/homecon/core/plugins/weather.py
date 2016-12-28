@@ -338,12 +338,12 @@ class Ambienttemperaturesensor(components.Component):
         self.states = {
             'value': {
                 'default_config': {
-                    'confidence': 0.5,
                 },
                 'fixed_config': {},
             },
         }
         self.config = {
+            'confidence': 0.5,
         }
 
 
@@ -356,15 +356,14 @@ class Irradiancesensor(components.Component):
     def initialize(self):
         self.states = {
             'value': {
-                'default_config': {
-                    'orientation': 0,
-                    'tilt': 0,
-                    'confidence': 0.5,
-                },
+                'default_config': {},
                 'fixed_config': {},
             },
         }
         self.config = {
+            'orientation': 0,
+            'tilt': 0,
+            'confidence': 0.5,
         }
 
 

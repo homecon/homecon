@@ -24,10 +24,23 @@ class Demo(Plugin):
     def initialize(self):
 
         ########################################################################
+        # set settings
+        ########################################################################
+        self.latitude = 51.05
+        self.longitude = 5.5833
+        self.elevation = 74
+
+        self._states['settings/location/latitude'].value = self.latitude
+        self._states['settings/location/longitude'].value = self.longitude
+        self._states['settings/location/elevation'].value = self.elevation
+        self._states['settings/location/timezone'].value = 'Europe/Brussels'
+
+
+        ########################################################################
         # add components
         ########################################################################
         logging.debug('Adding demo components')
-        
+
         self._components.add('living/light_dinnertable', 'light'       , {'type':'hallogen','power':35})
         self._components.add('living/light_tv'         , 'light'       , {'type':'led','power':10})
         self._components.add('living/light_couch'      , 'dimminglight', {'type':'led','power':15})
@@ -44,15 +57,10 @@ class Demo(Plugin):
         self._components.add('bedroom/window_north/shutter'     ,'shading'       ,{})
 
 
-
-        for s in self._states:
-            print(s)
-
         ########################################################################
         # add pages
         ########################################################################
         
-
         pages = self._homecon.coreplugins['pages']
 
         # delete all pages
@@ -94,11 +102,6 @@ class Demo(Plugin):
         # generate demo ambient conditions for the past 4 weeks
         ########################################################################
         logging.debug('Calculating demo weather conditions')
-
-        self.latitude = 51.05
-        self.longitude = 5.5833
-        self.elevation = 74
-
         self.timestep = 300
 
 
@@ -196,7 +199,7 @@ class Demo(Plugin):
             else:
                 initial_ambienttemperature = ambienttemperature[i-1]
 
-            ambienttemperature[i] = initial_ambienttemperature + I_total_horizontal[i]*self.timestep/(35*24*3600) + (-10-initial_ambienttemperature)*self.timestep/(10*24*3600) + (2*np.random.random()-1)*self.timestep/(3*3600)
+            ambienttemperature[i] = initial_ambienttemperature + I_total_horizontal[i]*self.timestep/(30*24*3600) + (-10-initial_ambienttemperature)*self.timestep/(7*24*3600) + (2*np.random.random()-1)*self.timestep/(2*3600)
 
 
         utcdatetime_ref = datetime.datetime(1970, 1, 1)
