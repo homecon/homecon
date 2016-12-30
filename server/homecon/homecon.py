@@ -93,18 +93,23 @@ class HomeCon(object):
             except:
                 pass
 
-            core.db = core.database.Database(database=dbname)
-            core.measurements_db = core.database.Database(database=dbmeasurementsname)
+
+            core.database.db = core.database.Database(database=dbname)
+            core.database.measurements_db = core.database.Database(database=dbmeasurementsname)
+            core.db = core.database.db
+            core.measurements_db = core.database.measurements_db
 
             # update the database in states and components, this is pretty hacky
-            core.states = core.state.States()
+            core.state.states = core.state.States()
+            core.states = core.state.states
             tempcomponents = core.component.Components()
 
             # reregister components
             for componenttype in core.components._component_types.values():
                 tempcomponents.register(componenttype)
 
-            core.components = tempcomponents
+            core.component.components = tempcomponents
+            core.components = core.component.components
 
 
         ########################################################################

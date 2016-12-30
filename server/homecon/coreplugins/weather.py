@@ -252,10 +252,23 @@ class Weather(core.plugin.Plugin):
             value_forecast = None
 
         # get ambient temperature measurements
-
+        value_sensors = []
+        confidence_sensors = []
+        for sensor in core.components.find(type='ambienttemperaturesensor'):
+            val = sensor.states['value'].value
+            if not val is None:
+                value_sensors.append( val )
+                confidence_sensors.append( sensor.config['confidence'] )
 
         # combine
-        value = value_forecast
+        if not value_forecast is None:
+            value_sensors.append(value_forecast)
+            confidence_sensors.append(0.5)
+
+        if len(value_sensors) > 0:
+            value = sum([v*c for v,c in zip(value_sensors,confidence_sensors)])/sum(confidence_sensors)
+        else:
+            value = None
 
         return value
 
@@ -287,11 +300,58 @@ class Weather(core.plugin.Plugin):
         else:
             value_forecast = None
 
+
+
         # get cloudcover measurements
+        value_sensors = []
+        confidence_sensors = []
+
+        solar_azimuth = core.states['weather/sun/azimuth'].value
+        solar_altitude = core.states['weather/sun/altitude'].value
+
+        if not solar_azimuth is None and not solar_altitude is None:
+            I_direct_clearsky,I_diffuse_clearsky = util.weather.clearskyirrradiance(solar_azimuth,solar_altitude)
+
+
+
+            if not I_direct_clearsky is None and not I_diffuse_clearsky is None:
+
+                for sensor in core.components.find(type='irradiancesensor'):
+                    val = sensor.states['value'].value
+
+                    surface_azimuth = sensor.config['azimuth']
+                    surface_tilt = sensor.config['tilt']
+
+                    if not val is None:
+                        tempcloudcover = np.linspace(1.0,0.0,6)
+                        tempirradiance = []
+                        for c in tempcloudcover:
+                            I_direct_cloudy , I_diffuse_cloudy = util.weather.cloudyskyirrradiance(I_direct_clearsky,I_diffuse_clearsky,c,solar_azimuth,solar_altitude)
+                            I_total_surface, I_direct_surface, I_diffuse_surface, I_ground_surface = util.weather.incidentirradiance(I_direct_cloudy,I_diffuse_cloudy,solar_azimuth,solar_altitude,surface_azimuth,surface_tilt)
+                            tempirradiance.append(I_total_surface)
+                            
+                        tempirradiance = np.array(tempirradiance)
+
+                        print(tempcloudcover)
+                        print(tempirradiance)
+
+                        if max(tempirradiance) > 0:
+                            cloudcover = np.interp(val,tempirradiance,tempcloudcover)
+                            cloudcover = max(0,min(1,cloudcover))
+
+                            value_sensors.append( cloudcover )
+                            confidence_sensors.append( sensor.config['confidence'] )
 
 
         # combine
-        value = value_forecast
+        if not value_forecast is None:
+            value_sensors.append(value_forecast)
+            confidence_sensors.append(0.5)
+
+        if len(value_sensors) > 0:
+            value = sum([v*c for v,c in zip(value_sensors,confidence_sensors)])/sum(confidence_sensors)
+        else:
+            value = None
 
         return value
 
@@ -317,10 +377,18 @@ class Weather(core.plugin.Plugin):
                 core.states['weather/irradiancediffuse'].value = round(float(I_diffuse_cloudy),2)
 
 
+        if 'component' in event.data['state'].config:
+            component = core.components[event.data['state'].config['component']]
 
+            if component.type == 'ambienttemperaturesensor':
+                ambienttemperature = self.ambienttemperature()
+                if not ambienttemperature is None:
+                    core.states['weather/temperature'].value = round(ambienttemperature,2)
 
-
-
+            if component.type == 'irradiancesensor':
+                cloudcover = self.cloudcover()
+                if not cloudcover is None:
+                    core.states['weather/cloudcover'].value = round(cloudcover,3)
 
 
 class Ambienttemperaturesensor(core.component.Component):
@@ -357,7 +425,7 @@ class Irradiancesensor(core.component.Component):
             },
         }
         self.config = {
-            'orientation': 0,
+            'azimuth': 0,
             'tilt': 0,
             'confidence': 0.5,
         }

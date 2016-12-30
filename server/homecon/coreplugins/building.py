@@ -7,6 +7,7 @@ import json
 import datetime
 import pytz
 import uuid
+import numpy as np
 
 from .. import core
 from .. import util
@@ -27,16 +28,24 @@ class Building(core.plugin.Plugin):
 
     def listen_state_changed(self,event):
 
-        if not event.data['state'].component is None:
-            component = core.components[event.data['state'].component]
+        if 'component' in event.data['state'].config:
+            component = core.components[event.data['state'].config['component']]
+
             if component.type == 'zonetemperaturesensor':
                 print('zonetemperaturesensor changed')
+                zone = core.components[component.config['zone']]
+                zone.states['temperature'].value = np.round( zone.calculate_temperature(), 2)
 
-            elif component.type == 'shading' and event.data['state'].split('/')[-1]=='position':
-                print('shading position changed')
+            elif component.type == 'shading' and event.data['state'].path.split('/')[-1]=='position':
+                window = core.components[component.config['window']]
+                window.states['irradiation'].value = np.round( window.calculate_irradiation(), 1)
+                
 
         if event.data['state'].path == 'weather/irradiancedirect' or event.data['state'].path == 'weather/irradiancediffuse':
-            print('irradiance changed')
+            for window in core.components.find(type='window'):
+                window.states['irradiation'].value = np.round( window.calculate_irradiation(), 1)
+
+
 
 
 class Zone(core.component.Component):
@@ -59,6 +68,35 @@ class Zone(core.component.Component):
         self.config = {
             'type': '',
         }
+
+    def calculate_irradiation(self):
+        """
+
+        """
+        irradiation = 0
+        for window in core.components.find(type='window', zone=self.path):
+            irradiation = window.calculate_irradiation()
+
+        return irradiation
+
+    def calculate_temperature(self):
+        """
+
+        """
+        temperature = []
+        confidence = []
+        for sensor in core.components.find(type='zonetemperaturesensor', zone=self.path):
+            temp = sensor.states['value'].value
+            if not temp is None:
+                temperature.append(temp)
+                confidence.append(sensor.config['confidence'])
+
+
+        if len(temperature)>0:
+            return sum([c*t for c,t, in zip(temperature,confidence)])/sum(confidence)
+        else:
+            return None
+
 
 core.components.register(Zone)
 
@@ -102,33 +140,47 @@ class Window(core.component.Component):
         self.config = {
             'type': '',
             'area': 1,
-            'orientation': 0,
+            'azimuth': 0,
             'tilt': 90,
+            'transmittance': 0.8,
             'zone': '',
         }
 
-    def calculate_irradiation(self):
+    def calculate_irradiation(self,utcdatetime=None):
         """
 
         """
 
         # find shadings attached to this window
-        shadingpath = self.path+'/shading'
-        if shadingpath in self._components:
-            shading = self._components[shadingpath]
-            pos = shading.states['position'].state.value
+        shading_transmittance = 1.0
+        for shading in core.components.find(type='shading', window=self.path):
+            shading_transmittance = shading_transmittance*shading.calculate_transmittance(utcdatetime=utcdatetime)
 
-        I_direct = self._states['weather/irradiancedirect'].value
-        I_diffuse = self._states['weather/irradiancediffuse'].value
-        solar_azimuth = self._states['weather/sun/azimuth'].value
-        solar_altitude = self._states['weather/sun/altitude'].value
+        if utcdatetime is None:
+            I_direct = core.states['weather/irradiancedirect'].value
+            I_diffuse = core.states['weather/irradiancediffuse'].value
+            solar_azimuth = core.states['weather/sun/azimuth'].value
+            solar_altitude = core.states['weather/sun/altitude'].value
+
+        else:
+            I_direct = core.states['weather/irradiancedirect'].value
+            I_diffuse = core.states['weather/irradiancediffuse'].value
+            solar_azimuth = core.states['weather/sun/azimuth'].value
+            solar_altitude = core.states['weather/sun/altitude'].value
+
+
         surface_azimuth = self.config['azimuth']
         surface_tilt = self.config['tilt']
         surface_area = self.config['area']
+        transmittance = self.config['transmittance']
+        
+        if not I_direct is None and not I_diffuse is None and not solar_azimuth is None and not solar_altitude is None:
+            I_total_surface, I_direct_surface, I_diffuse_surface, I_ground_surface = util.weather.incidentirradiance(I_direct,I_diffuse,solar_azimuth,solar_altitude,surface_azimuth,surface_tilt)
+        else:
+            I_total_surface = 0
 
-        I = incidentirradiance(I_direct,I_diffuse,solar_azimuth,solar_altitude,surface_azimuth,surface_tilt)
+        return I_total_surface*surface_area*transmittance*shading_transmittance
 
-        self.states['irradiation'].value = np.round(I*surface_area,1)
 
 core.components.register(Window)
 
@@ -160,10 +212,29 @@ class Shading(core.component.Component):
         }
         self.config = {
             'type': '',
-            'minimum_transmittance': 0.3,
-            'maximum_transmittance': 1.0,
+            'closed_transmittance': 0.3,
+            'open_transmittance': 1.0,
+            'closed_position': 1.0,
+            'open_position': 0.0,
             'window': '',
         }
+
+    def calculate_transmittance(self,utcdatetime=None):
+        """
+        """
+        if utcdatetime is None:
+            position = self.states['position'].value
+        else:
+            position = self.states['position'].value
+
+        # relative position 1: closed, 0: open
+        if position is None:
+            relativeposition = 0
+        else:
+            relativeposition = (position-self.config['open_position'])/(self.config['closed_position']-self.config['open_position'])
+
+        return relativeposition*self.config['closed_transmittance'] + (1-relativeposition)*self.config['open_transmittance']
+
 
 core.components.register(Shading)
 

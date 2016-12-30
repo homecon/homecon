@@ -70,6 +70,32 @@ class Components(object):
         else:
             return False
 
+    def find(self,**kwargs):
+        """
+        finds components with certain config attributes
+        """
+        
+        components = []
+        for component in self._components.values():
+            add = True
+            for key,val in kwargs.items():
+                if key == 'type':
+                    if not component.type == val:
+                        add = False
+                        break
+                else:
+                    if not key in component.config:
+                        add = False
+                        break
+                    elif not component.config[key] == val:
+                        add = False
+                        break
+
+            if add:
+                components.append(component)
+
+        return components
+
 
     def __getitem__(self,path):
         return self._components[path]
@@ -124,9 +150,14 @@ class Component(object):
         # try to find the corresponding states and create them if required
         for path in self.states:
             fullpath = self._path + '/' + path
-            
+
             if fullpath in state.states:
-                self.states[path]['state'] = state.states[fullpath]
+                tempstate = state.states[fullpath]
+                config = tempstate.config
+                config['component'] = self._path
+
+                tempstate.config = config
+                self.states[path] = tempstate
             else:
                 config = {}
                 for key,val in self.states[path]['default_config'].items():
@@ -134,8 +165,9 @@ class Component(object):
                 for key,val in self.states[path]['fixed_config'].items():
                     config[key] = val
                 config['component'] = self._path
-                    
-                self.states[path]['state'] = state.states.add(fullpath,config)
+
+                # replace the initialized dictionary with the state
+                self.states[path] = state.states.add(fullpath,config=config)
 
 
     def initialize(self):

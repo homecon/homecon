@@ -7,6 +7,7 @@ import copy
 import inspect
 import asyncio
 import math
+import datetime
 
 from . import database
 from . import event
@@ -290,6 +291,7 @@ class BaseState(object):
 
     @config.setter
     def config(self, config):
+        config = self._check_config(config)
         self._db_table.PUT(config=json.dumps(config), where='path=\'{}\''.format(self._path))
         self._config=config
 
@@ -401,12 +403,6 @@ class State(BaseState):
         """
         config = super(State,self)._check_config(config)
 
-        if 'component' in config:
-            self._component = config['component']
-            del config['component']
-        else:
-            self._component = None
-
         if 'type' not in config:
             config['type'] = ''
         if 'quantity' not in config:
@@ -426,6 +422,16 @@ class State(BaseState):
     @property
     def component(self):
         return self._component
+
+    def history(self,datetime):
+        """
+        return the history of a state
+
+        """
+        datetime_ref = datetime.datetime(1970,1,1)
+        timestamp = int( (datetime-datetime_ref).total_seconds() )
+
+        return self._value
 
 
     def __repr__(self):
