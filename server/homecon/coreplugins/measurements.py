@@ -32,11 +32,7 @@ class Measurements(core.plugin.Plugin):
 
     def initialize(self):
         
-        self._db_measurements = core.database.Table(core.measurements_db,'measurements',[
-            {'name':'time',   'type':'INT',   'null': '',  'default':'',  'unique':''},
-            {'name':'path',   'type':'TEXT',  'null': '',  'default':'',  'unique':''},
-            {'name':'value',  'type':'TEXT',  'null': '',  'default':'',  'unique':''},
-        ])
+        self._db_measurements = core.state.State.db_history
 
         self.maxtimedelta = 7*24*3600
         self.measurements = {}

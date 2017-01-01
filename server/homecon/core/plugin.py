@@ -283,19 +283,13 @@ class ObjectPlugin(Plugin):
     def __init__(self):
 
 
-        self._objectdict = {}
-
-        self._db = database.Database(database='homecon.db')
-        self._db_objects = database.Table(self._db,self.objectname,[
-            {'name':'path',   'type':'char(255)',  'null': '',  'default':'',  'unique':'UNIQUE'},
-            {'name':'config', 'type':'char(511)',  'null': '',  'default':'',  'unique':''},
-            {'name':'value',  'type':'char(255)',  'null': '',  'default':'',  'unique':''},
-        ])
+        self._objects_container = self.objectclass.container
+        self._objects_db = self.objectclass.db_table
 
         # get all objects from the database
-        result = self._db_objects.GET()
+        result = self.objectclass.db_table.GET()
         for db_entry in result:
-            self.objectclass(self._objectdict,self._db_objects,db_entry['path'],db_entry=db_entry)
+            self.objectclass(self._objects_container,db_entry['path'],db_entry=db_entry)
 
 
 
@@ -319,7 +313,7 @@ class ObjectPlugin(Plugin):
             else:
                 value = None
 
-            obj = self.objectclass(self._objectdict,self._db_objects,path,config=config,value=value)
+            obj = self.objectclass(path,config=config,value=value)
 
             if obj:
                 self.fire('{}_added'.format(self.objectname),{self.objectname: obj})
@@ -407,22 +401,22 @@ class ObjectPlugin(Plugin):
 
 
     def __getitem__(self,path):
-        return self._objectdict[path]
+        return self._objects_container[path]
 
     def __iter__(self):
-        return iter(self._objectdict)
+        return iter(self._objects_container)
 
     def __contains__(self,path):
-        return path in self._objectdict
+        return path in self._objects_container
 
     def keys(self):
-        return self._objectdict.keys()
+        return self._objects_container.keys()
 
     def items(self):
-        return self._objectdict.items()
+        return self._objects_container.items()
 
     def values(self):
-        return self._objectdict.values()
+        return self._objects_container.values()
 
 
 # create the components container

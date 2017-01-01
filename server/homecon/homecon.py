@@ -100,6 +100,17 @@ class HomeCon(object):
             core.measurements_db = core.database.measurements_db
 
             # update the database in states and components, this is pretty hacky
+            core.state.State.db_table = core.database.Table(core.database.db,'states',[
+                {'name':'path',   'type':'char(255)',  'null': '',  'default':'',  'unique':'UNIQUE'},
+                {'name':'config', 'type':'char(511)',  'null': '',  'default':'',  'unique':''},
+                {'name':'value',  'type':'char(255)',  'null': '',  'default':'',  'unique':''},
+            ])
+            core.state.State.db_history = core.database.Table(core.database.measurements_db,'measurements',[
+                {'name':'time',   'type':'INT',   'null': '',  'default':'',  'unique':''},
+                {'name':'path',   'type':'TEXT',  'null': '',  'default':'',  'unique':''},
+                {'name':'value',  'type':'TEXT',  'null': '',  'default':'',  'unique':''},
+            ])
+
             core.state.states = core.state.States()
             core.states = core.state.states
             tempcomponents = core.component.Components()

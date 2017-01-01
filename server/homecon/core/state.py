@@ -12,87 +12,45 @@ import datetime
 from . import database
 from . import event
 
-class States(object):
-    """
-    a container class for states with access to the database
-
-    """
-
-    def __init__(self):
-
-        self._states = {}
-        self._db_states = database.Table(database.db,'states',[
-            {'name':'path',   'type':'char(255)',  'null': '',  'default':'',  'unique':'UNIQUE'},
-            {'name':'config', 'type':'char(511)',  'null': '',  'default':'',  'unique':''},
-            {'name':'value',  'type':'char(255)',  'null': '',  'default':'',  'unique':''},
-        ])
-
-        # get all states from the database
-        result = self._db_states.GET()
-        for db_entry in result:
-            self.add(db_entry['path'],db_entry=db_entry)
-
-
-    def add(self,path,config=None,db_entry=None):
-        """
-        add a state
-
-        """
-
-        return State(self._states,self._db_states,path,config=config,db_entry=db_entry)
-
-
-
-    def __getitem__(self,path):
-        return self._states[path]
-
-
-    def __iter__(self):
-        return iter(self._states)
-
-
-    def __contains__(self,path):
-        return path in self._states
-
-
-    def keys(self):
-        return self._states.keys()
-
-
-    def items(self):
-        return self._states.items()
-
-
-    def values(self):
-        return self._states.values()
-
 
 class BaseState(object):
     """
     A base class for objects identified by a path with a config and a value
     attribute which are backed by the database
 
+
+
+    Redefinable attributes
+    ----------------------
+    db_table : homecon.database.table
+        A database table where things are stored.
+        The database table must have a path, config and value column
+
+    container : dict
+        Must be redefined with an empty dictionary in a subclass.
+        This is a bit hacky but otherwise the BaseState container is used to
+        reference objects
     """
 
-    def __new__(cls,pathdict,db_table,path,config=None,value=None,db_entry=None):
-        if path in pathdict:
+    db_table = database.Table(database.db,'states',[
+        {'name':'path',   'type':'char(255)',  'null': '',  'default':'',  'unique':'UNIQUE'},
+        {'name':'config', 'type':'char(511)',  'null': '',  'default':'',  'unique':''},
+        {'name':'value',  'type':'char(255)',  'null': '',  'default':'',  'unique':''},
+    ])
+
+    container = {}
+
+    def __new__(cls,path,config=None,value=None,db_entry=None):
+        if path in cls.container:
             return None
         else:
             return super(BaseState, cls).__new__(cls)
 
 
-    def __init__(self,pathdict,db_table,path,config=None,value=None,db_entry=None):
+    def __init__(self,path,config=None,value=None,db_entry=None):
         """
         Parameters
         ----------
-        pathdict : dict
-            A dictionary in which with paths as keys and BaseState objects as 
-            values
-        
-        db_table: homecon.database.table
-            a database table where things are stored
-            the database table must have a path, config and value column
-
         path : string
             the item identifier relations between states (parent - child) can be
             indicated with dots
@@ -109,24 +67,22 @@ class BaseState(object):
             be passes
         """
 
-        self._dict = pathdict
         self._loop = asyncio.get_event_loop()
-        self._db_table = db_table
         self._path = path
 
         if db_entry is None:
 
             # check if the path allready exists in the database
-            result = self._db_table.GET(path=self._path)
+            result = self.db_table.GET(path=self._path)
             if len(result) == 0:
                 self._config = self._check_config(config)
                 self._value = self._check_value(value)
 
                 # post to the database
-                self._db_table.POST(path=self._path,config=json.dumps(self._config),value=json.dumps(self._value))
+                self.db_table.POST(path=self._path,config=json.dumps(self._config),value=json.dumps(self._value))
 
                 # get the id
-                result = self._db_table.GET(path=self._path)
+                result = self.db_table.GET(path=self._path)
                 self._id = result[0]['id']
             else:
                 # create the db_entry
@@ -163,7 +119,7 @@ class BaseState(object):
 
 
         # add self to _sice
-        self._dict[self._path] = self
+        self.container[self._path] = self
 
     def fire_changed(self,value,oldvalue,source):
         """
@@ -224,7 +180,7 @@ class BaseState(object):
             self._value = value
 
             # update the value in the database
-            self._db_table.PUT(value=json.dumps(value), where='path=\'{}\''.format(self._path))
+            self.db_table.PUT(value=json.dumps(value), where='path=\'{}\''.format(self._path))
 
             # check the source
             if source is None:
@@ -245,10 +201,10 @@ class BaseState(object):
 
     def delete(self):
 
-        self._db_table.DELETE(path=self._path)
+        self.db_table.DELETE(path=self._path)
 
         # remove the object from the local reference
-        del self._dict[self._path]
+        del self.container[self._path]
 
 
 
@@ -292,7 +248,7 @@ class BaseState(object):
     @config.setter
     def config(self, config):
         config = self._check_config(config)
-        self._db_table.PUT(config=json.dumps(config), where='path=\'{}\''.format(self._path))
+        self.db_table.PUT(config=json.dumps(config), where='path=\'{}\''.format(self._path))
         self._config=config
 
     @property
@@ -312,8 +268,8 @@ class BaseState(object):
         if '/' in self._path:
             parentpath = '/'.join(self._path.split('/')[:-1])
 
-            if parentpath in self._dict:
-                return self._dict[parentpath]
+            if parentpath in self.container:
+                return self.container[parentpath]
 
         return None
 
@@ -335,7 +291,7 @@ class BaseState(object):
         """
 
         children = []
-        for path,state in self._dict.items():
+        for path,state in self.container.items():
             if self._path in path:
                 if len(self._path.split('/')) == len(path.split('/'))-1:
                     children.append(state)
@@ -386,11 +342,25 @@ class BaseState(object):
         return '<BaseState {} value={}>'.format(self._path,self._value)
 
 
+
+
 class State(BaseState):
     """
     A class representing a single state
 
     """
+
+    db_table = database.Table(database.db,'states',[
+        {'name':'path',   'type':'char(255)',  'null': '',  'default':'',  'unique':'UNIQUE'},
+        {'name':'config', 'type':'char(511)',  'null': '',  'default':'',  'unique':''},
+        {'name':'value',  'type':'char(255)',  'null': '',  'default':'',  'unique':''},
+    ])
+    db_history = database.Table(database.measurements_db,'measurements',[
+        {'name':'time',   'type':'INT',   'null': '',  'default':'',  'unique':''},
+        {'name':'path',   'type':'TEXT',  'null': '',  'default':'',  'unique':''},
+        {'name':'value',  'type':'TEXT',  'null': '',  'default':'',  'unique':''},
+    ])
+    container = {}
 
     def fire_changed(self,value,oldvalue,source):
         """
@@ -423,15 +393,43 @@ class State(BaseState):
     def component(self):
         return self._component
 
-    def history(self,datetime):
+    def history(self,datetime,interpolation='linear'):
         """
         return the history of a state
 
-        """
-        datetime_ref = datetime.datetime(1970,1,1)
-        timestamp = int( (datetime-datetime_ref).total_seconds() )
+        Parameters
+        ----------
+        datetime : datetime.datetime or list of datetime.datetimes
+            time to return the history
 
-        return self._value
+        """
+
+        datetime_ref = datetime.datetime(1970,1,1)
+
+        if hasattr(datetime, "__len__"):
+            timestamps = [int( (t-datetime_ref).total_seconds() ) for t in datetime]
+        else:
+            timestamps = [int( (datetime-datetime_ref).total_seconds() )]
+
+
+        # retrieve data from the database
+        result = self.db_history.GET(path=self.path,time__ge=timestamps[0]-3600,time__le=timestamps[-1]+3600)
+        if len(result)>0:
+            db_timestamps = [res['time'] for res in result]
+            db_values = [res['value'] for res in result]
+
+        else:
+            # did not find any value, expand the horizon
+            db_timestamps = [res['time'] for res in result]
+            db_values = [res['value'] for res in result]
+
+        return 0
+
+        if hasattr(datetime, "__len__"):
+            return values
+        else:
+            return values[0]
+
 
 
     def __repr__(self):
@@ -440,6 +438,60 @@ class State(BaseState):
             formattedvalue = formattedvalue[:9] + ' ... ' + formattedvalue[-1]
 
         return '<State {} value={}>'.format(self._path,formattedvalue)
+
+
+
+class States(object):
+    """
+    a container class for states with access to the database
+
+    """
+
+    def __init__(self):
+
+        self._states = State.container
+        self._db_states = State.db_table
+
+        # get all states from the database
+        result = self._db_states.GET()
+        for db_entry in result:
+            self.add(db_entry['path'],db_entry=db_entry)
+
+
+    def add(self,path,config=None,db_entry=None):
+        """
+        add a state
+
+        """
+
+        return State(path,config=config,db_entry=db_entry)
+
+
+
+    def __getitem__(self,path):
+        return self._states[path]
+
+
+    def __iter__(self):
+        return iter(self._states)
+
+
+    def __contains__(self,path):
+        return path in self._states
+
+
+    def keys(self):
+        return self._states.keys()
+
+
+    def items(self):
+        return self._states.items()
+
+
+    def values(self):
+        return self._states.values()
+
+
 
 # create the components container
 states = States()

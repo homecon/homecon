@@ -16,6 +16,13 @@ class Schedule(core.state.BaseState):
     """
     """
 
+    db_table = core.database.Table(core.database.db,'schedules',[
+        {'name':'path',   'type':'char(255)',  'null': '',  'default':'',  'unique':'UNIQUE'},
+        {'name':'config', 'type':'char(511)',  'null': '',  'default':'',  'unique':''},
+        {'name':'value',  'type':'char(255)',  'null': '',  'default':'',  'unique':''},
+    ])
+    container = {}
+
     def fire_changed(self,value,oldvalue,source=None):
         """
         """
@@ -198,7 +205,7 @@ class Schedules(core.plugin.ObjectPlugin):
     def listen_add_schedule(self,event):
 
         path = str(uuid.uuid4())
-        obj = self.objectclass(self._objectdict,self._db_objects,path,config=event.data['config'])
+        obj = self.objectclass(self._objectdict,self._objects_db,path,config=event.data['config'])
 
         if obj:
             core.event.fire('schedule_added',{'schedule':obj})

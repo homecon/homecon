@@ -18,6 +18,14 @@ class Action(core.state.BaseState):
     an action is a collection of events which are fired when the action is run
 
     """
+
+    db_table = core.database.Table(core.database.db,'actions',[
+        {'name':'path',   'type':'char(255)',  'null': '',  'default':'',  'unique':'UNIQUE'},
+        {'name':'config', 'type':'char(511)',  'null': '',  'default':'',  'unique':''},
+        {'name':'value',  'type':'char(255)',  'null': '',  'default':'',  'unique':''},
+    ])
+    container = {}
+
     def initialize(self):
         logging.debug('Actions initialized')
 
