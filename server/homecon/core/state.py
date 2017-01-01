@@ -8,6 +8,7 @@ import inspect
 import asyncio
 import math
 import datetime
+import numpy as np
 
 from . import database
 from . import event
@@ -393,38 +394,53 @@ class State(BaseState):
     def component(self):
         return self._component
 
-    def history(self,datetime,interpolation='linear'):
+    def history(self,utcdatetime,interpolation='linear'):
         """
         return the history of a state
 
         Parameters
         ----------
-        datetime : datetime.datetime or list of datetime.datetimes
+        utcdatetime : datetime.datetime or list of datetime.datetimes
             time to return the history
 
+        interpolation : string
+            type of interpolation, `linear` results in linear interpolation (default)
+            anything else results in zero order hold interpolation
+ 
         """
 
         datetime_ref = datetime.datetime(1970,1,1)
 
         if hasattr(datetime, "__len__"):
-            timestamps = [int( (t-datetime_ref).total_seconds() ) for t in datetime]
+            timestamps = [int( (t-datetime_ref).total_seconds() ) for t in utcdatetime]
         else:
-            timestamps = [int( (datetime-datetime_ref).total_seconds() )]
-
+            timestamps = [int( (utcdatetime-datetime_ref).total_seconds() )]
 
         # retrieve data from the database
         result = self.db_history.GET(path=self.path,time__ge=timestamps[0]-3600,time__le=timestamps[-1]+3600)
+
         if len(result)>0:
             db_timestamps = [res['time'] for res in result]
             db_values = [res['value'] for res in result]
 
         else:
             # did not find any value, expand the horizon
+            # find the 1st value before the 1st timestamps
+            
             db_timestamps = [res['time'] for res in result]
             db_values = [res['value'] for res in result]
 
-        return 0
+        # interpolate to the correct timestamps
+        if interpolation == 'linear':
+            # linear interpolation
+            values = np.interp(timestamps,db_timestamps,db_values)
+        else:
+            # zero order hold interpolation
+            ind = np.interp( timestamps, db_timestamps, np.arange(len(db_timestamps)) )
+            values = np.array([db_values[int(i)] for i in ind])
 
+
+        # return an array or scalar depending on the input
         if hasattr(datetime, "__len__"):
             return values
         else:

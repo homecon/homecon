@@ -146,7 +146,7 @@ class Window(core.component.Component):
             'zone': '',
         }
 
-    def calculate_irradiation(self,utcdatetime=None):
+    def calculate_irradiation(self,utcdatetime=None,I_direct=None,I_diffuse=None,solar_azimuth=None,solar_altitude=None,shading_relativeposition=None):
         """
 
         """
@@ -154,19 +154,32 @@ class Window(core.component.Component):
         # find shadings attached to this window
         shading_transmittance = 1.0
         for shading in core.components.find(type='shading', window=self.path):
-            shading_transmittance = shading_transmittance*shading.calculate_transmittance(utcdatetime=utcdatetime)
+            shading_transmittance = shading_transmittance*shading.calculate_transmittance(utcdatetime=utcdatetime,relativeposition=shading_relativeposition)
 
-        if utcdatetime is None:
-            I_direct = core.states['weather/irradiancedirect'].value
-            I_diffuse = core.states['weather/irradiancediffuse'].value
-            solar_azimuth = core.states['weather/sun/azimuth'].value
-            solar_altitude = core.states['weather/sun/altitude'].value
+        # get inputs
+        if I_direct is None:
+            if utcdatetime is None:
+                I_direct = core.states['weather/irradiancedirect'].value
+            else:
+                I_direct = core.states['weather/irradiancedirect'].history(utcdatetime)
 
-        else:
-            I_direct = core.states['weather/irradiancedirect'].value
-            I_diffuse = core.states['weather/irradiancediffuse'].value
-            solar_azimuth = core.states['weather/sun/azimuth'].value
-            solar_altitude = core.states['weather/sun/altitude'].value
+        if I_diffuse is None:
+            if utcdatetime is None:
+                I_diffuse = core.states['weather/irradiancediffuse'].value
+            else:
+                I_diffuse = core.states['weather/irradiancediffuse'].history(utcdatetime)
+
+        if solar_azimuth is None:
+            if utcdatetime is None:
+                solar_azimuth = core.states['weather/sun/azimuth'].value
+            else:
+                solar_azimuth = core.states['weather/sun/azimuth'].history(utcdatetime)
+
+        if solar_altitude is None:
+            if utcdatetime is None:
+                solar_altitude = core.states['weather/sun/altitude'].value
+            else:
+                solar_altitude = core.states['weather/sun/altitude'].history(utcdatetime)
 
 
         surface_azimuth = self.config['azimuth']
@@ -174,8 +187,16 @@ class Window(core.component.Component):
         surface_area = self.config['area']
         transmittance = self.config['transmittance']
         
+        
         if not I_direct is None and not I_diffuse is None and not solar_azimuth is None and not solar_altitude is None:
-            I_total_surface, I_direct_surface, I_diffuse_surface, I_ground_surface = util.weather.incidentirradiance(I_direct,I_diffuse,solar_azimuth,solar_altitude,surface_azimuth,surface_tilt)
+            if hasattr(I_direct,'__len__'):
+                I_total_surface = np.zeros(len(I_direct))
+                for i in range(len(I_direct)):
+                    I_total_surface[i], I_direct_surface, I_diffuse_surface, I_ground_surface = util.weather.incidentirradiance(I_direct[i],I_diffuse[i],solar_azimuth[i],solar_altitude[i],surface_azimuth,surface_tilt)
+            
+            else:
+                I_total_surface, I_direct_surface, I_diffuse_surface, I_ground_surface = util.weather.incidentirradiance(I_direct,I_diffuse,solar_azimuth,solar_altitude,surface_azimuth,surface_tilt)
+
         else:
             I_total_surface = 0
 
@@ -219,20 +240,23 @@ class Shading(core.component.Component):
             'window': '',
         }
 
-    def calculate_transmittance(self,utcdatetime=None):
+    def calculate_transmittance(self,utcdatetime=None,relativeposition=None):
         """
         """
-        if utcdatetime is None:
-            position = self.states['position'].value
-        else:
-            position = self.states['position'].value
 
-        # relative position 1: closed, 0: open
-        if position is None:
-            relativeposition = 0
-        else:
-            relativeposition = (position-self.config['open_position'])/(self.config['closed_position']-self.config['open_position'])
+        if relativeposition is None:
+            if utcdatetime is None:
+                position = self.states['position'].value
+            else:
+                position = self.states['position'].history(utcdatetime)
 
+            # relative position 1: closed, 0: open
+            if position is None:
+                relativeposition = 0
+            else:
+                relativeposition = (position-self.config['open_position'])/(self.config['closed_position']-self.config['open_position'])
+        
+        
         return relativeposition*self.config['closed_transmittance'] + (1-relativeposition)*self.config['open_transmittance']
 
 

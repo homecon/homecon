@@ -47,7 +47,7 @@ class Demo(core.plugin.Plugin):
         core.components.add('living/temperature_window'      ,'zonetemperaturesensor'    ,{'zone':'dayzone','confidence':0.8})
 
         core.components.add('living/window_west_1'    ,'window'       ,{'zone':'dayzone', 'area':7.2, 'azimuth':270})
-        core.components.add('living/window_west_1'    ,'window'       ,{'zone':'dayzone', 'area':5.8, 'azimuth':270})
+        core.components.add('living/window_west_2'    ,'window'       ,{'zone':'dayzone', 'area':5.8, 'azimuth':270})
         core.components.add('kitchen/window_west'     ,'window'       ,{'zone':'dayzone', 'area':6.2, 'azimuth':270})
         core.components.add('kitchen/window_south'    ,'window'       ,{'zone':'dayzone', 'area':6.2, 'azimuth':180})
 
@@ -144,39 +144,37 @@ class Demo(core.plugin.Plugin):
         ########################################################################
         self.timestep = 300
 
-        utcnow = datetime.datetime.utcnow()
-        startutcdatetime = (utcnow+datetime.timedelta(seconds=-14*24*3600-self.timestep)).replace(hour=0,minute=0,second=0,microsecond=0)
-        endutcdatetime = (utcnow+datetime.timedelta(seconds=10*24*3600-self.timestep)).replace(minute=0,second=0,microsecond=0)
-        
-        logging.debug('Calculating demo weather conditions')
-        self.weatherdata = self.emulate_weather({'utcdatetime':[startutcdatetime], 'cloudcover':[0], 'ambienttemperature':[5]},lookahead=int( (endutcdatetime-startutcdatetime).total_seconds() ))
+        dt_now = datetime.datetime.utcnow()
+        dt_ref = datetime.datetime(1970,1,1)
+        timestamp_now = int( (dt_now-dt_ref).total_seconds() )
+        dt_start = (dt_now+datetime.timedelta(seconds=-14*24*3600-self.timestep)).replace(hour=0,minute=0,second=0,microsecond=0)
 
+        logging.debug('Calculating demo weather data')
+        self.weatherdata = self.emulate_weather({'utcdatetime':[dt_start], 'cloudcover':[0], 'ambienttemperature':[5]},lookahead=10*24*3600)
 
-        logging.debug('Calculating demo building simulation')
-        self.buildingdata = self.emulate_building({'utcdatetime':[startutcdatetime], 'T_in':[20.0]},lookahead=int( (utcnow-startutcdatetime).total_seconds() ),heatingcurve=True)
-
-
-        ########################################################################
-        # Add measurements to the database
-        ########################################################################
-        logging.debug('Adding demo measurements')
 
         # write data to homecon measurements database
         connection,cursor = core.measurements_db.create_cursor()
-
-        utcnow = datetime.datetime.utcnow()
-        utcref = datetime.datetime(1970,1,1)
-        timestampnow = int( (utcnow-utcref).total_seconds() )
         for i,t in enumerate(self.weatherdata['timestamp']):
-            if t<= timestampnow:
+            if t<= timestamp_now:
                 cursor.execute('INSERT INTO measurements (`time`,`path`,`value`) VALUES ({},{},{})'.format(self.weatherdata['timestamp'][i],'\'weather/temperature\''      ,np.round(self.weatherdata['ambienttemperature'][i],2)))
                 cursor.execute('INSERT INTO measurements (`time`,`path`,`value`) VALUES ({},{},{})'.format(self.weatherdata['timestamp'][i],'\'weather/cloudcover\''       ,np.round(self.weatherdata['cloudcover'][i],2)        ))
                 cursor.execute('INSERT INTO measurements (`time`,`path`,`value`) VALUES ({},{},{})'.format(self.weatherdata['timestamp'][i],'\'weather/sun/azimuth\''      ,np.round(self.weatherdata['solar_azimuth'][i],2)     ))
                 cursor.execute('INSERT INTO measurements (`time`,`path`,`value`) VALUES ({},{},{})'.format(self.weatherdata['timestamp'][i],'\'weather/sun/altitude\''     ,np.round(self.weatherdata['solar_altitude'][i],2)    ))
                 cursor.execute('INSERT INTO measurements (`time`,`path`,`value`) VALUES ({},{},{})'.format(self.weatherdata['timestamp'][i],'\'weather/irradiancedirect\'' ,np.round(self.weatherdata['I_direct_cloudy'][i],2)   ))
                 cursor.execute('INSERT INTO measurements (`time`,`path`,`value`) VALUES ({},{},{})'.format(self.weatherdata['timestamp'][i],'\'weather/irradiancediffuse\'',np.round(self.weatherdata['I_diffuse_cloudy'][i],2)  ))
-                
+        connection.commit()
+        connection.close()
+
+
+
+        logging.debug('Calculating demo building response')
+        self.buildingdata = self.emulate_building({'utcdatetime':[dt_start], 'T_in':[20.0], 'T_em':[22.0]},heatingcurve=True)
+
+        # write data to homecon measurements database
+        connection,cursor = core.measurements_db.create_cursor()
         for i,t in enumerate(self.buildingdata['timestamp']):
+            if t<= timestamp_now:
                 cursor.execute('INSERT INTO measurements (`time`,`path`,`value`) VALUES ({},{},{})'.format(self.buildingdata['timestamp'][i],'\'living/temperature_wall/value\'',np.round(self.buildingdata['living/temperature_wall/value'][i],2)  ))
                 cursor.execute('INSERT INTO measurements (`time`,`path`,`value`) VALUES ({},{},{})'.format(self.buildingdata['timestamp'][i],'\'living/temperature_window/value\'',np.round(self.buildingdata['living/temperature_window/value'][i],2)  ))
 
@@ -209,7 +207,8 @@ class Demo(core.plugin.Plugin):
             timestamp_when = int( (dt_when-dt_ref).total_seconds() )
 
             # weather emulation
-            newdata = self.emulate_weather(self.weatherdata,lookahead=3600)
+            logging.debug('Calculating demo weather data')
+            newdata = self.emulate_weather(self.weatherdata,lookahead=10*24*3600)
             
             # append data and remove old data
             ind = np.where(self.weatherdata['timestamp'] >= timestamp_now-3600)
@@ -232,23 +231,26 @@ class Demo(core.plugin.Plugin):
             timestamp_now = int( (dt_now-dt_ref).total_seconds() )
             timestamp_when = int( (dt_when-dt_ref).total_seconds() )
 
-            # building emulation
-            self.buildingdata = self.emulate_building(self.buildingdata ,lookahead=int( (self.buildingdata['utcdatetime'][-1]-dt_now).total_seconds() ),heatingcurve=True)
-
-            # update states
+            # update weather states
             core.states['outside/temperature/value'].value = round(np.interp(timestamp_now,self.weatherdata['timestamp'],self.weatherdata['ambienttemperature']),2)
             core.states['outside/irradiance/value'].value = round(np.interp(timestamp_now,self.weatherdata['timestamp'],self.weatherdata['I_total_horizontal']),2)
             
+
+            # building emulation
+            logging.debug('Calculating demo building response')
+            self.buildingdata = self.emulate_building(self.buildingdata,heatingcurve=True)
+
+
+            # update building states
             core.states['living/temperature_wall/value'].value = round(self.buildingdata['living/temperature_wall/value'][-1],2)
             core.states['living/temperature_window/value'].value = round(self.buildingdata['living/temperature_window/value'][-1],2)
-
 
             # sleep until the next call
             await asyncio.sleep(timestamp_when-timestamp_now)
 
 
 
-    def emulate_weather(self,initialdata,lookahead=3600):
+    def emulate_weather(self,initialdata,lookahead=0):
         """
         emulate weather conditions
 
@@ -260,55 +262,59 @@ class Demo(core.plugin.Plugin):
             keys with array like values
 
         lookahead : number
-            Number of seconds to look ahead from the final utcdatetime in initialdata
+            Number of seconds to look ahead from now
 
         """
 
         # generate new datetime vector
-        time = np.arange(self.timestep,lookahead+self.timestep,self.timestep,dtype=float)
-        utcdatetime = np.array( [initialdata['utcdatetime'][-1]+datetime.timedelta(seconds=t) for t in time] )
+        dt_ref = datetime.datetime(1970, 1, 1)
+        dt_now = datetime.datetime.utcnow()
+
+        utcdatetime = [initialdata['utcdatetime'][-1]+datetime.timedelta(seconds=t) for t in np.arange(0,(dt_now-initialdata['utcdatetime'][-1]).total_seconds()+lookahead,self.timestep)]
+        if utcdatetime[-1] < dt_now:
+            utcdatetime.append(dt_now)
+
+        utcdatetime = np.array(utcdatetime)
+
+        timestamp = np.array( [int( (dt-dt_ref).total_seconds() ) for dt in utcdatetime] )
 
 
-        timestamp = np.zeros(len(utcdatetime))
-        solar_azimuth = np.zeros(len(utcdatetime))
-        solar_altitude = np.zeros(len(utcdatetime))
-        I_direct_clearsky = np.zeros(len(utcdatetime))
-        I_diffuse_clearsky = np.zeros(len(utcdatetime))
-        I_direct_cloudy = np.zeros(len(utcdatetime))
-        I_diffuse_cloudy = np.zeros(len(utcdatetime))
-        cloudcover = np.zeros(len(utcdatetime))
-        ambienttemperature = np.zeros(len(utcdatetime))
-        I_total_horizontal = np.zeros(len(utcdatetime))
-        I_direct_horizontal = np.zeros(len(utcdatetime))
-        I_diffuse_horizontal = np.zeros(len(utcdatetime))
-        I_ground_horizontal = np.zeros(len(utcdatetime))
+        solar_azimuth = np.zeros(len(timestamp))
+        solar_altitude = np.zeros(len(timestamp))
+        I_direct_clearsky = np.zeros(len(timestamp))
+        I_diffuse_clearsky = np.zeros(len(timestamp))
+        I_direct_cloudy = np.zeros(len(timestamp))
+        I_diffuse_cloudy = np.zeros(len(timestamp))
+        cloudcover = np.zeros(len(timestamp))
+        ambienttemperature = np.zeros(len(timestamp))
+        I_total_horizontal = np.zeros(len(timestamp))
+        I_direct_horizontal = np.zeros(len(timestamp))
+        I_diffuse_horizontal = np.zeros(len(timestamp))
+        I_ground_horizontal = np.zeros(len(timestamp))
+
+
+        cloudcover[0] = initialdata['cloudcover'][-1]
+        ambienttemperature[0] = initialdata['ambienttemperature'][-1]
+
 
         for i,t in enumerate(utcdatetime):
-            t_ref = datetime.datetime(1970, 1, 1)
-            timestamp[i] = int( (t-t_ref).total_seconds() )
 
             solar_azimuth[i],solar_altitude[i] = util.weather.sunposition(self.latitude,self.longitude,elevation=self.elevation,utcdatetime=t)
             I_direct_clearsky[i],I_diffuse_clearsky[i] = util.weather.clearskyirrradiance(solar_azimuth[i],solar_altitude[i],utcdatetime=t)
 
             # random variation in cloud cover
-            if i == 0:
-                initial_cloudcover = initialdata['cloudcover'][-1]
-            else:
-                initial_cloudcover = cloudcover[i-1]
-            cloudcover[i] = min(1.,max(0., initial_cloudcover + 0.0001*(2*np.random.random()-1)*self.timestep ))
-
+            if i < len(timestamp)-1:
+                delta_t = timestamp[i+1]-timestamp[i]
+                cloudcover[i+1] = min(1.,max(0., cloudcover[i] + 0.0001*(2*np.random.random()-1)*delta_t ))
 
             I_direct_cloudy[i],I_diffuse_cloudy[i] = util.weather.cloudyskyirrradiance(I_direct_clearsky[i],I_diffuse_clearsky[i],cloudcover[i],solar_azimuth[i],solar_altitude[i],utcdatetime=t)
             
             I_total_horizontal[i], I_direct_horizontal[i], I_diffuse_horizontal[i], I_ground_horizontal[i] = util.weather.incidentirradiance(I_direct_cloudy[i],I_diffuse_cloudy[i],solar_azimuth[i],solar_altitude[i],0,0)
 
             # ambient temperature dependent on horizontal irradiance
-            if i == 0:
-                initial_ambienttemperature = initialdata['ambienttemperature'][-1]
-            else:
-                initial_ambienttemperature = ambienttemperature[i-1]
-
-            ambienttemperature[i] = initial_ambienttemperature + I_total_horizontal[i]*self.timestep/(15*24*3600) + (-10-initial_ambienttemperature)*self.timestep/(5*24*3600) + (2*np.random.random()-1)*self.timestep/(2*3600)
+            if i < len(timestamp)-1:
+                delta_t = timestamp[i+1]-timestamp[i]
+                ambienttemperature[i+1] = ambienttemperature[i] + I_total_horizontal[i]*delta_t/(15*24*3600) + (-10-ambienttemperature[i])*delta_t/(5*24*3600) + (2*np.random.random()-1)*delta_t/(2*3600)
 
 
         utcdatetime_ref = datetime.datetime(1970, 1, 1)
@@ -333,76 +339,93 @@ class Demo(core.plugin.Plugin):
         return data
 
 
-    def emulate_building(self,initialdata,lookahead=300,heatingcurve=False):
+    def emulate_building(self,initialdata,lookahead=0,heatingcurve=False):
         """
         emulate extremely simple building dynamics
-        d(T_in)/dt = UA*(T_in-T_am) + Q_so + Q_in + Q_he 
+        C_em*d(T_em)/dt = UA_em*(T_em-T_in) + Q_em 
+        C_in*d(T_in)/dt = UA_in*(T_in-T_am) + UA_em*(T_in-T_em) + Q_so + Q_in
 
         Parameters
         ----------
         initialdata : dict
             Dictionary with intial data.
-            Must have a 'utcdatetime', 'T_in' keys with array like values
+            Must have a 'utcdatetime', 'T_in', 'T_em' keys with array like values
 
         lookahead : number
-            Number of seconds to look ahead from the final utcdatetime in initialdata
+            Number of seconds to look ahead from now
 
         """
 
         # time
-        time = np.arange(0,lookahead+self.timestep,self.timestep,dtype=float)
-        utcdatetime = np.array( [initialdata['utcdatetime'][-1]+datetime.timedelta(seconds=t) for t in time] )
-        
-        t_ref = datetime.datetime(1970, 1, 1)
-        timestamp = np.array( [int( (t-t_ref).total_seconds() ) for t in utcdatetime] )
+        dt_ref = datetime.datetime(1970, 1, 1)
+        dt_now = datetime.datetime.utcnow()
+
+        utcdatetime = [initialdata['utcdatetime'][-1]+datetime.timedelta(seconds=t) for t in np.arange(0,(dt_now-initialdata['utcdatetime'][-1]).total_seconds()+lookahead,self.timestep)]
+        if utcdatetime[-1] < dt_now:
+            utcdatetime.append(dt_now)
+
+        utcdatetime = np.array(utcdatetime)
+
+        timestamp = np.array( [int( (dt-dt_ref).total_seconds() ) for dt in utcdatetime] )
 
         # parameters
-        UA = 800
-        C = 10e6
+        UA_in = 800
+        C_in = 10e6
+
+        UA_em = 600
+        C_em = 8e6
+
+        Q_em_max = 16000
         T_set = 20
-        K = 100
+        K_set = 5000
+        K_am = 800
 
 
         # disturbances
         T_am = np.interp(timestamp,self.weatherdata['timestamp'],self.weatherdata['ambienttemperature'])
-        Q_so = np.zeros_like(time)
-        Q_in = np.zeros_like(time)
-        Q_em = np.zeros_like(time)
+
+        Q_so = np.zeros(len(timestamp))
+        for window in core.components.find(type='window'):
+            Q_so = Q_so + window.calculate_irradiation(
+                I_direct=np.interp(timestamp,self.weatherdata['timestamp'],self.weatherdata['I_direct_cloudy']),
+                I_diffuse=np.interp(timestamp,self.weatherdata['timestamp'],self.weatherdata['I_diffuse_cloudy']),
+                solar_azimuth=np.interp(timestamp,self.weatherdata['timestamp'],self.weatherdata['solar_azimuth']),
+                solar_altitude=np.interp(timestamp,self.weatherdata['timestamp'],self.weatherdata['solar_altitude']),
+                shading_relativeposition=np.zeros(len(timestamp)))
+
+        Q_in = np.zeros(len(timestamp))
+        Q_em = np.zeros(len(timestamp))
 
 
         # initialization
-        T_in = np.zeros_like(time)
+        T_in = np.zeros(len(timestamp))
         T_in[0] = initialdata['T_in'][-1]
+
+        T_em = np.zeros(len(timestamp))
+        T_em[0] = initialdata['T_em'][-1]
+
 
         # solve discrete equation
         for i,t in enumerate(utcdatetime[:-1]):
 
+            delta_t = timestamp[i+1]-timestamp[i]
+
             # emission heat flow
             if heatingcurve:
-                Q_em[i] = (T_in[i]-T_am[i])*UA + (T_set-T_in[i])*K
+                Q_em[i] = min(Q_em_max,max(0, (T_in[i]-T_am[i])*K_am + (T_set-T_in[i])*K_set ))
 
-            # solar gains
-            Q = []
-            for window in core.components.find(type='window'):
-                Q.append( window.calculate_irradiation(utcdatetime=t) )
-
-            Q_so[i] = 0
-
-            # internal gains
-            Q_in[i] = 0
-
-            T_in[i+1] = T_in[i] + (T_am[i]-T_in[i])*self.timestep*UA/C + Q_so[i]*self.timestep/C + Q_in[i]*self.timestep/C + Q_em[i]*self.timestep/C
-
+            T_em[i+1] = T_em[i] + (T_in[i]-T_em[i])*delta_t*UA_em/C_em + Q_em[i]*delta_t/C_em
+            T_in[i+1] = T_in[i] + (T_am[i]-T_in[i])*delta_t*UA_in/C_in + (T_em[i]-T_in[i])*delta_t*UA_em/C_in + Q_so[i]*delta_t/C_in + Q_in[i]*delta_t/C_in
 
         # set the output data
         data = {
             'utcdatetime': utcdatetime[1:],
             'timestamp': timestamp[1:],
             'T_in': T_in[1:],
-            'living/temperature_wall/value': T_in[1:] + 0.5,
-            'living/temperature_window/value': T_in[1:] -0.2,
+            'T_em': T_em[1:],
+            'living/temperature_wall/value': 0.90*T_in[1:] + 0.10*T_em[1:],
+            'living/temperature_window/value': 0.98*T_in[1:] + 0.02*T_em[1:],
         }
-
         return data
 
 
