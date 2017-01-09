@@ -409,12 +409,12 @@ class State(BaseState):
  
         """
 
-        datetime_ref = datetime.datetime(1970,1,1)
+        utcdatetime_ref = datetime.datetime(1970,1,1)
 
-        if hasattr(datetime, "__len__"):
-            timestamps = [int( (t-datetime_ref).total_seconds() ) for t in utcdatetime]
+        if hasattr(utcdatetime, "__len__"):
+            timestamps = [int( (t-utcdatetime_ref).total_seconds() ) for t in utcdatetime]
         else:
-            timestamps = [int( (utcdatetime-datetime_ref).total_seconds() )]
+            timestamps = [int( (utcdatetime-utcdatetime_ref).total_seconds() )]
 
         # retrieve data from the database
         result = self.db_history.GET(path=self.path,time__ge=timestamps[0]-3600,time__le=timestamps[-1]+3600)
@@ -441,7 +441,7 @@ class State(BaseState):
 
 
         # return an array or scalar depending on the input
-        if hasattr(datetime, "__len__"):
+        if hasattr(utcdatetime, "__len__"):
             return values
         else:
             return values[0]
@@ -474,13 +474,13 @@ class States(object):
             self.add(db_entry['path'],db_entry=db_entry)
 
 
-    def add(self,path,config=None,db_entry=None):
+    def add(self,path,value=None,config=None,db_entry=None):
         """
         add a state
 
         """
 
-        return State(path,config=config,db_entry=db_entry)
+        return State(path,value=value,config=config,db_entry=db_entry)
 
 
 

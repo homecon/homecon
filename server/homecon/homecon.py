@@ -147,26 +147,19 @@ class HomeCon(object):
         self.plugins._add_core(coreplugins.plugins.Plugins)
         self.plugins._add_core(coreplugins.authentication.Authentication)
         self.plugins._add_core(coreplugins.pages.Pages)
+
+        # demo mode
+        if self.demo:
+            self.plugins._add_core(coreplugins.demo.Demo)
+
+
         self.plugins._add_core(coreplugins.schedules.Schedules)
         self.plugins._add_core(coreplugins.actions.Actions)
         self.plugins._add_core(coreplugins.measurements.Measurements)
         self.plugins._add_core(coreplugins.weather.Weather)
         self.plugins._add_core(coreplugins.building.Building)
+        self.plugins._add_core(coreplugins.identification.Identification)
 
-        """
-        self.coreplugins = {
-            'states': core.plugins.states.States(),                # load states 1st
-            'components': core.plugins.components.Components(),    # load components 2nd
-            'plugins': core.plugins.plugins.Plugins(),
-            'authentication': core.plugins.authentication.Authentication(),
-            'pages': core.plugins.pages.Pages(),
-            'schedules': core.plugins.schedules.Schedules(),
-            'actions': core.plugins.actions.Actions(),
-            'measurements': core.plugins.measurements.Measurements(),
-            'weather': core.plugins.weather.Weather(),
-            'building': core.plugins.building.Building(),
-        }
-        """
 
         # load components
         self.components.load()
@@ -174,9 +167,7 @@ class HomeCon(object):
         # load the websocket
         self.plugins._add_core(coreplugins.websocket.Websocket)
 
-        # demo mode
-        if self.demo:
-            self.plugins._add_core(coreplugins.demo.Demo)
+
 
         logging.info('HomeCon object Initialized')
 

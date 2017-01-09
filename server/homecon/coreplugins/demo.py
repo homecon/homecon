@@ -43,7 +43,7 @@ class Demo(core.plugin.Plugin):
         # dayzone
         core.components.add('dayzone'      ,'zone'    ,{})
 
-        core.components.add('living/temperature_wall'      ,'zonetemperaturesensor'    ,{'zone':'dayzone','confidence':0.5})
+        core.components.add('living/temperature_wall'        ,'zonetemperaturesensor'    ,{'zone':'dayzone','confidence':0.5})
         core.components.add('living/temperature_window'      ,'zonetemperaturesensor'    ,{'zone':'dayzone','confidence':0.8})
 
         core.components.add('living/window_west_1'    ,'window'       ,{'zone':'dayzone', 'area':7.2, 'azimuth':270})

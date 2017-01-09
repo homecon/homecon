@@ -297,3 +297,29 @@ core.components.register(Dimminglight)
 
 
 
+class Heatingsystem(core.component.Component):
+    """
+    a class implementing a heating system
+    
+    """
+
+    def initialize(self):
+        self.states = {
+            'power': {
+                'default_config': {},
+                'fixed_config': {},
+            },
+            'power_setpoint': {
+                'default_config': {},
+                'fixed_config': {},
+            },
+        }
+        self.config = {
+            'type': '',
+            'power': '',
+        }
+
+
+core.components.register(Heatingsystem)
+
+
