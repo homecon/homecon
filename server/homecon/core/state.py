@@ -394,13 +394,13 @@ class State(BaseState):
     def component(self):
         return self._component
 
-    def history(self,utcdatetime,interpolation='linear'):
+    def history(self,utcdatetime=None,interpolation='linear'):
         """
         return the history of a state
 
         Parameters
         ----------
-        utcdatetime : datetime.datetime or list of datetime.datetimes
+        utcdatetime : None or datetime.datetime or list of datetime.datetimes
             time to return the history
 
         interpolation : string
@@ -409,42 +409,46 @@ class State(BaseState):
  
         """
 
-        utcdatetime_ref = datetime.datetime(1970,1,1)
-
-        if hasattr(utcdatetime, "__len__"):
-            timestamps = [int( (t-utcdatetime_ref).total_seconds() ) for t in utcdatetime]
-        else:
-            timestamps = [int( (utcdatetime-utcdatetime_ref).total_seconds() )]
-
-        # retrieve data from the database
-        result = self.db_history.GET(path=self.path,time__ge=timestamps[0]-3600,time__le=timestamps[-1]+3600)
-
-        if len(result)>0:
-            db_timestamps = [res['time'] for res in result]
-            db_values = [res['value'] for res in result]
+        if utcdatetime is None:
+            return self.value
 
         else:
-            # did not find any value, expand the horizon
-            # find the 1st value before the 1st timestamps
-            
-            db_timestamps = [res['time'] for res in result]
-            db_values = [res['value'] for res in result]
+            utcdatetime_ref = datetime.datetime(1970,1,1)
 
-        # interpolate to the correct timestamps
-        if interpolation == 'linear':
-            # linear interpolation
-            values = np.interp(timestamps,db_timestamps,db_values)
-        else:
-            # zero order hold interpolation
-            ind = np.interp( timestamps, db_timestamps, np.arange(len(db_timestamps)) )
-            values = np.array([db_values[int(i)] for i in ind])
+            if hasattr(utcdatetime, "__len__"):
+                timestamps = [int( (t-utcdatetime_ref).total_seconds() ) for t in utcdatetime]
+            else:
+                timestamps = [int( (utcdatetime-utcdatetime_ref).total_seconds() )]
+
+            # retrieve data from the database
+            result = self.db_history.GET(path=self.path,time__ge=timestamps[0]-3600,time__le=timestamps[-1]+3600)
+
+            if len(result)>0:
+                db_timestamps = [res['time'] for res in result]
+                db_values = [res['value'] for res in result]
+
+            else:
+                # did not find any value, expand the horizon
+                # find the 1st value before the 1st timestamps
+                
+                db_timestamps = [res['time'] for res in result]
+                db_values = [res['value'] for res in result]
+
+            # interpolate to the correct timestamps
+            if interpolation == 'linear':
+                # linear interpolation
+                values = np.interp(timestamps,db_timestamps,db_values)
+            else:
+                # zero order hold interpolation
+                ind = np.interp( timestamps, db_timestamps, np.arange(len(db_timestamps)) )
+                values = np.array([db_values[int(i)] for i in ind])
 
 
-        # return an array or scalar depending on the input
-        if hasattr(utcdatetime, "__len__"):
-            return values
-        else:
-            return values[0]
+            # return an array or scalar depending on the input
+            if hasattr(utcdatetime, "__len__"):
+                return values
+            else:
+                return values[0]
 
 
 

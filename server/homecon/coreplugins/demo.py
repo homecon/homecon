@@ -35,6 +35,10 @@ class Demo(core.plugin.Plugin):
         ########################################################################
         logging.debug('Adding demo components')
 
+        # systems
+        core.components.add('heatpump'            , 'heatgenerationsystem'       , {'type':'heatpump'    ,'power':10000,})
+
+
         # outside sensors
         core.components.add('outside/temperature'      ,'ambienttemperaturesensor'    ,{'confidence':0.5})
         core.components.add('outside/irradiance'       ,'irradiancesensor'            ,{'confidence':0.8, 'azimuth':0.0, 'tilt':0.0})
@@ -61,6 +65,9 @@ class Demo(core.plugin.Plugin):
         core.components.add('living/light_tv'         , 'light'       , {'type':'led'     ,'power':10   ,'zone':'dayzone'})
         core.components.add('living/light_couch'      , 'dimminglight', {'type':'led'     ,'power':15   ,'zone':'dayzone'})
         core.components.add('kitchen/light'           , 'light'       , {'type':'led'     ,'power':5    ,'zone':'dayzone'})
+        
+
+        core.components.add('floorheating_groundfloor'            , 'heatemissionsystem'       , {'type':'floorheating'    ,'zone':'dayzone', 'heatgenerationsystem':'heatpump'})
 
 
 
@@ -163,8 +170,19 @@ class Demo(core.plugin.Plugin):
                 cursor.execute('INSERT INTO measurements (`time`,`path`,`value`) VALUES ({},{},{})'.format(self.weatherdata['timestamp'][i],'\'weather/sun/altitude\''     ,np.round(self.weatherdata['solar_altitude'][i],2)    ))
                 cursor.execute('INSERT INTO measurements (`time`,`path`,`value`) VALUES ({},{},{})'.format(self.weatherdata['timestamp'][i],'\'weather/irradiancedirect\'' ,np.round(self.weatherdata['I_direct_cloudy'][i],2)   ))
                 cursor.execute('INSERT INTO measurements (`time`,`path`,`value`) VALUES ({},{},{})'.format(self.weatherdata['timestamp'][i],'\'weather/irradiancediffuse\'',np.round(self.weatherdata['I_diffuse_cloudy'][i],2)  ))
+            else:
+                break
+
         connection.commit()
         connection.close()
+
+        # set the final values
+        core.states['weather/temperature']._value = np.round(self.weatherdata['ambienttemperature'][i],2)
+        core.states['weather/cloudcover']._value = np.round(self.weatherdata['cloudcover'][i],2)
+        core.states['weather/sun/azimuth']._value = np.round(self.weatherdata['solar_azimuth'][i],2)
+        core.states['weather/sun/altitude']._value = np.round(self.weatherdata['solar_altitude'][i],2)
+        core.states['weather/irradiancedirect']._value = np.round(self.weatherdata['I_direct_cloudy'][i],2)
+        core.states['weather/irradiancediffuse']._value = np.round(self.weatherdata['I_diffuse_cloudy'][i],2)
 
 
 
@@ -177,10 +195,22 @@ class Demo(core.plugin.Plugin):
             if t<= timestamp_now:
                 cursor.execute('INSERT INTO measurements (`time`,`path`,`value`) VALUES ({},{},{})'.format(self.buildingdata['timestamp'][i],'\'living/temperature_wall/value\'',np.round(self.buildingdata['living/temperature_wall/value'][i],2)  ))
                 cursor.execute('INSERT INTO measurements (`time`,`path`,`value`) VALUES ({},{},{})'.format(self.buildingdata['timestamp'][i],'\'living/temperature_window/value\'',np.round(self.buildingdata['living/temperature_window/value'][i],2)  ))
-
+                cursor.execute('INSERT INTO measurements (`time`,`path`,`value`) VALUES ({},{},{})'.format(self.buildingdata['timestamp'][i],'\'heatpump/power_setpoint\'',np.round(self.buildingdata['Q_em'][i],1)  ))
+                cursor.execute('INSERT INTO measurements (`time`,`path`,`value`) VALUES ({},{},{})'.format(self.buildingdata['timestamp'][i],'\'heatpump/power\'',np.round(self.buildingdata['Q_em'][i],1)  ))
+                cursor.execute('INSERT INTO measurements (`time`,`path`,`value`) VALUES ({},{},{})'.format(self.buildingdata['timestamp'][i],'\'floorheating_groundfloor/valve_position\'',1.0  ))
+            else:
+                break
 
         connection.commit()
         connection.close()
+
+        # set the final values
+        core.states['living/temperature_wall/value']._value = np.round(self.buildingdata['living/temperature_wall/value'][i],2)
+        core.states['living/temperature_window/value']._value = np.round(self.buildingdata['living/temperature_window/value'][i],2)
+        core.states['heatpump/power_setpoint']._value = np.round(self.buildingdata['Q_em'][i],1)
+        core.states['heatpump/power']._value = np.round(self.buildingdata['Q_em'][i],1)
+        core.states['floorheating_groundfloor/valve_position']._value = 1.0
+
 
 
         ########################################################################
@@ -238,7 +268,7 @@ class Demo(core.plugin.Plugin):
 
             # building emulation
             logging.debug('Calculating demo building response')
-            self.buildingdata = self.emulate_building(self.buildingdata,heatingcurve=True)
+            self.buildingdata = self.emulate_building(self.buildingdata)
 
 
             # update building states
@@ -413,7 +443,9 @@ class Demo(core.plugin.Plugin):
             # emission heat flow
             if heatingcurve:
                 Q_em[i] = min(Q_em_max,max(0, (T_in[i]-T_am[i])*K_am + (T_set-T_in[i])*K_set ))
-
+            else:
+                Q_em[i] = core.components['floorheating_groundfloor'].calculate_power()
+    
             T_em[i+1] = T_em[i] + (T_in[i]-T_em[i])*delta_t*UA_em/C_em + Q_em[i]*delta_t/C_em
             T_in[i+1] = T_in[i] + (T_am[i]-T_in[i])*delta_t*UA_in/C_in + (T_em[i]-T_in[i])*delta_t*UA_em/C_in + Q_so[i]*delta_t/C_in + Q_in[i]*delta_t/C_in
 
@@ -423,6 +455,7 @@ class Demo(core.plugin.Plugin):
             'timestamp': timestamp[1:],
             'T_in': T_in[1:],
             'T_em': T_em[1:],
+            'Q_em': Q_em[1:],
             'living/temperature_wall/value': 0.90*T_in[1:] + 0.10*T_em[1:],
             'living/temperature_window/value': 0.98*T_in[1:] + 0.02*T_em[1:],
         }

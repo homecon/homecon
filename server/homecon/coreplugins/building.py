@@ -297,9 +297,11 @@ core.components.register(Dimminglight)
 
 
 
-class Heatingsystem(core.component.Component):
+class Heatgenerationsystem(core.component.Component):
     """
-    a class implementing a heating system
+    a class implementing a heating system with a valve for controlling the
+    energy flow to it.
+    
     
     """
 
@@ -316,10 +318,61 @@ class Heatingsystem(core.component.Component):
         }
         self.config = {
             'type': '',
-            'power': '',
+            'power': 10000.,
         }
 
+    def calculate_power(self,utcdatetime=None):
 
-core.components.register(Heatingsystem)
+        if self.states['power'].value is None:
+            return self.states['power_setpoint'].history(utcdatetime)
+        else:
+            return self.states['power'].history(utcdatetime)
+
+
+
+core.components.register(Heatgenerationsystem)
+
+
+
+class Heatemissionsystem(core.component.Component):
+    """
+    a class implementing a heat emission system with a valve for controlling the
+    energy flow to it.
+    
+    
+    """
+
+    def initialize(self):
+        self.states = {
+            'power': {
+                'default_config': {},
+                'fixed_config': {},
+            },
+            'valve_position': {
+                'default_config': {},
+                'fixed_config': {},
+            },
+        }
+        self.config = {
+            'type': '',
+            'heatgenerationsystem': '',
+            'zone': '',
+            'closed_position': 0.0,
+            'open_position': 1.0,
+        }
+
+    def calculate_power(self,utcdatetime=None):
+        parallelsystems = core.components.find(type='heatemissionsystem',heatgenerationsystem=self.config['heatgenerationsystem'])
+
+        valvepositions = np.array([(system.states['valve_position'].history(utcdatetime)-system.config['closed_position'])/(system.config['open_position']-system.config['closed_position']) for system in parallelsystems])
+
+        relativepower = (self.states['valve_position'].history(utcdatetime)-self.config['closed_position'])/(self.config['open_position']-self.config['closed_position'])/sum(valvepositions)
+
+        heatgenerationsystempower = core.components[self.config['heatgenerationsystem']].calculate_power(utcdatetime=utcdatetime)
+
+        return relativepower*heatgenerationsystempower
+
+
+core.components.register(Heatemissionsystem)
 
 
