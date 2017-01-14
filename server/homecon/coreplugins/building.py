@@ -38,12 +38,15 @@ class Building(core.plugin.Plugin):
 
             elif component.type == 'shading' and event.data['state'].path.split('/')[-1]=='position':
                 window = core.components[component.config['window']]
-                window.states['irradiation'].value = np.round( window.calculate_irradiation(), 1)
-                
+                window.states['solargain'].value = np.round( window.calculate_solargain(), 1)
+
+            elif component.type == 'window' and event.data['state'].path.split('/')[-1]=='solargain':
+                zone = core.components[component.config['zone']]
+                zone.states['solargain'].value = np.round( zone.calculate_solargain(), 1)
 
         if event.data['state'].path == 'weather/irradiancedirect' or event.data['state'].path == 'weather/irradiancediffuse':
             for window in core.components.find(type='window'):
-                window.states['irradiation'].value = np.round( window.calculate_irradiation(), 1)
+                window.states['solargain'].value = np.round( window.calculate_solargain(), 1)
 
 
 
@@ -64,29 +67,57 @@ class Zone(core.component.Component):
                 'default_config': {'type': 'number', 'quantity': 'relative humidity', 'unit': '%'},
                 'fixed_config': {},
             },
+            'solargain': {
+                'default_config': {'type': 'number', 'quantity': 'heat flow rate', 'unit': 'W', 'description':'Solar heat flow through all windows in the zone'},
+                'fixed_config': {},
+            },
+            'internalgain': {
+                'default_config': {'type': 'number', 'quantity': 'heat flow rate', 'unit': 'W', 'description':'Internal heat flows to the zone'},
+                'fixed_config': {},
+            },
         }
         self.config = {
             'type': '',
         }
 
-    def calculate_irradiation(self):
+    def calculate_solargain(self,utcdatetime=None,I_direct=None,I_diffuse=None,solar_azimuth=None,solar_altitude=None,shading_relativeposition=None):
+        """
+        Parameters
+        ----------
+
+        shading_relativeposition : np.ndarray
+            number of windows x  number of shadings x number of timesteps
+
+        """
+
+        windows = core.components.find(type='window', zone=self.path)
+
+        if shading_relativeposition is None:
+            shading_relativeposition = [None]*len(windows)
+
+
+        solargain = sum([
+            window.calculate_solargain(
+                utcdatetime=utcdatetime,
+                I_direct=I_direct,
+                I_diffuse=I_diffuse,
+                solar_azimuth=solar_azimuth,
+                solar_altitude=solar_altitude,
+                shading_relativeposition=position)
+            for window,position in zip(windows,shading_relativeposition)
+        ])
+
+        return solargain
+
+    def calculate_temperature(self,utcdatetime=None):
         """
 
         """
-        irradiation = 0
-        for window in core.components.find(type='window', zone=self.path):
-            irradiation = window.calculate_irradiation()
 
-        return irradiation
-
-    def calculate_temperature(self):
-        """
-
-        """
         temperature = []
         confidence = []
         for sensor in core.components.find(type='zonetemperaturesensor', zone=self.path):
-            temp = sensor.states['value'].value
+            temp = sensor.states['value'].history(utcdatetime=utcdatetime)
             if not temp is None:
                 temperature.append(temp)
                 confidence.append(sensor.config['confidence'])
@@ -96,7 +127,6 @@ class Zone(core.component.Component):
             return sum([c*t for c,t, in zip(temperature,confidence)])/sum(confidence)
         else:
             return None
-
 
 core.components.register(Zone)
 
@@ -132,8 +162,8 @@ class Window(core.component.Component):
 
     def initialize(self):
         self.states = {
-            'irradiation': {
-                'default_config': {'type': 'number', 'quantity': 'irradiation', 'unit': 'W', 'description':'Solar heat flow through the window'},
+            'solargain': {
+                'default_config': {'type': 'number', 'quantity': 'heat flow rate', 'unit': 'W', 'description':'Solar heat flow through the window'},
                 'fixed_config': {},
             },
         }
@@ -146,15 +176,24 @@ class Window(core.component.Component):
             'zone': '',
         }
 
-    def calculate_irradiation(self,utcdatetime=None,I_direct=None,I_diffuse=None,solar_azimuth=None,solar_altitude=None,shading_relativeposition=None):
+    def calculate_solargain(self,utcdatetime=None,I_direct=None,I_diffuse=None,solar_azimuth=None,solar_altitude=None,shading_relativeposition=None):
         """
 
         """
 
         # find shadings attached to this window
+        shadings = core.components.find(type='shading', window=self.path)
+
+        if shading_relativeposition is None:
+            shading_relativeposition = [None]*len(shadings)
+
         shading_transmittance = 1.0
-        for shading in core.components.find(type='shading', window=self.path):
-            shading_transmittance = shading_transmittance*shading.calculate_transmittance(utcdatetime=utcdatetime,relativeposition=shading_relativeposition)
+        for shading,position in zip(shadings,shading_relativeposition):
+            shading_transmittance = shading_transmittance*shading.calculate_transmittance(utcdatetime=utcdatetime,relativeposition=position)
+
+
+
+
 
         # get inputs
         if I_direct is None:
@@ -240,23 +279,31 @@ class Shading(core.component.Component):
             'window': '',
         }
 
-    def calculate_transmittance(self,utcdatetime=None,relativeposition=None):
+    def calculate_relative_position(self,utcdatetime=None,position=None):
+        """
+        """
+
+        if position is None:
+            position = self.states['position'].history(utcdatetime)
+
+        if position is None:
+            if utcdatetime is None:
+                relativeposition = 0
+            else:
+                relativeposition = np.zeros(len(utcdatetime))
+        else:
+            relativeposition = (position-self.config['open_position'])/(self.config['closed_position']-self.config['open_position'])
+
+        return relativeposition
+
+
+    def calculate_transmittance(self,utcdatetime=None,relativeposition=None,position=None):
         """
         """
 
         if relativeposition is None:
-            if utcdatetime is None:
-                position = self.states['position'].value
-            else:
-                position = self.states['position'].history(utcdatetime)
+            relativeposition = self.calculate_relative_position(utcdatetime=utcdatetime,position=position)
 
-            # relative position 1: closed, 0: open
-            if position is None:
-                relativeposition = 0
-            else:
-                relativeposition = (position-self.config['open_position'])/(self.config['closed_position']-self.config['open_position'])
-        
-        
         return relativeposition*self.config['closed_transmittance'] + (1-relativeposition)*self.config['open_transmittance']
 
 

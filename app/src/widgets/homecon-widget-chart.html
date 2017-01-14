@@ -78,17 +78,17 @@
 
             ready: function(){
                 this.pathToSeries = {};
-                this._createChart(this.$.container);
+                this.chart = this._createChart(this.$.container);
 
                 var that = this;
-                that._resizeChart();
+                that._resizeChart(that.chart);
                 window.addEventListener("resize", function(){
-                    that._resizeChart();
+                    that._resizeChart(that.chart);
                 });
             },
 
             _configChanged: function(config,chart){
-                this._setTitle(this.config.title);
+                this._setTitle(this.chart,this.config.title);
             },
 
             _initialDataChanged: function(event,initialData){
@@ -123,8 +123,8 @@
             _stateConfigChanged: function(event,stateConfig){
                 var path = event.model.__data__.path;
 
-                this._setLegend(path,stateConfig['label'])
-                this._setYLabel(stateConfig['unit'])
+                this._setLegend(this.chart,path,stateConfig['label'])
+                this._setYLabel(this.chart,stateConfig['unit'])
             },
 
             openEditDialog: function(){

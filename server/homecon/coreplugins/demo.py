@@ -87,7 +87,7 @@ class Demo(core.plugin.Plugin):
 
 
         # bathroom
-        core.components.add('bathroom'     ,'zone'    ,{})
+        core.components.add('bathroomzone'     ,'zone'    ,{})
 
 
 
@@ -193,11 +193,10 @@ class Demo(core.plugin.Plugin):
         connection,cursor = core.measurements_db.create_cursor()
         for i,t in enumerate(self.buildingdata['timestamp']):
             if t<= timestamp_now:
-                cursor.execute('INSERT INTO measurements (`time`,`path`,`value`) VALUES ({},{},{})'.format(self.buildingdata['timestamp'][i],'\'living/temperature_wall/value\'',np.round(self.buildingdata['living/temperature_wall/value'][i],2)  ))
-                cursor.execute('INSERT INTO measurements (`time`,`path`,`value`) VALUES ({},{},{})'.format(self.buildingdata['timestamp'][i],'\'living/temperature_window/value\'',np.round(self.buildingdata['living/temperature_window/value'][i],2)  ))
-                cursor.execute('INSERT INTO measurements (`time`,`path`,`value`) VALUES ({},{},{})'.format(self.buildingdata['timestamp'][i],'\'heatpump/power_setpoint\'',np.round(self.buildingdata['Q_em'][i],1)  ))
-                cursor.execute('INSERT INTO measurements (`time`,`path`,`value`) VALUES ({},{},{})'.format(self.buildingdata['timestamp'][i],'\'heatpump/power\'',np.round(self.buildingdata['Q_em'][i],1)  ))
-                cursor.execute('INSERT INTO measurements (`time`,`path`,`value`) VALUES ({},{},{})'.format(self.buildingdata['timestamp'][i],'\'floorheating_groundfloor/valve_position\'',1.0  ))
+                for key,val in self.buildingdata.items():
+                    if key in core.states:
+                        cursor.execute('INSERT INTO measurements (`time`,`path`,`value`) VALUES ({},{},{})'.format(self.buildingdata['timestamp'][i],'\'{}\''.format(key),np.round(val[i],2)  ))
+
             else:
                 break
 
@@ -416,12 +415,12 @@ class Demo(core.plugin.Plugin):
 
         Q_so = np.zeros(len(timestamp))
         for window in core.components.find(type='window'):
-            Q_so = Q_so + window.calculate_irradiation(
+            Q_so = Q_so + window.calculate_solargain(
                 I_direct=np.interp(timestamp,self.weatherdata['timestamp'],self.weatherdata['I_direct_cloudy']),
                 I_diffuse=np.interp(timestamp,self.weatherdata['timestamp'],self.weatherdata['I_diffuse_cloudy']),
                 solar_azimuth=np.interp(timestamp,self.weatherdata['timestamp'],self.weatherdata['solar_azimuth']),
                 solar_altitude=np.interp(timestamp,self.weatherdata['timestamp'],self.weatherdata['solar_altitude']),
-                shading_relativeposition=np.zeros(len(timestamp)))
+                shading_relativeposition=[np.zeros(len(timestamp)) for shading in core.components.find(type='shading',window=window.path) ])
 
         Q_in = np.zeros(len(timestamp))
         Q_em = np.zeros(len(timestamp))
@@ -456,8 +455,28 @@ class Demo(core.plugin.Plugin):
             'T_in': T_in[1:],
             'T_em': T_em[1:],
             'Q_em': Q_em[1:],
+            'Q_so': Q_so[1:],
+            'dayzone/temperature': T_in[1:],
+            'dayzone/solargain': 0.7*Q_so[1:],
+            'dayzone/internalgain': 0*np.ones(len(utcdatetime[1:])),
+            'nightzone/temperature': T_in[1:],
+            'nightzone/solargain': 0.3*Q_so[1:],
+            'nightzone/internalgain': 0*np.ones(len(utcdatetime[1:])),
+            'bathroomzone/temperature': T_in[1:],
+            'bathroomzone/solargain': 0.0*Q_so[1:],
+            'bathroomzone/internalgain': 0*np.ones(len(utcdatetime[1:])),
             'living/temperature_wall/value': 0.90*T_in[1:] + 0.10*T_em[1:],
             'living/temperature_window/value': 0.98*T_in[1:] + 0.02*T_em[1:],
+            'heatpump/power_setpoint': Q_em[1:],
+            'heatpump/power': Q_em[1:],
+            'floorheating_groundfloor/valve_position': 1.0*np.ones(len(utcdatetime[1:])),
+            'living/window_west_1/screen/position': 0.0*np.ones(len(utcdatetime[1:])),
+            'living/window_west_2/screen/position': 0.0*np.ones(len(utcdatetime[1:])),
+            'kitchen/window_west/screen/position': 0.0*np.ones(len(utcdatetime[1:])),
+            'kitchen/window_south/screen/position': 0.0*np.ones(len(utcdatetime[1:])),
+            'bedroom/window_east/shutter/position': 0.0*np.ones(len(utcdatetime[1:])),
+            'bedroom/window_north/shutter/position': 0.0*np.ones(len(utcdatetime[1:])),
+
         }
         return data
 

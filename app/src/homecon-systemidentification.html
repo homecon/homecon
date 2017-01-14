@@ -1,0 +1,181 @@
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/paper-material/paper-material.html">
+<link rel="import" href="../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../bower_components/iron-icon/iron-icon.html">
+<link rel="import" href="../bower_components/iron-icons/iron-icons.html">
+
+<link rel="import" href="homecon-web-socket-object.html">
+<link rel="import" href="homecon-web-socket-sender.html">
+<link rel="import" href="homecon-edit-dialog.html">
+<link rel="import" href="homecon-section.html">
+<link rel="import" href="widgets/highcharts-behavior.html">
+<link rel="import" href="widgets/homecon-widget-button.html">
+
+<dom-module id="homecon-systemidentification">
+
+    <template>
+
+        <style include="iron-flex iron-flex-alignment">
+            :host {
+                display: block;
+            }
+            .chart {
+                margin-bottom: 5px;
+            }
+            .fitquality{
+                width: 45%;
+                min-width: 200px;
+            }
+            .model-select{
+                width: 95%;
+                margin-bottom: 10px;
+            }
+        </style>
+
+        <homecon-web-socket-sender id="websocket"></homecon-web-socket-sender>
+
+        <homecon-web-socket-object id="websocketCrossvalidationResult" event="state" path="systemidentification/validation/result" data="{{crossvalidationResult}}" on-change="_crossvalidationResultChanged"></homecon-web-socket-object>
+
+        <paper-dropdown-menu class="model-select" label="Model">
+            <paper-menu class="dropdown-content" attr-for-selected="value" selected="{{model}}">
+                <template is="dom-repeat" items="{{models}}" as="mod">
+                    <paper-item value="{{mod.name}}">{{mod.name}}</paper-item>
+                </template>
+            </paper-menu>
+        </paper-dropdown-menu>
+
+        <div class="chart" id="QChartcontainer"></div>
+        <div class="chart" id="TChartcontainer"></div>
+
+        <div class="vertical layout">
+            <div class="horizontal layout wrap">
+                <div class="fitquality">RMSE: {{rmse}}</div>
+                <div class="fitquality">Max error: {{maxError}}</div>
+            </div>
+            <div class="horizontal layout wrap">
+                <homecon-widget-button config="{{identifyButtonConfig}}">Identify</homecon-widget-button>
+                <homecon-widget-button config="{{validateButtonConfig}}">Identify</homecon-widget-button>
+            </div>
+        </div>
+
+
+    </template>
+
+    <script>
+        Polymer({
+            is: 'homecon-systemidentification',
+            behaviors: [HighchartsBehavior],
+            properties: {
+            },
+
+            ready: function(){
+                this.QChart = this._createChart(this.$.QChartcontainer);
+                this.TChart = this._createChart(this.$.TChartcontainer);
+
+                this._setTitle(this.QChart,'Validation Heat flow')
+                this._setTitle(this.TChart,'Validation Temperature')
+
+                var that = this;
+                that._resizeChart(that.QChart,200);
+                window.addEventListener("resize", function(){
+                    that._resizeChart(that.QChart,200);
+                });
+                var that = this;
+                that._resizeChart(that.TChart,200);
+                window.addEventListener("resize", function(){
+                    that._resizeChart(that.TChart,200);
+                });
+
+                this.identifyButtonConfig = {"label":"Identify","event":"sytemidentification_identify","data":"{}"}
+                this.validateButtonConfig = {"label":"Validate","event":"sytemidentification_validate","data":"{}"}
+
+                this.rmse = ''
+                this.maxError = ''
+            },
+
+            _systemidentificationResultChanged: function(event,data){
+
+
+            },
+
+            _crossvalidationResultChanged : function(event,data){
+                console.log(data)
+                var charts = {'Q':this.QChart,'T':this.TChart};
+                var num = {'Q':0,'T':0};
+
+                for(part in {'inputs':0,'estimates':0}){
+                    for(key in data[part]){
+
+                        var c = key[0]
+                        if(c in charts){
+
+                            var chart = charts[c]
+
+                            if(chart.series.length > num[c]){
+                                var series = chart.series[num[c]]
+                            }
+                            else{
+                                var series = chart.addSeries({});
+                            }
+
+                            if(part == 'estimates' && key in data['observations']){
+                                series.update({name:key+'_sim'}, false);
+                            }
+                            else{
+                                series.update({name:key}, false);
+                            }
+
+                            var chartdata = []
+                            for(var i=0;i<data['inputs']['timestamp'].length;i++){
+                                chartdata.push([data['inputs']['timestamp'][i]*1000,data[part][key][i]]);
+                            }
+
+                            series.setData(chartdata)
+
+                            num[c] += 1;
+
+
+                            if(key in data['observations']){
+
+                                if(chart.series.length > num[c]){
+                                    var series_o = chart.series[num[c]]
+                                }
+                                else{
+                                    var series_o = chart.addSeries({});
+                                }
+
+                                series_o.update({name:key}, false);
+
+                                var chartdata = []
+                                for(var i=0;i<data['inputs']['timestamp'].length;i++){
+                                    chartdata.push([data['inputs']['timestamp'][i]*1000,data['observations'][key][i]]);
+                                }
+
+                                series_o.setData(chartdata)
+
+                                num[c] += 1;
+
+                            }
+                        }
+                    }
+                }
+
+                this._setYLabel(this.QChart,'W')
+                this._setYLabel(this.TChart,'°C')
+
+                this.rmse = Math.round(data['fitquality']['rmse']*1000)/1000
+                this.maxError = Math.round(data['fitquality']['max_error']*1000)/1000
+            },
+
+
+            load: function(){
+                this.$.websocketCrossvalidationResult.send();
+
+                //this.$.websocketStatesList.send();
+            },
+
+        });
+    </script>
+
+</dom-module>

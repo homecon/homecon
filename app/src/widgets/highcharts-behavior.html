@@ -3,33 +3,33 @@
 <script>
     HighchartsBehavior = {
 
-        _setXLabel: function(label){
-            this.chart.xAxis[0].axisTitle.attr({
+        _setXLabel: function(chart,label){
+            chart.xAxis[0].axisTitle.attr({
                 text: label
             });
         },
 
-        _setYLabel: function(label){
-            this.chart.yAxis[0].axisTitle.attr({
+        _setYLabel: function(chart,label){
+            chart.yAxis[0].axisTitle.attr({
                 text: label
             });
         },
 
-        _setTitle: function(title){
-            this.chart.setTitle({
+        _setTitle: function(chart,title){
+            chart.setTitle({
                 text: title
             });
         },
 
-        _setLegend: function(path,label){
+        _setLegend: function(chart,path,label){
             if(path in this.pathToSeries){
                 var series = this.pathToSeries[path];
                 series.update({name:label}, false);
-                this.chart.redraw();
+                chart.redraw();
             }
         },
 
-        _resizeChart: function(){
+        _resizeChart: function(chart,h){
             var w = Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
             
             if(w > 766){
@@ -37,7 +37,12 @@
                 w = 0.6*w;
             }
             w = w-2*20-2*30;
-            this.chart.setSize(w, 400);
+
+            if(typeof h == 'undefined'){
+                var h = 400;
+            }
+
+            chart.setSize(w, h);
         },
 
         _createChart: function(container){
@@ -247,7 +252,7 @@
             Highcharts.setOptions(Highcharts.theme);
 
             // Create the chart
-            this.chart = Highcharts.chart(container, {
+            var chart = Highcharts.chart(container, {
                 chart: {
                     type: 'line',
                     zoomType: 'x',
@@ -284,6 +289,8 @@
                 },*/
                 series: [],
             });
+
+            return chart;
         },
 
     };

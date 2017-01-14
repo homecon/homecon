@@ -44,12 +44,21 @@ class Buildingmodel(object):
 
         """
 
+        # add the timestamp to data
+        dt_ref = datetime.datetime(1970, 1, 1)
+        data['timestamp'] = [int((dt-dt_ref).total_seconds()) for dt in utcdatetime]
+
+
         pyomodata={None:{
             'i':{None: range(len(utcdatetime))},
         }}
 
         for key,val in data.items():
             pyomodata[None][key] = {(i,): val[i] for i in range(len(utcdatetime))}
+
+        # add the parameters
+        for key,val in self.parameters.items():
+            pyomodata[None][key] = {None: val}
 
         return pyomodata
 
@@ -58,7 +67,7 @@ class Buildingmodel(object):
         # retrieve data
         dt_ref = datetime.datetime(1970, 1, 1)
         dt_end = datetime.datetime.utcnow()
-        dt_ini = dt_end - datetime.timedelta(days=1)
+        dt_ini = dt_end - datetime.timedelta(days=7)
 
         timestamp_end = int( (dt_end-dt_ref).total_seconds() )
         timestamp_ini = int( (dt_ini-dt_ref).total_seconds() )
@@ -94,7 +103,7 @@ class Buildingmodel(object):
         # retrieve data
         dt_ref = datetime.datetime(1970, 1, 1)
         dt_end = datetime.datetime.utcnow()
-        dt_ini = dt_end - datetime.timedelta(days=1)
+        dt_ini = dt_end - datetime.timedelta(days=7)
 
         timestamp_end = int( (dt_end-dt_ref).total_seconds() )
         timestamp_ini = int( (dt_ini-dt_ref).total_seconds() )
@@ -107,6 +116,7 @@ class Buildingmodel(object):
 
         # create the instance
         instance = self.validation_model.create_instance(data)
+
 
         # solve
         solver = pyomo.SolverFactory('ipopt')

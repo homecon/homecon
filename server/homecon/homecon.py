@@ -147,18 +147,20 @@ class HomeCon(object):
         self.plugins._add_core(coreplugins.plugins.Plugins)
         self.plugins._add_core(coreplugins.authentication.Authentication)
         self.plugins._add_core(coreplugins.pages.Pages)
-
-        # demo mode
-        if self.demo:
-            self.plugins._add_core(coreplugins.demo.Demo)
-
-
         self.plugins._add_core(coreplugins.schedules.Schedules)
         self.plugins._add_core(coreplugins.actions.Actions)
         self.plugins._add_core(coreplugins.measurements.Measurements)
         self.plugins._add_core(coreplugins.weather.Weather)
         self.plugins._add_core(coreplugins.building.Building)
-        self.plugins._add_core(coreplugins.identification.Identification)
+        self.plugins._add_core(coreplugins.systemidentification.Systemidentification)
+
+        # load other plugins
+
+
+
+        # demo mode
+        if self.demo:
+            self.plugins._add_core(coreplugins.demo.Demo)
 
 
         # load components
