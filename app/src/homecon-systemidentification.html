@@ -33,14 +33,15 @@
             }
         </style>
 
-        <homecon-web-socket-sender id="websocket"></homecon-web-socket-sender>
 
+        <homecon-web-socket-object id="websocketModelsList" event="list_models" path="" data="{{models}}"></homecon-web-socket-object>
+        <homecon-web-socket-object id="websocketModel" event="state" path="systemidentification/model" data="{{model}}" auto></homecon-web-socket-object>
         <homecon-web-socket-object id="websocketCrossvalidationResult" event="state" path="systemidentification/validation/result" data="{{crossvalidationResult}}" on-change="_crossvalidationResultChanged"></homecon-web-socket-object>
-
+        
         <paper-dropdown-menu class="model-select" label="Model">
             <paper-menu class="dropdown-content" attr-for-selected="value" selected="{{model}}">
                 <template is="dom-repeat" items="{{models}}" as="mod">
-                    <paper-item value="{{mod.name}}">{{mod.name}}</paper-item>
+                    <paper-item value="{{mod}}">{{mod}}</paper-item>
                 </template>
             </paper-menu>
         </paper-dropdown-menu>
@@ -94,13 +95,8 @@
                 this.maxError = ''
             },
 
-            _systemidentificationResultChanged: function(event,data){
-
-
-            },
-
             _crossvalidationResultChanged : function(event,data){
-                console.log(data)
+
                 var charts = {'Q':this.QChart,'T':this.TChart};
                 var num = {'Q':0,'T':0};
 
@@ -171,8 +167,8 @@
 
             load: function(){
                 this.$.websocketCrossvalidationResult.send();
-
-                //this.$.websocketStatesList.send();
+                this.$.websocketModelsList.send();
+                this.$.websocketModel.send();
             },
 
         });

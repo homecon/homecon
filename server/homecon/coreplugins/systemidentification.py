@@ -25,6 +25,7 @@ class Systemidentification(core.plugin.Plugin):
         core.states.add('systemidentification/validation/result', config={'type': 'dict', 'quantity':'', 'unit':'','label':'', 'description':'', 'log':False})
 
 
+        self.model = None
         self.set_model()
 
 
@@ -40,14 +41,9 @@ class Systemidentification(core.plugin.Plugin):
 
     def set_model(self):
 
-        if core.states['systemidentification/model'].value == 'singlezone_1':
-            self.model = models.Singlezone_1()
-
-        elif core.states['systemidentification/model'].value == 'singlezone_2':
-            self.model = models.Singlezone_2()
-
-        else:
-            self.model = None
+        key = core.states['systemidentification/model'].value
+        if key in models.models:
+            self.model = models.models[key]()
 
 
     def identify(self):
@@ -98,14 +94,20 @@ class Systemidentification(core.plugin.Plugin):
             await asyncio.sleep(timestamp_when-timestamp_now)
 
 
+    def listen_list_models(self,event):
+        keys = [key for key in models.models.keys()]
+        keys = sorted(keys)
+        self.fire('send_to',{'event':'list_models', 'path':'', 'value':keys, 'clients':[event.client]})
+
+
     def listen_state_changed(self,event):
-        if event.data['state'].path == 'identification/model':
-            core.states['systemidentification/model'].value = event.data['value']
-            self.change_model()
+        if event.data['state'].path == 'systemidentification/model':
+            self.set_model()
 
 
     def listen_sytemidentification_identify(self,event):
         result = self.identify()
+        result = self.validate()
 
 
     def listen_sytemidentification_validate(self,event):
