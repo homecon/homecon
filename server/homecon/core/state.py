@@ -252,6 +252,15 @@ class BaseState(object):
         self.db_table.PUT(config=json.dumps(config), where='path=\'{}\''.format(self._path))
         self._config=config
 
+    def set_config(self,key,value):
+        """
+        sets a single key, value pair to the config dictionary and update the database
+        
+        """
+        config = self._config
+        config[key] = value
+        self.config = config
+
     @property
     def parent(self):
         """
