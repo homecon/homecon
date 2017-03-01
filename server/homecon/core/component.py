@@ -173,10 +173,34 @@ class Component(object):
     def initialize(self):
         """
         Redefine this method to alter the component
+
         """
         self.config = {}
         self.states = {}
 
+    def prepare_ocp_model(self,model):
+        """
+        Redefine this method to alter the optimal control pyomo model
+        
+        Parameters
+        ----------
+        model : pyomo.ConcreteModel
+            The pyomo optimal control model
+ 
+        """
+        pass
+
+    def postprocess_ocp_model(self,model):
+        """
+        Redefine this method to use values from the optimal control problem solution
+        
+        Parameters
+        ----------
+        model : pyomo.ConcreteModel
+            The pyomo optimal control model
+ 
+        """
+        pass
 
     @property
     def type(self):

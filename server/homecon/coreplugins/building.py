@@ -8,6 +8,7 @@ import datetime
 import pytz
 import uuid
 import numpy as np
+import pyomo.environ as pyomo
 
 from .. import core
 from .. import util
@@ -346,9 +347,7 @@ core.components.register(Dimminglight)
 
 class Heatgenerationsystem(core.component.Component):
     """
-    a class implementing a heating system with a valve for controlling the
-    energy flow to it.
-    
+    a class implementing a modulating heating system.
     
     """
 
@@ -376,8 +375,46 @@ class Heatgenerationsystem(core.component.Component):
             return self.states['power'].history(utcdatetime)
 
 
-
 core.components.register(Heatgenerationsystem)
+
+
+class ControlVar(object):
+    """
+    A class to define variables used in the optimization
+    """
+    def __init__(self,component,domain=None,bounds=None,initialize=None,state=None)
+        self.component = component
+        self.domain=domain
+        self.bounds=bounds
+        self.initialize = initialize
+        self.state = state
+
+
+class Heatpump(Heatgenerationsystem):
+    """
+    a class implementing a modulating heat pump.
+    
+    """
+
+    def prepare_ocp_model(self,model):
+        model.heatpump_P_el = pyomo.Var(model.i, domain=pyomo.NonNegativeReals, initialize=0, bounds=(0,self.config['power']))
+        model.heatpump_Q = pyomo.Var(model.i, domain=pyomo.NonNegativeReals, initialize=0, bounds=(0,self.config['power']))
+        model.heatpump_COP = pyomo.Var(model.i, domain=pyomo.NonNegativeReals, initialize=0, bounds=(0,self.config['power']))
+        
+        model.heatpump_contraint_COP = pyomo.Constraint(model.i,rule=lambda model,i: model.heatpump_COP[i] == 3.0)
+        model.heatpump_contraint_P_el = pyomo.Constraint(model.i,rule=lambda model,i: model.heatpump_P_el[i]*model.heatpump_COP[i] == model.heatpump_Q[i])
+
+
+    def postprocess_ocp_model(self,model):
+        self.Q_schedule = [(pyomo.value(model.timestamp[i]),pyomo.value(model.heatpump_Q[i])) for i in model.i]
+
+
+    def maxpower(self,timestamp):
+        return self.config['power']
+
+
+core.components.register(Heatpump)
+
 
 
 
@@ -385,7 +422,6 @@ class Heatemissionsystem(core.component.Component):
     """
     a class implementing a heat emission system with a valve for controlling the
     energy flow to it.
-    
     
     """
 
