@@ -41,7 +41,7 @@ class Components(core.plugin.Plugin):
 
         componentslist = []
         for component in self._components.values():
-            componentslist.append({'path':component.path,'type':component.type,'config':sorted([{'key':key,'value':val} for key,val in component.config.items()],key=lambda x:x['key']),'states':sorted([states['state'].path for states in component.states.values()])})
+            componentslist.append({'path':component.path,'type':component.type,'config':sorted([{'key':key,'value':val} for key,val in component.config.items()],key=lambda x:x['key']),'states':sorted([state.path for state in component.states.values()])})
 
         sortedlist = sorted(componentslist, key=lambda k: k['path'])
 

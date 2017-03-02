@@ -10,7 +10,7 @@ import logging
 
 from . import core
 from . import util
-from . import coreplugins
+#from . import coreplugins
 from . import plugins
 
 
@@ -141,33 +141,41 @@ class HomeCon(object):
         self.components = core.components
         self.plugins = core.plugins
 
-        # load core plugins
-        self.plugins._add_core(coreplugins.states.States)            # load states 1st
-        self.plugins._add_core(coreplugins.components.Components)        # load components 2nd
-        self.plugins._add_core(coreplugins.plugins.Plugins)
-        self.plugins._add_core(coreplugins.authentication.Authentication)
-        self.plugins._add_core(coreplugins.pages.Pages)
-        self.plugins._add_core(coreplugins.schedules.Schedules)
-        self.plugins._add_core(coreplugins.actions.Actions)
-        self.plugins._add_core(coreplugins.measurements.Measurements)
-        self.plugins._add_core(coreplugins.weather.Weather)
-        self.plugins._add_core(coreplugins.building.Building)
-        self.plugins._add_core(coreplugins.systemidentification.Systemidentification)
-
-        # load other plugins
-
-
-
-        # demo mode
-        if self.demo:
-            self.plugins._add_core(coreplugins.demo.Demo)
-
+        # import plugins
+        self.plugins.start_import()
 
         # load components
         self.components.load()
 
+        # activate all plugins
+        self.plugins.start_activate()
+
+
+        #self.plugins._add_core(coreplugins.states.States)            # load states 1st
+        #self.plugins._add_core(coreplugins.components.Components)        # load components 2nd
+        #self.plugins._add_core(coreplugins.plugins.Plugins)
+        #self.plugins._add_core(coreplugins.authentication.Authentication)
+        #self.plugins._add_core(coreplugins.pages.Pages)
+        #self.plugins._add_core(coreplugins.schedules.Schedules)
+        #self.plugins._add_core(coreplugins.actions.Actions)
+        #self.plugins._add_core(coreplugins.measurements.Measurements)
+        #self.plugins._add_core(coreplugins.weather.Weather)
+        #self.plugins._add_core(coreplugins.building.Building)
+        #self.plugins._add_core(coreplugins.systemidentification.Systemidentification)
+
+        # load other plugins
+
+
+        # demo mode
+        #if self.demo:
+        #    self.plugins._add_core(coreplugins.demo.Demo)
+
+
+
+
+
         # load the websocket
-        self.plugins._add_core(coreplugins.websocket.Websocket)
+        #self.plugins._add_core(coreplugins.websocket.Websocket)
 
 
 

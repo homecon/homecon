@@ -446,19 +446,24 @@ class State(BaseState):
             # interpolate to the correct timestamps
             if interpolation == 'linear':
                 # linear interpolation
-                values = np.interp(timestamps,db_timestamps,db_values)
+                try:
+                    values = np.interp(timestamps,db_timestamps,db_values)
+                except:
+                    values = None
             else:
                 # zero order hold interpolation
-                ind = np.interp( timestamps, db_timestamps, np.arange(len(db_timestamps)) )
-                values = np.array([db_values[int(i)] for i in ind])
-
+                try:
+                    ind = np.interp( timestamps, db_timestamps, np.arange(len(db_timestamps)) )
+                    values = np.array([db_values[int(i)] for i in ind])
+                except:
+                    values = None
 
             # return an array or scalar depending on the input
-            if hasattr(utcdatetime, "__len__"):
+            if hasattr(utcdatetime, "__len__") or values is None:
                 return values
             else:
                 return values[0]
-
+                
 
 
     def __repr__(self):

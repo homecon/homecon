@@ -26,24 +26,209 @@ class Plugins(object):
     """
     def __init__(self):
 
+
         self._coreplugins = {}
         self._optionalplugins = {}
         self._plugins = {}
+
+        # objects for all active optional plugins
+        self._db_plugins = database.Table(database.db,'plugins',[
+            {'name':'name', 'type':'char(255)', 'null': '', 'default':'', 'unique':'UNIQUE'},
+        ]) 
+        
+        
+        # list all plugins in the pluginfolder
         self.pluginfolder = 'plugins'
+        path = os.path.join( os.path.dirname(os.path.realpath(__file__)) ,'..',self.pluginfolder)
+        self._availableplugins = [name for name in os.listdir(path) if os.path.isdir(os.path.join(path,name)) and not name=='__pycache__' ]
 
-    def add(self,name):
-        pass
 
-
-    def _add_core(self,pluginclass):
+    def start_import(self):
         """
-        add a core plugin, should not be used outside the main homecon file
-        """
-        path = pluginclass.__name__.lower()
+        Import and start all core plugins
+        Called once during homecon initialization
 
+        """
+
+        # import all core plugins
+        classlist = []
+        classlist.append( (self._import('states',               'coreplugins'),True) )
+        classlist.append( (self._import('components',           'coreplugins'),True) )
+        classlist.append( (self._import('plugins',              'coreplugins'),True) )
+        classlist.append( (self._import('authentication',       'coreplugins'),True) )
+        classlist.append( (self._import('pages',                'coreplugins'),True) )
+        classlist.append( (self._import('schedules',            'coreplugins'),True) )
+        classlist.append( (self._import('actions',              'coreplugins'),True) )
+        classlist.append( (self._import('measurements',         'coreplugins'),True) )
+        classlist.append( (self._import('weather',              'coreplugins'),True) )
+        classlist.append( (self._import('building',             'coreplugins'),True) )
+        #classlist.append( (self._import('systemidentification', 'coreplugins'),True) )
+
+
+
+
+        # import all active plugins
+        result = self._db_plugins.GET(columns=['id','name'])
+        for p in result:
+            cls = self._import(p['name'])
+            if not cls is None:
+                classlist.append( (cls,False) )
+
+
+        # import and activate the websocket
+        classlist.append( (self._import('websocket',               'coreplugins'),True) )
+        self._classlist = classlist
+
+
+    def start_activate(self):
+        
+        # activate all plugins
+        for cls,core in self._classlist:
+            self._activate(cls,core=core)
+
+        self._classlist = []
+
+
+    def download(self,url):
+        """
+        Download a plugin from a url
+
+        """
+
+        # download the zip file and unzip to a temp dir
+
+        # check the contents
+
+        # move files to the correct folders
+
+        # add the plugin to the available plugins list
+
+        return False
+
+
+    def activate(self,name):
+        """
+        activate a plugin
+
+        Parameters
+        ----------
+        name: string
+            The module name of the plugin
+
+        """
+
+        cls = self._import(name)
+        self._activate(cls)
+
+
+    def deactivate(self,name):
+        """
+        deactivate a plugin
+
+        Parameters
+        ----------
+        name: string
+            The module name of the plugin
+
+        """
+
+        if name in self._optionalplugins:
+
+            # FIXME stop the plugin
+
+            # remove the plugin from the lists and database
+            del self._optionalplugins[name]
+            del self._plugins[name]
+            
+            self._db_plugins.DELETE(name=name)
+
+            return True
+
+        else:
+            return False
+
+
+    def delete(self,name):
+        """
+        delete a plugin from the plugins list and the hard disk 
+
+        Parameters
+        ----------
+        name: string
+            The module name of the plugin
+
+        """
+        return False
+
+
+    @property
+    def availableplugins(self):
+        return self._availableplugins
+
+    @property
+    def optionalplugins(self):
+        return self._optionalplugins
+
+
+    def _import(self,name,package=None):
+        """
+        Imports a plugin module
+
+        this attempts to load the plugin with the correct format by name from
+        the plugins folder
+
+        Parameters
+        ----------
+        name: string
+            The module name of the plugin
+    
+        package: string
+            Package where to find the plugin, defaults to the default pluginfolder
+
+        returns
+        -------
+        pluginclass: class
+            The plugin class if defined in the module otherwise ``None``
+
+        """
+
+        if package is None:
+            package = self.pluginfolder
+
+        pluginmodule = __import__('homecon.{}.{}'.format(package,name), fromlist=[name])
+        
+
+        pluginclass = None
+        pluginclassname = name.capitalize()
+        if pluginclassname in dir(pluginmodule):
+            pluginclass = getattr(pluginmodule, pluginclassname)
+
+        return pluginclass
+
+
+    def _activate(self,pluginclass,core=False):
+        """
+        activates a plugin
+
+        Parameters
+        ----------
+        pluginclass: class
+            The plugin class
+
+        core: bool, optional
+            set to True for core plugins, false by default
+
+        """
+
+        name = pluginclass.__name__.lower()
         plugin = pluginclass()
-        self._coreplugins[path] = plugin
-        self._plugins[path] = plugin
+        if core:
+            self._coreplugins[name] = plugin
+        else:
+            self._optionalplugins[name] = plugin
+            self._db_plugins.POST(name=name)
+
+        self._plugins[name] = plugin
 
 
     def __getitem__(self,path):

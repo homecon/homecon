@@ -18,8 +18,8 @@
         <iron-localstorage name="homecon-token" value="{{token}}" on-iron-localstorage-load-empty="_initializeDefaultToken"></iron-localstorage>
 
         <homecon-web-socket-object id="request_token" event="request_token" path="" data="{{token}}" data-key="token"></homecon-web-socket-object>
-        <homecon-web-socket-object id="authenticate" event="authenticate" path="" data="{{authenticated}}" data-key="authenticated"></homecon-web-socket-object>
-        <homecon-web-socket-object id="authenticate" event="logout" path="" on-change="{{logoutChanged}}"></homecon-web-socket-object>
+        <homecon-web-socket-object id="authenticate" event="authenticate" path="" data="{{authenticated}}" data-key="authenticated" on-change="_authenticatedChanged"></homecon-web-socket-object>
+        <homecon-web-socket-object id="logout" event="logout" path="" on-change="{{logoutChanged}}"></homecon-web-socket-object>
 
     </template>
 
@@ -32,7 +32,6 @@
                     type: Boolean,
                     notify: true,
                     //value: false,
-                    observer: '_authenticatedChanged'
                 },
                 token: {
                     type: String,
@@ -100,8 +99,9 @@
                 }
             },
 
-            _authenticatedChanged: function(authenticated){
-                if(authenticated){
+            _authenticatedChanged: function(e,d){
+                if(this.authenticated){
+                    console.log('user authenticated');
                     this.fire('homecon-authenticated');
                 }
             },

@@ -37,6 +37,15 @@ class States(core.plugin.Plugin):
         core.states.add('settings/location/elevation',config={'type': 'number', 'quantity':'height','unit':'m',  'label':'elevation','description':'HomeCon elevation'})
         core.states.add('settings/location/timezone', config={'type': 'string', 'quantity':'',      'unit':'',   'label':'time zone','description':'HomeCon time zone'})
 
+        # add default values
+        if core.states['settings/location/latitude'].value is None:
+            core.states['settings/location/latitude'].value = 51.05
+        if core.states['settings/location/longitude'].value is None:
+            core.states['settings/location/longitude'].value = 5.5833
+        if core.states['settings/location/elevation'].value is None:
+            core.states['settings/location/elevation'].value = 74
+        if core.states['settings/location/timezone'].value is None:
+            core.states['settings/location/timezone'].value = 'Europe/Brussels'
 
         logging.debug('States plugin Initialized')
 

@@ -46,8 +46,10 @@ class Components(object):
         """
         self._component_types[componentclass.__name__.lower()] = componentclass
 
+
     def types(self):
         return self._component_types.items()
+
 
     def add(self,path,type,config=None):
         """
@@ -69,6 +71,7 @@ class Components(object):
 
         else:
             return False
+
 
     def find(self,**kwargs):
         """
@@ -140,6 +143,9 @@ class Component(object):
 
         """
         self._path = path
+        self.states = {}
+        self.config = {}
+
         self.initialize()
 
         if not config is None:

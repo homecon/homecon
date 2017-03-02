@@ -382,7 +382,7 @@ class ControlVar(object):
     """
     A class to define variables used in the optimization
     """
-    def __init__(self,component,domain=None,bounds=None,initialize=None,state=None)
+    def __init__(self,component,domain=None,bounds=None,initialize=None,state=None):
         self.component = component
         self.domain=domain
         self.bounds=bounds

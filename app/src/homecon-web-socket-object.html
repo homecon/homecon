@@ -24,6 +24,10 @@
                     type: Boolean,
                     value: false
                 },
+                sendOnAuthenticated: {
+                    type: Boolean,
+                    value: false
+                },
                 event: {
                     type: String,
                     value: ''
@@ -51,7 +55,7 @@
                 this.observe = true;
                 this.listen(window.homeconWebSocket, 'homecon-web-socket-message', 'onMessage');
 
-                if(this.auto){
+                if(this.auto || this.sendOnAuthenticated){
                     this.listen(window.homeconAuthentication, 'homecon-authenticated', 'onAuthenticated');
 
                     // send without value key to start monitoring
@@ -76,7 +80,7 @@
             },
 
             onAuthenticated: function(e){
-                if(this.auto){
+                if(this.auto || this.sendOnAuthenticated){
                     this.send();
                 }
             },
@@ -99,7 +103,7 @@
                 }
             },
             _pathChanged: function(path, oldpath){
-                if(this.auto && this.observe && window.homeconWebSocket.connected && window.homeconAuthentication.authenticated && !(path == '')){
+                if( (this.auto || this.sendOnAuthenticated) && this.observe && window.homeconWebSocket.connected && window.homeconAuthentication.authenticated && !(path == '')){
                     this.debounce('sendDataDebounce', this.send, this.debounce);
                 }
             },
