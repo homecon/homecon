@@ -76,13 +76,8 @@ class Measurements(core.plugin.Plugin):
             for i in ind:
                 del self.measurements[path][i]
 
-            if readusers is None:
-                readusers = []
 
-            if readgroups is None:
-                readgroups = []
-
-            core.event.fire('send',{'event':'append_timeseries', 'path':path, 'value':[time,value], 'readusers':readusers, 'readgroups':readgroups})
+            core.websocket.send({'event':'append_timeseries', 'path':path, 'value':[time,value]}, readusers=readusers, readgroups=readgroups)
 
 
     def get(self,path):
@@ -111,8 +106,9 @@ class Measurements(core.plugin.Plugin):
         
         if not 'value' in event.data:
             data = self.get(event.data['path'])
-            core.event.fire('send_to',{'event':'timeseries', 'path':event.data['path'], 'value':data, 'clients':[event.client]})
-        
+            state = core.states[event.data['path']]
+            core.websocket.send({'event':'timeseries', 'path':event.data['path'], 'value':data}, clients=[event.client],readusers=state.config['readusers'],readgroups=state.config['readgroups'])
+
 
 
         

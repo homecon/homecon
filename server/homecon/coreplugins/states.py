@@ -87,8 +87,7 @@ class States(core.plugin.Plugin):
 
     def listen_list_states(self,event):
         if event.type == 'list_states':
-
-            core.event.fire('send_to',{'event':'list_states', 'path':'', 'value':self.list(), 'clients':[event.client]})
+            core.websocket.send({'event':'list_states', 'path':'', 'value':self.list()}, clients=[event.client])
 
 
     def listen_add_state(self,event):
@@ -96,8 +95,7 @@ class States(core.plugin.Plugin):
 
         if state:
             core.event.fire('state_added',{'state':state})
-            core.event.fire('send_to',{'event':'list_states', 'path':'', 'value':self.list(), 'clients':[event.client]})
-
+            core.websocket.send({'event':'list_states', 'path':'', 'value':self.list()}, clients=[event.client])
 
     def listen_edit_state(self,event):
         if event.data['path'] in core.states:
@@ -110,7 +108,7 @@ class States(core.plugin.Plugin):
 
             state.config = config
 
-            core.event.fire('send_to',{'event':'list_states', 'path':'', 'value':self.list(), 'clients':[event.client]})
+            core.websocket.send({'event':'list_states', 'path':'', 'value':self.list()}, clients=[event.client])
 
 
     def listen_state_config(self,event):
@@ -119,7 +117,7 @@ class States(core.plugin.Plugin):
             state = core.states[event.data['path']]
 
             if not 'value' in event.data:
-                core.event.fire('send_to',{'event':'state_config', 'path':state.path, 'value':state.config, 'clients':[event.client]})
+                core.websocket.send({'event':'state_config', 'path':state.path, 'value':state.config}, clients=[event.client])
 
             else:
                 logger.warning('listen_state_config, edit state config :' + state.path)
@@ -128,12 +126,13 @@ class States(core.plugin.Plugin):
                 #    config[key] = val
 
                 #state.config = config
-                #self.fire('send_to',{'event':'state_config', 'path':state.path, 'value':state.config, 'clients':[event.client]})
-                #self.fire('send_to',{'event':'list_states', 'path':'', 'value':self.list(), 'clients':[event.client]})
+                #core.websocket.send({'event':'state_config', 'path':state.path, 'value':state.config}, clients=[event.client])
+                #core.websocket.send({'event':'list_states', 'path':'', 'value':self.list()}, clients=[event.client])
 
 
     def listen_state_changed(self,event):
-        core.event.fire('send',{'event':'state', 'path':event.data['state'].path, 'value':event.data['state'].value, 'readusers':event.data['state'].config['readusers'], 'readgroups':event.data['state'].config['readgroups']},source=self)
+        #core.event.fire('send',{'event':'state', 'path':event.data['state'].path, 'value':event.data['state'].value, 'readusers':event.data['state'].config['readusers'], 'readgroups':event.data['state'].config['readgroups']},source=self)
+        core.websocket.send({'event':'state', 'path':event.data['state'].path, 'value':event.data['state'].value}, readusers=event.data['state'].config['readusers'], readgroups=event.data['state'].config['readgroups'])
 
 
     def listen_state(self,event):
@@ -179,28 +178,15 @@ class States(core.plugin.Plugin):
                                 break
 
                     if permitted:
-                        core.event.fire('send_to',{'event':'state', 'path':state.path, 'value':state.value, 'clients':[event.client]})
+                        core.websocket.send({'event':'state', 'path':state.path, 'value':state.value}, clients=[event.client], readusers=state.config['readusers'] ,readgroups=state.config['readgroups'])
                     else:
                         logging.warning('User {} attempted to change the value of {} but is not permitted'.format(tokenpayload['userid'],state.path))
 
 
     def listen_send_states_to(self,event):
-        for client in event.data['clients']:
-            tokenpayload = jwt_decode(event.data['token'])
 
-            for state in core.states.values():
-                permitted = False
-                if tokenpayload and tokenpayload['userid'] in state.config['readusers']:
-                    permitted = True
-                elif tokenpayload:
-                    for g in tokenpayload['groupids']:
-                        if g in state.config['readgroups']:
-                            permitted = True
-                            break
-
-                if permitted:
-                    core.event.fire('send_to',{'event':'state', 'path':state.path, 'value':state.value, 'clients':[client]})
-
+        for state in core.states.values():
+            core.websocket.send({'event':'state', 'path':state.path, 'value':state.value}, clients=event.data['clients'], readusers=state.config['readusers'] ,readgroups=state.config['readgroups'])
 
 
 

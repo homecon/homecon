@@ -26,9 +26,6 @@ class Action(core.state.BaseState):
     ])
     container = {}
 
-    def initialize(self):
-        logging.debug('Actions initialized')
-
 
     def fire_changed(self,value,oldvalue,source):
         """
@@ -82,6 +79,9 @@ class Actions(core.plugin.ObjectPlugin):
 
     objectclass = Action
     objectname = 'action'
+
+    def initialize(self):
+        logging.debug('Actions initialized')
 
 
     def listen_run_action(self,event):

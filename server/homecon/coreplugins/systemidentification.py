@@ -97,8 +97,7 @@ class Systemidentification(core.plugin.Plugin):
     def listen_list_models(self,event):
         keys = [key for key in models.models.keys()]
         keys = sorted(keys)
-        self.fire('send_to',{'event':'list_models', 'path':'', 'value':keys, 'clients':[event.client]})
-
+        core.websocket.send({'event':'list_models', 'path':'', 'value':keys}, clients=[event.client])
 
     def listen_state_changed(self,event):
         if event.data['state'].path == 'systemidentification/model':

@@ -384,19 +384,19 @@ class Authentication(core.plugin.Plugin):
     def listen_request_token(self,event):
         token = self.request_token(event.data['username'],event.data['password'])
         if token:
-            core.event.fire('send_to',{'event':'request_token', 'token':token, 'clients':[event.client]})
-
+            core.websocket.send({'event':'request_token', 'token':token}, clients=[event.client])
 
     def listen_renew_token(self,event):
         token = self.renew_token(event.data['token'])
         if token:
-            self.fire('send_to',{'event':'renew_token', 'token':token,'clients':[event.client]})
-
+            core.websocket.send({'event':'renew_token', 'token':token}, clients=[event.client])
 
     def listen_authenticate(self,event):
         payload = jwt_decode(event.data['token'])
         if payload:
             event.client.tokenpayload = payload
-            core.event.fire('send_to',{'event':'authenticate', 'authenticated':True, 'clients':[event.client]})
+            core.websocket.send({'event':'authenticate', 'authenticated':True}, clients=[event.client])
+
+
 
 

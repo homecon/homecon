@@ -209,9 +209,8 @@ class Schedules(core.plugin.ObjectPlugin):
 
         if obj:
             core.event.fire('schedule_added',{'schedule':obj})
-            filter = obj.config['filter']
-            core.event.fire('send_to',{'event':'list_schedules', 'path':filter, 'value':self.list(filter=filter), 'clients':[event.client]})
-
+            filt = obj.config['filter']
+            core.websocket.send({'event':'list_schedules', 'path':filt, 'value':self.list(filter=filt)}, clients=[event.client])
 
     def listen_delete_schedule(self,event):
 
@@ -219,12 +218,11 @@ class Schedules(core.plugin.ObjectPlugin):
             if event.data['path'] in self:
 
                 obj = self[event.data['path']]
-                filter = obj.config['filter']
+                filt = obj.config['filter']
                 obj.delete()
 
                 logging.debug('deleted {} {}'.format(self.objectname.capitalize(), event.data['path']))
-
-                core.event.fire('send',{'event':'list_{}s'.format(self.objectname), 'path':filter, 'value':self.list(filter=filter)})
+                core.websocket.send({'event':'list_{}s'.format(self.objectname), 'path':filt, 'value':self.list(filter=filt)})
 
             else:
                 logging.error('{} does not exist {}'.format(self.objectname.capitalize(),event.data['path']))
@@ -232,8 +230,7 @@ class Schedules(core.plugin.ObjectPlugin):
 
 
     def listen_schedule_changed(self,event):
-        core.event.fire('send',{'event':'schedule', 'path':event.data['schedule'].path, 'value':event.data['schedule'].value, 'readusers':event.data['schedule'].config['readusers'], 'readgroups':event.data['schedule'].config['readgroups']})
-
+        core.websocket.send({'event':'schedule', 'path':event.data['schedule'].path, 'value':event.data['schedule'].value}, readusers=event.data['schedule'].config['readusers'], readgroups=event.data['schedule'].config['readgroups'])
 
     def listen_snooze_schedule(self,event):
         logging.warning('snooze schedule is not implemented yet')

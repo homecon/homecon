@@ -14,6 +14,7 @@ from . import event
 from . import state
 from . import component
 from . import database
+from . import websocket
 
 # the worker thread pool
 executor = ThreadPoolExecutor(10)
@@ -75,8 +76,6 @@ class Plugins(object):
                 classlist.append( (cls,False) )
 
 
-        # import and activate the websocket
-        classlist.append( (self._import('websocket',               'coreplugins'),True) )
         self._classlist = classlist
 
 
@@ -474,14 +473,14 @@ class ObjectPlugin(Plugin):
         # get all objects from the database
         result = self.objectclass.db_table.GET()
         for db_entry in result:
-            self.objectclass(self._objects_container,db_entry['path'],db_entry=db_entry)
-
+            self.objectclass(db_entry['path'],db_entry=db_entry)
 
 
         # add listener methods
         def listen_add_object(cls, event):
             """
             add
+
             """
             if 'path' in event.data:
                 path = event.data['path']
@@ -502,12 +501,12 @@ class ObjectPlugin(Plugin):
 
             if obj:
                 self.fire('{}_added'.format(self.objectname),{self.objectname: obj})
-                self.fire('send',{'event':'list_{}s'.format(self.objectname), 'path':'', 'value':self.list()})
-
+                websocket.websocket.send({'event':'list_{}s'.format(self.objectname), 'path':'', 'value':self.list()})
 
         def listen_delete_object(cls,event):
             """
             delete
+
             """
             if 'path' in event.data:
                 if event.data['path'] in self:
@@ -517,7 +516,7 @@ class ObjectPlugin(Plugin):
 
                     logging.debug('deleted {} {}'.format(self.objectname.capitalize(), event.data['path']))
 
-                    self.fire('send',{'event':'list_{}s'.format(self.objectname), 'path':'', 'value':self.list()})
+                    websocket.websocket.send({'event':'list_{}s'.format(self.objectname), 'path':'', 'value':self.list()})
 
                 else:
                     logging.error('{} does not exist {}'.format(self.objectname.capitalize(),event.data['path']))
@@ -526,18 +525,20 @@ class ObjectPlugin(Plugin):
         def listen_list_objects(cls,event):
             """
             list
+
             """
             if 'path' in event.data:
-                filter = event.data['path']
+                filt = event.data['path']
             else:
-                filter = None
+                filt = None
 
-            self.fire('send_to',{'event':'list_{}s'.format(self.objectname), 'path':event.data['path'], 'value':self.list(filter=filter), 'clients':[event.client]})
+            websocket.websocket.send({'event':'list_{}s'.format(self.objectname), 'path':event.data['path'], 'value':self.list(filter=filt)}, clients=[event.client])
 
 
         def listen_object(cls,event):
             """
             get or set
+
             """
             if 'path' in event.data:
                 if event.data['path'] in self:
@@ -557,7 +558,7 @@ class ObjectPlugin(Plugin):
 
                     else:
                         # get
-                        self.fire('send_to',{'event':self.objectname, 'path':event.data['path'], 'value':obj.value, 'clients':[event.client]})
+                        websocket.websocket.send({'event':self.objectname, 'path':event.data['path'], 'value':obj.value}, clients=[event.client])
 
                 else:
                     logging.error('{} does not exist {}'.format(self.objectname.capitalize(), event.data['path']))
@@ -577,6 +578,7 @@ class ObjectPlugin(Plugin):
     def list(self,filter=None):
         """
         redefine if necessary
+
         """
         unsortedlist = [obj.serialize() for obj in self.values() if (filter is None or filter=='' or not 'filter' in obj.value or obj.value['filter'] == filter)]
         sortedlist = sorted(unsortedlist, key=lambda obj: obj['path'])

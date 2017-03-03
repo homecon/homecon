@@ -91,26 +91,21 @@ class Plugins(core.plugin.Plugin):
 
 
     def listen_list_plugins(self,event):
-        core.event.fire('send_to',{'event':'list_plugins', 'path':'', 'value':self.get_plugins_list(), 'clients':[event.client]})
-        
+        core.websocket.send({'event':'list_plugins', 'path':'', 'value':self.get_plugins_list()}, clients=[event.client])
 
     def listen_list_state_config_keys(self,event):
-        core.event.fire('send_to',{'event':'list_state_config_keys', 'path':'', 'value':self.get_state_config_keys(), 'clients':[event.client]})
-
+        core.websocket.send({'event':'list_state_config_keys', 'path':'', 'value':self.get_state_config_keys()}, clients=[event.client])
 
     def listen_activate_plugin(self,event):
         if self.activate(event.data['plugin']):
-            core.event.fire('send_to',{'event':'list_plugins', 'path':'', 'value':self.get_plugins_list(), 'clients':[event.client]})
-
+            core.websocket.send({'event':'list_plugins', 'path':'', 'value':self.get_plugins_list()}, clients=[event.client])
 
     def listen_deactivate_plugin(self,event):
         if self.deactivate(event.data['plugin']):
-            core.event.fire('send_to',{'event':'list_plugins', 'path':'', 'value':self.get_plugins_list(), 'clients':[event.client]})
-
+            core.websocket.send({'event':'list_plugins', 'path':'', 'value':self.get_plugins_list()}, clients=[event.client])
 
     def listen_download_plugin(self,event):
         if self.download(event.data['url']):
-            core.event.fire('send_to',{'event':'list_plugins', 'path':'', 'value':self.get_plugins_list(), 'clients':[event.client]})
-
+            core.websocket.send({'event':'list_plugins', 'path':'', 'value':self.get_plugins_list()}, clients=[event.client])
 
 

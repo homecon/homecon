@@ -59,12 +59,10 @@ class Components(core.plugin.Plugin):
 
 
     def listen_component_types(self,event):
-            self.fire('send_to',{'event':'component_types', 'path':'', 'value':self.list_types(), 'clients':[event.client]})
-
+            core.websocket.send({'event':'component_types', 'path':'', 'value':self.list_types()}, clients=[event.client])
 
     def listen_list_components(self,event):
-            self.fire('send_to',{'event':'list_components', 'path':'', 'value':self.list(), 'clients':[event.client]})
-
+            core.websocket.send({'event':'list_components', 'path':'', 'value':self.list()}, clients=[event.client])
 
     def listen_add_component(self,event):
 
@@ -72,7 +70,7 @@ class Components(core.plugin.Plugin):
         
         if component:
             self.fire('component_added',{'component':component})
-            self.fire('send_to',{'event':'list_components', 'path':'', 'value':self.list(), 'clients':[event.client]})
+            core.websocket.send({'event':'list_components', 'path':'', 'value':self.list()}, clients=[event.client])
             self.fire('list_states',{},client=event.client)
 
     def listen_edit_component(self,event):
@@ -87,8 +85,7 @@ class Components(core.plugin.Plugin):
             self._components._db_components.PUT(config=json.dumps(config), where='path=\'{}\''.format(event.data['path']))
             component.config = config
 
-            self.fire('send_to',{'event':'list_components', 'path':'', 'value':self.list(), 'clients':[event.client]})
-
+            core.websocket.send({'event':'list_components', 'path':'', 'value':self.list()}, clients=[event.client])
 
 
 

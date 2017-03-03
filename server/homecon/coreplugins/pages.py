@@ -388,16 +388,14 @@ class Pages(core.plugin.Plugin):
         tokenpayload = jwt_decode(event.data['token'])
         
         if tokenpayload and tokenpayload['permission'] > 1:
-            core.event.fire('send_to',{'event':'pages_menu', 'path':'', 'value':self.get_menu(), 'clients':[event.client]})
-
+            core.websocket.send({'event':'pages_menu', 'path':'', 'value':self.get_menu()}, clients=[event.client])
 
     def listen_pages_paths(self,event):
         
         tokenpayload = jwt_decode(event.data['token'])
         
         if tokenpayload and tokenpayload['permission'] > 1:
-            core.event.fire('send_to',{'event':'pages_paths', 'path':'', 'value':self.get_pages_paths(), 'clients':[event.client]})
-
+            core.websocket.send({'event':'pages_paths', 'path':'', 'value':self.get_pages_paths()}, clients=[event.client])
 
     def listen_pages_group(self,event):
 
@@ -406,17 +404,17 @@ class Pages(core.plugin.Plugin):
         if 'path' in event.data and 'value' in event.data and event.data['value'] is None and tokenpayload and tokenpayload['permission'] > 6:
             # delete
             self.delete_group(event.data['path'])
-            core.event.fire('send_to',{'event':'pages_menu', 'path':'', 'value':self.get_menu(), 'clients':[event.client]})
+            core.websocket.send({'event':'pages_menu', 'path':'', 'value':self.get_menu()}, clients=[event.client])
 
         elif 'path' in event.data and 'value' in event.data and not event.data['value'] is None and tokenpayload and tokenpayload['permission'] > 6:
             # update
             self.update_group(event.data['path'],event.data['value'])
-            core.event.fire('send_to',{'event':'pages_menu', 'path':'', 'value':self.get_menu(), 'clients':[event.client]})
+            core.websocket.send({'event':'pages_menu', 'path':'', 'value':self.get_menu()}, clients=[event.client])
 
         if not 'path' in event.data and tokenpayload and tokenpayload['permission'] > 6:
             # add
             self.add_group({'title':'newgroup'})
-            core.event.fire('send_to',{'event':'pages_menu', 'path':'', 'value':self.get_menu(), 'clients':[event.client]})
+            core.websocket.send({'event':'pages_menu', 'path':'', 'value':self.get_menu()}, clients=[event.client])
 
     def listen_pages_page(self,event):
 
@@ -426,30 +424,31 @@ class Pages(core.plugin.Plugin):
             # get
             if event.data['path'] in self._pages:
                 page = self.get_page(event.data['path'])
-                core.event.fire('send_to',{'event':'pages_page', 'path':page['path'], 'value':page, 'clients':[event.client]})
+                core.websocket.send({'event':'pages_page', 'path':page['path'], 'value':page}, clients=[event.client])
+
             else:
                 logging.warning('{} not in pages'.format(event.data['path']))
 
         elif 'path' in event.data and 'value' in event.data and event.data['value'] is None and tokenpayload and tokenpayload['permission'] > 6:
             # delete
             self.delete_page(event.data['path'])
-            core.event.fire('send_to',{'event':'pages_menu', 'path':'', 'value':self.get_menu(), 'clients':[event.client]})
-            core.event.fire('send_to',{'event':'pages_paths', 'path':'', 'value':self.get_pages_paths(), 'clients':[event.client]})
+            core.websocket.send({'event':'pages_menu', 'path':'', 'value':self.get_menu()}, clients=[event.client])
+            core.websocket.send({'event':'pages_paths', 'path':'', 'value':self.get_pages_paths()}, clients=[event.client])
             
         elif 'path' in event.data and 'value' in event.data and not event.data['value'] is None and tokenpayload and tokenpayload['permission'] > 6:
             # update
             page = self._pages[event.data['path']]
             self.update_page(event.data['path'],event.data['value']['config'])
             page = self.get_page(event.data['path'])
-            core.event.fire('send_to',{'event':'pages_menu', 'path':'', 'value':self.get_menu(), 'clients':[event.client]})
-            core.event.fire('send_to',{'event':'pages_page', 'path':page['path'], 'value':page, 'clients':[event.client]})
+            core.websocket.send({'event':'pages_menu', 'path':'', 'value':self.get_menu()}, clients=[event.client])
+            core.websocket.send({'event':'pages_page', 'path':page['path'], 'value':page}, clients=[event.client])
 
 
         elif not 'path' in event.data and tokenpayload and tokenpayload['permission'] > 6:
             # add
             self.add_page(event.data['group'],{'title':'newpage','icon':'blank'})
-            core.event.fire('send_to',{'event':'pages_menu', 'path':'', 'value':self.get_menu(), 'clients':[event.client]})
-            core.event.fire('send_to',{'event':'pages_paths', 'path':'', 'value':self.get_pages_paths(), 'clients':[event.client]})
+            core.websocket.send({'event':'pages_menu', 'path':'', 'value':self.get_menu()}, clients=[event.client])
+            core.websocket.send({'event':'pages_paths', 'path':'', 'value':self.get_pages_paths()}, clients=[event.client])
 
 
     def listen_pages_section(self,event):
@@ -459,27 +458,26 @@ class Pages(core.plugin.Plugin):
         if 'path' in event.data and not 'value' in event.data and tokenpayload and tokenpayload['permission'] > 1:
             # get
             section = self.get_section(event.data['path'])
-            core.event.fire('send_to',{'event':'pages_section', 'path':section['path'], 'value':section, 'clients':[event.client]})
+            core.websocket.send({'event':'pages_section', 'path':section['path'], 'value':section}, clients=[event.client])
 
         elif 'path' in event.data and 'value' in event.data and event.data['value'] is None and tokenpayload and tokenpayload['permission'] > 6:
             # delete
             pagepath = self._sections[event.data['path']]['page']
             self.delete_section(event.data['path'])
             page = self.get_page(pagepath)
-            core.event.fire('send_to',{'event':'pages_page', 'path':page['path'], 'value':page, 'clients':[event.client]})
+            core.websocket.send({'event':'pages_page', 'path':page['path'], 'value':page}, clients=[event.client])
 
         elif 'path' in event.data and 'value' in event.data and not event.data['value'] is None and tokenpayload and tokenpayload['permission'] > 6:
             # update
             self.update_section(event.data['path'],event.data['value']['config'])
             section = self.get_section(event.data['path'])
-            core.event.fire('send_to',{'event':'pages_section', 'path':section['path'], 'value':section, 'clients':[event.client]})
+            core.websocket.send({'event':'pages_section', 'path':section['path'], 'value':section}, clients=[event.client])
 
         elif not 'path' in event.data and tokenpayload and tokenpayload['permission'] > 6:
             # add
             self.add_section(event.data['page'],{'title':'newsection','type':'raised'})
             page = self.get_page(event.data['page'])
-            core.event.fire('send_to',{'event':'pages_page', 'path':page['path'], 'value':page, 'clients':[event.client]})
-
+            core.websocket.send({'event':'pages_page', 'path':page['path'], 'value':page}, clients=[event.client])
 
 
     def listen_pages_widget(self,event):
@@ -489,26 +487,26 @@ class Pages(core.plugin.Plugin):
         if 'path' in event.data and not 'value' in event.data and tokenpayload and tokenpayload['permission'] > 1:
             # get
             widget = self.get_widget(event.data['path'])
-            core.event.fire('send_to',{'event':'pages_widget', 'path':widget['path'], 'value':widget, 'clients':[event.client]})
+            core.websocket.send({'event':'pages_widget', 'path':widget['path'], 'value':widget}, clients=[event.client])
 
         elif 'path' in event.data and 'value' in event.data and event.data['value'] is None and tokenpayload and tokenpayload['permission'] > 6:
             # delete
             sectionpath = self._widgets[event.data['path']]['section']
             self.delete_widget(event.data['path'])
             section = self.get_section(sectionpath)
-            core.event.fire('send_to',{'event':'pages_section', 'path':section['path'], 'value':section, 'clients':[event.client]})
+            core.websocket.send({'event':'pages_section', 'path':section['path'], 'value':section}, clients=[event.client])
 
         elif 'path' in event.data and 'value' in event.data and not event.data['value'] is None and tokenpayload and tokenpayload['permission'] > 6:
             # update
             self.update_widget(event.data['path'],event.data['value']['config'])
             widget = self._widgets[event.data['path']]
-            core.event.fire('send_to',{'event':'pages_widget', 'path':widget['path'], 'value':widget, 'clients':[event.client]})
+            core.websocket.send({'event':'pages_widget', 'path':widget['path'], 'value':widget}, clients=[event.client])
 
         elif not 'path' in event.data and tokenpayload and tokenpayload['permission'] > 6:
             # add
             self.add_widget(event.data['section'],event.data['type'],{'initialize':True})
             section = self.get_section(event.data['section'])
-            core.event.fire('send_to',{'event':'pages_section', 'path':section['path'], 'value':section, 'clients':[event.client]})
+            core.websocket.send({'event':'pages_section', 'path':section['path'], 'value':section}, clients=[event.client])
 
 
 
