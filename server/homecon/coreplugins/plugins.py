@@ -24,16 +24,16 @@ class Plugins(core.plugin.Plugin):
         Generate a list of all available optional plugins and those that are active
         
         """
-
         pluginslist = []
         for name in core.plugins.availableplugins:
+            info = core.plugins.read_info(name)
 
             if name in core.plugins:
                 active = True
             else:
                 active = False
 
-            pluginslist.append({'name':name,'active':active})
+            pluginslist.append({'name':name,'info':info,'active':active})
 
         return pluginslist
 

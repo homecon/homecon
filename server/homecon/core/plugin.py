@@ -42,7 +42,7 @@ class Plugins(object):
         self.pluginfolder = 'plugins'
         path = os.path.join( os.path.dirname(os.path.realpath(__file__)) ,'..',self.pluginfolder)
         self._availableplugins = [name for name in os.listdir(path) if os.path.isdir(os.path.join(path,name)) and not name=='__pycache__' ]
-
+        
 
     def start_import(self):
         """
@@ -159,6 +159,24 @@ class Plugins(object):
         """
         return False
 
+    def read_info(self,name):
+        """
+        Reads the plugin info file from disk
+
+        Parameters
+        ----------
+        name: string
+            The module name of the plugin
+
+        """
+
+        try:
+            infofile = os.path.join( os.path.dirname(os.path.realpath(__file__)) ,'..',self.pluginfolder,name,'info')
+            with open(infofile,'r') as f:
+                return f.read()
+        except:
+            return ''
+        
 
     @property
     def availableplugins(self):

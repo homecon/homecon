@@ -68,23 +68,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         Polymer({
             is: 'view-settings',
 
-            properties: {
-                plugins: {
-                    type: 'Array',
-                    notify: true,
-                },
-            },
-
             observers: [
                 'setPlugins(activeplugins)',
             ],
-
-            ready: function(){
-                window.homeconSettings = this;
-            },
-
-            load: function(){
-            },
             
             setPlugins: function(activeplugins){
                 this.plugins = ['location','plugins','components','actions','systemidentification','states'].concat(activeplugins)

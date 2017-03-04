@@ -6,6 +6,10 @@ import logging
 from ... import core
 
 class Knx(core.plugin.Plugin):
+    """
+    Communicate with an EIB-KNX home automation system
+
+    """
 
     def initialize(self):
 

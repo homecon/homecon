@@ -11,6 +11,10 @@ from ... import core
 
 
 class Darksky(core.plugin.Plugin):
+    """
+    Load forecasts from the darksky.net API
+
+    """
 
     def initialize(self):
 
