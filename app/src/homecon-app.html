@@ -158,6 +158,10 @@
         <homecon-web-socket connected="{{connected}}"></homecon-web-socket>
         <homecon-authentication authenticated="{{authenticated}}" token="{{token}}" tokenPayload="{{tokenPayload}}" connected="[[connected]]"></homecon-authentication>
 
+
+        <homecon-web-socket-object id="websocketComponentsList" event="list_components" path="" data="{{components}}" on-change="_componentsChanged"></homecon-web-socket-object>
+        <homecon-web-socket-object id="websocketStatesList" event="list_states" path="" data="{{states}}" on-change="_statesChanged"></homecon-web-socket-object>
+
         <app-location route="{{route}}"></app-location>
         <app-route route="{{route}}" pattern="/:page" data="{{routeData}}" tail="{{subroute}}"></app-route>
         
@@ -210,7 +214,6 @@
             </iron-pages>
         </div>
 
-
     </template>
 
     <script>
@@ -231,7 +234,7 @@
         ],
 
         ready: function(){
-
+            window.app = this;
         },
 
         logout: function(){
@@ -256,8 +259,9 @@
 
         _load: function(){
             // load objects through the websocket only when necessary
-            if(this.page=='settings'){
-                this.$.settings.load();
+            if(this.page=='settings' || this.edit){
+                this.$.websocketComponentsList.send();
+                this.$.websocketStatesList.send();
             }
         },
 
@@ -311,7 +315,14 @@
             this.importHref( this.resolveUrl('view-' + page + '.html'), null, null, true );
         },
 
-        
+        _componentsChanged: function(e,d){
+            this.fire('app-components-changed',d);
+        },
+
+        _statesChanged: function(e,d){
+            this.fire('app-states-changed',d);
+        },
+
     });
     </script>
 </dom-module>

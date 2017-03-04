@@ -5,7 +5,7 @@
 <link rel="import" href="../bower_components/paper-item/paper-item.html">
 
 
-<dom-module is="homecon-state-select">
+<dom-module is="select-state">
     <template>
         <style>
             :host{
@@ -23,16 +23,24 @@
     </template>
     <script>
         Polymer({
-            is: 'homecon-state-select',
+            is: 'select-state',
             properties: {
                 path: {
                     type: 'String',
                     notify: true
                 },
             },
-            states: function(){
-                return window.homeconSettings.states;
+
+            ready: function(){
+                this.reload();
+                this.listen(window.app, 'app-states-changed', 'reload');
             },
+
+            reload: function(){
+                console.log('reload')
+                this.states = window.app.states;
+            },
+
         });
     </script>
 </dom-module>

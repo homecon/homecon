@@ -169,6 +169,7 @@ class Client(object):
 
     @asyncio.coroutine
     def send(self,message):
+        logging.debug('send {} to {}'.format(message,self))
         yield from self.websocket.send(json.dumps(message))
 
     def __repr__(self):

@@ -8,19 +8,19 @@ Code distributed by Google as part of the polymer project is also
 subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
 -->
 
-<link rel="import" href="../bower_components/polymer/polymer.html">
-<link rel="import" href="../bower_components/paper-material/paper-material.html">
-<link rel="import" href="../bower_components/paper-input/paper-input.html">
-<link rel="import" href="../bower_components/paper-button/paper-button.html">
-<link rel="import" href="../bower_components/iron-icon/iron-icon.html">
-<link rel="import" href="../bower_components/iron-icons/iron-icons.html">
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/paper-material/paper-material.html">
+<link rel="import" href="../../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../../bower_components/iron-icon/iron-icon.html">
+<link rel="import" href="../../bower_components/iron-icons/iron-icons.html">
 
-<link rel="import" href="homecon-web-socket-object.html">
-<link rel="import" href="homecon-web-socket-sender.html">
-<link rel="import" href="homecon-edit-dialog.html">
-<link rel="import" href="homecon-section.html">
+<link rel="import" href="../homecon-web-socket-object.html">
+<link rel="import" href="../homecon-web-socket-sender.html">
+<link rel="import" href="../homecon-edit-dialog.html">
+<link rel="import" href="../homecon-section.html">
 
-<dom-module id="homecon-components">
+<dom-module id="components-settings">
 
     <template>
 
@@ -46,9 +46,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
         <homecon-web-socket-sender id="websocket"></homecon-web-socket-sender>
 
-        <homecon-web-socket-object id="websocketComponentsTypes" event="component_types" path="" data="{{componentTypes}}"></homecon-web-socket-object>
-        <homecon-web-socket-object id="websocketComponentsList" event="list_components" path="" data="{{components}}"></homecon-web-socket-object>
-        <homecon-web-socket-object id="websocketStatesList" event="list_states" path="" data="{{states}}"></homecon-web-socket-object>
+        <homecon-web-socket-object id="websocketComponentsTypes" event="component_types" path="" data="{{componentTypes}}" send-on-authenticated></homecon-web-socket-object>
+        <homecon-web-socket-object id="websocketComponentsList" event="list_components" path="" data="{{components}}" send-on-authenticated></homecon-web-socket-object>
+        <homecon-web-socket-object id="websocketStatesList" event="list_states" path="" data="{{states}}" send-on-authenticated></homecon-web-socket-object>
 
         <template is="dom-repeat" items="{{components}}" as="component">
             <paper-material class="horizontal layout center state" on-tap="editComponentDialog">
@@ -102,17 +102,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
     <script>
         Polymer({
-            is: 'homecon-components',
+            is: 'components-settings',
 
             properties: {
-                states: {
-                    type: 'Object',
-                    notify: true,
-                },
-                components: {
-                    type: 'Object',
-                    notify: true,
-                },
             },
 
             _configToNewConfig: function(config){
@@ -224,12 +216,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
             centerEditComponentDialog: function(e){
                 this.$.editComponentDialog.center();
-            },
-
-            load: function(){
-                this.$.websocketComponentsTypes.send();
-                this.$.websocketComponentsList.send();
-                this.$.websocketStatesList.send();
             },
 
         });

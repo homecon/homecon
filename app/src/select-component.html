@@ -5,7 +5,7 @@
 <link rel="import" href="../bower_components/paper-item/paper-item.html">
 
 
-<dom-module is="homecon-component-select">
+<dom-module is="select-component">
     <template>
         <style>
             :host{
@@ -23,7 +23,7 @@
     </template>
     <script>
         Polymer({
-            is: 'homecon-component-select',
+            is: 'select-component',
             properties: {
                 path: {
                     type: 'String',
@@ -35,8 +35,13 @@
                 },
             },
             
+            ready: function(){
+                this.reload();
+                this.listen(window.app, 'app-components-changed', 'reload');
+            },
+
             reload: function(){
-                this.components = window.homeconSettings.components;
+                this.components = window.app.components;
             },
 
         });

@@ -19,9 +19,9 @@ class Plugins(core.plugin.Plugin):
         logging.debug('Plugins plugin Initialized')
 
 
-    def get_plugins_list(self):
+    def get_optionalplugins_list(self):
         """
-        Generate a list of all available plugins and those that are active
+        Generate a list of all available optional plugins and those that are active
         
         """
 
@@ -35,6 +35,21 @@ class Plugins(core.plugin.Plugin):
 
             pluginslist.append({'name':name,'active':active})
 
+        return pluginslist
+
+
+    def get_activeplugins_list(self):
+        """
+        Generate a list of all active plugins, excluding core plugins
+        
+        """
+        pluginslist = []
+        for name in core.plugins.optionalplugins:
+
+            if name in core.plugins:
+                pluginslist.append(name)
+
+        pluginslist = sorted(pluginslist)
         return pluginslist
 
 
@@ -88,24 +103,38 @@ class Plugins(core.plugin.Plugin):
         else:
             return False
 
+    def deactivate(self,name):
+        if name in core.plugins and name in core.plugins.optionalplugins:
 
+            core.plugins.deactivate(name)
 
-    def listen_list_plugins(self,event):
-        core.websocket.send({'event':'list_plugins', 'path':'', 'value':self.get_plugins_list()}, clients=[event.client])
+            return True
+        else:
+            return False
+
+    
+
+    def listen_list_optionalplugins(self,event):
+        core.websocket.send({'event':'list_optionalplugins', 'path':'', 'value':self.get_optionalplugins_list()}, clients=[event.client])
+
+    def listen_list_activeplugins(self,event):
+        core.websocket.send({'event':'list_activeplugins', 'path':'', 'value':self.get_activeplugins_list()}, clients=[event.client])
 
     def listen_list_state_config_keys(self,event):
         core.websocket.send({'event':'list_state_config_keys', 'path':'', 'value':self.get_state_config_keys()}, clients=[event.client])
 
     def listen_activate_plugin(self,event):
-        if self.activate(event.data['plugin']):
-            core.websocket.send({'event':'list_plugins', 'path':'', 'value':self.get_plugins_list()}, clients=[event.client])
+        self.activate(event.data['plugin'])
+        core.websocket.send({'event':'list_optionalplugins', 'path':'', 'value':self.get_optionalplugins_list()}, clients=[event.client])
+        core.websocket.send({'event':'list_activeplugins', 'path':'', 'value':self.get_activeplugins_list()}, clients=[event.client])
 
     def listen_deactivate_plugin(self,event):
-        if self.deactivate(event.data['plugin']):
-            core.websocket.send({'event':'list_plugins', 'path':'', 'value':self.get_plugins_list()}, clients=[event.client])
+        self.deactivate(event.data['plugin'])
+        core.websocket.send({'event':'list_optionalplugins', 'path':'', 'value':self.get_optionalplugins_list()}, clients=[event.client])
+        core.websocket.send({'event':'list_activeplugins', 'path':'', 'value':self.get_activeplugins_list()}, clients=[event.client])
 
     def listen_download_plugin(self,event):
         if self.download(event.data['url']):
-            core.websocket.send({'event':'list_plugins', 'path':'', 'value':self.get_plugins_list()}, clients=[event.client])
+            core.websocket.send({'event':'list_optionalplugins', 'path':'', 'value':self.get_optionalplugins_list()}, clients=[event.client])
 
 

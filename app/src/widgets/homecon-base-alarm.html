@@ -196,8 +196,6 @@
             },
 
             _actionChanged: function(event,data){
-                console.log(event)
-                console.log(this.alarm.action)
                 this.$.websocketObject.send({'action':this.alarm.action});
             },
         });

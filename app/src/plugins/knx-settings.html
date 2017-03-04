@@ -1,0 +1,115 @@
+<!--
+@license
+Copyright (c) 2016 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/paper-material/paper-material.html">
+<link rel="import" href="../../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../../bower_components/iron-icon/iron-icon.html">
+<link rel="import" href="../../bower_components/iron-icons/iron-icons.html">
+
+<link rel="import" href="../homecon-web-socket-object.html">
+<link rel="import" href="../homecon-web-socket-sender.html">
+<link rel="import" href="../homecon-edit-dialog.html">
+<link rel="import" href="../homecon-section.html">
+
+<dom-module id="knx-settings">
+
+    <template>
+
+        <style include="iron-flex iron-flex-alignment">
+            :host {
+                display: block;
+            }
+            paper-material.state{
+                padding-left: 16px;
+                padding-right: 16px;
+                padding-bottom: 4px;
+                padding-top: 4px;
+                background-color: var(--secondary-background-color);
+                margin-bottom: 8px;
+            }
+            .plugin {
+                cursor: pointer;
+                padding: 4px;
+            }
+        </style>
+
+        <homecon-web-socket-sender id="websocket"></homecon-web-socket-sender>
+
+        <template is="dom-repeat" items="{{states}}" as="state" filter="_filter">
+            <paper-material class="horizontal layout center plugin" on-tap="editDialog">
+                <div class="flex name">
+                    {{state.path}}
+                </div>
+            </paper-material>
+        </template>
+
+        <homecon-edit-dialog id="editDialog" on-save="add">
+            Edit
+        </homecon-edit-dialog>
+
+    </template>
+
+    <script>
+        Polymer({
+            is: 'knx-settings',
+
+            properties: {
+            },
+
+
+            editDialog: function(e){
+                console.log(e);
+                state = e.model.__data__.state;
+
+                this.newPath = '';
+
+                this.$.editDialog.open()
+            },
+
+            edit: function(e){
+                this.$.editDialog.close();
+
+                //this.$.websocket.send({'event':'','path':''});
+        
+            },
+
+            delete: function(e){
+                e.stopPropagation()
+
+                this.$.websocket.send({'event':'','path':this.newPath});
+            },
+
+            centerEditDialog: function(e){
+                this.$.editDialog.center();
+            },
+
+            ready: function(){
+                this.reload();
+                this.listen(window.app, 'app-states-changed', 'reload');
+            },
+
+            reload: function(){
+                this.states = window.app.states;
+            },
+            
+            _filter: function(state){
+                for(var i=0; i<state.config.length; i++){
+                    if( state.config[i].key == 'knx_write' ){
+                        return true;
+                    }
+                }
+                return false;
+            }
+        });
+    </script>
+
+</dom-module>

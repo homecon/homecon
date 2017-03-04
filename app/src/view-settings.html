@@ -20,9 +20,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="homecon-web-socket-object.html">
 <link rel="import" href="homecon-web-socket-sender.html">
 <link rel="import" href="homecon-edit-dialog.html">
-<link rel="import" href="homecon-components.html">
-<link rel="import" href="homecon-actions.html">
-<link rel="import" href="homecon-systemidentification.html">
+<link rel="import" href="plugin-settings-container.html">
+
+<link rel="import" href="plugins/components-settings.html">
+<!--<link rel="import" href="plugins/actions-settings.html">
+<link rel="import" href="plugins/systemidentification-settings.html">-->
 
 <dom-module id="view-settings">
 
@@ -43,11 +45,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             paper-material h1 {
                 color: var(--primary-text-color);
                 font-size: 18px;
-                margin-top
             }
-            .plugin {
-                cursor: pointer;
-            }
+
             .state {
                 cursor: pointer;
             }
@@ -97,47 +96,13 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
             </paper-material>
 
+
             <!-- plugins -->
-            <paper-material>
-                <h1>Plugins</h1>
+            <homecon-web-socket-object event="list_activeplugins" path="" data="{{activeplugins}}" send-on-authenticated></homecon-web-socket-object>
 
-                <homecon-web-socket-object auto id="websocketPluginsList" event="list_plugins" data="{{pluginsList}}"></homecon-web-socket-object>
-
-                <template is="dom-repeat" items="{{pluginsList}}" as="plugin">
-                    <paper-material class="horizontal layout center plugin" on-tap="editPluginDialog">
-                        <div class="flex name">
-                            {{plugin.name}}
-                        </div>
-                        <div class="active">
-                            <template is="dom-if" if="{{plugin.active}}">
-                                <iron-icon icon="icons:done"></iron-icon>
-                            </template>
-                        </div>
-                    </paper-material>
-                </template>
-
-                <paper-button raised noink="true" on-tap="downloadPluginDialog">download plugin</paper-button>
-            </paper-material>
-
-            <homecon-edit-dialog id="editPluginDialog" on-save="editPlugin">
-                Edit plugin
-            </homecon-edit-dialog>
-
-            <paper-material>
-                <h1>Components</h1>
-                <homecon-components id="components" states="{{states}}" components="{{components}}"></homecon-components>
-            </paper-material>
-
-
-            <paper-material>
-                <h1>Actions</h1>
-                <homecon-actions id="actions" actions="{{actions}}"></homecon-actions>
-            </paper-material>
-
-            <paper-material>
-                <h1>System Identification</h1>
-                <homecon-systemidentification id="systemidentification"></homecon-systemidentification>
-            </paper-material>
+            <template is="dom-repeat" items="{{plugins}}" as="plugin">
+                <plugin-settings-container plugin="{{plugin}}"></plugin-settings-container>
+            </template>
 
 
         </homecon-page>
@@ -149,33 +114,26 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             is: 'view-settings',
 
             properties: {
-                states: {
-                    type: 'Array',
-                    notify: true,
-                },
                 plugins: {
                     type: 'Array',
                     notify: true,
                 },
             },
 
+            observers: [
+                'setPlugins(activeplugins)',
+            ],
+
             ready: function(){
                 window.homeconSettings = this;
             },
 
-            editPluginDialog: function(e){
-                this.$.editPluginDialog.open()
-            },
-
-            editPlugin: function(e){
-
-            },
-
             load: function(){
-                this.$.components.load()
-                this.$.actions.load()
-                this.$.systemidentification.load()
-            }
+            },
+            
+            setPlugins: function(activeplugins){
+                this.plugins = ['plugins','components','actions','systemidentification'].concat(activeplugins)
+            },
 
         });
     </script>

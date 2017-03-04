@@ -8,7 +8,7 @@
 
 <link rel="import" href="../homecon-web-socket-object.html">
 <link rel="import" href="../homecon-edit-dialog.html">
-<link rel="import" href="../homecon-component-select.html">
+<link rel="import" href="../select-component.html">
 <link rel="import" href="../homecon-icon-select.html">
 
 <dom-module is="homecon-widget-switch">
@@ -50,16 +50,20 @@
             <paper-icon-button icon="editor:mode-edit" noink="true" on-tap="openEditDialog"></paper-icon-button>
         </div>
         
-        <homecon-edit-dialog id="editDialog" on-save="save">
-            <paper-input label="Label:" value="{{newLabel}}"></paper-input>
-            <homecon-component-select id="componentSelect" path="{{newPath}}"></homecon-component-select>
-            <paper-input label="value on:" value="{{newValueOn}}"></paper-input>
-            <paper-input label="value off:" value="{{newValueOff}}"></paper-input>
-            <homecon-icon-select icon="{{newIcon}}"></homecon-icon-select>
-            <paper-input label="color on:" value="{{newColorOn}}"></paper-input>
-            <paper-input label="color off:" value="{{newColorOff}}"></paper-input>
-            <paper-button on-tap="delete">Delete</paper-button>
-        </homecon-edit-dialog>
+        
+            <homecon-edit-dialog id="editDialog" on-save="save">
+                <template is="dom-if" if="{{edit}}">
+                    <paper-input label="Label:" value="{{newLabel}}"></paper-input>
+                    <select-component id="componentSelect" path="{{newPath}}"></select-component>
+                    <paper-input label="value on:" value="{{newValueOn}}"></paper-input>
+                    <paper-input label="value off:" value="{{newValueOff}}"></paper-input>
+                    <homecon-icon-select icon="{{newIcon}}"></homecon-icon-select>
+                    <paper-input label="color on:" value="{{newColorOn}}"></paper-input>
+                    <paper-input label="color off:" value="{{newColorOff}}"></paper-input>
+                    <paper-button on-tap="delete">Delete</paper-button>
+                </template>
+            </homecon-edit-dialog>
+       
 
     </template>
     <script>
@@ -102,7 +106,6 @@
             openEditDialog: function(){
                 this.set('newLabel',this.config.label);
                 this.set('newPath',this.config.path);
-                this.$.componentSelect.reload();
                 this.set('newIcon',this.config.icon);
                 this.set('newValueOn',this.config.valueOn);
                 this.set('newValueOff',this.config.valueOff);

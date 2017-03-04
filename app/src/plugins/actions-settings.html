@@ -1,17 +1,17 @@
 
-<link rel="import" href="../bower_components/polymer/polymer.html">
-<link rel="import" href="../bower_components/paper-material/paper-material.html">
-<link rel="import" href="../bower_components/paper-input/paper-input.html">
-<link rel="import" href="../bower_components/paper-button/paper-button.html">
-<link rel="import" href="../bower_components/iron-icon/iron-icon.html">
-<link rel="import" href="../bower_components/iron-icons/iron-icons.html">
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/paper-material/paper-material.html">
+<link rel="import" href="../../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../../bower_components/iron-icon/iron-icon.html">
+<link rel="import" href="../../bower_components/iron-icons/iron-icons.html">
 
-<link rel="import" href="homecon-web-socket-object.html">
-<link rel="import" href="homecon-web-socket-sender.html">
-<link rel="import" href="homecon-edit-dialog.html">
-<link rel="import" href="homecon-section.html">
+<link rel="import" href="../homecon-web-socket-object.html">
+<link rel="import" href="../homecon-web-socket-sender.html">
+<link rel="import" href="../homecon-edit-dialog.html">
+<link rel="import" href="../homecon-section.html">
 
-<dom-module id="homecon-actions">
+<dom-module id="actions-settings">
 
     <template>
 
@@ -40,7 +40,7 @@
 
         <homecon-web-socket-sender id="websocket"></homecon-web-socket-sender>
 
-        <homecon-web-socket-object id="websocketObjectsList" event="list_actions" path="" data="{{actions}}"></homecon-web-socket-object>
+        <homecon-web-socket-object id="websocketObjectsList" event="list_actions" path="" data="{{actions}}" send-on-authenticated></homecon-web-socket-object>
         <homecon-web-socket-object id="websocketObject" event="action" path="{{path}}" data="{{action}}" on-change="actionChanged"></homecon-web-socket-object>
 
         <template is="dom-repeat" items="{{actions}}" as="path">
@@ -78,7 +78,7 @@
 
     <script>
         Polymer({
-            is: 'homecon-actions',
+            is: 'actions-settings',
 
             properties: {
                 actions: {
@@ -139,9 +139,6 @@
                 this.$.editActionDialog.center();
             },
 
-            load: function(){
-                this.$.websocketObjectsList.send();
-            },
         });
     </script>
 

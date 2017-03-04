@@ -7,7 +7,7 @@
 <link rel="import" href="../../bower_components/paper-icon-button/paper-icon-button.html">
 
 <link rel="import" href="../homecon-edit-dialog.html">
-<link rel="import" href="../homecon-component-select.html">
+<link rel="import" href="../select-component.html">
 
 <link rel="import" href="homecon-base-button.html">
 <link rel="import" href="homecon-base-slider.html">
@@ -61,7 +61,7 @@
         
         <homecon-edit-dialog id="editDialog" on-save="save">
             <paper-input label="Label:" value="{{newLabel}}"></paper-input>
-            <homecon-component-select id="componentSelect" path="{{newPath}}"></homecon-component-select>
+            <select-component id="componentSelect" path="{{newPath}}"></select-component>
             <paper-input label="value up:" value="{{newValueUp}}"></paper-input>
             <paper-input label="value down:" value="{{newValueDown}}"></paper-input>
             <paper-button on-tap="delete">Delete</paper-button>
