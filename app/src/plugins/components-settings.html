@@ -14,21 +14,27 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="../../bower_components/paper-button/paper-button.html">
 <link rel="import" href="../../bower_components/iron-icon/iron-icon.html">
 <link rel="import" href="../../bower_components/iron-icons/iron-icons.html">
+<link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout-classes.html">
 
 <link rel="import" href="../homecon-web-socket-object.html">
 <link rel="import" href="../homecon-web-socket-sender.html">
 <link rel="import" href="../homecon-edit-dialog.html">
-<link rel="import" href="../homecon-section.html">
+
+<link rel="import" href="../../style/style-scrollbar.html">
 
 <dom-module id="components-settings">
 
     <template>
 
-        <style include="iron-flex iron-flex-alignment">
+        <style include="iron-flex iron-flex-alignment iron-flex-factors style-scrollbar">
             :host {
                 display: block;
             }
-            paper-material.state{
+            .container {
+                max-height: 400px;
+                overflow-y: scroll;
+            }
+            paper-material{
                 padding-left: 16px;
                 padding-right: 16px;
                 padding-bottom: 4px;
@@ -36,12 +42,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 background-color: var(--secondary-background-color);
                 margin-bottom: 8px;
             }
-            .plugin {
+            .component {
                 cursor: pointer;
             }
-            .state {
-                cursor: pointer;
-            }
+
         </style>
 
         <homecon-web-socket-sender id="websocket"></homecon-web-socket-sender>
@@ -50,12 +54,14 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         <homecon-web-socket-object id="websocketComponentsList" event="list_components" path="" data="{{components}}" send-on-authenticated></homecon-web-socket-object>
         <homecon-web-socket-object id="websocketStatesList" event="list_states" path="" data="{{states}}" send-on-authenticated></homecon-web-socket-object>
 
-        <template is="dom-repeat" items="{{components}}" as="component">
-            <paper-material class="horizontal layout center state" on-tap="editComponentDialog">
-                <div class="path flex">{{component.path}}</div>
-                <div class="label flex">{{component.type}}</div>
-            </paper-material>
-        </template>
+        <div class="container">
+            <template is="dom-repeat" items="{{components}}" as="component">
+                <paper-material class="horizontal layout center component" on-tap="editComponentDialog">
+                    <div class="path flex-2">{{component.path}}</div>
+                    <div class="label flex">{{component.type}}</div>
+                </paper-material>
+            </template>
+        </div>
 
         <paper-button raised noink="true" on-tap="addComponentDialog">add component</paper-button>
 
@@ -82,18 +88,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 <paper-input label="{{property.key}}: " value="{{property.value}}"></paper-input>
             </template>
 
-            <h3>States</h3>
-            <template is="dom-repeat" items="{{newStates}}" as="state">
-
-                <homecon-section type="collapsible" title="{{state.path}}">
-                    <template is="dom-repeat" items="{{state.config}}" as="property">
-                        <paper-input label="{{property.key}}: " value="{{property.value}}"></paper-input>
-                    </template>
-                </homecon-section>
-
-            </template>
-
-
             <paper-button on-tap="delete">Delete</paper-button>
 
         </homecon-edit-dialog>
@@ -108,23 +102,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             },
 
             _configToNewConfig: function(config){
-                /*var newConfig = []
-
-                this.componentConfigKeys.forEach(function(pluginconfig){
-                    var properties = []
-                    pluginconfig.keys.forEach(function(key){
-                        var value = ''
-                        if(typeof config != 'undefined' && key in config){
-                            value = config[key];
-                            if(typeof value != 'string'){
-                                value = JSON.stringify(value)
-                            }
-                        }
-                        properties.push({'key':key,'value':value})
-                    });
-                    newConfig.push({'name':pluginconfig.name,'properties':properties})
-                });*/
-
                 newConfig = []
                 config.forEach(function(property){
                     value = property.value;
@@ -173,22 +150,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
                 var component = e.model.__data__.component;
                 this.newPath = component.path;
-
-                var statesObject = {}
-                this.states.forEach(function(state){
-                    statesObject[state.path] = state;
-                });
-
-                var newStates = []
-                var that = this;
-                component.states.forEach(function(statePath){
-                    var newstate = {}
-                    newstate['path'] = statesObject[statePath]['path']
-                    newstate['config'] = that._configToNewConfig(statesObject[statePath]['config'])
-                    newStates.push( newstate );
-                });
-                this.newStates = newStates;
-
                 this.newConfig = this._configToNewConfig(component.config);
 
                 this.$.editComponentDialog.open()
@@ -200,12 +161,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
                 this.$.websocket.send({'event':'edit_component','path':this.newPath,'config':config});
 
-                console.log(this.newStates)
-                var that = this;
-                this.newStates.forEach(function(state){
-                    var config = that._newConfigToConfig(state.config);
-                    that.$.websocket.send({'event':'edit_state','path':state.path,'config':config});
-                });
             },
 
             deleteComponent: function(e){

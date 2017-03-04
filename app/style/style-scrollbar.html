@@ -1,0 +1,21 @@
+<link rel="import" href="../bower_components/polymer/polymer.html">
+
+
+<dom-module id="style-scrollbar">
+    <template>
+        <style>
+
+            ::-webkit-scrollbar-track {
+                background: var(--primary-background-color);
+            }
+            ::-webkit-scrollbar {
+                width: 6px;
+            }
+            ::-webkit-scrollbar-thumb {
+                /*background-color: lightgrey; //fallback*/
+                background-color: rgba(0, 0, 0, 0.75);
+            }
+
+        </style>
+    </template>
+</dom-module>

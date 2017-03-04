@@ -1,0 +1,34 @@
+<!--
+-->
+
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/paper-input/paper-input.html">
+
+<link rel="import" href="../homecon-web-socket-object.html">
+
+<dom-module id="darksky-settings">
+
+    <template>
+
+        <style include="iron-flex iron-flex-alignment">
+            :host {
+                display: block;
+            }
+        </style>
+
+        <homecon-web-socket-object auto event="state" path="darksky/settings/apikey" data="{{weatherapikey}}" debounce="800"></homecon-web-socket-object>
+        <paper-input label="API key" value="{{weatherapikey}}"></paper-input>
+
+    </template>
+
+    <script>
+        Polymer({
+            is: 'darksky-settings',
+
+            properties: {
+            },
+
+        });
+    </script>
+
+</dom-module>

@@ -3,18 +3,19 @@
 
 import logging
 
-from .. import Plugin
+from ... import core
 
-class Knx(Plugin):
+class Knx(core.plugin.Plugin):
+
+    def initialize(self):
+
+        logging.debug('KNX plugin Initialized')
 
 
-    def listen(self,event):
-
-        if event.type == 'state_changed':
-            # what is the group address of the item
-            state = event.data['state']
-            if 'knx_ga' in state.config:
-                logging.debug('{} changed, write {} to knx ga: {}'.format(state.path,state.value,state.config['knx_ga']))
+    def listen_state_changed(self,event):
+        state = event.data['state']
+        if 'knx_ga' in state.config:
+            logging.debug('{} changed, write {} to knx group address: {}'.format(state.path,state.value,state.config['knx_ga']))
         
 
 

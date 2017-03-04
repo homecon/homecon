@@ -46,10 +46,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 color: var(--primary-text-color);
                 font-size: 18px;
             }
-
-            .state {
-                cursor: pointer;
-            }
         </style>
 
         <homecon-web-socket-sender id="websocket"></homecon-web-socket-sender>
@@ -57,47 +53,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         <homecon-page>
             <homecon-page-header title="Settings" icon="homecon_gears"></homecon-page-header>
             
-
-            <!-- settings -->
-            <paper-material>
-
-                <h1>Location</h1>
-                <homecon-web-socket-object auto event="state" path="settings/location/latitude" data="{{lat}}" debounce="800"></homecon-web-socket-object>
-                <paper-input label="Latitude" value="{{lat}}" required auto-validate pattern="[0-9]*.[0-9]*" error-message="Not a valid number!"></paper-input>
-                
-                <homecon-web-socket-object auto event="state" path="settings/location/longitude" data="{{lon}}" debounce="800"></homecon-web-socket-object>
-                <paper-input label="Longitude" value="{{lon}}" required auto-validate pattern="[0-9]*.[0-9]*" error-message="Not a valid number!"></paper-input>
-
-                <homecon-web-socket-object auto event="state" path="settings/location/elevation" data="{{elev}}" debounce="800"></homecon-web-socket-object>
-                <paper-input label="Elevation" value="{{elev}}" required auto-validate pattern="[0-9]*.[0-9]*" error-message="Not a valid number!"></paper-input>
-            
-                <homecon-web-socket-object auto event="state" path="settings/location/timezone" data="{{tz}}" debounce="800"></homecon-web-socket-object>
-                <paper-dropdown-menu label="Timezone">
-                    <paper-menu class="dropdown-content" attr-for-selected="value" selected="{{tz}}">
-                        <paper-item value="Europe/Brussels">Europe/Brussels</paper-item>
-                        <paper-item value="Europe/London">Europe/London</paper-item>
-                    </paper-menu>
-                </paper-dropdown-menu>
-
-            </paper-material>
-
-            <paper-material>
-
-                <h1>Weather</h1>
-                <homecon-web-socket-object auto event="state" path="settings/weather/service" data="{{weatherservice}}" debounce="800" send-on-authenticated></homecon-web-socket-object>
-                <paper-dropdown-menu label="service">
-                    <paper-menu class="dropdown-content" attr-for-selected="value" selected="{{weatherservice}}">
-                        <paper-item value="darksky">darksky.net</paper-item>
-                    </paper-menu>
-                </paper-dropdown-menu>
-                
-                <homecon-web-socket-object auto event="state" path="settings/weather/apikey" data="{{weatherapikey}}" debounce="800" send-on-authenticated></homecon-web-socket-object>
-                <paper-input label="API key" value="{{weatherapikey}}"></paper-input>
-
-            </paper-material>
-
-
-            <!-- plugins -->
             <homecon-web-socket-object event="list_activeplugins" path="" data="{{activeplugins}}" send-on-authenticated></homecon-web-socket-object>
 
             <template is="dom-repeat" items="{{plugins}}" as="plugin">
@@ -132,7 +87,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             },
             
             setPlugins: function(activeplugins){
-                this.plugins = ['plugins','components','actions','systemidentification'].concat(activeplugins)
+                this.plugins = ['location','plugins','components','actions','systemidentification','states'].concat(activeplugins)
             },
 
         });

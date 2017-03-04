@@ -32,10 +32,10 @@ class States(core.plugin.Plugin):
 
 
         # add settings states
-        core.states.add('settings/location/latitude', config={'type': 'number', 'quantity':'angle', 'unit':'deg','label':'latitude', 'description':'HomeCon latitude'})
-        core.states.add('settings/location/longitude',config={'type': 'number', 'quantity':'angle', 'unit':'deg','label':'longitude','description':'HomeCon longitude'})
-        core.states.add('settings/location/elevation',config={'type': 'number', 'quantity':'height','unit':'m',  'label':'elevation','description':'HomeCon elevation'})
-        core.states.add('settings/location/timezone', config={'type': 'string', 'quantity':'',      'unit':'',   'label':'time zone','description':'HomeCon time zone'})
+        core.states.add('settings/location/latitude', config={'type': 'number', 'quantity':'angle', 'unit':'deg','label':'latitude', 'description':'HomeCon latitude', 'private':True})
+        core.states.add('settings/location/longitude',config={'type': 'number', 'quantity':'angle', 'unit':'deg','label':'longitude','description':'HomeCon longitude', 'private':True})
+        core.states.add('settings/location/elevation',config={'type': 'number', 'quantity':'height','unit':'m',  'label':'elevation','description':'HomeCon elevation', 'private':True})
+        core.states.add('settings/location/timezone', config={'type': 'string', 'quantity':'',      'unit':'',   'label':'time zone','description':'HomeCon time zone', 'private':True})
 
         # add default values
         if core.states['settings/location/latitude'].value is None:
@@ -78,7 +78,8 @@ class States(core.plugin.Plugin):
 
         stateslist = []
         for state in core.states.values():
-            stateslist.append({'path':state.path,'config':sorted([{'key':key,'value':val} for key,val in state.config.items()],key=lambda x:x['key'])})
+            if not 'private' in state.config or not state.config['private']:
+                stateslist.append({'path':state.path,'config':sorted([{'key':key,'value':val} for key,val in state.config.items()],key=lambda x:x['key'])})
 
         newlist = sorted(stateslist, key=lambda k: k['path'])
 

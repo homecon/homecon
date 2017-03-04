@@ -32,7 +32,7 @@
 
         </style>
         
-        <homecon-web-socket-object id="websocketObject" event="state" path="[[_path(config)]]" data="{{forecast}}"></homecon-web-socket-object>
+        <homecon-web-socket-object id="websocketObject" event="state" path="[[_path(config)]]" data="{{forecast}}" send-on-authenticated></homecon-web-socket-object>
         
         <div>
             <img class="icon" src="/images/weather/[[_icon(forecast)]].png">

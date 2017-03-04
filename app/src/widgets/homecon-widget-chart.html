@@ -35,9 +35,9 @@
         </style>
         
         <template is="dom-repeat" items="{{config.pathlist}}" as="path">
-            <homecon-web-socket-object id="websocketObject" event="timeseries" path="[[path]]" auto on-change="_initialDataChanged"></homecon-web-socket-object>
+            <homecon-web-socket-object id="websocketObject" event="timeseries" path="[[path]]" on-change="_initialDataChanged" send-on-authenticated></homecon-web-socket-object>
             <homecon-web-socket-object id="appendWebsocketObject" event="append_timeseries" path="[[path]]" on-change="_appendDataChanged"></homecon-web-socket-object>
-            <homecon-web-socket-object id="configWebsocketObject" event="state_config" path="[[path]]" auto on-change="_stateConfigChanged"></homecon-web-socket-object>
+            <homecon-web-socket-object id="configWebsocketObject" event="state_config" path="[[path]]" on-change="_stateConfigChanged" send-on-authenticated></homecon-web-socket-object>
         </template>
 
         <div id="container"></div>

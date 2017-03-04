@@ -8,36 +8,39 @@ Code distributed by Google as part of the polymer project is also
 subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
 -->
 
-<link rel="import" href="../bower_components/polymer/polymer.html">
-<link rel="import" href="../bower_components/paper-material/paper-material.html">
-<link rel="import" href="../bower_components/paper-input/paper-input.html">
-<link rel="import" href="../bower_components/paper-button/paper-button.html">
-<link rel="import" href="../bower_components/iron-icon/iron-icon.html">
-<link rel="import" href="../bower_components/iron-icons/iron-icons.html">
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/paper-material/paper-material.html">
+<link rel="import" href="../../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../../bower_components/iron-icon/iron-icon.html">
+<link rel="import" href="../../bower_components/iron-icons/iron-icons.html">
+<link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout-classes.html">
 
-<link rel="import" href="homecon-web-socket-object.html">
-<link rel="import" href="homecon-web-socket-sender.html">
-<link rel="import" href="homecon-edit-dialog.html">
+<link rel="import" href="../homecon-web-socket-object.html">
+<link rel="import" href="../homecon-web-socket-sender.html">
+<link rel="import" href="../homecon-edit-dialog.html">
 
+<link rel="import" href="../../style/style-scrollbar.html">
 
-<dom-module id="homecon-states">
+<dom-module id="states-settings">
 
     <template>
 
-        <style include="iron-flex iron-flex-alignment">
+        <style include="iron-flex iron-flex-alignment iron-flex-factors style-scrollbar">
             :host {
                 display: block;
             }
-            paper-material.state{
+            .container {
+                max-height: 400px;
+                overflow-y: scroll;
+            }
+            paper-material{
                 padding-left: 16px;
                 padding-right: 16px;
                 padding-bottom: 4px;
                 padding-top: 4px;
                 background-color: var(--secondary-background-color);
                 margin-bottom: 8px;
-            }
-            .plugin {
-                cursor: pointer;
             }
             .state {
                 cursor: pointer;
@@ -46,147 +49,94 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
         <homecon-web-socket-sender id="websocket"></homecon-web-socket-sender>
 
-        <homecon-web-socket-object id="websocketStatesConfigKeys" event="list_state_config_keys" path="" data="{{statesConfigKeys}}" send-on-authenticated></homecon-web-socket-object>
-        <homecon-web-socket-object id="websocketStatesList" event="list_states" path="" data="{{states}}" send-on-authenticated></homecon-web-socket-object>
+        <div class="container">
+            <template is="dom-repeat" items="{{states}}" as="state">
+                <paper-material class="horizontal layout center state" on-tap="editDialog">
+                    <div class="path flex-2">{{state.path}}</div>
+                    <div class="label flex">{{_configValue(state.config,'label')}}</div>
+                </paper-material>
+            </template>
+        </div>
 
-        <template is="dom-repeat" items="{{states}}" as="state">
-            <paper-material class="horizontal layout center state" on-tap="editStateDialog">
-                <div class="path flex">{{state.path}}</div>
-                <div class="label flex">{{state.config.label}}</div>
-            </paper-material>
-        </template>
-
-        <paper-button raised noink="true" on-tap="addStateDialog">add state</paper-button>
-
-
-        <homecon-edit-dialog id="addStateDialog" on-save="editState">
-            <h2>Add state</h2>
-            <paper-input id="pathInput" label="path:" value="{{newPath}}"></paper-input>
-
-            <paper-dropdown-menu label="type">
-                <paper-menu class="dropdown-content" attr-for-selected="value" selected="{{newType}}">
-                    <template is="dom-repeat" items="{{stateTypes}}" as="type">
-                        <paper-item value="{{type}}">{{type}}</paper-item>
-                    </template>
-                </paper-menu>
-            </paper-dropdown-menu>
-
-        </homecon-edit-dialog>
-
-
-        <homecon-edit-dialog id="editStateDialog" on-save="editState">
+        <homecon-edit-dialog id="editDialog" on-save="edit">
             <h2>{{newPath}}</h2>
-
-            <template is="dom-repeat" items="{{newConfig}}" as="pluginconfig">
-                <h3>{{pluginconfig.name}}</h3>
-                <template is="dom-repeat" items="{{pluginconfig.properties}}" as="property">
-                    <paper-input label="{{property.key}}: " value="{{property.value}}"></paper-input>
-                </template>
+            <template is="dom-repeat" items="{{newConfig}}">
+                <paper-input label="{{item.key}}" value="{{item.value}}"></paper-input>
             </template>
-
-            <template is="dom-if" if="{{editStateBoolean}}">
-                <paper-button on-tap="delete">Delete</paper-button>
-            </template>
-
         </homecon-edit-dialog>
 
     </template>
 
     <script>
         Polymer({
-            is: 'homecon-states',
+            is: 'states-settings',
 
             properties: {
-                states: {
-                    type: 'Object',
-                    notify: true,
-                },
             },
 
-            _configToNewConfig: function(config){
-                var newConfig = []
-
-                this.statesConfigKeys.forEach(function(pluginconfig){
-                    var properties = []
-                    pluginconfig.keys.forEach(function(key){
-                        var value = ''
-                        if(typeof config != 'undefined' && key in config){
-                            value = config[key];
-                            if(typeof value != 'string'){
-                                value = JSON.stringify(value)
-                            }
-                        }
-                        properties.push({'key':key,'value':value})
-                    });
-                    newConfig.push({'name':pluginconfig.name,'properties':properties})
-                });
-
-                return newConfig
+            ready: function(){
+                this.reload();
+                this.listen(window.app, 'app-states-changed', 'reload');
             },
 
-            _newConfigToConfig: function(newconfig){
-                var config = {};
-
-                newconfig.forEach(function(pluginconfig){
-                    pluginconfig.properties.forEach(function(property){
-                        if(property.value != ''){
-                            try{
-                                var value = JSON.parse(property.value);
-                            }
-                            catch(e){
-                                var value = property.value;
-                            }
-                            config[property.key] = value;
-                        }
-                    });
-                   
-                });
-
-                return config;
+            reload: function(){
+                this.states = window.app.states;
             },
 
-            addStateDialog: function(e){
-
-                this.newPath = '';
-                this.newType = 'simple';
-
-                this.$.addStateDialog.open()
-            },
-
-            addState: function(e){
-                this.$.editStateDialog.close();
-
-                config = this._newConfigToConfig(this.newConfig)
-                if(this.newType == 'simple'){
-                    this.$.websocket.send({'event':'add_state','path':this.newPath,'config':{}});
-                }
-                else{
-                    this.$.websocket.send({'event':'add_type_state','path':this.newPath,'type':this.newType});
-                }
-            },
-
-            editStateDialog: function(e){
+            editDialog: function(e){
                 this.editStateBoolean = true;
 
                 var state = e.model.__data__.state;
                 this.newPath = state.path;
                 this.newConfig = this._configToNewConfig(state.config)
 
-                this.$.editStateDialog.open()
+                this.$.editDialog.open()
             },
 
-            editState: function(e){
-                this.$.editStateDialog.close();
-
-                config = this._newConfigToConfig(this.newConfig)
-
+            edit: function(e){
+                this.$.editDialog.close();
+                var config = this._newConfigToConfig(this.newConfig)
+                
                 this.$.websocket.send({'event':'edit_state','path':this.newPath,'config':config});
             },
 
-            deleteState: function(e){
-                e.stopPropagation()
+            _configValue: function(config,key){
+                for(var i=0; i<config.length; i++){
+                    if( config[i].key == key ){
+                        return config[i].value;
+                    }
+                }
+                return undefined;
+            },
 
-                this.$.websocket.send({'event':'delete_state','path':this.newPath});
+            _configToNewConfig: function(config){
+                newConfig = []
+                config.forEach(function(property){
+                    value = property.value;
+                    if(typeof value != 'string'){
+                        value = JSON.stringify(value)
+                    }
+                    newConfig.push({'key':property.key,'value':value})
+                });
+                return newConfig
+            },
+
+            _newConfigToConfig: function(newconfig){
+                var config = {};
+
+                newconfig.forEach(function(property){
+                    if(property.value != ''){
+                        try{
+                            var value = JSON.parse(property.value);
+                        }
+                        catch(e){
+                            var value = property.value;
+                        }
+                        config[property.key] = value;
+                    }
+                });
+
+                return config;
             },
 
         });

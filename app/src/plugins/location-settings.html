@@ -1,0 +1,53 @@
+<!--
+-->
+
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../../bower_components/paper-dropdown-menu/paper-dropdown-menu.html">
+<link rel="import" href="../../bower_components/paper-menu/paper-menu.html">
+<link rel="import" href="../../bower_components/paper-item/paper-item.html">
+
+<link rel="import" href="../homecon-web-socket-object.html">
+
+<link rel="import" href="../../style/style-scrollbar.html">
+
+<dom-module id="location-settings">
+
+    <template>
+
+        <style include="iron-flex iron-flex-alignment style-scrollbar">
+            :host {
+                display: block;
+            }
+        </style>
+
+        <homecon-web-socket-object auto event="state" path="settings/location/latitude" data="{{lat}}" debounce="800"></homecon-web-socket-object>
+        <paper-input label="Latitude" value="{{lat}}" required auto-validate pattern="[0-9]*.[0-9]*" error-message="Not a valid number!"></paper-input>
+        
+        <homecon-web-socket-object auto event="state" path="settings/location/longitude" data="{{lon}}" debounce="800"></homecon-web-socket-object>
+        <paper-input label="Longitude" value="{{lon}}" required auto-validate pattern="[0-9]*.[0-9]*" error-message="Not a valid number!"></paper-input>
+
+        <homecon-web-socket-object auto event="state" path="settings/location/elevation" data="{{elev}}" debounce="800"></homecon-web-socket-object>
+        <paper-input label="Elevation" value="{{elev}}" required auto-validate pattern="[0-9]*.[0-9]*" error-message="Not a valid number!"></paper-input>
+    
+        <homecon-web-socket-object auto event="state" path="settings/location/timezone" data="{{tz}}" debounce="800"></homecon-web-socket-object>
+        <paper-dropdown-menu label="Timezone">
+            <paper-menu class="dropdown-content" attr-for-selected="value" selected="{{tz}}">
+                <paper-item value="Europe/Brussels">Europe/Brussels</paper-item>
+                <paper-item value="Europe/London">Europe/London</paper-item>
+            </paper-menu>
+        </paper-dropdown-menu>
+
+    </template>
+
+    <script>
+        Polymer({
+            is: 'location-settings',
+
+            properties: {
+            },
+
+        });
+    </script>
+
+</dom-module>

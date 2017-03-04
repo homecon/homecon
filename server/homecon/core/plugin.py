@@ -225,7 +225,10 @@ class Plugins(object):
             self._coreplugins[name] = plugin
         else:
             self._optionalplugins[name] = plugin
-            self._db_plugins.POST(name=name)
+
+            result = self._db_plugins.GET(name=name)
+            if len(result) == 0:
+                self._db_plugins.POST(name=name)
 
         self._plugins[name] = plugin
 
