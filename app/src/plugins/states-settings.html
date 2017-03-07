@@ -19,6 +19,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="../homecon-web-socket-object.html">
 <link rel="import" href="../homecon-web-socket-sender.html">
 <link rel="import" href="../homecon-edit-dialog.html">
+<link rel="import" href="../folder-structure.html">
 
 <link rel="import" href="../../style/style-scrollbar.html">
 
@@ -50,12 +51,14 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         <homecon-web-socket-sender id="websocket"></homecon-web-socket-sender>
 
         <div class="container">
-            <template is="dom-repeat" items="{{states}}" as="state">
+            <folder-structure paths="{{paths}}" on-path-tap="editDialog"></folder-structure>
+
+            <!--<template is="dom-repeat" items="{{states}}" as="state">
                 <paper-material class="horizontal layout center state" on-tap="editDialog">
                     <div class="path flex-2">{{state.path}}</div>
                     <div class="label flex">{{_configValue(state.config,'label')}}</div>
                 </paper-material>
-            </template>
+            </template>-->
         </div>
 
         <homecon-edit-dialog id="editDialog" on-save="edit">
@@ -81,16 +84,31 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
             reload: function(){
                 this.states = window.app.states;
+
+                var paths = [];
+                var pathtostate = {};
+                for(var i=0; i<this.states.length; i++){
+                    paths.push(this.states[i]['path'])
+                    pathtostate[this.states[i]['path']] = this.states[i];
+                }
+                this.paths = paths
+                this.pathtostate = pathtostate
             },
 
-            editDialog: function(e){
+            editDialog: function(e,d){
+                console.log(d)
                 this.editStateBoolean = true;
+                var path = d.fullpath
+                console.log(path)
 
-                var state = e.model.__data__.state;
-                this.newPath = state.path;
-                this.newConfig = this._configToNewConfig(state.config)
+                if(path in this.pathtostate){
+                    var state = this.pathtostate[path]
 
-                this.$.editDialog.open()
+                    this.newPath = state.path;
+                    this.newConfig = this._configToNewConfig(state.config)
+
+                    this.$.editDialog.open()
+                }
             },
 
             edit: function(e){

@@ -1,0 +1,86 @@
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="folder-collapsible.html">
+
+<dom-module id="folder-structure">
+    <template>
+        <style>
+            :host {
+                display: block;
+            }
+            .sublevel{
+                padding-left: 10px;
+            }
+        </style>
+
+        <template is="dom-repeat" items="{{arraydata}}">
+            <folder-collapsible path="{{item.path}}" parent="{{item.parent}}" fullpath="{{item.fullpath}}" subpaths="{{item.subpaths}}">
+                <folder-structure class="sublevel" paths={{item.subpaths}}></folder-structure>
+            </folder-collapsible>
+        </template>
+    </template>
+
+    
+    <script>
+        Polymer({
+            is: 'folder-structure',
+            
+            properties: {
+                paths:{
+                    type: 'array',
+                    observer: '_pathsChanged'
+                },
+            },
+            
+            _pathsChanged: function(paths){
+                //console.log(paths)
+                
+                var newpaths = []
+                // if paths is a list of strings, it is the top level
+                // the strings are replaced by an object containing the path, parent and fullpath
+                for(var i=0;i<paths.length;i++){
+                    if(typeof paths[i] == 'string'){
+                        newpaths.push({'path':paths[i], 'parent':'', 'fullpath':paths[i]})
+                    }
+                    else{
+                        newpaths.push(paths[i])
+                    }
+                }
+                //console.log(newpaths)
+                
+                // create an object of all 1st elements
+                var objectdata = {}
+                for(var i=0;i<newpaths.length;i++){
+                    var parent = newpaths[i]['parent']
+                    var parts = newpaths[i]['path'].split('/')
+                    var current = parts.shift()
+                    
+                    if(parent == ''){
+                        var parentcurrent = current
+                    }
+                    else{
+                        var parentcurrent = parent+'/'+current
+                    }
+                      
+                    
+                    if(typeof objectdata[current] == 'undefined'){
+                        objectdata[current] = {'fullpath':parentcurrent,'parent':parent,'subpaths':[]}
+                    }
+                    if(parts.length > 0){
+                        objectdata[current]['subpaths'].push({'path':parts.join('/'),'parent':parentcurrent,'fullpath':newpaths[i]['fullpath']})
+                    }
+                }
+                //console.log(objectdata)
+                
+                // convert the object data to an array
+                var arraydata = []
+                for(key in objectdata){
+                    arraydata.push({'path':key,'parent':objectdata[key]['parent'],'fullpath':objectdata[key]['fullpath'],'subpaths':objectdata[key]['subpaths']})
+                }
+                //console.log(arraydata)
+                this.arraydata = arraydata;
+                
+            },
+            
+        });
+    </script>
+</dom-module>

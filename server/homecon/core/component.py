@@ -72,6 +72,21 @@ class Components(object):
         else:
             return False
 
+    def delete(self,path):
+        """
+        Delete a component
+        """
+        if path in self._components:
+            # delete all associated states
+            for s in self._components[path].states.values():
+                s.delete()
+
+            # delete the component
+            self._db_components.DELETE( path=path )
+            del self._components[path]
+
+            return True
+
 
     def find(self,**kwargs):
         """

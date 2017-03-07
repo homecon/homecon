@@ -73,6 +73,12 @@ class Components(core.plugin.Plugin):
             core.websocket.send({'event':'list_components', 'path':'', 'value':self.list()}, clients=[event.client])
             self.fire('list_states',{},client=event.client)
 
+    def listen_delete_component(self,event):
+
+        if core.components.delete(event.data['path']):
+            core.websocket.send({'event':'list_components', 'path':'', 'value':self.list()}, clients=[event.client])
+
+
     def listen_edit_component(self,event):
         if event.data['path'] in self._components:
 

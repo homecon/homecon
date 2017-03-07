@@ -39,31 +39,71 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 padding-right: 16px;
                 padding-bottom: 4px;
                 padding-top: 4px;
-                background-color: var(--secondary-background-color);
+                background-color: var(--tertiary-background-color);
                 margin-bottom: 8px;
             }
-            .component {
+            .component .name{
                 cursor: pointer;
             }
-
+            .state{
+                cursor: pointer;
+            }
+            .expandIcon{
+                width: 30px;
+            }
+            .states{
+                padding-left: 50px;
+            }
+            h2{
+                color: var(--primary-text-color);
+                font-size: 16px;
+                font-weight: 500;
+                margin-bottom: 0px;
+            }
         </style>
 
         <homecon-web-socket-sender id="websocket"></homecon-web-socket-sender>
-
         <homecon-web-socket-object id="websocketComponentsTypes" event="component_types" path="" data="{{componentTypes}}" send-on-authenticated></homecon-web-socket-object>
-        <homecon-web-socket-object id="websocketComponentsList" event="list_components" path="" data="{{components}}" send-on-authenticated></homecon-web-socket-object>
-        <homecon-web-socket-object id="websocketStatesList" event="list_states" path="" data="{{states}}" send-on-authenticated></homecon-web-socket-object>
 
         <div class="container">
             <template is="dom-repeat" items="{{components}}" as="component">
-                <paper-material class="horizontal layout center component" on-tap="editComponentDialog">
-                    <div class="path flex-2">{{component.path}}</div>
-                    <div class="label flex">{{component.type}}</div>
+                <paper-material class="vertical layout component">
+                    <div class="horizontal layout center">
+                        <div class="expandIcon">
+                            <iron-icon on-tap="_toggle" icon="{{_expandIcon(component.*)}}"></iron-icon>
+                        </div>
+                        <div class="name flex-2" on-tap="editComponentDialog">{{component.path}}</div>
+                        <div class="flex">{{component.type}}</div>
+                    </div>
+                    <div class="states">
+                        <iron-collapse opened="{{component.opened}}">
+                            <template is="dom-repeat" items="{{_componentStates(component.states,statesObject)}}" as="state">
+                                <div class="state horizontal layout" on-tap="editStateDialog">
+                                    <div class="flex-3">{{state.path}}</div>
+                                    <div class="flex">{{_configValue(state.config,'label')}}</div>
+                                </div>
+                            </template>
+                        </iron-collapse>
+                    </div>
                 </paper-material>
             </template>
         </div>
 
         <paper-button raised noink="true" on-tap="addComponentDialog">add component</paper-button>
+
+        <h2>Other states</h2>
+        <div class="container">
+            <paper-material class="vertical layout component">
+                
+                <template is="dom-repeat" items="{{noComponentStates}}" as="state">
+                    <div class="state horizontal layout">
+                        <div class="flex-3" on-tap="editStateDialog">{{state.path}}</div>
+                        <div class="flex">{{_configValue(state.config,'label')}}</div>
+                    </div>
+                </template>
+
+            </paper-material>
+        </div>
 
 
         <homecon-edit-dialog id="addComponentDialog" on-save="addComponent">
@@ -81,15 +121,25 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         </homecon-edit-dialog>
 
 
-        <homecon-edit-dialog id="editComponentDialog" on-save="editComponent" on-state-changed="centerEditComponentDialog">
+        <homecon-edit-dialog id="editComponentDialog" on-save="editComponent">
             <h2>{{newPath}}</h2>
 
             <template is="dom-repeat" items="{{newConfig}}" as="property">
                 <paper-input label="{{property.key}}: " value="{{property.value}}"></paper-input>
             </template>
 
-            <paper-button on-tap="delete">Delete</paper-button>
+            <paper-button on-tap="deleteComponent">Delete</paper-button>
 
+        </homecon-edit-dialog>
+
+
+        <homecon-edit-dialog id="editStateDialog" on-save="editState">
+            <h2>{{newPath}}</h2>
+            <template is="dom-repeat" items="{{newConfig}}">
+                <template is="dom-if" if="{{_showStateConfigKey(item.key)}}">
+                    <paper-input label="{{item.key}}" value="{{item.value}}"></paper-input>
+                </template>
+            </template>
         </homecon-edit-dialog>
 
     </template>
@@ -99,6 +149,25 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             is: 'components-settings',
 
             properties: {
+            },
+
+            observers: [
+                '_statesChanged(states.*)',
+            ],
+
+            ready: function(){
+                this.reloadComponents();
+                this.reloadStates();
+                this.listen(window.app, 'app-components-changed', 'reloadComponents');
+                this.listen(window.app, 'app-states-changed', 'reloadStates');
+            },
+
+            reloadComponents: function(){
+                this.components = window.app.components;
+            },
+
+            reloadStates: function(){
+                this.states = window.app.states;
             },
 
             _configToNewConfig: function(config){
@@ -131,46 +200,136 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 return config;
             },
 
+            // component actions
             addComponentDialog: function(e){
 
                 this.newPath = '';
                 this.newType = 'value';
-
                 this.$.addComponentDialog.open()
             },
 
             addComponent: function(e){
                 this.$.addComponentDialog.close();
-
                 this.$.websocket.send({'event':'add_component','path':this.newPath,'type':this.newType,'config':{}});
-        
             },
 
             editComponentDialog: function(e){
-
                 var component = e.model.__data__.component;
                 this.newPath = component.path;
                 this.newConfig = this._configToNewConfig(component.config);
-
                 this.$.editComponentDialog.open()
             },
 
             editComponent: function(e){
                 this.$.editComponentDialog.close();
                 config = this._newConfigToConfig(this.newConfig)
-
                 this.$.websocket.send({'event':'edit_component','path':this.newPath,'config':config});
-
             },
 
             deleteComponent: function(e){
                 e.stopPropagation()
-
+                this.$.editComponentDialog.close();
                 this.$.websocket.send({'event':'delete_component','path':this.newPath});
             },
 
             centerEditComponentDialog: function(e){
                 this.$.editComponentDialog.center();
+            },
+
+            // state dialogs
+            editStateDialog: function(e){
+                var state = e.model.__data__.state;
+                this.newPath = state.path;
+                this.newConfig = this._configToNewConfig(state.config);
+                this.$.editStateDialog.open()
+            },
+
+            editState: function(e){
+                this.$.editStateDialog.close();
+                config = this._newConfigToConfig(this.newConfig)
+                this.$.websocket.send({'event':'edit_state','path':this.newPath,'config':config});
+            },
+
+
+            _statesChanged: function(change){
+                var statesObject = {};
+                var noComponentStates = [];
+                var states = change.base;
+                for(var i=0; i<states.length; i++){
+                    statesObject[states[i].path] = states[i];
+
+                    var noComponent = true
+                    for(var j=0; j<states[i].config.length; j++){
+                        if(states[i].config[j].key == 'component'){
+                            noComponent = false
+                            break;
+                        }
+                    }
+                    if(noComponent){
+                       noComponentStates.push(states[i]);
+                    }
+                }
+                this.statesObject = statesObject;
+                this.noComponentStates = noComponentStates;
+            },
+
+            _componentStates: function(paths,statesObject){
+                var states = [];
+                
+                for(var i=0; i<paths.length; i++){
+                    states.push(statesObject[paths[i]])
+                }
+                return states
+            },
+
+            _toggle: function(e){
+                e.currentTarget.parentElement.parentElement.parentElement.querySelector('iron-collapse').toggle();
+            
+                var component = e.model.__data__.component;
+                if(component.states.length > 0){
+                
+                    if(!('opened' in component)){
+                        component.opened = false;
+                    }
+                    component.opened = !component.opened;
+                }
+            },
+            
+            _expandIcon: function(change){
+                var component = change.base;
+                if(component.states.length > 0){
+                    if(!('opened' in component)){
+                        component.opened = false;
+                    }
+                    if(component.opened){
+                        return 'expand-less';
+                    }
+                    else{
+                        return 'expand-more';
+                    }
+                }
+                else{
+                    return '';
+                }
+
+            },
+
+            _showStateConfigKey: function(key){
+                if( ['component'].indexOf(key)>-1 ){
+                    return false;
+                }
+                else{
+                    return true;
+                }
+            },
+
+            _configValue: function(config,key){
+                for(var i=0; i<config.length; i++){
+                    if( config[i].key == key ){
+                        return config[i].value;
+                    }
+                }
+                return undefined;
             },
 
         });

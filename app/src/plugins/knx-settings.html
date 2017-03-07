@@ -26,7 +26,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
     <template>
 
-        <style include="iron-flex iron-flex-alignment style-scrollbar">
+        <style include="iron-flex iron-flex-alignment iron-flex-factors style-scrollbar">
             :host {
                 display: block;
             }
@@ -35,16 +35,29 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 padding-right: 16px;
                 padding-bottom: 4px;
                 padding-top: 4px;
-                background-color: var(--secondary-background-color);
+                background-color: var(--tertiary-background-color);
                 margin-bottom: 8px;
             }
             .state {
                 cursor: pointer;
             }
+            h2 {
+                font-size: 14px;
+            }
         </style>
 
         <homecon-web-socket-sender id="websocket"></homecon-web-socket-sender>
 
+        <homecon-web-socket-object auto event="state" path="knx/settings/interface/ip" data="{{interfaceip}}" debounce="800"></homecon-web-socket-object>
+        <homecon-web-socket-object auto event="state" path="knx/settings/interface/port" data="{{interfaceport}}" debounce="800"></homecon-web-socket-object>
+
+        <h2>Interface settings:</h2>
+        <div class="horizontal layout">
+            <paper-input label="Interface ip address" value="{{interfaceip}}" class="flex-4"></paper-input>
+            <paper-input label="Interface port" value="{{interfaceport}}" class="flex-1"></paper-input>
+        </div>
+
+        <h2>States:</h2>
         <template is="dom-repeat" items="{{states}}" as="state" filter="_filter">
             <paper-material class="horizontal layout center state" on-tap="editDialog">
                 <div class="flex name">

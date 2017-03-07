@@ -500,7 +500,8 @@ class States(object):
 
         return State(path,value=value,config=config,db_entry=db_entry)
 
-
+    def delete(self,path):
+        self._states[path].delete()
 
     def __getitem__(self,path):
         return self._states[path]
