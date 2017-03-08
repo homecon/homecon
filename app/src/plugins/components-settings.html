@@ -132,10 +132,26 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
         <homecon-edit-dialog id="editComponentDialog" on-save="editComponent">
             <h2>{{newPath}}</h2>
+            <div>
+                <template is="dom-repeat" items="{{newComponentConfig}}" as="property" sort="_sortByKey">
 
-            <template is="dom-repeat" items="{{newComponentConfig}}" as="property">
-                <paper-input label="{{property.key}}: " value="{{property.value}}"></paper-input>
-            </template>
+                    <template is="dom-if" if="{{!_isComponentType(componentTypes,property.key)}}">
+                        <paper-input label="{{property.key}}: " value="{{property.value}}"></paper-input>
+                    </template>
+                    <template is="dom-if" if="{{_isComponentType(componentTypes,property.key)}}">
+                        
+                        <paper-dropdown-menu label="{{property.key}}">
+                            <paper-menu class="dropdown-content" attr-for-selected="value" selected="{{property.value}}">
+                                <template is="dom-repeat" items="{{components}}" as="component" filter="{{_filterComponentType(property.key)}}">
+                                    <paper-item value="{{component.path}}">{{component.path}}</paper-item>
+                                </template>
+                            </paper-menu>
+                        </paper-dropdown-menu>
+
+                    </template>
+
+                </template>
+            </div>
 
             <paper-button on-tap="deleteComponent">Delete</paper-button>
 
@@ -322,6 +338,30 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 }
             },
 
+            _isComponentType: function(componentTypes,type){
+                for(var i=0; i<componentTypes.length; i++){
+                    if(componentTypes[i].type == type){
+                        return true
+                    }
+                }
+                return false
+            },
+
+            _filterComponentType: function(type){
+                return function(component){return component.type == type };
+            },
+
+            _sortByKey: function(a,b){
+                if(a.key>b.key){
+                    return 1;
+                }
+                else if(a.key<b.key){
+                    return -1;
+                }
+                else{
+                    return 0;
+                }
+            },
         });
     </script>
 

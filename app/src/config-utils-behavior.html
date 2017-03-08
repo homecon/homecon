@@ -5,7 +5,7 @@
         _configToNewConfigArray: function(config){
             newConfig = []
             for(key in config){
-                value = config[key].value;
+                value = config[key];
                 if(typeof value == 'object'){
                     value = JSON.stringify(value)
                 }
