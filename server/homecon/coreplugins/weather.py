@@ -24,24 +24,24 @@ class Weather(core.plugin.Plugin):
 
 
         # add forecast states
-        core.states.add('weather/forecast/lastupdate', config={'type': 'number', 'quantity':'', 'unit':'','label':'', 'description':'', 'private':True})
+        core.states.add('weather/forecast/lastupdate', config={'datatype': 'number', 'quantity':'', 'unit':'','label':'', 'description':'', 'private':True})
 
         for i in range(7):
-            core.states.add('weather/forecast/daily/{}'.format(i), config={'type': 'dict', 'quantity':'', 'unit':'','label':'', 'description':'', 'log':False, 'private':True})
+            core.states.add('weather/forecast/daily/{}'.format(i), config={'datatype': 'dict', 'quantity':'', 'unit':'','label':'', 'description':'', 'log':False, 'private':True})
         
         for i in range(24*7):
-            core.states.add('weather/forecast/hourly/{}'.format(i), config={'type': 'dict', 'quantity':'', 'unit':'','label':'', 'description':'', 'log':False, 'private':True})
+            core.states.add('weather/forecast/hourly/{}'.format(i), config={'datatype': 'dict', 'quantity':'', 'unit':'','label':'', 'description':'', 'log':False, 'private':True})
 
 
         # add weather states
-        core.states.add('weather/temperature',       config={'type': 'number', 'quantity':'temperature', 'unit':'°C'  , 'label':'Ambient', 'description':''})
-        core.states.add('weather/cloudcover',        config={'type': 'number', 'quantity':''           , 'unit':''    , 'label':'Cloud cover' , 'description':''})
+        core.states.add('weather/temperature',       config={'datatype': 'number', 'quantity':'temperature', 'unit':'°C'  , 'label':'Ambient', 'description':''})
+        core.states.add('weather/cloudcover',        config={'datatype': 'number', 'quantity':''           , 'unit':''    , 'label':'Cloud cover' , 'description':''})
 
-        core.states.add('weather/sun/azimuth',           config={'type': 'number', 'quantity':'angle' , 'unit':'°', 'label':'Azimuth' , 'description':''})
-        core.states.add('weather/sun/altitude',          config={'type': 'number', 'quantity':'angle' , 'unit':'°', 'label':'Altitude' , 'description':''})
+        core.states.add('weather/sun/azimuth',           config={'datatype': 'number', 'quantity':'angle' , 'unit':'°', 'label':'Azimuth' , 'description':''})
+        core.states.add('weather/sun/altitude',          config={'datatype': 'number', 'quantity':'angle' , 'unit':'°', 'label':'Altitude' , 'description':''})
 
-        core.states.add('weather/irradiancedirect',  config={'type': 'number', 'quantity':'irradiance' , 'unit':'W/m2', 'label':'Direct' , 'description':''})
-        core.states.add('weather/irradiancediffuse', config={'type': 'number', 'quantity':'irradiance' , 'unit':'W/m2', 'label':'Diffuse', 'description':''})
+        core.states.add('weather/irradiancedirect',  config={'datatype': 'number', 'quantity':'irradiance' , 'unit':'W/m2', 'label':'Direct' , 'description':''})
+        core.states.add('weather/irradiancediffuse', config={'datatype': 'number', 'quantity':'irradiance' , 'unit':'W/m2', 'label':'Diffuse', 'description':''})
 
 
         # schedule sun position updating

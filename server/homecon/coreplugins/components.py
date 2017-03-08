@@ -88,7 +88,6 @@ class Components(core.plugin.Plugin):
             for key,val in event.data['config'].items():
                 config[key] = val
 
-            self._components._db_components.PUT(config=json.dumps(config), where='path=\'{}\''.format(event.data['path']))
             component.config = config
 
             core.websocket.send({'event':'list_components', 'path':'', 'value':self.list()}, clients=[event.client])
@@ -101,6 +100,8 @@ class Value(core.component.Component):
     a class implementing an basic single value
     
     """
+    default_config = {
+    }
 
     def initialize(self):
         self.states = {
@@ -108,8 +109,6 @@ class Value(core.component.Component):
                 'default_config': {},
                 'fixed_config': {},
             },
-        }
-        self.config = {
         }
 
 core.components.register(Value)

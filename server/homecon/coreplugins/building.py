@@ -57,29 +57,27 @@ class Zone(core.component.Component):
     a class implementing a building zone
     
     """
-
-    def initialize(self):
-        self.states = {
-            'temperature': {
-                'default_config': {'type': 'number', 'quantity': 'temperature', 'unit': '°C'},
-                'fixed_config': {},
-            },
-            'humidity': {
-                'default_config': {'type': 'number', 'quantity': 'relative humidity', 'unit': '%'},
-                'fixed_config': {},
-            },
-            'solargain': {
-                'default_config': {'type': 'number', 'quantity': 'heat flow rate', 'unit': 'W', 'description':'Solar heat flow through all windows in the zone'},
-                'fixed_config': {},
-            },
-            'internalgain': {
-                'default_config': {'type': 'number', 'quantity': 'heat flow rate', 'unit': 'W', 'description':'Internal heat flows to the zone'},
-                'fixed_config': {},
-            },
-        }
-        self.config = {
-            'type': '',
-        }
+    default_config = {
+        'type': '',
+    }
+    linked_states = {
+        'temperature': {
+            'default_config': {'datatype': 'number', 'quantity': 'temperature', 'unit': '°C'},
+            'fixed_config': {},
+        },
+        'humidity': {
+            'default_config': {'datatype': 'number', 'quantity': 'relative humidity', 'unit': '%'},
+            'fixed_config': {},
+        },
+        'solargain': {
+            'default_config': {'datatype': 'number', 'quantity': 'heat flow rate', 'unit': 'W', 'description':'Solar heat flow through all windows in the zone'},
+            'fixed_config': {},
+        },
+        'internalgain': {
+            'default_config': {'datatype': 'number', 'quantity': 'heat flow rate', 'unit': 'W', 'description':'Internal heat flows to the zone'},
+            'fixed_config': {},
+        },
+    }
 
     def calculate_solargain(self,utcdatetime=None,I_direct=None,I_diffuse=None,solar_azimuth=None,solar_altitude=None,shading_relativeposition=None):
         """
@@ -138,19 +136,17 @@ class Zonetemperaturesensor(core.component.Component):
     a class implementing a temperature sensor
     
     """
-
-    def initialize(self):
-        self.states = {
-            'value': {
-                'default_config': {},
-                'fixed_config': {},
-            },
-        }
-        self.config = {
-            'type': '',
-            'zone': '',
-            'confidence': 0.5,
-        }
+    default_config = {
+        'type': '',
+        'zone': '',
+        'confidence': 0.5,
+    }
+    linked_states = {
+        'value': {
+            'default_config': {'datatype': 'number', 'quantity': 'temperature', 'unit': '°C'},
+            'fixed_config': {},
+        },
+    }
 
 core.components.register(Zonetemperaturesensor)
 
@@ -161,21 +157,21 @@ class Window(core.component.Component):
     
     """
 
-    def initialize(self):
-        self.states = {
-            'solargain': {
-                'default_config': {'type': 'number', 'quantity': 'heat flow rate', 'unit': 'W', 'description':'Solar heat flow through the window'},
-                'fixed_config': {},
-            },
-        }
-        self.config = {
-            'type': '',
-            'area': 1,
-            'azimuth': 0,
-            'tilt': 90,
-            'transmittance': 0.8,
-            'zone': '',
-        }
+    default_config = {
+        'type': '',
+        'area': 1,
+        'azimuth': 0,
+        'tilt': 90,
+        'transmittance': 0.8,
+
+        'zone': '',
+    }
+    linked_states = {
+        'solargain': {
+            'default_config': {'datatype': 'number', 'quantity': 'heat flow rate', 'unit': 'W', 'description':'Solar heat flow through the window'},
+            'fixed_config': {},
+        },
+    }
 
     def calculate_solargain(self,utcdatetime=None,I_direct=None,I_diffuse=None,solar_azimuth=None,solar_altitude=None,shading_relativeposition=None):
         """
@@ -251,34 +247,33 @@ class Shading(core.component.Component):
     a class implementing a window shading
     
     """
-    
-    def initialize(self):
-        self.states = {
-            'position': {
-                'default_config': {},
-                'fixed_config': {},
-            },
-            'move': {
-                'default_config': {},
-                'fixed_config': {},
-            },
-            'stop': {
-                'default_config': {},
-                'fixed_config': {},
-            },
-            'auto': {
-                'default_config': {},
-                'fixed_config': {},
-            },
-        }
-        self.config = {
-            'type': '',
-            'closed_transmittance': 0.3,
-            'open_transmittance': 1.0,
-            'closed_position': 1.0,
-            'open_position': 0.0,
-            'window': '',
-        }
+    default_config = {
+        'type': '',
+        'closed_transmittance': 0.3,
+        'open_transmittance': 1.0,
+        'closed_position': 1.0,
+        'open_position': 0.0,
+        'window': '',
+    }
+    linked_states = {
+        'position': {
+            'default_config': {'datatype': 'number'},
+            'fixed_config': {},
+        },
+        'position_max': {
+            'default_config': {'datatype': 'number'},
+            'fixed_config': {},
+        },
+        'position_min': {
+            'default_config': {'datatype': 'number'},
+            'fixed_config': {},
+        },
+        'auto': {
+            'default_config': {'datatype': 'number'},
+            'fixed_config': {},
+        },
+    }
+
 
     def calculate_relative_position(self,utcdatetime=None,position=None):
         """
@@ -316,19 +311,18 @@ class Light(core.component.Component):
     a class implementing an on/off light
     
     """
+    default_config = {
+        'type': '',
+        'power': '',
+        'zone': '',
+    }
+    linked_states = {
+        'value': {
+            'default_config': {},
+            'fixed_config': {},
+        },
+    }
 
-    def initialize(self):
-        self.states = {
-            'value': {
-                'default_config': {},
-                'fixed_config': {},
-            },
-        }
-        self.config = {
-            'type': '',
-            'power': '',
-            'zone': '',
-        }
 
 core.components.register(Light)
 
@@ -338,8 +332,7 @@ class Dimminglight(Light):
     a class implementing an dimmable light
     
     """
-    def initialize(self):
-        super(Dimminglight,self).initialize()
+    pass
 
 core.components.register(Dimminglight)
 
@@ -350,22 +343,21 @@ class Heatgenerationsystem(core.component.Component):
     a class implementing a modulating heating system.
     
     """
+    default_config = {
+        'type': '',
+        'power': 10000.,
+    }
+    linked_states = {
+        'power': {
+            'default_config': {'datatype': 'number'},
+            'fixed_config': {},
+        },
+        'power_setpoint': {
+            'default_config': {'datatype': 'number'},
+            'fixed_config': {},
+        },
+    }
 
-    def initialize(self):
-        self.states = {
-            'power': {
-                'default_config': {},
-                'fixed_config': {},
-            },
-            'power_setpoint': {
-                'default_config': {},
-                'fixed_config': {},
-            },
-        }
-        self.config = {
-            'type': '',
-            'power': 10000.,
-        }
 
     def calculate_power(self,utcdatetime=None):
 
@@ -377,17 +369,6 @@ class Heatgenerationsystem(core.component.Component):
 
 core.components.register(Heatgenerationsystem)
 
-
-class ControlVar(object):
-    """
-    A class to define variables used in the optimization
-    """
-    def __init__(self,component,domain=None,bounds=None,initialize=None,state=None):
-        self.component = component
-        self.domain=domain
-        self.bounds=bounds
-        self.initialize = initialize
-        self.state = state
 
 
 class Heatpump(Heatgenerationsystem):
@@ -425,24 +406,24 @@ class Heatemissionsystem(core.component.Component):
     
     """
 
-    def initialize(self):
-        self.states = {
-            'power': {
-                'default_config': {},
-                'fixed_config': {},
-            },
-            'valve_position': {
-                'default_config': {},
-                'fixed_config': {},
-            },
-        }
-        self.config = {
-            'type': '',
-            'heatgenerationsystem': '',
-            'zone': '',
-            'closed_position': 0.0,
-            'open_position': 1.0,
-        }
+    default_config = {
+        'type': '',
+        'heatgenerationsystem': '',
+        'zone': '',
+        'closed_position': 0.0,
+        'open_position': 1.0,
+    }
+    linked_states = {
+        'power': {
+            'default_config': {'datatype': 'number'},
+            'fixed_config': {},
+        },
+        'valve_position': {
+            'default_config': {'datatype': 'number'},
+            'fixed_config': {},
+        },
+    }
+
 
     def calculate_power(self,utcdatetime=None):
         parallelsystems = core.components.find(type='heatemissionsystem',heatgenerationsystem=self.config['heatgenerationsystem'])

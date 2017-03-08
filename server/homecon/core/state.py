@@ -13,12 +13,141 @@ import numpy as np
 from . import database
 from . import event
 
+class BaseObject(object):
+    """
+    A base class for objects identified by a path with a config attribute which
+    are backed by the database
 
-class BaseState(object):
+
+    """
+
+    db_table = database.Table(database.db,'objects',[
+        {'name':'path',   'type':'char(255)',  'null': '',  'default':'',  'unique':'UNIQUE'},
+        {'name':'config', 'type':'char(511)',  'null': '',  'default':'',  'unique':''},
+    ])
+
+    container = {}
+
+    def __new__(cls,path,config=None,db_entry=None):
+        if path in cls.container:
+            return None
+        else:
+            return super(BaseObject, cls).__new__(cls)
+
+
+    def __init__(self,path,config=None,db_entry=None):
+        """
+        Parameters
+        ----------
+        path : string
+            the item identifier relations between states (parent - child) can be
+            indicated with dots
+
+        config : dict
+            dictionary configuring the state
+
+        db_entry : dict
+            if the state was loaded from the database, the database entry must
+            be supplied as a dictionary with `config` and `value` keys
+
+        """
+
+        self._path = path
+
+        if db_entry is None:
+
+            # check if the path allready exists in the database
+            result = self.db_table.GET(path=self._path)
+            if len(result) == 0:
+                self.config = self._check_config(config)
+
+                # post to the database
+                self.db_table.POST(path=self._path,config=json.dumps(self._config))
+
+                # get the id
+                result = self.db_table.GET(path=self._path)
+                self._id = result[0]['id']
+            else:
+                # create the db_entry
+                db_entry = result[0]
+
+
+        if not db_entry is None:
+            # update the config from the database
+            jsonconfig = db_entry['config']
+            if not jsonconfig is None:
+                config = json.loads(jsonconfig)
+            else:
+                config = None
+
+            self.config = self._check_config(config)
+
+            # add an id value
+            self._id = db_entry['id']
+
+
+        # add self to container
+        self.container[self._path] = self
+
+
+    def delete(self):
+
+        self.db_table.DELETE(path=self._path)
+
+        # remove the object from the local reference
+        del self.container[self._path]
+
+
+    @property
+    def id(self):
+        return self._id
+
+    @property
+    def path(self):
+        return self._path
+
+    @property
+    def config(self):
+        return self._config
+
+    @config.setter
+    def config(self, config):
+        config = self._check_config(config)
+        self.db_table.PUT(config=json.dumps(config), where='path=\'{}\''.format(self._path))
+        self._config=config
+
+    def set_config(self,key,value):
+        """
+        sets a single key, value pair to the config dictionary and update the database
+        
+        """
+        config = self._config
+        config[key] = value
+        config = self._check_config(config)
+        self.config = config
+
+
+    def _check_config(self,config):
+        """
+        Checks the config for required keys
+
+        """
+
+        if config is None:
+            config = {}
+
+        return config
+
+
+    def __repr__(self):
+        return '<BaseObject {}>'.format(self._path)
+
+
+
+class BaseState(BaseObject):
     """
     A base class for objects identified by a path with a config and a value
     attribute which are backed by the database
-
 
 
     Redefinable attributes
@@ -45,7 +174,7 @@ class BaseState(object):
         if path in cls.container:
             return None
         else:
-            return super(BaseState, cls).__new__(cls)
+            return super(BaseState, cls).__new__(cls,path,config=config,db_entry=db_entry)
 
 
     def __init__(self,path,config=None,value=None,db_entry=None):
@@ -63,45 +192,17 @@ class BaseState(object):
         config : dict
             dictionary configuring the state
         
-        component : str
-            if the state belongs to a component, the path of the components can 
-            be passes
         """
 
         self._loop = asyncio.get_event_loop()
-        self._path = path
 
-        if db_entry is None:
-
-            # check if the path allready exists in the database
-            result = self.db_table.GET(path=self._path)
-            if len(result) == 0:
-                self._config = self._check_config(config)
-                self._value = self._check_value(value)
-
-                # post to the database
-                self.db_table.POST(path=self._path,config=json.dumps(self._config),value=json.dumps(self._value))
-
-                # get the id
-                result = self.db_table.GET(path=self._path)
-                self._id = result[0]['id']
-            else:
-                # create the db_entry
-                db_entry = result[0]
-
+        super().__init__(path,config=config,db_entry=db_entry)
 
         if not db_entry is None:
-            # update the config from the database
-            jsonconfig = db_entry['config']
-            if not jsonconfig is None:
-                config = json.loads(jsonconfig)
-            else:
-                config = None
+            # set the value from the db_entry
+            if 'value' in db_entry:
+                jsonvalue = db_entry['value']
 
-            self._config = self._check_config(config)
-
-            # update the value from the database
-            jsonvalue = db_entry['value']
             if not jsonvalue is None:
                 value = json.loads(jsonvalue)
 
@@ -113,14 +214,11 @@ class BaseState(object):
             else:
                 value = None
 
-            self._value = self._check_value(value)
+        self._value = self._check_value(value)
 
-            # add an id value
-            self._id = db_entry['id']
+        # update the value in the database
+        self.db_table.PUT(value=json.dumps(self._value), where='path=\'{}\''.format(self._path))
 
-
-        # add self to _sice
-        self.container[self._path] = self
 
     def fire_changed(self,value,oldvalue,source):
         """
@@ -200,14 +298,6 @@ class BaseState(object):
         """
         return self._value
 
-    def delete(self):
-
-        self.db_table.DELETE(path=self._path)
-
-        # remove the object from the local reference
-        del self.container[self._path]
-
-
 
     def serialize(self):
         """
@@ -224,12 +314,6 @@ class BaseState(object):
         return data
 
 
-
-
-    @property
-    def id(self):
-        return self._id
-
     @property
     def value(self):
         return self._value
@@ -237,29 +321,6 @@ class BaseState(object):
     @value.setter
     def value(self, value):
         self.set(value)
-
-    @property
-    def path(self):
-        return self._path
-
-    @property
-    def config(self):
-        return self._config
-
-    @config.setter
-    def config(self, config):
-        config = self._check_config(config)
-        self.db_table.PUT(config=json.dumps(config), where='path=\'{}\''.format(self._path))
-        self._config=config
-
-    def set_config(self,key,value):
-        """
-        sets a single key, value pair to the config dictionary and update the database
-        
-        """
-        config = self._config
-        config[key] = value
-        self.config = config
 
     @property
     def parent(self):
@@ -486,7 +547,14 @@ class States(object):
         self._states = State.container
         self._db_states = State.db_table
 
-        # get all states from the database
+        self.load()
+
+
+    def load(self):
+        """
+        Loads all states from the database
+
+        """
         result = self._db_states.GET()
         for db_entry in result:
             self.add(db_entry['path'],db_entry=db_entry)
