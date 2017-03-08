@@ -32,29 +32,22 @@ class Knx(core.plugin.Plugin):
     async def connect(self):
 
         async def callback(msg):
-            print('*'*100)
-            print(knxpy.util.decode_ga(msg.dst_addr))
-            print(msg.data)
-
             states = self.get_states_ga_read(ga=knxpy.util.decode_ga(msg.dst_addr))
-            print(states)
-
             for state in states:
                 knx_dpt = None
                 if 'knx_dpt' in state.config:
                     knx_dpt = state.config['knx_dpt']
+                    data = knxpy.util.decode_dpt(msg.data,str(knx_dpt))
 
-                data = knxpy.util.decode_dpt(msg.data,knx_dpt)
-                print(data)
+                    state.set(data,source=self)
 
-        self.callback = callback
 
         if not core.states['knx/settings/interface/ip'].value is None and not core.states['knx/settings/interface/port'].value is None:
             ip = core.states['knx/settings/interface/ip'].value
             port = int(core.states['knx/settings/interface/port'].value)
             try:
-                tunnel = knxpy.asyncip.KNXIPTunnel(ip,port,loop=self._loop,callback=callback)
-                await tunnel.connect()  # FIXME if a wrong address is suppied, connect freezes
+                self.tunnel = knxpy.asyncip.KNXIPTunnel(ip,port,loop=self._loop,callback=callback)
+                await self.tunnel.connect()  # FIXME if a wrong address is suppied, connect freezes
 
                 self.connected = True
                 logging.debug('Connected to a KNX interface at {}'.format(ip))
@@ -123,8 +116,11 @@ class Knx(core.plugin.Plugin):
         if state.path == 'knx/settings/interface/ip' or state.path == 'knx/settings/interface/port':
             self.connect()
         
-        elif 'knx_ga' in state.config:
-            logging.debug('{} changed, write {} to knx group address: {}'.format(state.path,state.value,state.config['knx_ga']))
+
+        elif 'knx_ga_write' in state.config and 'knx_dpt' in state.config:
+            if not event.source == self:
+                self.tunnel.group_write(str(state.config['knx_ga_write']),state.value,str(state.config['knx_dpt']))
+                logging.debug('{} changed, written {} to knx group address: {}'.format(state.path,state.value,state.config['knx_ga_write']))
         
 
 
