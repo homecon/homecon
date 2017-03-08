@@ -321,12 +321,12 @@ class Plugin(object):
         self._loop = asyncio.get_event_loop()
         self.config_keys = []
 
-        self.get_listeners()
+        self._get_listeners()
 
         self.initialize()
 
 
-    def get_listeners(self):
+    def _get_listeners(self):
         self.listeners = {}
         for method in dir(self):
             if method.startswith('listen_'):
@@ -392,48 +392,25 @@ class Plugin(object):
             the source of the event
             
         """
-        """
-        if source==None:
 
-            source = self
-
-
-
-        event = events.Event(event_type,data,source,client)
-
-
-
-        async def do_fire(event):
-
-            await self._queue.put(event)
-
-
-
-
-
-        def do_create_task():
-
-            self._loop.create_task(do_fire(event))
-
-
-
-        self._loop.call_soon_threadsafe(do_create_task)
-
-
-        """
         if source==None:
             source = self
-
 
         event.fire(event_type,data,source,client)
 
 
+    def stop(self):
+        """
+        Base method to stop the plugin
+
+        Called when a plugin is deactivated
+        """
+        pass
+
+
     def _listen(self,event):
         """
-        Base listener method called when an event is taken from the que
-        
-        checks whether this plugin is the target or if there is no target and
-        then calls the code:`listen` method if so
+        Base listener method called when an event is taken from the queue
         
         Parameters
         ----------

@@ -16,6 +16,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="../../bower_components/iron-icons/iron-icons.html">
 <link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout-classes.html">
 
+<link rel="import" href="../config-utils-behavior.html">
 <link rel="import" href="../homecon-web-socket-object.html">
 <link rel="import" href="../homecon-web-socket-sender.html">
 <link rel="import" href="../homecon-edit-dialog.html">
@@ -51,14 +52,22 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             .expandIcon{
                 width: 30px;
             }
+            .expandIcon iron-icon{
+                cursor: pointer;
+            }
             .states{
                 padding-left: 50px;
             }
             h2{
-                color: var(--primary-text-color);
                 font-size: 16px;
-                font-weight: 500;
                 margin-bottom: 0px;
+            }
+            homecon-edit-dialog h2{
+                margin-bottom: 0px;
+            }
+            homecon-edit-dialog h3{
+                margin-bottom: 0px;
+                margin-top: 20px;
             }
         </style>
 
@@ -80,7 +89,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                             <template is="dom-repeat" items="{{_componentStates(component.states,statesObject)}}" as="state">
                                 <div class="state horizontal layout" on-tap="editStateDialog">
                                     <div class="flex-3">{{state.path}}</div>
-                                    <div class="flex">{{_configValue(state.config,'label')}}</div>
+                                    <div class="flex">{{state.config.label}}</div>
                                 </div>
                             </template>
                         </iron-collapse>
@@ -98,7 +107,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 <template is="dom-repeat" items="{{noComponentStates}}" as="state">
                     <div class="state horizontal layout">
                         <div class="flex-3" on-tap="editStateDialog">{{state.path}}</div>
-                        <div class="flex">{{_configValue(state.config,'label')}}</div>
+                        <div class="flex">{{state.config.label}}</div>
                     </div>
                 </template>
 
@@ -124,7 +133,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         <homecon-edit-dialog id="editComponentDialog" on-save="editComponent">
             <h2>{{newPath}}</h2>
 
-            <template is="dom-repeat" items="{{newConfig}}" as="property">
+            <template is="dom-repeat" items="{{newComponentConfig}}" as="property">
                 <paper-input label="{{property.key}}: " value="{{property.value}}"></paper-input>
             </template>
 
@@ -135,11 +144,36 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
         <homecon-edit-dialog id="editStateDialog" on-save="editState">
             <h2>{{newPath}}</h2>
-            <template is="dom-repeat" items="{{newConfig}}">
-                <template is="dom-if" if="{{_showStateConfigKey(item.key)}}">
-                    <paper-input label="{{item.key}}" value="{{item.value}}"></paper-input>
-                </template>
-            </template>
+
+            <h3>General</h3>
+            <paper-input label="Label" value="{{newStateConfig.label}}"></paper-input>
+            <paper-input label="Description" value="{{newStateConfig.description}}"></paper-input>
+            <paper-input label="Quantity" value="{{newStateConfig.quantity}}"></paper-input>
+            <paper-input label="Unit" value="{{newStateConfig.unit}}"></paper-input>
+
+            <paper-dropdown-menu label="Data type">
+                <paper-menu class="dropdown-content" attr-for-selected="value" selected="{{newStateConfig.datatype}}">
+                    <paper-item value="boolean">boolean</paper-item>
+                    <paper-item value="number">number</paper-item>
+                    <paper-item value="string">string</paper-item>
+                    <paper-item value="list">list</paper-item>
+                    <paper-item value="dict">dictionary</paper-item>
+                </paper-menu>
+            </paper-dropdown-menu>
+
+            <paper-toggle-button checked="{{newStateConfig.log}}">Log</paper-toggle-button>
+
+            <h3>Permissions</h3>
+            <paper-input label="Read groups" value="{{newStateConfig.readgroups}}"></paper-input>
+            <paper-input label="Read users" value="{{newStateConfig.readusers}}"></paper-input>
+            <paper-input label="Write groups" value="{{newStateConfig.writegroups}}"></paper-input>
+            <paper-input label="Write users" value="{{newStateConfig.writeusers}}"></paper-input>
+
+
+
+            <!--<template is="dom-repeat" items="{{newConfig}}" filter="{{_showStateConfigKey(item.key)}}">
+                <paper-input label="{{item.key}}" value="{{item.value}}"></paper-input>
+            </template>-->
         </homecon-edit-dialog>
 
     </template>
@@ -147,6 +181,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     <script>
         Polymer({
             is: 'components-settings',
+
+            behaviors: [configUtilsBehavior],
 
             properties: {
             },
@@ -170,36 +206,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 this.states = window.app.states;
             },
 
-            _configToNewConfig: function(config){
-                newConfig = []
-                config.forEach(function(property){
-                    value = property.value;
-                    if(typeof value != 'string'){
-                        value = JSON.stringify(value)
-                    }
-                    newConfig.push({'key':property.key,'value':value})
-                });
-                return newConfig
-            },
-
-            _newConfigToConfig: function(newconfig){
-                var config = {};
-
-                newconfig.forEach(function(property){
-                    if(property.value != ''){
-                        try{
-                            var value = JSON.parse(property.value);
-                        }
-                        catch(e){
-                            var value = property.value;
-                        }
-                        config[property.key] = value;
-                    }
-                });
-
-                return config;
-            },
-
             // component actions
             addComponentDialog: function(e){
 
@@ -216,13 +222,13 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             editComponentDialog: function(e){
                 var component = e.model.__data__.component;
                 this.newPath = component.path;
-                this.newConfig = this._configToNewConfig(component.config);
+                this.newComponentConfig = this._configToNewConfigArray(component.config);
                 this.$.editComponentDialog.open()
             },
 
             editComponent: function(e){
                 this.$.editComponentDialog.close();
-                config = this._newConfigToConfig(this.newConfig)
+                config = this._newConfigArrayToConfig(this.newComponentConfig)
                 this.$.websocket.send({'event':'edit_component','path':this.newPath,'config':config});
             },
 
@@ -240,17 +246,17 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             editStateDialog: function(e){
                 var state = e.model.__data__.state;
                 this.newPath = state.path;
-                this.newConfig = this._configToNewConfig(state.config);
+                this.newStateConfig = this._configToNewConfig(state.config);
                 this.$.editStateDialog.open()
             },
 
             editState: function(e){
                 this.$.editStateDialog.close();
-                config = this._newConfigToConfig(this.newConfig)
+                config = this._newConfigToConfig(this.newStateConfig)
                 this.$.websocket.send({'event':'edit_state','path':this.newPath,'config':config});
             },
 
-
+            // private
             _statesChanged: function(change){
                 var statesObject = {};
                 var noComponentStates = [];
@@ -258,15 +264,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 for(var i=0; i<states.length; i++){
                     statesObject[states[i].path] = states[i];
 
-                    var noComponent = true
-                    for(var j=0; j<states[i].config.length; j++){
-                        if(states[i].config[j].key == 'component'){
-                            noComponent = false
-                            break;
-                        }
-                    }
-                    if(noComponent){
-                       noComponentStates.push(states[i]);
+                    if(!('component' in states[i].config)){
+                        noComponentStates.push(states[i]);
                     }
                 }
                 this.statesObject = statesObject;
@@ -315,21 +314,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             },
 
             _showStateConfigKey: function(key){
-                if( ['component'].indexOf(key)>-1 ){
-                    return false;
-                }
-                else{
+                if( ['description','label','log','quantity'].indexOf(key)>-1 ){
                     return true;
                 }
-            },
-
-            _configValue: function(config,key){
-                for(var i=0; i<config.length; i++){
-                    if( config[i].key == key ){
-                        return config[i].value;
-                    }
+                else{
+                    return false;
                 }
-                return undefined;
             },
 
         });

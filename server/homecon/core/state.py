@@ -383,8 +383,8 @@ class State(BaseState):
         """
         config = super(State,self)._check_config(config)
 
-        if 'type' not in config:
-            config['type'] = ''
+        if 'datatype' not in config:
+            config['datatype'] = ''
         if 'quantity' not in config:
             config['quantity'] = ''
         if 'unit' not in config:

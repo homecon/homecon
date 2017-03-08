@@ -79,7 +79,7 @@ class States(core.plugin.Plugin):
         stateslist = []
         for state in core.states.values():
             if not 'private' in state.config or not state.config['private']:
-                stateslist.append({'path':state.path,'config':sorted([{'key':key,'value':val} for key,val in state.config.items()],key=lambda x:x['key'])})
+                stateslist.append({'path':state.path,'config':state.config})
 
         newlist = sorted(stateslist, key=lambda k: k['path'])
 
