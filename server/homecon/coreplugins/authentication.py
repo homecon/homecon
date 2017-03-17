@@ -114,8 +114,8 @@ class Authentication(core.plugin.Plugin):
             self.user_groups[user] = []
 
         for gu in self._db_group_users.GET():
-            self.group_users[gu['group']].append(gu['user'])
-            self.user_groups[gu['user']].append(gu['group'])
+            self.group_users[gu['group']].append(self.users[gu['user']])
+            self.user_groups[gu['user']].append(self.groups[gu['group']])
             
 
         # create admin and default groups
@@ -277,8 +277,9 @@ class Authentication(core.plugin.Plugin):
 
             groupids = [group['id'] for group in self.user_groups[user['id']]]
             payload = {'userid': user['id'], 'groupids': groupids, 'username':user['username'], 'permission':self.user_permission(user['id']), 'exp':exp, 'iat':iat}
+            token = jwt_encode(payload)
 
-            return jwt_encode(payload)
+            return token
 
         return False
 
