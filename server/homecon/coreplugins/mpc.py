@@ -73,6 +73,11 @@ class Mpc(core.plugin.Plugin):
         model.P_el_tot= pyomo.Var(model.i,domain=pyomo.NonNegativeReals, initialize=0)
         model.P_ng_tot= pyomo.Var(model.i,domain=pyomo.NonNegativeReals, initialize=0)
 
+
+        # load constraints and variable from plugins
+        for plugin in core.plugins:
+            plugin.prepare_ocp_model(model)
+
         # load constraints and variables from components
         for component in core.components:
             component.prepare_ocp_model(model)
@@ -92,7 +97,12 @@ class Mpc(core.plugin.Plugin):
         results = solver.solve(model, tee=True)  # FIXME should be done in a separate thread to not stop the event loop
 
 
-        # pass control schedules to components
+        # pass control program to plugins
+        for plugin in core.plugins:
+            plugin.postprocess_ocp_model(model)
+
+
+        # pass control program to components
         for component in core.components:
             component.postprocess_ocp_model(model)
 

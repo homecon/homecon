@@ -10,7 +10,6 @@ import logging
 
 from . import core
 from . import util
-#from . import coreplugins
 from . import plugins
 
 
@@ -54,7 +53,6 @@ class HomeCon(object):
 
         self.loglevel = loglevel
         self.printlog = printlog
-        self.demo = demo
 
         ########################################################################
         # set logging properties
@@ -77,6 +75,7 @@ class HomeCon(object):
         ########################################################################
         # demo mode
         ########################################################################
+        """
         if self.demo:
             logging.info('Demo mode')
             # clear the databases
@@ -121,7 +120,7 @@ class HomeCon(object):
 
             core.component.components = tempcomponents
             core.components = core.component.components
-
+        """
 
         ########################################################################
         # get the event loop and queue

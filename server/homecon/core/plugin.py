@@ -63,7 +63,6 @@ class Plugins(object):
         classlist.append( (self._import('measurements',         'coreplugins'),True) )
         classlist.append( (self._import('weather',              'coreplugins'),True) )
         classlist.append( (self._import('building',             'coreplugins'),True) )
-        #classlist.append( (self._import('systemidentification', 'coreplugins'),True) )
 
 
 
@@ -404,6 +403,24 @@ class Plugin(object):
         Base method to stop the plugin
 
         Called when a plugin is deactivated
+        """
+        pass
+
+
+    def prepare_ocp_model(self,model):
+        """
+        Base method to ammend the ocp model
+
+        Called before the ocp is solved
+        """
+        pass
+
+
+    def postprocess_ocp_model(self,model):
+        """
+        Base method to retrieve data from the ocp solution
+
+        Called after the ocp is solved
         """
         pass
 

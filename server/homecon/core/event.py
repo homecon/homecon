@@ -26,7 +26,11 @@ class Event(object):
             if key in newdata:
                 newdata[key] = '***'
 
-        return 'Event: {}, data: {}, source: {}, client: {}'.format(self.type,newdata.__repr__(),self.source.__class__.__name__,self.client.__repr__())
+        printdata = newdata.__repr__()
+        if len(printdata) > 85:
+            printdata = printdata[:40] + ' ... ' +printdata[-40:]
+
+        return 'Event: {}, data: {}, source: {}, client: {}'.format(self.type,printdata,self.source.__class__.__name__,self.client.__repr__())
 
 
 

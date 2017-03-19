@@ -226,27 +226,34 @@ class BaseState(BaseObject):
         pass
 
 
-    def set(self,value,source=None):
+    def set(self,value,source=None,async=True):
         """
         Sets the value by creating a task to set the value
 
         Parameters
         ----------
         value : 
-            the new value
+            The new value
 
         source : class
-            a class, the source setting the value, if not supplied it is 
+            A class, the source setting the value, if not supplied it is 
             determined by ispection
+
+        async : boolean, optional
+            If True (default) sets the value async and fires a state_changed
+            event.
 
         """
 
-        if source is None:
-            # get the source from inspection
-            stack = inspect.stack()
-            source = stack[1][0].f_locals["self"].__class__
+        if async:
+            if source is None:
+                # get the source from inspection
+                stack = inspect.stack()
+                source = stack[1][0].f_locals["self"].__class__
 
-        self._loop.create_task(self.set_async(value,source=source))
+            self._loop.create_task(self.set_async(value,source=source))
+        else:
+            self._set_value(value)
 
 
     async def set_async(self,value,source=None):
@@ -269,6 +276,33 @@ class BaseState(BaseObject):
 
         """
 
+
+        changed,oldvalue = self._set_value(value)
+
+
+        # if the new and old value are different update and put in the database
+        if changed:
+
+            # check the source
+            if source is None:
+                # get the source from inspection
+                stack = inspect.stack()
+                source = stack[1][0].f_locals["self"].__class__
+
+            self.fire_changed(self._value,oldvalue,source)
+            await asyncio.sleep(0.01) # avoid flooding asyncio
+
+
+    def _set_value(self,value):
+        """
+
+        Parameters
+        ----------
+        value : 
+            the new value
+
+        """
+
         oldvalue = copy.copy(self._value)
 
         # make sure value is valid
@@ -281,14 +315,9 @@ class BaseState(BaseObject):
             # update the value in the database
             self.db_table.PUT(value=json.dumps(value), where='path=\'{}\''.format(self._path))
 
-            # check the source
-            if source is None:
-                # get the source from inspection
-                stack = inspect.stack()
-                source = stack[1][0].f_locals["self"].__class__
+            return True,oldvalue
 
-            self.fire_changed(self._value,oldvalue,source)
-            await asyncio.sleep(0.01) # avoid flooding asyncio
+        return False,None
 
 
     def get(self):

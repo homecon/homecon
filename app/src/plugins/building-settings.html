@@ -12,7 +12,7 @@
 <link rel="import" href="../widgets/highcharts-behavior.html">
 <link rel="import" href="../widgets/homecon-widget-button.html">
 
-<dom-module id="systemidentification-settings">
+<dom-module id="building-settings">
 
     <template>
 
@@ -34,9 +34,9 @@
         </style>
 
 
-        <homecon-web-socket-object id="websocketModelsList" event="list_models" path="" data="{{models}}" send-on-authenticated></homecon-web-socket-object>
-        <homecon-web-socket-object id="websocketModel" event="state" path="systemidentification/model" data="{{model}}" auto></homecon-web-socket-object>
-        <homecon-web-socket-object id="websocketCrossvalidationResult" event="state" path="systemidentification/validation/result" data="{{crossvalidationResult}}" on-change="_crossvalidationResultChanged" send-on-authenticated></homecon-web-socket-object>
+        <homecon-web-socket-object id="websocketModelsList" event="building_list_models" path="" data="{{models}}" send-on-authenticated></homecon-web-socket-object>
+        <homecon-web-socket-object id="websocketModel" event="state" path="building/model" data="{{model}}" auto></homecon-web-socket-object>
+        <homecon-web-socket-object id="websocketCrossvalidationResult" event="state" path="building/validation/result" data="{{crossvalidationResult}}" on-change="_crossvalidationResultChanged" send-on-authenticated></homecon-web-socket-object>
         
         <paper-dropdown-menu class="model-select" label="Model">
             <paper-menu class="dropdown-content" attr-for-selected="value" selected="{{model}}">
@@ -65,7 +65,7 @@
 
     <script>
         Polymer({
-            is: 'systemidentification-settings',
+            is: 'building-settings',
             behaviors: [highchartsBehavior],
             properties: {
             },
@@ -88,8 +88,8 @@
                     that._resizeChart(that.TChart,200);
                 });
 
-                this.identifyButtonConfig = {"label":"Identify","event":"sytemidentification_identify","data":"{}"}
-                this.validateButtonConfig = {"label":"Validate","event":"sytemidentification_validate","data":"{}"}
+                this.identifyButtonConfig = {"label":"Identify","event":"building_identify","data":"{}"}
+                this.validateButtonConfig = {"label":"Validate","event":"building_validate","data":"{}"}
 
                 this.rmse = ''
                 this.maxError = ''
