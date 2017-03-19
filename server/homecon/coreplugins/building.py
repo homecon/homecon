@@ -73,8 +73,16 @@ class Zone(core.component.Component):
             'default_config': {'datatype': 'number', 'quantity': 'heat flow rate', 'unit': 'W', 'description':'Solar heat flow through all windows in the zone'},
             'fixed_config': {},
         },
+        'solargain_setpoint': {
+            'default_config': {'datatype': 'program', 'quantity': 'heat flow rate', 'unit': 'W', 'description':'Setpoint for solar heat flow through all windows in the zone'},
+            'fixed_config': {},
+        },
         'internalgain': {
             'default_config': {'datatype': 'number', 'quantity': 'heat flow rate', 'unit': 'W', 'description':'Internal heat flows to the zone'},
+            'fixed_config': {},
+        },
+        'internalgain_setpoint': {
+            'default_config': {'datatype': 'program', 'quantity': 'heat flow rate', 'unit': 'W', 'description':'Setpoint for internal heat flows to the zone'},
             'fixed_config': {},
         },
     }
@@ -163,8 +171,8 @@ class Window(core.component.Component):
         'azimuth': 0,
         'tilt': 90,
         'transmittance': 0.8,
-
         'zone': '',
+        'cost_visibility': 1.0,
     }
     linked_states = {
         'solargain': {
@@ -178,7 +186,6 @@ class Window(core.component.Component):
 
         """
 
-        # find shadings attached to this window
         shadings = core.components.find(type='shading', window=self.path)
 
         if shading_relativeposition is None:
@@ -187,8 +194,6 @@ class Window(core.component.Component):
         shading_transmittance = 1.0
         for shading,position in zip(shadings,shading_relativeposition):
             shading_transmittance = shading_transmittance*shading.calculate_transmittance(utcdatetime=utcdatetime,relativeposition=position)
-
-
 
 
 
@@ -249,14 +254,20 @@ class Shading(core.component.Component):
     """
     default_config = {
         'type': '',
-        'closed_transmittance': 0.3,
-        'open_transmittance': 1.0,
-        'closed_position': 1.0,
-        'open_position': 0.0,
+        'transmittance_closed': 0.3,
+        'transmittance_open': 1.0,
+        'position_closed': 1.0,
+        'position_open': 0.0,
         'window': '',
+        'override_duration': 180,
+        'cost_movement': 1.0,
     }
     linked_states = {
         'position': {
+            'default_config': {'datatype': 'number'},
+            'fixed_config': {},
+        },
+        'position_status': {
             'default_config': {'datatype': 'number'},
             'fixed_config': {},
         },
@@ -272,11 +283,17 @@ class Shading(core.component.Component):
             'default_config': {'datatype': 'number'},
             'fixed_config': {},
         },
+        'override': {
+            'default_config': {'datatype': 'number'},
+            'fixed_config': {},
+        },
     }
 
 
     def calculate_relative_position(self,utcdatetime=None,position=None):
         """
+        The relative position is defined so that 0.0 is completely open and 1.0
+        is completely closed.
         """
 
         if position is None:
@@ -288,7 +305,7 @@ class Shading(core.component.Component):
             else:
                 relativeposition = np.zeros(len(utcdatetime))
         else:
-            relativeposition = (position-self.config['open_position'])/(self.config['closed_position']-self.config['open_position'])
+            relativeposition = (position-self.config['position_open'])/(self.config['position_closed']-self.config['position_open'])
 
         return relativeposition
 
@@ -300,7 +317,7 @@ class Shading(core.component.Component):
         if relativeposition is None:
             relativeposition = self.calculate_relative_position(utcdatetime=utcdatetime,position=position)
 
-        return relativeposition*self.config['closed_transmittance'] + (1-relativeposition)*self.config['open_transmittance']
+        return relativeposition*self.config['transmittance_closed'] + (1-relativeposition)*self.config['transmittance_open']
 
 
 core.components.register(Shading)

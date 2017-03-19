@@ -121,8 +121,7 @@ class Websocket(object):
 
 
         for client in clients:
-
-            if self.check_readpermission(client,readusers=readusers,readgroups=readgroups):
+            if self.check_readpermission(client,readusers=readusers,readgroups=readgroups) or data['event'] == 'request_token':
                 asyncio.ensure_future( client.send(data) )
 
 
