@@ -115,7 +115,7 @@
                   backgroundColor: 'rgba(0, 0, 0, 0.85)',
                   style: {
                      color: '#F0F0F0'
-                  }
+                  },
                },
                plotOptions: {
                   series: {
@@ -276,8 +276,18 @@
                     },
                 },
                 tooltip: {
-                    headerFormat: '<b>{series.name}</b><br>',
-                    pointFormat: '{point.x:%e. %b}: {point.y:.2f}',
+                    //headerFormat: '<b>{series.name}</b><br>',
+                    //pointFormat: '{point.x:%e. %b}: {point.y:.2f}',
+                    dateTimeLabelFormats:{
+                         millisecond:"%A, %b %e, %H:%M:%S.%L",
+                         second:"%A, %b %e, %H:%M:%S",
+                         minute:"%A, %b %e, %H:%M",
+                         hour:"%A, %b %e, %H:%M",
+                         day:"%A, %b %e, %Y",
+                         week:"Week from %A, %b %e, %Y",
+                         month:"%B %Y",
+                         year:"%Y",
+                    },
                 },
 
                 /*plotOptions: {
