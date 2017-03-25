@@ -9,6 +9,7 @@ import asyncio
 import math
 import datetime
 import numpy as np
+import threading
 
 from . import database
 from . import event
@@ -53,6 +54,7 @@ class BaseObject(object):
         """
 
         self._path = path
+        self._thread = threading.current_thread()
 
         if db_entry is None:
 
@@ -228,7 +230,7 @@ class BaseState(BaseObject):
 
     def set(self,value,source=None,async=True):
         """
-        Sets the value by creating a task to set the value
+        Sets the value by creating a future to set the value
 
         Parameters
         ----------
@@ -251,23 +253,28 @@ class BaseState(BaseObject):
                 stack = inspect.stack()
                 source = stack[1][0].f_locals["self"].__class__
 
-            self._loop.create_task(self.set_async(value,source=source))
+            if threading.current_thread() == self._thread:
+                task = asyncio.ensure_future(self.set_async(value,source=source))
+
+            else:
+                task = asyncio.run_coroutine_threadsafe(self.set_async(value,source=source),self._loop)
+
         else:
             self._set_value(value)
 
 
     async def set_async(self,value,source=None):
         """
-        Sets the value async, should be awaited for
+        Sets the value async, must be awaited
 
         Parameters
         ----------
         value : 
-            the new value
+            The new value
 
         source : class
-            a class, the source setting the value, if not supplied it is 
-            determined by ispection
+            A class, the source setting the value, if not supplied it is 
+            determined by inspection
 
         Example
         -------
@@ -295,11 +302,17 @@ class BaseState(BaseObject):
 
     def _set_value(self,value):
         """
+        Sets the value of a state and writes the change to the database
 
         Parameters
         ----------
         value : 
-            the new value
+            The new value
+
+        Notes
+        -----
+        This method does not fire a changed event as it is intended for use when
+        the event loop is not running.
 
         """
 
@@ -493,14 +506,14 @@ class State(BaseState):
     def component(self):
         return self._component
 
-    def history(self,utcdatetime=None,interpolation='linear'):
+    def history(self,timestamp=None,interpolation='linear'):
         """
         return the history of a state
 
         Parameters
         ----------
-        utcdatetime : None or datetime.datetime or list of datetime.datetimes
-            time to return the history
+        timestamp : None or int or list of ints
+            unix timestamp to return the history
 
         interpolation : string
             type of interpolation, `linear` results in linear interpolation (default)
@@ -508,16 +521,15 @@ class State(BaseState):
  
         """
 
-        if utcdatetime is None:
+        if timestamp is None:
             return self.value
 
         else:
-            utcdatetime_ref = datetime.datetime(1970,1,1)
 
-            if hasattr(utcdatetime, "__len__"):
-                timestamps = [int( (t-utcdatetime_ref).total_seconds() ) for t in utcdatetime]
+            if hasattr(timestamp, "__len__"):
+                timestamps = timestamp
             else:
-                timestamps = [int( (utcdatetime-utcdatetime_ref).total_seconds() )]
+                timestamps = [timestamp]
 
             # retrieve data from the database
             result = self.db_history.GET(path=self.path,time__ge=timestamps[0]-3600,time__le=timestamps[-1]+3600)
@@ -549,7 +561,7 @@ class State(BaseState):
                     values = None
 
             # return an array or scalar depending on the input
-            if hasattr(utcdatetime, "__len__") or values is None:
+            if hasattr(timestamp, "__len__") or values is None:
                 return values
             else:
                 return values[0]

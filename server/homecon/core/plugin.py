@@ -218,7 +218,7 @@ class Plugins(object):
         pluginclassname = name.capitalize()
         if pluginclassname in dir(pluginmodule):
             pluginclass = getattr(pluginmodule, pluginclassname)
-
+        
         return pluginclass
 
 
@@ -407,9 +407,18 @@ class Plugin(object):
         pass
 
 
-    def prepare_ocp_model(self,model):
+    def create_ocp_model_variables(self,model):
         """
-        Base method to ammend the ocp model
+        Base method to create ocp model variables
+
+        Called before the ocp constraints are created
+        """
+        pass
+
+
+    def create_ocp_model_constraints(self,model):
+        """
+        Base method to create ocp model constraints
 
         Called before the ocp is solved
         """

@@ -62,18 +62,18 @@ def emulate_weather(initialdata,lookahead=0):
     longitude = core.states['settings/location/longitude'].value
     elevation = core.states['settings/location/elevation'].value
 
-    for i,t in enumerate(utcdatetime):
+    for i,ts in enumerate(timestamp):
         
 
-        solar_azimuth[i],solar_altitude[i] = util.weather.sunposition(latitude,longitude,elevation=elevation,utcdatetime=t)
-        I_direct_clearsky[i],I_diffuse_clearsky[i] = util.weather.clearskyirrradiance(solar_azimuth[i],solar_altitude[i],utcdatetime=t)
+        solar_azimuth[i],solar_altitude[i] = util.weather.sunposition(latitude,longitude,elevation=elevation,timestamp=ts)
+        I_direct_clearsky[i],I_diffuse_clearsky[i] = util.weather.clearskyirrradiance(solar_azimuth[i],solar_altitude[i],timestamp=ts)
 
         # random variation in cloud cover
         if i < len(timestamp)-1:
             delta_t = timestamp[i+1]-timestamp[i]
             cloudcover[i+1] = min(1.,max(0., cloudcover[i] + 0.0001*(2*np.random.random()-1)*delta_t ))
 
-        I_direct_cloudy[i],I_diffuse_cloudy[i] = util.weather.cloudyskyirrradiance(I_direct_clearsky[i],I_diffuse_clearsky[i],cloudcover[i],solar_azimuth[i],solar_altitude[i],utcdatetime=t)
+        I_direct_cloudy[i],I_diffuse_cloudy[i] = util.weather.cloudyskyirrradiance(I_direct_clearsky[i],I_diffuse_clearsky[i],cloudcover[i],solar_azimuth[i],solar_altitude[i],timestamp=ts)
         
         I_total_horizontal[i], I_direct_horizontal[i], I_diffuse_horizontal[i], I_ground_horizontal[i] = util.weather.incidentirradiance(I_direct_cloudy[i],I_diffuse_cloudy[i],solar_azimuth[i],solar_altitude[i],0,0)
 

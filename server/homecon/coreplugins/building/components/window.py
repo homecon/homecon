@@ -30,7 +30,7 @@ class Window(core.component.Component):
         },
     }
 
-    def calculate_solargain(self,utcdatetime=None,I_direct=None,I_diffuse=None,solar_azimuth=None,solar_altitude=None,shading_relativeposition=None):
+    def calculate_solargain(self,timestamp=None,I_direct=None,I_diffuse=None,solar_azimuth=None,solar_altitude=None,shading_relativeposition=None):
         """
 
         """
@@ -42,34 +42,34 @@ class Window(core.component.Component):
 
         shading_transmittance = 1.0
         for shading,position in zip(shadings,shading_relativeposition):
-            shading_transmittance = shading_transmittance*shading.calculate_transmittance(utcdatetime=utcdatetime,relativeposition=position)
+            shading_transmittance = shading_transmittance*shading.calculate_transmittance(timestamp=timestamp,relativeposition=position)
 
 
 
         # get inputs
         if I_direct is None:
-            if utcdatetime is None:
+            if timestamp is None:
                 I_direct = core.states['weather/irradiancedirect'].value
             else:
-                I_direct = core.states['weather/irradiancedirect'].history(utcdatetime)
+                I_direct = core.states['weather/irradiancedirect'].history(timestamp)
 
         if I_diffuse is None:
-            if utcdatetime is None:
+            if timestamp is None:
                 I_diffuse = core.states['weather/irradiancediffuse'].value
             else:
-                I_diffuse = core.states['weather/irradiancediffuse'].history(utcdatetime)
+                I_diffuse = core.states['weather/irradiancediffuse'].history(timestamp)
 
         if solar_azimuth is None:
-            if utcdatetime is None:
+            if timestamp is None:
                 solar_azimuth = core.states['weather/sun/azimuth'].value
             else:
-                solar_azimuth = core.states['weather/sun/azimuth'].history(utcdatetime)
+                solar_azimuth = core.states['weather/sun/azimuth'].history(timestamp)
 
         if solar_altitude is None:
-            if utcdatetime is None:
+            if timestamp is None:
                 solar_altitude = core.states['weather/sun/altitude'].value
             else:
-                solar_altitude = core.states['weather/sun/altitude'].history(utcdatetime)
+                solar_altitude = core.states['weather/sun/altitude'].history(timestamp)
 
 
         surface_azimuth = self.config['azimuth']
@@ -94,6 +94,7 @@ class Window(core.component.Component):
 
 
 core.components.register(Window)
+
 
 
 class Shading(core.component.Component):
@@ -139,32 +140,32 @@ class Shading(core.component.Component):
     }
 
 
-    def calculate_relative_position(self,utcdatetime=None,position=None):
+    def calculate_relative_position(self,timestamp=None,position=None):
         """
         The relative position is defined so that 0.0 is completely open and 1.0
         is completely closed.
         """
 
         if position is None:
-            position = self.states['position'].history(utcdatetime)
+            position = self.states['position'].history(timestamp)
 
         if position is None:
-            if utcdatetime is None:
+            if timestamp is None:
                 relativeposition = 0
             else:
-                relativeposition = np.zeros(len(utcdatetime))
+                relativeposition = np.zeros(len(timestamp))
         else:
             relativeposition = (position-self.config['position_open'])/(self.config['position_closed']-self.config['position_open'])
 
         return relativeposition
 
 
-    def calculate_transmittance(self,utcdatetime=None,relativeposition=None,position=None):
+    def calculate_transmittance(self,timestamp=None,relativeposition=None,position=None):
         """
         """
 
         if relativeposition is None:
-            relativeposition = self.calculate_relative_position(utcdatetime=utcdatetime,position=position)
+            relativeposition = self.calculate_relative_position(timestamp=timestamp,position=position)
 
         return relativeposition*self.config['transmittance_closed'] + (1-relativeposition)*self.config['transmittance_open']
 

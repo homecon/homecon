@@ -7,7 +7,7 @@ import ephem
 import numpy as np
 
 
-def sunposition(latitude,longitude,elevation=0,utcdatetime=None):
+def sunposition(latitude,longitude,elevation=0,timestamp=None):
     """
     Returns the sun azimuth and altitude at a certain time at the current
     location
@@ -23,8 +23,8 @@ def sunposition(latitude,longitude,elevation=0,utcdatetime=None):
     elevation : number
         the location elevation in m above sea level?
 
-    utcdatetime : datetime.datetime
-        the datetime when to compute the sun position
+    timestamp : int
+        the unix timestamp when to compute the sun position
 
     Returns
     -------
@@ -42,8 +42,10 @@ def sunposition(latitude,longitude,elevation=0,utcdatetime=None):
 
     """
 
-    if utcdatetime == None:
+    if timestamp == None:
         utcdatetime = datetime.datetime.utcnow()
+    else:
+        utcdatetime = datetime.datetime.utcfromtimestamp(timestamp)
 
     # create an ephem observer
     obs = ephem.Observer()
@@ -67,7 +69,7 @@ def sunposition(latitude,longitude,elevation=0,utcdatetime=None):
 
 
 
-def clearskyirrradiance(solar_azimuth,solar_altitude,utcdatetime=None):
+def clearskyirrradiance(solar_azimuth,solar_altitude,timestamp=None):
     """
     Compute the clear sky theoretical direct and diffuse solar irradiance
     at a certain time at the current location according to [1] results are
@@ -83,8 +85,8 @@ def clearskyirrradiance(solar_azimuth,solar_altitude,utcdatetime=None):
         sun altitude in degrees
         0deg is the horizon, 90deg is vertical
 
-    dayoftheyear : number
-        the day of the year
+    timestamp : int
+        the unix timestamp when to compute the sun position
 
     Returns
     -------
@@ -102,8 +104,10 @@ def clearskyirrradiance(solar_azimuth,solar_altitude,utcdatetime=None):
     """
 
     # day of the year
-    if utcdatetime is None:
+    if timestamp == None:
         utcdatetime = datetime.datetime.utcnow()
+    else:
+        utcdatetime = datetime.datetime.utcfromtimestamp(timestamp)
 
     # air mass between the observer and the sun
     if 6.07995 + np.radians(solar_altitude) > 0:
@@ -206,7 +210,7 @@ def incidentirradiance(I_direct,I_diffuse,solar_azimuth,solar_altitude,surface_a
 
 
 
-def cloudyskyirrradiance(I_direct_clearsky,I_diffuse_clearsky,cloudcover,solar_azimuth,solar_altitude,utcdatetime=None):
+def cloudyskyirrradiance(I_direct_clearsky,I_diffuse_clearsky,cloudcover,solar_azimuth,solar_altitude,timestamp=None):
     """
     Correction of the direct normal and diffuse horizontal irradiance using
     the the cloudcover fraction in accordance with [3] and [4].
@@ -223,8 +227,8 @@ def cloudyskyirrradiance(I_direct_clearsky,I_diffuse_clearsky,cloudcover,solar_a
     cloudcover : number
         fraction of the sky covered by clouds
 
-    utcdatetime : number
-        the datetime when to compute the irradiance
+    timestamp : int
+        the unix timestamp when to compute the sun position
 
     Returns
     -------
@@ -251,8 +255,11 @@ def cloudyskyirrradiance(I_direct_clearsky,I_diffuse_clearsky,cloudcover,solar_a
 
     if I_total_horizontal_clearsky > 0.1:
 
-        if utcdatetime == None:
+        if timestamp == None:
             utcdatetime = datetime.datetime.utcnow()
+        else:
+            utcdatetime = datetime.datetime.utcfromtimestamp(timestamp)
+
 
         # month of the year.
         month = float(utcdatetime.strftime('%m'))

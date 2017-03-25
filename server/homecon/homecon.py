@@ -72,55 +72,6 @@ class HomeCon(object):
         logging.info('Creating HomeCon object')
 
 
-        ########################################################################
-        # demo mode
-        ########################################################################
-        """
-        if self.demo:
-            logging.info('Demo mode')
-            # clear the databases
-            dbname = 'demo_homecon.db'
-            dbmeasurementsname = 'demo_homecon_measurements.db'
-
-            try:
-                os.remove(dbname)
-            except:
-                pass
-
-            try:
-                os.remove(dbmeasurementsname)
-            except:
-                pass
-
-
-            core.database.db = core.database.Database(database=dbname)
-            core.database.measurements_db = core.database.Database(database=dbmeasurementsname)
-            core.db = core.database.db
-            core.measurements_db = core.database.measurements_db
-
-            # update the database in states and components, this is pretty hacky
-            core.state.State.db_table = core.database.Table(core.database.db,'states',[
-                {'name':'path',   'type':'char(255)',  'null': '',  'default':'',  'unique':'UNIQUE'},
-                {'name':'config', 'type':'char(511)',  'null': '',  'default':'',  'unique':''},
-                {'name':'value',  'type':'char(255)',  'null': '',  'default':'',  'unique':''},
-            ])
-            core.state.State.db_history = core.database.Table(core.database.measurements_db,'measurements',[
-                {'name':'time',   'type':'INT',   'null': '',  'default':'',  'unique':''},
-                {'name':'path',   'type':'TEXT',  'null': '',  'default':'',  'unique':''},
-                {'name':'value',  'type':'TEXT',  'null': '',  'default':'',  'unique':''},
-            ])
-
-            core.state.states = core.state.States()
-            core.states = core.state.states
-            tempcomponents = core.component.Components()
-
-            # reregister components
-            for componenttype in core.components._component_types.values():
-                tempcomponents.register(componenttype)
-
-            core.component.components = tempcomponents
-            core.components = core.component.components
-        """
 
         ########################################################################
         # get the event loop and queue
@@ -131,6 +82,7 @@ class HomeCon(object):
             self._loop.set_debug(True)
 
         self._queue = core.event.queue #asyncio.Queue(loop=self._loop)
+
 
 
         ########################################################################

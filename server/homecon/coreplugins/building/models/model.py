@@ -11,7 +11,7 @@ class Buildingmodel(object):
 
     """
     def __init__(self):
-        print('Model')
+
         self.timestep = 15*60
         self.parameters = {}
         self.constraints = {}
@@ -19,7 +19,7 @@ class Buildingmodel(object):
         self.validation_model = None
 
 
-    def get_data(self,utcdatetime):
+    def get_data(self,timestamp):
         """
 
         """
@@ -27,7 +27,7 @@ class Buildingmodel(object):
         return {}
 
 
-    def get_results(self,validationinstance):
+    def get_result(self,model):
         """
 
         """
@@ -38,23 +38,21 @@ class Buildingmodel(object):
         return results
 
 
-    def _parse_data(self,utcdatetime,data):
+    def _parse_data(self,timestamp,data):
         """
         Prepare a data dictionary of pyomo
 
         """
 
         # add the timestamp to data
-        dt_ref = datetime.datetime(1970, 1, 1)
-        data['timestamp'] = [int((dt-dt_ref).total_seconds()) for dt in utcdatetime]
-
+        data['timestamp'] = timestamp
 
         pyomodata={None:{
-            'i':{None: range(len(utcdatetime))},
+            'i':{None: range(len(timestamp))},
         }}
 
         for key,val in data.items():
-            pyomodata[None][key] = {(i,): val[i] for i in range(len(utcdatetime))}
+            pyomodata[None][key] = {(i,): val[i] for i in range(len(timestamp))}
 
         # add the parameters
         for key,val in self.parameters.items():
@@ -72,10 +70,10 @@ class Buildingmodel(object):
         timestamp_end = int( (dt_end-dt_ref).total_seconds() )
         timestamp_ini = int( (dt_ini-dt_ref).total_seconds() )
 
-        utcdatetime = [datetime.datetime.utcfromtimestamp(ts) for ts in range(timestamp_ini,timestamp_end,self.timestep)]
+        timestamp = range(timestamp_ini,timestamp_end,self.timestep)
 
-        data = self.get_data(utcdatetime)
-        data = self._parse_data(utcdatetime,data)
+        data = self.get_data(timestamp)
+        data = self._parse_data(timestamp,data)
 
         # create the instance
         instance = self.identification_model.create_instance(data)
@@ -108,10 +106,10 @@ class Buildingmodel(object):
         timestamp_end = int( (dt_end-dt_ref).total_seconds() )
         timestamp_ini = int( (dt_ini-dt_ref).total_seconds() )
 
-        utcdatetime = [datetime.datetime.utcfromtimestamp(ts) for ts in range(timestamp_ini,timestamp_end,self.timestep)]
+        timestamp = range(timestamp_ini,timestamp_end,self.timestep)
 
-        data = self.get_data(utcdatetime)
-        data = self._parse_data(utcdatetime,data)
+        data = self.get_data(timestamp)
+        data = self._parse_data(timestamp,data)
 
 
         # create the instance
@@ -127,4 +125,10 @@ class Buildingmodel(object):
         return result
 
 
+    def preprocess_ocp_model(self,model):
+        pass
 
+
+    def postprocess_ocp_model(self,model):
+        pass
+    

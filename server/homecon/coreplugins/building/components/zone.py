@@ -3,6 +3,7 @@
 
 import logging
 import pyomo.environ as pyomo
+import numpy as np
 
 from .... import core
 
@@ -41,7 +42,7 @@ class Zone(core.component.Component):
         },
     }
 
-    def calculate_solargain(self,utcdatetime=None,I_direct=None,I_diffuse=None,solar_azimuth=None,solar_altitude=None,shading_relativeposition=None):
+    def calculate_solargain(self,timestamp=None,I_direct=None,I_diffuse=None,solar_azimuth=None,solar_altitude=None,shading_relativeposition=None):
         """
         Parameters
         ----------
@@ -56,21 +57,38 @@ class Zone(core.component.Component):
         if shading_relativeposition is None:
             shading_relativeposition = [None]*len(windows)
 
-
-        solargain = sum([
-            window.calculate_solargain(
-                utcdatetime=utcdatetime,
-                I_direct=I_direct,
-                I_diffuse=I_diffuse,
-                solar_azimuth=solar_azimuth,
-                solar_altitude=solar_altitude,
-                shading_relativeposition=position)
-            for window,position in zip(windows,shading_relativeposition)
-        ])
+        if len(windows)==0:
+            if hasattr(timestamp,'__len__'):
+                solargain = np.zeros( len(timestamp) )
+            elif hasattr(I_direct,'__len__'):
+                solargain = np.zeros( len(I_direct) )
+            elif hasattr(I_diffuse,'__len__'):
+                solargain = np.zeros( len(I_diffuse) )
+            elif hasattr(solar_azimuth,'__len__'):
+                solargain = np.zeros( len(solar_azimuth) )
+            elif hasattr(solar_altitude,'__len__'):
+                solargain = np.zeros( len(solar_altitude) )
+            else:
+                solargain = 0
+        else:
+            solargain = sum([
+                window.calculate_solargain(
+                    timestamp=timestamp,
+                    I_direct=I_direct,
+                    I_diffuse=I_diffuse,
+                    solar_azimuth=solar_azimuth,
+                    solar_altitude=solar_altitude,
+                    shading_relativeposition=position)
+                for window,position in zip(windows,shading_relativeposition)
+            ])
+        
+            
 
         return solargain
 
-    def calculate_temperature(self,utcdatetime=None):
+
+
+    def calculate_temperature(self,timestamp=None):
         """
 
         """
@@ -78,7 +96,7 @@ class Zone(core.component.Component):
         temperature = []
         confidence = []
         for sensor in core.components.find(type='zonetemperaturesensor', zone=self.path):
-            temp = sensor.states['value'].history(utcdatetime=utcdatetime)
+            temp = sensor.states['value'].history(timestamp=timestamp)
             if not temp is None:
                 temperature.append(temp)
                 confidence.append(sensor.config['confidence'])

@@ -3,6 +3,7 @@
 
 import sys
 import os
+import traceback
 import datetime
 
 
@@ -47,7 +48,8 @@ try:
 
     hc.main()
 
-except:
+except Exception as e:
+
     print('Stopping HomeCon')
     #hc.stop()
 
@@ -57,5 +59,9 @@ except:
         os.remove('homecon_measurements.db')
         if restore:
             os.rename('homecon_backup{}.db'.format(timestring),'homecon.db')
-            os.rename('homecon_measurements_backup{}.db'.format(timestring),'homecon_measurements.db',)
+            os.rename('homecon_measurements_backup{}.db'.format(timestring),'homecon_measurements.db')
+
+    exc_type, exc_value, exc_traceback = sys.exc_info()
+    traceback.print_exception(exc_type, exc_value, exc_traceback, file=sys.stdout)
+    print('\n'*3)
 

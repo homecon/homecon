@@ -37,8 +37,8 @@ class Weather(core.plugin.Plugin):
         core.states.add('weather/temperature',       config={'datatype': 'number', 'quantity':'temperature', 'unit':'°C'  , 'label':'Ambient', 'description':''})
         core.states.add('weather/cloudcover',        config={'datatype': 'number', 'quantity':''           , 'unit':''    , 'label':'Cloud cover' , 'description':''})
 
-        core.states.add('weather/sun/azimuth',           config={'datatype': 'number', 'quantity':'angle' , 'unit':'°', 'label':'Azimuth' , 'description':''})
-        core.states.add('weather/sun/altitude',          config={'datatype': 'number', 'quantity':'angle' , 'unit':'°', 'label':'Altitude' , 'description':''})
+        core.states.add('weather/sun/azimuth',       config={'datatype': 'number', 'quantity':'angle' , 'unit':'°', 'label':'Azimuth' , 'description':''})
+        core.states.add('weather/sun/altitude',      config={'datatype': 'number', 'quantity':'angle' , 'unit':'°', 'label':'Altitude' , 'description':''})
 
         core.states.add('weather/irradiancedirect',  config={'datatype': 'number', 'quantity':'irradiance' , 'unit':'W/m2', 'label':'Direct' , 'description':''})
         core.states.add('weather/irradiancediffuse', config={'datatype': 'number', 'quantity':'irradiance' , 'unit':'W/m2', 'label':'Diffuse', 'description':''})
@@ -200,8 +200,6 @@ class Weather(core.plugin.Plugin):
                             
                         tempirradiance = np.array(tempirradiance)
 
-                        print(tempcloudcover)
-                        print(tempirradiance)
 
                         if max(tempirradiance) > 0:
                             cloudcover = np.interp(val,tempirradiance,tempcloudcover)
@@ -287,7 +285,7 @@ core.components.register(Ambienttemperaturesensor)
 
 class Irradiancesensor(core.component.Component):
     """
-    a class implementing a temperature sensor
+    a class implementing an irradiance sensor
     
     """
 

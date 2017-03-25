@@ -170,8 +170,8 @@ class Client(object):
     def send(self,message):
 
         printmessage = message.__repr__()
-        if len(printmessage) > 85:
-            printmessage = printmessage[:40] + ' ... ' +printmessage[-40:]
+        if len(printmessage) > 405:
+            printmessage = printmessage[:200] + ' ... ' +printmessage[-200:]
         logging.debug('send {} to {}'.format(printmessage,self))
 
         yield from self.websocket.send(json.dumps(message))

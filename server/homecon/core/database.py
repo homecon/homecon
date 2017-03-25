@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+import logging
 
 BACKEND = 'sqlite3'
 
@@ -66,7 +67,7 @@ class Database(object):
             connection.commit()
         except Exception as e:
             connection.rollback()
-            print(e)
+            logging.error('Database query \'{}\' raised an exception exception {}'.format(query,e))
         
         return cursor
         

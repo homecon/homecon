@@ -29,7 +29,8 @@ class Building(core.plugin.Plugin):
         core.states.add('building/identification/result', config={'type': 'dict', 'quantity':'', 'unit':'','label':'', 'description':'', 'log':False})
         core.states.add('building/validation/result', config={'type': 'dict', 'quantity':'', 'unit':'','label':'', 'description':'', 'log':False})
 
-
+        # set the model
+        self._set_model(core.states['building/model'].value)
 
         # schedule cross validation
         self._loop.create_task(self.schedule_cross_validation())
@@ -37,33 +38,23 @@ class Building(core.plugin.Plugin):
 
         logging.debug('Building plugin initialized')
 
+    def _set_model(self,key):
+        if key in models.models:
+            self.model = models.models[key]()
 
 
     def identify(self):
-        key = core.states['building/model'].value
-        if key in models.models:
-            model = models.models[key]()
+        result = self.model.identify()
+        core.states['building/identification/result'].value = result
 
-            result = model.identify()
-            core.states['building/identification/result'].value = result
-
-            return result
-
-        else:
-            return False
+        return result
 
 
     def validate(self):
-        key = core.states['building/model'].value
-        if key in models.models:
-            model = models.models[key]()
-            result = model.validate()
-            core.states['building/validation/result'].value = result
+        result = self.model.validate()
+        core.states['building/validation/result'].value = result
 
-            return result
-
-        else:
-            return False
+        return result
 
 
     async def schedule_cross_validation(self):
@@ -94,6 +85,19 @@ class Building(core.plugin.Plugin):
             await asyncio.sleep(timestamp_when-timestamp_now)
 
 
+    def preprocess_ocp_model(self,model):
+        key = core.states['building/model'].value
+        if key in models.models:
+            result = self.model.preprocess_ocp_model()
+
+
+    def postprocess_ocp_model(self,model):
+        key = core.states['building/model'].value
+        if key in models.models:
+            result = self.model.postprocess_ocp_model()
+
+
+
     def listen_building_list_models(self,event):
         keys = [key for key in models.models.keys()]
         keys = sorted(keys)
@@ -110,6 +114,11 @@ class Building(core.plugin.Plugin):
 
 
     def listen_state_changed(self,event):
+
+
+        if event.data['state'].path == 'building/model':
+            self._set_model(event.data['state'].value)
+
 
         if 'component' in event.data['state'].config:
             component = core.components[event.data['state'].config['component']]

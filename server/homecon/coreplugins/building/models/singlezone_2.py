@@ -133,18 +133,18 @@ class Singlezone_2(model.Buildingmodel):
         self.validation_model = model
 
 
-    def get_data(self,utcdatetime):
+    def get_data(self,timestamp):
 
 
         zones = [zone for zone in core.components.find(type='zone')]
 
 
         data = {}
-        data['T_amb'] = core.states['weather/temperature'].history(utcdatetime)
-        data['T_liv'] = np.mean( [zone.states['temperature'].history(utcdatetime) for zone in zones], axis=0)
-        data['Q_hea'] = core.states['heatpump/power'].history(utcdatetime)
-        data['Q_sol'] = np.sum( [zone.states['solargain'].history(utcdatetime) for zone in zones], axis=0 )
-        data['Q_int'] = np.sum( [zone.states['internalgain'].history(utcdatetime) for zone in zones], axis=0 )
+        data['T_amb'] = core.states['weather/temperature'].history(timestamp)
+        data['T_liv'] = np.mean( [zone.states['temperature'].history(timestamp) for zone in zones], axis=0)
+        data['Q_hea'] = core.states['heatpump/power'].history(timestamp)
+        data['Q_sol'] = np.sum( [zone.states['solargain'].history(timestamp) for zone in zones], axis=0 )
+        data['Q_int'] = np.sum( [zone.states['internalgain'].history(timestamp) for zone in zones], axis=0 )
 
 
         return data
@@ -166,14 +166,14 @@ class Singlezone_2(model.Buildingmodel):
         result['parameters']['UA_flr_liv'] = pyomo.value(model.UA_flr_liv)
 
         result['inputs']['timestamp'] = [pyomo.value(model.timestamp[i]) for i in model.i]
-        result['inputs']['T_amb'] = [pyomo.value(model.T_amb[i]) for i in model.i]
-        result['inputs']['Q_hea'] = [pyomo.value(model.Q_hea[i]) for i in model.i]
-        result['inputs']['Q_sol'] = [pyomo.value(model.Q_sol[i]) for i in model.i]
-        result['inputs']['Q_int'] = [pyomo.value(model.Q_int[i]) for i in model.i]
+        result['inputs']['T_amb'] = [np.round(pyomo.value(model.T_amb[i]),2) for i in model.i]
+        result['inputs']['Q_hea'] = [np.round(pyomo.value(model.Q_hea[i]),2) for i in model.i]
+        result['inputs']['Q_sol'] = [np.round(pyomo.value(model.Q_sol[i]),2) for i in model.i]
+        result['inputs']['Q_int'] = [np.round(pyomo.value(model.Q_int[i]),2) for i in model.i]
 
-        result['estimates']['T_liv'] = [pyomo.value(model.T_liv_est[i]) for i in model.i]
+        result['estimates']['T_liv'] = [np.round(pyomo.value(model.T_liv_est[i]),2) for i in model.i]
 
-        result['observations']['T_liv'] = [pyomo.value(model.T_liv[i]) for i in model.i]
+        result['observations']['T_liv'] = [np.round(pyomo.value(model.T_liv[i]),2) for i in model.i]
 
         error = np.array([pyomo.value(model.T_liv[i]-model.T_liv_est[i]) for i in model.i])
         rmse = np.mean( error**2 )**0.5

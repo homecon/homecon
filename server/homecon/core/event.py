@@ -27,8 +27,8 @@ class Event(object):
                 newdata[key] = '***'
 
         printdata = newdata.__repr__()
-        if len(printdata) > 85:
-            printdata = printdata[:40] + ' ... ' +printdata[-40:]
+        if len(printdata) > 405:
+            printdata = printdata[:200] + ' ... ' +printdata[-200:]
 
         return 'Event: {}, data: {}, source: {}, client: {}'.format(self.type,printdata,self.source.__class__.__name__,self.client.__repr__())
 

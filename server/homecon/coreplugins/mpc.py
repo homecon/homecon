@@ -45,8 +45,8 @@ class Mpc(core.plugin.Plugin):
         utcdatetime = [datetime.datetime.utcfromtimestamp(ts) for ts in range(timestamp_ini,timestamp_end,self.timestep)]
         timestamps = [int((dt-dt_ref).total_seconds()) for dt in utcdatetime]
 
-        p_el = [0.250 for dt in utcdatetime]
-        p_ng = [0.070 for dt in utcdatetime]
+        p_el = [0.250 for ts in timestamps]
+        p_ng = [0.070 for ts in timestamps]
 
 
         """
@@ -65,7 +65,7 @@ class Mpc(core.plugin.Plugin):
         model = pyomo.ConcreteModel()
         model.i = pyomo.Set(initialize=range(len(timestamps)-1),doc='time index')
         model.timestamp = pyomo.Param(model.i,initialize={i:timestamps[i] for i in model.i})
-        model.timestep[i] = pyomo.Param(model.i,initialize={i:timestamps[i+1]-timestamps[i] for i in model.i})
+        model.timestep = pyomo.Param(model.i,initialize={i:timestamps[i+1]-timestamps[i] for i in model.i})
 
         model.p_el = pyomo.Param(model.i, initialize={i:p_el[i] for i in model.i})
         model.p_ng = pyomo.Param(model.i, initialize={i:p_el[i] for i in model.i})
@@ -74,21 +74,29 @@ class Mpc(core.plugin.Plugin):
         model.P_ng_tot= pyomo.Var(model.i,domain=pyomo.NonNegativeReals, initialize=0)
 
 
-        # load constraints and variable from plugins
+        # create variables from plugins and components in that order
         for plugin in core.plugins:
-            plugin.prepare_ocp_model(model)
+            plugin.create_ocp_model_variables(model)
 
-        # load constraints and variables from components
         for component in core.components:
-            component.prepare_ocp_model(model)
+            component.create_ocp_model_variables(model)
+
+        # create constraints from plugins and components in that order
+        for plugin in core.plugins:
+            plugin.create_ocp_model_constraints(model)
+
+        for component in core.components:
+            component.create_ocp_model_constraints(model)
+
 
         P_el_list = [attr for attr in dir(model) if attr.endswith('P_el')]
         P_ng_list = [attr for attr in dir(model) if attr.endswith('P_ng')]
 
-        model.constr_P_el_tot = pyomo.Constraint(model.i,rule=lambda model,i: model.P_el_tot[i] == sum(getattr(model,P)[i] for P in P_el_list))
-        model.constr_P_el_tot = pyomo.Constraint(model.i,rule=lambda model,i: model.P_ng_tot[i] == sum(getattr(model,P)[i] for P in P_ng_list))
+        model.constraint_P_el_tot = pyomo.Constraint(model.i,rule=lambda model,i: model.P_el_tot[i] == sum(getattr(model,var)[i] for var in P_el_list))
+        model.constraint_P_ng_tot = pyomo.Constraint(model.i,rule=lambda model,i: model.P_ng_tot[i] == sum(getattr(model,var)[i] for var in P_ng_list))
 
 
+        # add an objective
         model.objective = pyomo.Objective(rule=lambda model: sum( model.p_el[i]*model.P_el_tot[i]*model.timestep[i] + model.p_ng[i]*model.P_ng_tot[i]*model.timestep[i] for i in model.i), sense=pyomo.minimize)
 
 

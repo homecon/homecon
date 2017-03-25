@@ -5,6 +5,7 @@ import logging
 import sys
 import os
 import datetime
+import time
 import threading
 import numpy as np
 
@@ -119,6 +120,11 @@ for path in paths:
 
 g = pages.add_group({'title':'Home'})
 p = pages.add_page(g['path'],{'title':'Home','icon':'blank'})
+s = pages.add_section(p['path'],{'type':'hidden'})
+w = pages.add_widget(s['path'],'weather-block',config={'daily':True, 'timeoffset':0})
+w = pages.add_widget(s['path'],'weather-block',config={'daily':True, 'timeoffset':24})
+w = pages.add_widget(s['path'],'weather-block',config={'daily':True, 'timeoffset':48})
+w = pages.add_widget(s['path'],'weather-block',config={'daily':True, 'timeoffset':72})
 
 
 g = pages.add_group({'title':'Central'})
@@ -158,7 +164,7 @@ dt_ref = datetime.datetime(1970,1,1)
 timestamp_now = int( (dt_now-dt_ref).total_seconds() )
 dt_start = (dt_now+datetime.timedelta(seconds=-14*24*3600)).replace(hour=0,minute=0,second=0,microsecond=0)
 
-logging.debug('Calculating demo weather data')
+logging.debug('Calculating past demo weather data')
 weatherdata = weather.emulate_weather({'utcdatetime':[dt_start], 'cloudcover':[0], 'ambienttemperature':[5]},lookahead=10*24*3600)
 
 # write data to homecon measurements database
@@ -188,7 +194,7 @@ core.states['weather/irradiancediffuse']._value = np.round(weatherdata['I_diffus
 
 
 
-logging.debug('Calculating demo building response')
+logging.debug('Calculating past demo building response')
 buildingdata = building.emulate_building({'utcdatetime':[dt_start], 'T_in':[20.0], 'T_em':[22.0]},weatherdata,heatingcurve=True)
 
 
@@ -217,7 +223,124 @@ core.states['floorheating_groundfloor/valve_position']._value = 1.0
 
 
 
-#self._loop.create_task(self.schedule_emulate_weather())
-#self._loop.create_task(self.schedule_sensor_updates())
+class DemoThread(threading.Thread):
+    def __init__(self,callback,name='DemoThread',runevery=60):
+        super().__init__()
+        self.callback = callback
+        self.name = name
+        self.runevery = runevery
+
+
+    def run(self):
+
+        starttime = time.time()
+        nextrun = starttime
+
+        while True: # run forever
+            self.callback()
+    
+            runtime = time.time()
+            nextrun += self.runevery
+            time.sleep(max(0,nextrun-runtime))
+
+
+
+
+
+
+
+def emulate():
+    global weatherdata
+    global buildingdata
+
+    dt_ref = datetime.datetime(1970, 1, 1)
+    dt_now = datetime.datetime.utcnow()
+
+    timestamp_now = int( (dt_now-dt_ref).total_seconds() )
+
+    
+    if weatherdata['timestamp'][-1] < timestamp_now+7*24*3600:
+        # weather emulation
+        logging.debug('Calculating demo weather data')
+        newdata = weather.emulate_weather(weatherdata,lookahead=10*24*3600)
+        
+        # append data and remove old data
+        ind = np.where(weatherdata['timestamp'] >= timestamp_now-3600)
+
+        for (key,val),(newkey,newval) in zip(weatherdata.items(),newdata.items()):
+            weatherdata[key] = np.append(val[ind],newval)
+
+    
+    # update weather states
+    core.states['outside/temperature/value'].value = round(np.interp(timestamp_now,weatherdata['timestamp'],weatherdata['ambienttemperature']),2)
+    core.states['outside/irradiance/value'].value = round(np.interp(timestamp_now,weatherdata['timestamp'],weatherdata['I_total_horizontal']),2)
+
+    # building emulation
+    logging.debug('Calculating demo building response')
+    buildingdata = building.emulate_building(buildingdata,weatherdata,heatingcurve=True)
+
+
+    # update building states
+    core.states['living/temperature_wall/value'].value = round(buildingdata['living/temperature_wall/value'][-1],2)
+    core.states['living/temperature_window/value'].value = round(buildingdata['living/temperature_window/value'][-1],2)
+
+
+
+
+def weatherforecast():
+    global weatherdata
+
+    # update weather forecast states
+    now = datetime.datetime.utcnow().replace( hour=0, minute=0, second=0, microsecond=0)
+    timestamp = int( (now - datetime.datetime(1970,1,1)).total_seconds() )
+
+    logging.debug('Setting demo weather forecast data')
+    
+    timestamplist = [timestamp+i*24*3600 for i in range(7)]
+    for i,t in enumerate(timestamplist):
+        forecast = {
+            'timestamp': t,
+            'temperature_day': np.interp(t+14*3600,weatherdata['timestamp'],weatherdata['ambienttemperature']),
+            'temperature_night': np.interp(t+6*3600,weatherdata['timestamp'],weatherdata['ambienttemperature']),
+            'pressure': 101325,
+            'humidity': 0.6,
+            'icon': '02d' if np.interp(t+14*3600,weatherdata['timestamp'],weatherdata['cloudcover']) < 0.5 else '09d',
+            'cloudcover': np.interp(t+14*3600,weatherdata['timestamp'],weatherdata['cloudcover']),
+            'wind_speed': 0,
+            'wind_direction': 0,
+            'precipitation_intensity': 0,
+            'precipitation_probability': 0,
+        }
+        core.states['weather/forecast/daily/{}'.format(i)].value = forecast
+
+
+
+    timestamplist = [timestamp+i*3600 for i in range(7*24)]
+    for i,t in enumerate(timestamplist):
+
+        forecast = {
+            'timestamp': t,
+            'temperature': np.interp(t,weatherdata['timestamp'],weatherdata['ambienttemperature']),
+            'pressure': 101325,
+            'humidity': 0.6,
+            'icon': '02d' if np.interp(t,weatherdata['timestamp'],weatherdata['cloudcover']) < 0.5 else '09d',
+            'cloudcover': np.interp(t,weatherdata['timestamp'],weatherdata['cloudcover']),
+            'wind_speed': 0,
+            'wind_direction': 0,
+            'precipitation_intensity': 0,
+            'precipitation_probability': 0,
+        }
+        core.states['weather/forecast/hourly/{}'.format(i)].value = forecast
+
+
+
+emulatorthread = DemoThread(emulate,name='EmulatorThread')
+emulatorthread.start()
+
+
+forecastthread = DemoThread(weatherforecast,name='ForecastThread',runevery=3600)
+forecastthread.start()
+
+
 
 

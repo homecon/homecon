@@ -31,7 +31,7 @@ def emulate_building(initialdata,weatherdata,lookahead=0,heatingcurve=False):
     # time
     dt_ref = datetime.datetime(1970, 1, 1)
     dt_now = datetime.datetime.utcnow()
-    timestep = 300
+    timestep = 60
 
     utcdatetime = [initialdata['utcdatetime'][-1]+datetime.timedelta(seconds=t) for t in np.arange(0,(dt_now-initialdata['utcdatetime'][-1]).total_seconds()+lookahead,timestep)]
     if utcdatetime[-1] < dt_now:
@@ -57,16 +57,32 @@ def emulate_building(initialdata,weatherdata,lookahead=0,heatingcurve=False):
     # disturbances
     T_am = np.interp(timestamp,weatherdata['timestamp'],weatherdata['ambienttemperature'])
 
-    Q_so = np.zeros(len(timestamp))
-    for window in core.components.find(type='window'):
-        Q_so = Q_so + window.calculate_solargain(
+    Q_sol_zone = {}
+    Q_int_zone = {}
+    for zone in core.components.find(type='zone'):
+        # FIXME take actual shading position into account in min/max shading position dertermination
+        shading_relativeposition = [[0.0*np.ones(len(timestamp)) for shading in core.components.find(type='shading',window=window.path)] for window in core.components.find(type='window',zone=zone.path)]
+        Q_sol_zone[zone.path] = zone.calculate_solargain(
             I_direct=np.interp(timestamp,weatherdata['timestamp'],weatherdata['I_direct_cloudy']),
             I_diffuse=np.interp(timestamp,weatherdata['timestamp'],weatherdata['I_diffuse_cloudy']),
             solar_azimuth=np.interp(timestamp,weatherdata['timestamp'],weatherdata['solar_azimuth']),
             solar_altitude=np.interp(timestamp,weatherdata['timestamp'],weatherdata['solar_altitude']),
-            shading_relativeposition=[np.zeros(len(timestamp)) for shading in core.components.find(type='shading',window=window.path) ])
+            shading_relativeposition=shading_relativeposition)
 
-    Q_in = np.zeros(len(timestamp))
+        Q_int_zone[zone.path] = 0.0*np.ones(len(timestamp))
+
+    Q_sol = np.sum([Q for Q in Q_sol_zone.values()],axis=0)
+    Q_int = np.sum([Q for Q in Q_int_zone.values()],axis=0)
+
+    #for window in core.components.find(type='window'):
+    #    Q_so = Q_so + window.calculate_solargain(
+    #        I_direct=np.interp(timestamp,weatherdata['timestamp'],weatherdata['I_direct_cloudy']),
+    #        I_diffuse=np.interp(timestamp,weatherdata['timestamp'],weatherdata['I_diffuse_cloudy']),
+    #        solar_azimuth=np.interp(timestamp,weatherdata['timestamp'],weatherdata['solar_azimuth']),
+    #        solar_altitude=np.interp(timestamp,weatherdata['timestamp'],weatherdata['solar_altitude']),
+    #        shading_relativeposition=[np.zeros(len(timestamp)) for shading in core.components.find(type='shading',window=window.path) ])
+
+    Q_int = np.zeros(len(timestamp))
     Q_em = np.zeros(len(timestamp))
 
 
@@ -90,7 +106,7 @@ def emulate_building(initialdata,weatherdata,lookahead=0,heatingcurve=False):
             Q_em[i] = core.components['floorheating_groundfloor'].calculate_power()
 
         T_em[i+1] = T_em[i] + (T_in[i]-T_em[i])*delta_t*UA_em/C_em + Q_em[i]*delta_t/C_em
-        T_in[i+1] = T_in[i] + (T_am[i]-T_in[i])*delta_t*UA_in/C_in + (T_em[i]-T_in[i])*delta_t*UA_em/C_in + Q_so[i]*delta_t/C_in + Q_in[i]*delta_t/C_in
+        T_in[i+1] = T_in[i] + (T_am[i]-T_in[i])*delta_t*UA_in/C_in + (T_em[i]-T_in[i])*delta_t*UA_em/C_in + Q_sol[i]*delta_t/C_in + Q_int[i]*delta_t/C_in
 
     # set the output data
     data = {
@@ -99,16 +115,16 @@ def emulate_building(initialdata,weatherdata,lookahead=0,heatingcurve=False):
         'T_in': T_in[1:],
         'T_em': T_em[1:],
         'Q_em': Q_em[1:],
-        'Q_so': Q_so[1:],
+        'Q_sol': Q_sol[1:],
         'dayzone/temperature': T_in[1:],
-        'dayzone/solargain': 0.7*Q_so[1:],
-        'dayzone/internalgain': 0*np.ones(len(utcdatetime[1:])),
+        'dayzone/solargain': Q_sol_zone['dayzone'][1:],
+        'dayzone/internalgain': Q_int_zone['dayzone'][1:],
         'nightzone/temperature': T_in[1:],
-        'nightzone/solargain': 0.3*Q_so[1:],
-        'nightzone/internalgain': 0*np.ones(len(utcdatetime[1:])),
+        'nightzone/solargain': Q_sol_zone['nightzone'][1:],
+        'nightzone/internalgain': Q_int_zone['nightzone'][1:],
         'bathroomzone/temperature': T_in[1:],
-        'bathroomzone/solargain': 0.0*Q_so[1:],
-        'bathroomzone/internalgain': 0*np.ones(len(utcdatetime[1:])),
+        'bathroomzone/solargain': Q_sol_zone['bathroomzone'][1:],
+        'bathroomzone/internalgain': Q_int_zone['bathroomzone'][1:],
         'living/temperature_wall/value': 0.90*T_in[1:] + 0.10*T_em[1:],
         'living/temperature_window/value': 0.98*T_in[1:] + 0.02*T_em[1:],
         'heatpump/power_setpoint': Q_em[1:],
