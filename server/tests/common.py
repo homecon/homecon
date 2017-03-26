@@ -28,9 +28,55 @@ import sqlite3
 import json
 import asyncio
 
+# remove the databases
+try:
+    os.remove('homecon.db')
+except:
+    pass
+try:
+    os.remove('homecon_measurements.db')
+except:
+    pass
+
+# add the homecon path
+sys.path.append(os.path.dirname(os.path.abspath(os.path.join(__file__,'..'))))
+
+import homecon.core.database
+import homecon.core.state
+
 from websocket import create_connection
 
-sys.path.append(os.path.abspath('..'))
+
+def clear_database():
+    try:
+        connection = sqlite3.connect('homecon.db')
+        cursor = connection.cursor()
+        cursor.execute('SELECT name FROM sqlite_master WHERE type=\'table\';')
+        for result in cursor.fetchall():
+            for table in result:
+                cursor.execute('DELETE FROM {}'.format(table))
+
+        connection.commit()
+        connection.close()
+
+        # clear containers
+        homecon.core.state.State.container = {}
+    except:
+        pass
+
+    try:
+        connection = sqlite3.connect('homecon_measurements.db')
+        cursor = connection.cursor()
+        cursor.execute('SELECT name FROM sqlite_master WHERE type=\'table\' ORDER BY name;')
+        for result in cursor.fetchall():
+            for table in result:
+                cursor.execute('DELETE FROM {}'.format(table))
+
+        connection.commit()
+        connection.close()
+    except:
+        pass
+
 #from homecon import HomeCon
 
 class HomeConTestCase(unittest.TestCase):

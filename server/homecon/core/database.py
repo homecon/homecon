@@ -204,7 +204,7 @@ class Table(object):
         data = tuple(data)
         
         query = 'INSERT INTO {} ({}) VALUES ({})'.format(self.name,columns,values)
-        
+
         cursor = self.database.execute_query( query, data )
         
     def PUT(self,where='',**kwargs):

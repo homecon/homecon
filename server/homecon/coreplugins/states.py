@@ -47,6 +47,8 @@ class States(core.plugin.Plugin):
         if core.states['settings/location/timezone'].value is None:
             core.states['settings/location/timezone'].value = 'Europe/Brussels'
 
+
+
         logging.debug('States plugin Initialized')
 
     def get(self,path):
@@ -97,6 +99,8 @@ class States(core.plugin.Plugin):
         if state:
             core.event.fire('state_added',{'state':state})
             core.websocket.send({'event':'list_states', 'path':'', 'value':self.list()}, clients=[event.client])
+            
+
 
     def listen_edit_state(self,event):
         if event.data['path'] in core.states:
@@ -108,6 +112,7 @@ class States(core.plugin.Plugin):
                 config[key] = val
 
             state.config = config
+            self.parse_triggers()
 
             core.websocket.send({'event':'list_states', 'path':'', 'value':self.list()}, clients=[event.client])
 

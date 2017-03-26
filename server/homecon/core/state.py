@@ -29,7 +29,7 @@ class BaseObject(object):
 
     container = {}
 
-    def __new__(cls,path,config=None,db_entry=None):
+    def __new__(cls,path,**kwargs):
         if path in cls.container:
             return None
         else:
@@ -172,11 +172,11 @@ class BaseState(BaseObject):
 
     container = {}
 
-    def __new__(cls,path,config=None,value=None,db_entry=None):
+    def __new__(cls,path,**kwargs):
         if path in cls.container:
             return None
         else:
-            return super(BaseState, cls).__new__(cls,path,config=config,db_entry=db_entry)
+            return super(BaseState, cls).__new__(cls,path)
 
 
     def __init__(self,path,config=None,value=None,db_entry=None):
@@ -195,7 +195,6 @@ class BaseState(BaseObject):
             dictionary configuring the state
         
         """
-
         self._loop = asyncio.get_event_loop()
 
         super().__init__(path,config=config,db_entry=db_entry)
@@ -260,7 +259,7 @@ class BaseState(BaseObject):
                 task = asyncio.run_coroutine_threadsafe(self.set_async(value,source=source),self._loop)
 
         else:
-            self._set_value(value)
+            self._set_value(value,async=async)
 
 
     async def set_async(self,value,source=None):
@@ -300,7 +299,7 @@ class BaseState(BaseObject):
             await asyncio.sleep(0.01) # avoid flooding asyncio
 
 
-    def _set_value(self,value):
+    def _set_value(self,value,async=True):
         """
         Sets the value of a state and writes the change to the database
 
@@ -354,7 +353,6 @@ class BaseState(BaseObject):
             'value': json.dumps(self.value),
         }
         return data
-
 
     @property
     def value(self):
@@ -474,6 +472,10 @@ class State(BaseState):
         {'name':'value',  'type':'TEXT',  'null': '',  'default':'',  'unique':''},
     ])
     container = {}
+    def __init__(self,*args,**kwargs):
+        super().__init__(*args,**kwargs)
+        self.trigger = []
+
 
     def fire_changed(self,value,oldvalue,source):
         """
@@ -498,8 +500,58 @@ class State(BaseState):
             config['description'] = ''
         if 'log' not in config:
             config['log'] = True
-
+        if 'triggers' not in config:
+            config['triggers'] = ''
+        if 'computed' not in config:
+            config['computed'] = ''
+        
         return config
+
+
+    def _set_value(self,value,async=True):
+        success,oldvalue = super()._set_value(value,async=async)
+
+        # computed states
+        for state in self.trigger:
+            if not state.config['computed'] == '':
+                state.set(state.computed,source='computed',async=async)
+
+        return success,oldvalue
+
+
+    @property
+    def triggers(self):
+        """
+        Evaluates the value of triggers
+
+        """
+
+        triggers = self.config['triggers']
+        if not triggers == '':
+            paths = eval(triggers.replace('`','\''),{'states':self.container,'np':np})
+
+            if isinstance(paths,list):
+                return paths
+
+        return []
+
+
+    @property
+    def computed(self):
+        """
+        Evaluates the value of computed
+
+        """
+
+        computed = self.config['computed']
+        if not computed == '':
+            try:
+                value = eval(computed.replace('`','\''),{'states':self.container,'np':np})
+                return value
+            except:
+                pass
+
+        return None
 
 
     @property
@@ -589,7 +641,7 @@ class States(object):
         self._db_states = State.db_table
 
         self.load()
-
+        self.parse_triggers()
 
     def load(self):
         """
@@ -598,19 +650,32 @@ class States(object):
         """
         result = self._db_states.GET()
         for db_entry in result:
-            self.add(db_entry['path'],db_entry=db_entry)
+            self.add(db_entry['path'],db_entry=db_entry,parse_triggers=False)
 
-
-    def add(self,path,value=None,config=None,db_entry=None):
+    def add(self,path,value=None,config=None,db_entry=None,parse_triggers=True):
         """
         add a state
 
         """
+        state = State(path,value=value,config=config,db_entry=db_entry)
 
-        return State(path,value=value,config=config,db_entry=db_entry)
+        if parse_triggers:
+            self.parse_triggers()
+
+        return state
+
+    def parse_triggers(self):
+        for state in self._states.values():
+            state.trigger = []
+
+        for state in self._states.values():
+            for path in state.triggers:
+                if not state in self._states[path].trigger:
+                    self._states[path].trigger.append(state)
 
     def delete(self,path):
         self._states[path].delete()
+        self.parse_triggers()
 
     def __getitem__(self,path):
         return self._states[path]
