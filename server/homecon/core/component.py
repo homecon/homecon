@@ -172,7 +172,6 @@ class Components(object):
     """
 
     def __init__(self):
-        #super(Components,self).__init__(queue)
 
         self._component_types = {}
         self._components = Component.container
@@ -246,6 +245,13 @@ class Components(object):
             add = True
             for key,val in kwargs.items():
                 if key == 'type':
+                    if not val in self._component_types:
+                        add = False
+                        break
+                    elif not isinstance(component,self._component_types[val]):
+                        add = False
+                        break
+                elif key == 'type_strict':
                     if not component.type == val:
                         add = False
                         break

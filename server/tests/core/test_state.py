@@ -18,20 +18,15 @@
 ################################################################################
 
 import unittest
-import time
-import json
 import sys
 import os
-import asyncio
 
 sys.path.append(os.path.abspath('..'))
 import common
 
 import homecon.core.state
-import homecon.core.event as event
-import homecon.coreplugins.states
 
-class StatesTests(unittest.TestCase):
+class StateTests(unittest.TestCase):
 
     def test_add(self):
         common.clear_database()

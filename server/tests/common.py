@@ -27,6 +27,7 @@ import shutil
 import sqlite3
 import json
 import asyncio
+import asyncws
 
 # remove the databases
 try:
@@ -43,6 +44,7 @@ sys.path.append(os.path.dirname(os.path.abspath(os.path.join(__file__,'..'))))
 
 import homecon.core.database
 import homecon.core.state
+import homecon.core.component
 
 from websocket import create_connection
 
@@ -61,6 +63,7 @@ def clear_database():
 
         # clear containers
         homecon.core.state.State.container = {}
+        homecon.core.component.Component.container = {}
     except:
         pass
 
@@ -195,30 +198,48 @@ class HomeConTestCase(unittest.TestCase):
         self.clear_database()
 
 
-
-
-
-
 class Client(object):
     """
     A convienient wrapper for creating a websocket connection
     """
+
+    async def connect(self,address):
+        self.websocket = await asyncws.connect(address)
+
+    async def send(self,message):
+        """
+        recieve a websocket message in json format
+        """
+        await self.websocket.send(json.dumps(message))
+
+    async def recv(self):
+        """
+        recieve a websocket message in json format
+        """
+        message = await self.websocket.recv()
+        return json.loads( message )
+
+    async def close(self):
+        await self.websocket.close()
+
+
+
+"""
+class Client(object):
+
     def __init__(self,address):
 
         self.address = address
         self.client = create_connection(self.address)
 
     def send(self,message):
-        """
-        recieve a websocket message in json format
-        """
+        
         self.client.send(json.dumps(message))
 
     def recv(self):
-        """
-        recieve a websocket message in json format
-        """
+
         return json.loads( self.client.recv() )
 
     def close(self):
         self.client.close()
+"""

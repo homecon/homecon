@@ -18,54 +18,33 @@
 ################################################################################
 
 import unittest
-import time
-import json
 import sys
 import os
+import time
 import asyncio
 
-from common import HomeConTestCase, Client
-
 sys.path.append(os.path.abspath('..'))
-from core.states import States
-from core.plugin import Plugins
+import common
+
+import homecon.core.event
 
 
-class PluginsTests(HomeConTestCase):
-    
-    def test_initialize(self):
-        queue = asyncio.Queue()
+class EventTests(unittest.TestCase):
 
+    def test_fire(self):
 
-        self.clear_database()
-        states = States(queue)
-        plugins = Plugins(queue,states)
+        homecon.core.event.fire('myevent',{'key':'value'},source='thesource',client=None)
 
-    def test_activate_plugin(self):
-        queue = asyncio.Queue()
+        async def get_event():
+            event = await homecon.core.event.queue.get()
+            self.assertEqual(event.type,'myevent')
+            self.assertEqual(event.data,{'key':'value'})
+            self.assertEqual(event.source,'thesource')
+            self.assertEqual(event.client,None)
 
-        self.clear_database()
-        states = States(queue)
-        plugins = Plugins(queue,states)
-        plugins.activate('knx')
+        loop = asyncio.get_event_loop()
+        loop.run_until_complete(get_event())
 
-        self.assertIn('knx',plugins.keys())
-
-    def test_remember_active_plugins(self):
-        queue = asyncio.Queue()
-
-        self.clear_database()
-        states = States(queue)
-        plugins = Plugins(queue,states)
-        plugins.activate('knx')
-
-        del plugins
-        del states
-
-        states = States(queue)
-        plugins = Plugins(queue,states)
-
-        self.assertIn('knx',plugins.keys())
 
 
 if __name__ == '__main__':

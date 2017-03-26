@@ -33,7 +33,7 @@ from core.authentication import Authentication
 
 
 
-class AuthenticationTests(HomeConTestCase):
+class AuthenticationTests(unittest.TestCase):
 
     def test_initialize(self):
         queue = asyncio.Queue()

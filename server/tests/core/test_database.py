@@ -18,39 +18,39 @@
 ################################################################################
 
 import unittest
-import time
-import json
 import sys
 import os
 
-from common import HomeConTestCase, Client
-
 sys.path.append(os.path.abspath('..'))
-from homecon import HomeCon
-import core.database
+import common
+
+import homecon.core.database
 
 
-class DatabaseTests(HomeConTestCase):
+
+class DatabaseTests(unittest.TestCase):
     
 
     def test_connection(self):
-        self.clear_database()
-        db = core.database.Database(database='homecon.db')
+        common.clear_database()
+        db = homecon.core.database.Database(database='homecon.db')
         con = db.create_connection()
 
+
     def test_create_table(self):
-        self.clear_database()
-        db = core.database.Database(database='homecon.db')
-        users = core.database.Table(db,'users',[
+        common.clear_database()
+        db = homecon.core.database.Database(database='homecon.db')
+        users = homecon.core.database.Table(db,'users',[
             {'name':'username',   'type':'char(255)', 'null': '',  'default':'',  'unique':'UNIQUE'},
             {'name':'password',   'type':'char(255)', 'null': '',  'default':'',  'unique':''},
             {'name':'permission', 'type':'int',       'null': '',  'default':'',  'unique':''},
         ])
-        
+
+
     def test_post(self):
-        self.clear_database()
-        db = core.database.Database(database='homecon.db')
-        users = core.database.Table(db,'users',[
+        common.clear_database()
+        db = homecon.core.database.Database(database='homecon.db')
+        users = homecon.core.database.Table(db,'users',[
             {'name':'username',   'type':'char(255)', 'null': '',  'default':'',  'unique':'UNIQUE'},
             {'name':'password',   'type':'char(255)', 'null': '',  'default':'',  'unique':''},
             {'name':'permission', 'type':'int',       'null': '',  'default':'',  'unique':''},
@@ -62,9 +62,9 @@ class DatabaseTests(HomeConTestCase):
 
 
     def test_get(self):
-        self.clear_database()
-        db = core.database.Database(database='homecon.db')
-        users = core.database.Table(db,'users',[
+        common.clear_database()
+        db = homecon.core.database.Database(database='homecon.db')
+        users = homecon.core.database.Table(db,'users',[
             {'name':'username',   'type':'char(255)', 'null': '',  'default':'',  'unique':'UNIQUE'},
             {'name':'password',   'type':'char(255)', 'null': '',  'default':'',  'unique':''},
             {'name':'permission', 'type':'int',       'null': '',  'default':'',  'unique':''},
@@ -77,10 +77,11 @@ class DatabaseTests(HomeConTestCase):
         db_users = users.GET(columns=['id','username','permission'])
         self.assertEqual(db_users,[{'id':1,'username': 'user1', 'permission': 1}, {'id':2,'username': 'user2', 'permission': 1}, {'id':3,'username': 'user3', 'permission': 1}])
 
+
     def test_put(self):
-        self.clear_database()
-        db = core.database.Database(database='homecon.db')
-        users = core.database.Table(db,'users',[
+        common.clear_database()
+        db = homecon.core.database.Database(database='homecon.db')
+        users = homecon.core.database.Table(db,'users',[
             {'name':'username',   'type':'char(255)', 'null': '',  'default':'',  'unique':'UNIQUE'},
             {'name':'password',   'type':'char(255)', 'null': '',  'default':'',  'unique':''},
             {'name':'permission', 'type':'int',       'null': '',  'default':'',  'unique':''},
@@ -96,12 +97,10 @@ class DatabaseTests(HomeConTestCase):
         self.assertEqual(db_users,[{'username': 'user1', 'permission': 1}, {'username': 'user2', 'permission': 1}, {'username': 'user4', 'permission': 9}])
 
 
-
-
     def test_reconnect_to_table(self):
-        self.clear_database()
-        db = core.database.Database(database='homecon.db')
-        users = core.database.Table(db,'users',[
+        common.clear_database()
+        db = homecon.core.database.Database(database='homecon.db')
+        users = homecon.core.database.Table(db,'users',[
             {'name':'username',   'type':'char(255)', 'null': '',  'default':'',  'unique':'UNIQUE'},
             {'name':'password',   'type':'char(255)', 'null': '',  'default':'',  'unique':''},
             {'name':'permission', 'type':'int',       'null': '',  'default':'',  'unique':''},
@@ -114,8 +113,8 @@ class DatabaseTests(HomeConTestCase):
         del users
         del db
 
-        db = core.database.Database(database='homecon.db')
-        users = core.database.Table(db,'users')
+        db = homecon.core.database.Database(database='homecon.db')
+        users = homecon.core.database.Table(db,'users')
 
         db_users = users.GET(columns=['username','permission'])
         self.assertEqual(db_users,[{'username': 'user1', 'permission': 1}, {'username': 'user2', 'permission': 1}, {'username': 'user3', 'permission': 1}])
