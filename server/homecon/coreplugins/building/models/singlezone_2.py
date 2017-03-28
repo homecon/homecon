@@ -142,10 +142,12 @@ class Singlezone_2(model.Buildingmodel):
         data = {}
         data['T_amb'] = core.states['weather/temperature'].history(timestamp)
         data['T_liv'] = np.mean( [zone.states['temperature'].history(timestamp) for zone in zones], axis=0)
-        data['Q_hea'] = core.states['heatpump/power'].history(timestamp)
         data['Q_sol'] = np.sum( [zone.states['solargain'].history(timestamp) for zone in zones], axis=0 )
         data['Q_int'] = np.sum( [zone.states['internalgain'].history(timestamp) for zone in zones], axis=0 )
-
+        data['Q_hea'] = np.sum( [heatemissionsystem.calculate_power(timestamp=timestamp) for zone in zones for heatemissionsystem in core.components.find(type='heatemissionsystem',zone=zone)], axis=0 )
+        
+        if data['Q_hea']==0 and hasattr(timestamp,'__len__'):
+            data['Q_hea'] += np.zeros(len(timestamp))
 
         return data
 

@@ -125,9 +125,11 @@ class Buildingmodel(object):
         return result
 
 
-    def preprocess_ocp_model(self,model):
+    def create_ocp_model_variables(self,model):
         pass
 
+    def create_ocp_model_constraints(self,model):
+        pass
 
     def postprocess_ocp_model(self,model):
         pass

@@ -19,7 +19,6 @@ class BaseObject(object):
     A base class for objects identified by a path with a config attribute which
     are backed by the database
 
-
     """
 
     db_table = database.Table(database.db,'objects',[
@@ -73,7 +72,6 @@ class BaseObject(object):
                 # create the db_entry
                 db_entry = result[0]
 
-
         if not db_entry is None:
             # update the config from the database
             jsonconfig = db_entry['config']
@@ -82,15 +80,18 @@ class BaseObject(object):
             else:
                 config = None
 
-            self.config = self._check_config(config)
+            newconfig = self._check_config(config)
+            if newconfig == config:
+                self._config = newconfig # without changing it in the database
+            else:
+                self.config = newconfig # update the database
+ 
 
             # add an id value
             self._id = db_entry['id']
 
-
         # add self to container
         self.container[self._path] = self
-
 
     def delete(self):
 
@@ -217,8 +218,9 @@ class BaseState(BaseObject):
 
         self._value = self._check_value(value)
 
-        # update the value in the database
-        self.db_table.PUT(value=json.dumps(self._value), where='path=\'{}\''.format(self._path))
+        if db_entry is None and not self._value is None:
+            # update the value in the database
+            self.db_table.PUT(value=json.dumps(self._value), where='path=\'{}\''.format(self._path))
 
 
     def fire_changed(self,value,oldvalue,source):
@@ -486,7 +488,9 @@ class State(BaseState):
     def _check_config(self,config):
         """
         """
+
         config = super(State,self)._check_config(config)
+
 
         if 'datatype' not in config:
             config['datatype'] = ''
@@ -504,7 +508,7 @@ class State(BaseState):
             config['triggers'] = ''
         if 'computed' not in config:
             config['computed'] = ''
-        
+
         return config
 
 
@@ -702,5 +706,6 @@ class States(object):
 
 
 
-# create the components container
-states = States()
+# create the states container
+states = None
+

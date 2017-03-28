@@ -298,5 +298,5 @@ class Components(object):
 
 
 # create the components container
-components = Components()
+components = None
 

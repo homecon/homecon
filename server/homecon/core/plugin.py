@@ -630,5 +630,6 @@ class ObjectPlugin(Plugin):
         return self._objects_container.values()
 
 
-# create the components container
-plugins = Plugins()
+# create the plugins container
+plugins = None
+

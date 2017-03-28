@@ -25,7 +25,7 @@ class Building(core.plugin.Plugin):
         """
 
         # add a state for the model
-        core.states.add('building/model',value='singlezone_2', config={'type': 'string', 'quantity':'', 'unit':'','label':'', 'description':'', 'log':False})
+        core.states.add('building/model',value='singlezone_1', config={'type': 'string', 'quantity':'', 'unit':'','label':'', 'description':'', 'log':False})
         core.states.add('building/identification/result', config={'type': 'dict', 'quantity':'', 'unit':'','label':'', 'description':'', 'log':False})
         core.states.add('building/validation/result', config={'type': 'dict', 'quantity':'', 'unit':'','label':'', 'description':'', 'log':False})
 

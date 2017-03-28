@@ -191,5 +191,5 @@ class DummyAdminClient(object):
         pass
 
 
-websocket = Websocket()
+websocket = None
 

@@ -46,7 +46,7 @@ class Singlezone_1(model.Buildingmodel):
             else:
                 return pyomo.Constraint.Feasible
 
-        self.constraints = {
+        self.identification_constraints = {
             'state_T_liv': state_T_liv,
         }
 
@@ -74,7 +74,7 @@ class Singlezone_1(model.Buildingmodel):
 
 
         # contstraints
-        model.state_liv = pyomo.Constraint(model.i,rule=self.constraints['state_T_liv'])
+        model.state_liv = pyomo.Constraint(model.i,rule=self.identification_constraints['state_T_liv'])
         model.state_liv_ini = pyomo.Constraint(rule=lambda model: model.T_liv_est[0] == model.T_liv[0])
 
         # objective
@@ -102,7 +102,7 @@ class Singlezone_1(model.Buildingmodel):
         model.T_liv_est = pyomo.Var(model.i,domain=pyomo.Reals,initialize=lambda model,i: model.T_liv[i])
 
         # contstraints
-        model.state_liv = pyomo.Constraint(model.i,rule=self.constraints['state_T_liv'])
+        model.state_liv = pyomo.Constraint(model.i,rule=self.identification_constraints['state_T_liv'])
         model.state_liv_ini = pyomo.Constraint(rule=lambda model: model.T_liv_est[0] == model.T_liv[0])
 
         # objective
@@ -113,17 +113,17 @@ class Singlezone_1(model.Buildingmodel):
 
     def get_data(self,timestamp):
 
-
         zones = [zone for zone in core.components.find(type='zone')]
-
 
         data = {}
         data['T_amb'] = core.states['weather/temperature'].history(timestamp)
         data['T_liv'] = np.mean( [zone.states['temperature'].history(timestamp) for zone in zones], axis=0)
-        data['Q_hea'] = core.states['heatpump/power'].history(timestamp)
         data['Q_sol'] = np.sum( [zone.states['solargain'].history(timestamp) for zone in zones], axis=0 )
         data['Q_int'] = np.sum( [zone.states['internalgain'].history(timestamp) for zone in zones], axis=0 )
-
+        data['Q_hea'] = np.sum( [heatemissionsystem.calculate_power(timestamp=timestamp) for zone in zones for heatemissionsystem in core.components.find(type='heatemissionsystem',zone=zone)], axis=0 )
+        
+        if data['Q_hea']==0 and hasattr(timestamp,'__len__'):
+            data['Q_hea'] += np.zeros(len(timestamp))
 
         return data
 
@@ -237,7 +237,7 @@ class Singlezone_1(model.Buildingmodel):
             Q_list += [heatemissionsystem.ocp_variables['Q'] for heatemissionsystem in heatemissionsystems]
 
 
-        model.building_constraint_Q_hea = pyomo.Constraint(model.i,rule=lambda model,i: model.building_Q_hea[i] == sum(getattr(model,var)[i] for var in Q_list))
+        model.building_constraint_Q_hea = pyomo.Constraint(model.i,rule=lambda model,i: model.building_Q_hea[i] == sum(var[i] for var in Q_list))
 
 
 

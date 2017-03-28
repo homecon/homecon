@@ -10,7 +10,7 @@ import logging
 
 from . import core
 from . import util
-from . import plugins
+#from . import plugins
 
 
 
@@ -54,6 +54,7 @@ class HomeCon(object):
         self.loglevel = loglevel
         self.printlog = printlog
 
+
         ########################################################################
         # set logging properties
         ########################################################################
@@ -71,6 +72,15 @@ class HomeCon(object):
 
         logging.info('Creating HomeCon object')
 
+
+        ########################################################################
+        # initialize core components
+        ########################################################################
+        kwargs = {}
+        if demo:
+            kwargs['dbname'] = 'demo_homecon'
+
+        core.initialize(**kwargs)
 
 
         ########################################################################
@@ -100,11 +110,6 @@ class HomeCon(object):
 
         # activate all plugins
         self.plugins.start_activate()
-
-
-        # demo mode
-        #if self.demo:
-        #    self.plugins._add_core(coreplugins.demo.Demo)
 
 
         logging.info('HomeCon object Initialized')

@@ -31,22 +31,18 @@ import asyncws
 
 # remove the databases
 try:
-    os.remove('homecon.db')
+    os.remove('demo_homecon.db')
 except:
     pass
 try:
-    os.remove('homecon_measurements.db')
+    os.remove('demo_homecon_measurements.db')
 except:
     pass
 
 # add the homecon path
 sys.path.append(os.path.dirname(os.path.abspath(os.path.join(__file__,'..'))))
 
-import homecon.core.database
-import homecon.core.state
-import homecon.core.component
-
-from websocket import create_connection
+import homecon.core
 
 
 def clear_database():
@@ -80,9 +76,8 @@ def clear_database():
     except:
         pass
 
-#from homecon import HomeCon
 
-class HomeConTestCase(unittest.TestCase):
+class TestCase(unittest.TestCase):
     
     homecondir = '..'
     logfile = os.path.join(homecondir,'log/homecon.log')
@@ -222,24 +217,3 @@ class Client(object):
     async def close(self):
         await self.websocket.close()
 
-
-
-"""
-class Client(object):
-
-    def __init__(self,address):
-
-        self.address = address
-        self.client = create_connection(self.address)
-
-    def send(self,message):
-        
-        self.client.send(json.dumps(message))
-
-    def recv(self):
-
-        return json.loads( self.client.recv() )
-
-    def close(self):
-        self.client.close()
-"""

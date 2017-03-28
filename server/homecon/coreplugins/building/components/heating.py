@@ -15,6 +15,7 @@ class Heatgenerationsystem(core.component.Component):
     default_config = {
         'type': '',
         'power': 10000.,
+        'group': '',
     }
     linked_states = {
         'power': {
@@ -28,12 +29,23 @@ class Heatgenerationsystem(core.component.Component):
     }
 
 
-    def calculate_power(self,utcdatetime=None):
+    def calculate_power(self,timestamp=None):
 
         if self.states['power'].value is None:
-            return self.states['power_setpoint'].history(utcdatetime)
+            return self.states['power_setpoint'].history(timestamp)
         else:
-            return self.states['power'].history(utcdatetime)
+            return self.states['power'].history(timestamp)
+
+
+    def create_ocp_model_variables(self,model):
+        self.ocp_variables['Q'] = pyomo.Var(model.i, domain=pyomo.NonNegativeReals, bounds=(0,self.config['power']), initialize=0.)
+        
+        for key,val in self.ocp_variables:
+            setattr(model,'{}_{}'.format(self.path.replace('/',''),key),val)
+
+
+    def postprocess_ocp_model(self,model):
+        self.Q_schedule = [(pyomo.value(model.timestamp[i]),pyomo.value(self.ocp_variables['Q'][i])) for i in model.i]
 
 
 core.components.register(Heatgenerationsystem)
@@ -47,21 +59,15 @@ class Heatpump(Heatgenerationsystem):
     """
 
     def create_ocp_model_variables(self,model):
-
         self.ocp_variables['P_el'] = pyomo.Var(model.i, domain=pyomo.NonNegativeReals, bounds=(0,self.config['power']), initialize=0.)
-        self.ocp_variables['Q']    = pyomo.Var(model.i, domain=pyomo.NonNegativeReals, bounds=(0,self.config['power']), initialize=0.)
         self.ocp_variables['COP']  = pyomo.Var(model.i, domain=pyomo.NonNegativeReals, bounds=(0.,10.), initialize=3.)
 
-        for key,val in self.ocp_variables:
-            setattr(model,'{}_{}'.format(self.path.replace('/',''),key),val)
+        super().create_ocp_model_variables(model)
+
 
     def create_ocp_model_constraints(self,model):
         setattr(model,'constraint_{}_COP'.format(self.path.replace('/','')), pyomo.Constraint(model.i,rule=lambda model,i: self.ocp_variables['COP'][i] == 3.0))
         setattr(model,'constraint_{}_P_el'.format(self.path.replace('/','')),pyomo.Constraint(model.i,rule=lambda model,i: self.ocp_variables['P_el'][i]*self.ocp_variables['COP'][i] == self.ocp_variables['Q'][i]))
-
-
-    def postprocess_ocp_model(self,model):
-        self.Q_schedule = [(pyomo.value(model.timestamp[i]),pyomo.value(model.heatpump_Q[i])) for i in model.i]
 
 
     def maxpower(self,timestamp):
@@ -82,7 +88,7 @@ class Heatemissionsystem(core.component.Component):
 
     default_config = {
         'type': '',
-        'heatgenerationsystems': [],
+        'group': '',
         'zone': '',
         'valve_position_closed': 0.0,
         'valve_position_open': 1.0,
@@ -99,34 +105,62 @@ class Heatemissionsystem(core.component.Component):
     }
 
     def create_ocp_model_variables(self,model):
-        self.ocp_variables['position'] = pyomo.Var(model.i, domain=pyomo.NonNegativeReals, bounds=(0,1), initialize=0)
         self.ocp_variables['Q']        = pyomo.Var(model.i, domain=pyomo.NonNegativeReals, initialize=0)
 
         for key,val in self.ocp_variables:
             setattr(model,'{}_{}'.format(self.path.replace('/',''),key),val)
-       
+
+    def postprocess_ocp_model_variables(self,model):
+
+        grouppower = pyomo.value( core.components[self.config['group']].ocp_variables['Q'] )
+        selfpower = pyomo.value(self.ocp_variables['Q'] )
+
+        position = selfpower/grouppower if grouppower>0 else self.config['valve_position_open']   # FIXME check this, probably incorrect
+
+        # set the valve position
+        self.states['valve_position'].value = position
+
+
+    def calculate_power(self,timestamp=None):
+        emissionsystems = core.components.find(type='heatemissionsystem',group=core.components[self.config['group']])
+
+        valvepositions = np.array([(system.states['valve_position'].history(timestamp)-system.config['valve_position_closed'])/(system.config['valve_position_open']-system.config['valve_position_closed']) for system in emissionsystems])
+
+        relativepower = (self.states['valve_position'].history(timestamp)-self.config['valve_position_closed'])/(self.config['valve_position_open']-self.config['valve_position_closed'])/sum(valvepositions)
+
+        grouppower = core.components[self.config['group']].calculate_power(timestamp=timestamp)
+
+        return relativepower*grouppower
+
+core.components.register(Heatemissionsystem)
+
+
+
+class Heatinggroup(core.component.Component):
+    """
+    a class implementing a group of connected heat generation systems and heat emission systems 
+    
+    """
+    
+    def calculate_power(self,timestamp=None):
+        heatgenerationsystems = core.components.find(type='heatgenerationsystem',group=self.path)
+
+        Q = sum([system.calculate_power(timestamp=timestamp) for system in heatgenerationsystems])
+
+        if Q==0 and hasattr(timestamp,'__len__'):
+            Q += np.zeros(len(timestamp))
+
+        return Q
 
 
     def create_ocp_model_constraints(self,model):
 
         # a list of all generation system heat flows connected to this heatemissionsystem
-        Q_list = [core.components[heatgenerationsystem].ocp_variables['Q'] for heatgenerationsystem in self.config['heatgenerationsystems']]
-
-        # FIXME use the valve position variable
-        setattr(model,'constraint_{}_Q'.format(self.path.replace('/','')),pyomo.Constraint(model.i,rule=lambda model,i: self.ocp_variables['Q'][i] == sum(getattr(model,var)[i] for var in Q_list)))
+        Q_generation_list = [system.ocp_variables['Q'] for system in core.components.find(type='heatgenerationsystem',group=self.path)]
+        Q_emission_list = [system.ocp_variables['Q'] for system in core.components.find(type='heatemissionsystem',group=self.path)]
 
 
+        setattr(model,'constraint_{}_Q'.format(self.path.replace('/','')),pyomo.Constraint(model.i,rule=lambda model,i: sum(var for var[i] in Q_generation_list) == sum(var for var[i] in Q_emission_list)))
 
-    def calculate_power(self,utcdatetime=None):
-        parallelsystems = core.components.find(type='heatemissionsystem',heatgenerationsystem=self.config['heatgenerationsystem'])
+core.components.register(Heatinggroup)
 
-        valvepositions = np.array([(system.states['valve_position'].history(utcdatetime)-system.config['valve_position_closed'])/(system.config['valve_position_open']-system.config['valve_position_closed']) for system in parallelsystems])
-
-        relativepower = (self.states['valve_position'].history(utcdatetime)-self.config['valve_position_closed'])/(self.config['valve_position_open']-self.config['valve_position_closed'])/sum(valvepositions)
-
-        heatgenerationsystempower = core.components[self.config['heatgenerationsystem']].calculate_power(utcdatetime=utcdatetime)
-
-        return relativepower*heatgenerationsystempower
-
-
-core.components.register(Heatemissionsystem)

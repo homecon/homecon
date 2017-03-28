@@ -78,14 +78,14 @@ class Database(object):
     #    cursor.execute('select * from {}'.format(table))
     #    row = cursor.fetchone()
 
-
     def _dict_factory(self,cursor, row):
         d = {}
         for idx, col in enumerate(cursor.description):
             d[col[0]] = row[idx]
         return d
-        
-        
+
+
+
 class Table(object):
     """
     Class to work with a database table
@@ -125,6 +125,7 @@ class Table(object):
                     cursor = self.database.execute_query( query )
                     
                 else:
+
                     query = 'ALTER TABLE `{}` ADD `{}`'.format(self.name,column['name'])
                     cursor = self.database.execute_query( query )
 
@@ -140,12 +141,12 @@ class Table(object):
         if not 'id' in self.columns:
             self.columns.append('id')
 
-    
+
     def GET(self,columns=None,order=None,desc=False,limit=None,**kwargs):
         """
         Gets data from the database
         """
-        
+
         if columns == None:
             columns = '*'
         else:
@@ -181,6 +182,7 @@ class Table(object):
         if not limit is None:
             query = query + ' LIMIT {}'.format(limit)
 
+        logging.debug(query)
         cursor = self.database.execute_query( query, data )
         
         if cursor == None:
@@ -205,6 +207,7 @@ class Table(object):
         
         query = 'INSERT INTO {} ({}) VALUES ({})'.format(self.name,columns,values)
 
+        logging.debug(query)
         cursor = self.database.execute_query( query, data )
         
     def PUT(self,where='',**kwargs):
@@ -221,6 +224,7 @@ class Table(object):
         
         query = 'UPDATE {} SET {} WHERE {}'.format(self.name,columnsvalues,where)
 
+        logging.debug(query)
         cursor = self.database.execute_query( query, data )
         
     def DELETE(self,**kwargs):
@@ -248,13 +252,17 @@ class Table(object):
         data = tuple(data)
 
         query = 'DELETE FROM {} {}'.format(self.name,where)
+
+        logging.debug(query)
         cursor = self.database.execute_query( query,data )
 
 
+
 # create database objects
-db = Database(database='homecon.db')
-measurements_db = Database(database='homecon_measurements.db')
-        
+db = None
+measurements_db = None
+
+
 # Example usage
 if __name__ == '__main__':
 

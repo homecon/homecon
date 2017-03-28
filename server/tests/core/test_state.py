@@ -108,6 +108,7 @@ class StateTests(unittest.TestCase):
 
         self.assertEqual(states['mycomputedstate'].value, 10+20)
 
+
 if __name__ == '__main__':
     # run tests
     unittest.main()

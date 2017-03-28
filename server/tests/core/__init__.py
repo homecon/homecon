@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-import test_database
-import test_event
-import test_state
+from . import test_database
+from . import test_event
+from . import test_state
 
