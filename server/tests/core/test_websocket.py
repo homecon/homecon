@@ -17,20 +17,14 @@
 #    along with HomeCon.  If not, see <http://www.gnu.org/licenses/>.
 ################################################################################
 
-import unittest
-import sys
-import os
-#import socket
 import asyncio
 
 
-sys.path.append(os.path.abspath('..'))
-import common
+from .. import common
 
-import homecon.core.websocket
-import homecon.core.event
+import homecon.core
 
-class WebsocketTests(unittest.TestCase):
+class WebsocketTests(common.TestCase):
 
     def test_recv(self):
         
@@ -105,10 +99,4 @@ class WebsocketTests(unittest.TestCase):
         loop.run_until_complete(asyncactions())
 
 
-
-
-
-if __name__ == '__main__':
-    # run tests
-    unittest.main()
 

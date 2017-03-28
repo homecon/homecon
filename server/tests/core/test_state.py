@@ -17,20 +17,16 @@
 #    along with HomeCon.  If not, see <http://www.gnu.org/licenses/>.
 ################################################################################
 
-import unittest
-import sys
-import os
 
-sys.path.append(os.path.abspath('..'))
-import common
+from .. import common
 
-import homecon.core.state
+import homecon.core
 
-class StateTests(unittest.TestCase):
+
+class StateTests(common.TestCase):
 
     def test_add(self):
-        common.clear_database()
-        states = homecon.core.state.States()
+        states = homecon.core.states
 
         states.add('mystate')
 
@@ -38,8 +34,7 @@ class StateTests(unittest.TestCase):
 
 
     def test_reinitialize(self):
-        common.clear_database()
-        states = homecon.core.state.States()
+        states = homecon.core.states
 
         states.add('mystate')
 
@@ -51,8 +46,7 @@ class StateTests(unittest.TestCase):
 
 
     def test_trigger(self):
-        common.clear_database()
-        states = homecon.core.state.States()
+        states = homecon.core.states
 
         states.add('mystate',config={'someattr':True})
         states.add('myotherstate',config={'someattr':True})
@@ -61,11 +55,10 @@ class StateTests(unittest.TestCase):
         self.assertEqual(states['mystate'].trigger, [states['mycomputedstate']])
         self.assertEqual(states['myotherstate'].trigger, [states['mycomputedstate']])
         self.assertEqual(states['mycomputedstate'].trigger, [])
-
+        
 
     def test_trigger_reinitialize(self):
-        common.clear_database()
-        states = homecon.core.state.States()
+        states = homecon.core.states
 
         states.add('mystate',config={'someattr':True})
         states.add('myotherstate',config={'someattr':True})
@@ -74,7 +67,7 @@ class StateTests(unittest.TestCase):
         states = None
         homecon.core.state.State.container = {}
 
-        states = homecon.core.state.States()
+        states = homecon.core.states
 
         self.assertEqual(states['mystate'].trigger, [states['mycomputedstate']])
         self.assertEqual(states['myotherstate'].trigger, [states['mycomputedstate']])
@@ -82,8 +75,7 @@ class StateTests(unittest.TestCase):
 
 
     def test_trigger_delete(self):
-        common.clear_database()
-        states = homecon.core.state.States()
+        states = homecon.core.states
 
         states.add('mystate',config={'someattr':True})
         states.add('myotherstate',config={'someattr':True})
@@ -95,8 +87,7 @@ class StateTests(unittest.TestCase):
 
 
     def test_computed(self):
-        common.clear_database()
-        states = homecon.core.state.States()
+        states = homecon.core.states
 
         states.add('mystate',config={'someattr':True})
         states.add('myotherstate',config={'someattr':True})
@@ -109,7 +100,4 @@ class StateTests(unittest.TestCase):
         self.assertEqual(states['mycomputedstate'].value, 10+20)
 
 
-if __name__ == '__main__':
-    # run tests
-    unittest.main()
 

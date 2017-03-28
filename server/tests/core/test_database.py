@@ -17,29 +17,22 @@
 #    along with HomeCon.  If not, see <http://www.gnu.org/licenses/>.
 ################################################################################
 
-import unittest
-import sys
-import os
 
-sys.path.append(os.path.abspath('..'))
-import common
+from .. import common
 
-import homecon.core.database
+import homecon.core
 
 
-
-class DatabaseTests(unittest.TestCase):
+class DatabaseTests(common.TestCase):
     
 
-    def test_connection(self):
-        common.clear_database()
-        db = homecon.core.database.Database(database='homecon.db')
+    def test_create_connection(self):
+        db = homecon.core.database.Database(database='{}.db'.format(common.dbname))
         con = db.create_connection()
 
 
     def test_create_table(self):
-        common.clear_database()
-        db = homecon.core.database.Database(database='homecon.db')
+        db = homecon.core.database.Database(database='{}.db'.format(common.dbname))
         users = homecon.core.database.Table(db,'users',[
             {'name':'username',   'type':'char(255)', 'null': '',  'default':'',  'unique':'UNIQUE'},
             {'name':'password',   'type':'char(255)', 'null': '',  'default':'',  'unique':''},
@@ -48,8 +41,7 @@ class DatabaseTests(unittest.TestCase):
 
 
     def test_post(self):
-        common.clear_database()
-        db = homecon.core.database.Database(database='homecon.db')
+        db = homecon.core.database.Database(database='{}.db'.format(common.dbname))
         users = homecon.core.database.Table(db,'users',[
             {'name':'username',   'type':'char(255)', 'null': '',  'default':'',  'unique':'UNIQUE'},
             {'name':'password',   'type':'char(255)', 'null': '',  'default':'',  'unique':''},
@@ -62,8 +54,7 @@ class DatabaseTests(unittest.TestCase):
 
 
     def test_get(self):
-        common.clear_database()
-        db = homecon.core.database.Database(database='homecon.db')
+        db = homecon.core.database.Database(database='{}.db'.format(common.dbname))
         users = homecon.core.database.Table(db,'users',[
             {'name':'username',   'type':'char(255)', 'null': '',  'default':'',  'unique':'UNIQUE'},
             {'name':'password',   'type':'char(255)', 'null': '',  'default':'',  'unique':''},
@@ -79,8 +70,7 @@ class DatabaseTests(unittest.TestCase):
 
 
     def test_put(self):
-        common.clear_database()
-        db = homecon.core.database.Database(database='homecon.db')
+        db = homecon.core.database.Database(database='{}.db'.format(common.dbname))
         users = homecon.core.database.Table(db,'users',[
             {'name':'username',   'type':'char(255)', 'null': '',  'default':'',  'unique':'UNIQUE'},
             {'name':'password',   'type':'char(255)', 'null': '',  'default':'',  'unique':''},
@@ -98,8 +88,7 @@ class DatabaseTests(unittest.TestCase):
 
 
     def test_reconnect_to_table(self):
-        common.clear_database()
-        db = homecon.core.database.Database(database='homecon.db')
+        db = homecon.core.database.Database(database='{}.db'.format(common.dbname))
         users = homecon.core.database.Table(db,'users',[
             {'name':'username',   'type':'char(255)', 'null': '',  'default':'',  'unique':'UNIQUE'},
             {'name':'password',   'type':'char(255)', 'null': '',  'default':'',  'unique':''},
@@ -113,17 +102,11 @@ class DatabaseTests(unittest.TestCase):
         del users
         del db
 
-        db = homecon.core.database.Database(database='homecon.db')
+        db = homecon.core.database.Database(database='{}.db'.format(common.dbname))
         users = homecon.core.database.Table(db,'users')
 
         db_users = users.GET(columns=['username','permission'])
         self.assertEqual(db_users,[{'username': 'user1', 'permission': 1}, {'username': 'user2', 'permission': 1}, {'username': 'user3', 'permission': 1}])
 
 
-
-
-
-if __name__ == '__main__':
-    # run tests
-    unittest.main()
 

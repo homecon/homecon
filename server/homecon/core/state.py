@@ -32,7 +32,7 @@ class BaseObject(object):
         if path in cls.container:
             return None
         else:
-            return super(BaseObject, cls).__new__(cls)
+            return super().__new__(cls) #super(BaseObject, cls).__new__(cls)
 
 
     def __init__(self,path,config=None,db_entry=None):
@@ -92,6 +92,7 @@ class BaseObject(object):
 
         # add self to container
         self.container[self._path] = self
+
 
     def delete(self):
 

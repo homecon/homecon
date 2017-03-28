@@ -17,40 +17,29 @@
 #    along with HomeCon.  If not, see <http://www.gnu.org/licenses/>.
 ################################################################################
 
-import unittest
-import sys
-import os
 
-sys.path.append(os.path.abspath('..'))
-import common
+from .. import common
 
-import homecon.core.state
-import homecon.core.component
-
-class Mycomponent(homecon.core.component.Component):
-    pass
-
-class Mysubcomponent(Mycomponent):
-    pass
+import homecon.core
 
 
-class ComponentsTests(unittest.TestCase):
+class ComponentsTests(common.TestCase):
 
     def test_register_component(self):
-        common.clear_database()
+        class Mycomponent(homecon.core.component.Component):
+            pass
 
-        states = homecon.core.state.States()
-        components = homecon.core.component.Components()
+        components = homecon.core.components
         components.register(Mycomponent)
 
         self.assertEqual(components._component_types,{'mycomponent':Mycomponent})
 
 
     def test_add(self):
-        common.clear_database()
+        class Mycomponent(homecon.core.component.Component):
+            pass
 
-        states = homecon.core.state.States()
-        components = homecon.core.component.Components()
+        components = homecon.core.components
         components.register(Mycomponent)
 
         components.add('mycomponent1','mycomponent')
@@ -58,10 +47,10 @@ class ComponentsTests(unittest.TestCase):
 
 
     def test_reinitialize(self):
-        common.clear_database()
+        class Mycomponent(homecon.core.component.Component):
+            pass
 
-        states = homecon.core.state.States()
-        components = homecon.core.component.Components()
+        components = homecon.core.components
         components.register(Mycomponent)
 
         components.add('mycomponent1','mycomponent')
@@ -77,7 +66,11 @@ class ComponentsTests(unittest.TestCase):
 
 
     def test_type(self):
-        common.clear_database()
+        class Mycomponent(homecon.core.component.Component):
+            pass
+
+        class Mysubcomponent(Mycomponent):
+            pass
 
         states = homecon.core.state.States()
         components = homecon.core.component.Components()
@@ -89,10 +82,13 @@ class ComponentsTests(unittest.TestCase):
 
 
     def test_find_type(self):
-        common.clear_database()
+        class Mycomponent(homecon.core.component.Component):
+            pass
 
-        states = homecon.core.state.States()
-        components = homecon.core.component.Components()
+        class Mysubcomponent(Mycomponent):
+            pass
+
+        components = homecon.core.components
         components.register(Mycomponent)
         components.register(Mysubcomponent)
 
@@ -115,10 +111,13 @@ class ComponentsTests(unittest.TestCase):
 
 
     def test_find_type_strict(self):
-        common.clear_database()
+        class Mycomponent(homecon.core.component.Component):
+            pass
 
-        states = homecon.core.state.States()
-        components = homecon.core.component.Components()
+        class Mysubcomponent(Mycomponent):
+            pass
+
+        components = homecon.core.components
         components.register(Mycomponent)
         components.register(Mysubcomponent)
 
@@ -133,8 +132,4 @@ class ComponentsTests(unittest.TestCase):
         self.assertNotIn(components['mycomponent3'],found)
         self.assertNotIn(components['mycomponent4'],found)
 
-
-if __name__ == '__main__':
-    # run tests
-    unittest.main()
 

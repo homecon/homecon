@@ -70,7 +70,6 @@ class Websocket(object):
         servergenerator = asyncws.start_server(connect_client, host='127.0.0.1', port=9024, loop=self._loop)
         self.server = self._loop.run_until_complete( servergenerator )
 
-
     def log_data(self,address,data):
         """
         removes sensitive data before logging
@@ -156,6 +155,8 @@ class Websocket(object):
 
         return permitted
 
+    def close(self):
+        self.server.close()
 
 
 class Client(object):

@@ -17,19 +17,16 @@
 #    along with HomeCon.  If not, see <http://www.gnu.org/licenses/>.
 ################################################################################
 
-import unittest
-import sys
-import os
-import time
+
 import asyncio
 
-sys.path.append(os.path.abspath('..'))
-import common
 
-import homecon.core.event
+from .. import common
+
+import homecon.core
 
 
-class EventTests(unittest.TestCase):
+class EventTests(common.TestCase):
 
     def test_fire(self):
 
@@ -46,8 +43,4 @@ class EventTests(unittest.TestCase):
         loop.run_until_complete(get_event())
 
 
-
-if __name__ == '__main__':
-    # run tests
-    unittest.main()
 

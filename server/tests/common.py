@@ -18,179 +18,59 @@
 ######################################################################################
 
 import unittest
-import subprocess
-import threading
-import time
 import os
-import sys
-import shutil
 import sqlite3
 import json
 import asyncio
 import asyncws
+import time
 
-# remove the databases
-try:
-    os.remove('demo_homecon.db')
-except:
-    pass
-try:
-    os.remove('demo_homecon_measurements.db')
-except:
-    pass
-
-# add the homecon path
-sys.path.append(os.path.dirname(os.path.abspath(os.path.join(__file__,'..'))))
+dbname='test_homecon'
 
 import homecon.core
 
+# initialize the core components once
+homecon.core.initialize(dbname=dbname)
+homecon.core.websocket.close()
+loop = asyncio.get_event_loop()
+loop.close()
 
-def clear_database():
-    try:
-        connection = sqlite3.connect('homecon.db')
-        cursor = connection.cursor()
-        cursor.execute('SELECT name FROM sqlite_master WHERE type=\'table\';')
-        for result in cursor.fetchall():
-            for table in result:
-                cursor.execute('DELETE FROM {}'.format(table))
-
-        connection.commit()
-        connection.close()
-
-        # clear containers
-        homecon.core.state.State.container = {}
-        homecon.core.component.Component.container = {}
-    except:
-        pass
-
-    try:
-        connection = sqlite3.connect('homecon_measurements.db')
-        cursor = connection.cursor()
-        cursor.execute('SELECT name FROM sqlite_master WHERE type=\'table\' ORDER BY name;')
-        for result in cursor.fetchall():
-            for table in result:
-                cursor.execute('DELETE FROM {}'.format(table))
-
-        connection.commit()
-        connection.close()
-    except:
-        pass
 
 
 class TestCase(unittest.TestCase):
     
-    homecondir = '..'
-    logfile = os.path.join(homecondir,'log/homecon.log')
-
-    if not os.path.exists('log'):
-        os.mkdir('log')
-
-
-    def create_database_connection(self):
-        connection = sqlite3.connect('homecon')
-    #    con = pymysql.connect('localhost', 'homecon_test', 'passwordusedfortesting', 'homecon_test')
-    #    cur = con.cursor()
-    #
-        return connection
-
+    
 
     def clear_database(self):
         try:
-            os.remove('homecon.db')
+            os.remove('{}.db'.format(dbname))
         except:
             pass
-
         try:
-            os.remove('homecon_measurements.db')
+            os.remove('{}_measurements.db'.format(dbname))
         except:
             pass
 
-    def start_homecon(self,sleep=1,clear_log=True,print_log=False):
-        """
-        starts homecon
-        """
-
-        temp = {}
-        def target():
-            temp['hc'] = HomeCon(loglevel='debug',printlog=print_log)
-            temp['hc'].main()
-
-        hc_thread = threading.Thread(target=target)
-        hc_thread.start()
-
-        while not 'hc' in temp:
-            time.sleep(0.1) # starting homecon takes some time
-
-        hc = temp['hc']
-
-
-        return hc
-
-    def stop_homecon(self,hc,sleep=1):
-        """
-        stop homecon
-        """
-        hc._loop.call_soon_threadsafe( hc.stop() )
-
-        while hc._loop and hc._loop.is_running():
-            time.sleep(0.1) # stopping homecon takes some time
-
-    # run the loop to fire fire events
-    def run_event_loop(self,loop,sleep=0.1):
-
-        async def spam():
-            asyncio.sleep(sleep)
-
-        loop.run_until_complete(spam())
-
-
-    def save_homecon_log(self,append=''):
-        """
-        save the homecon log into the tests direcory
-        """
-
-        shutil.copyfile(self.logfile, 'log/{}_{}{}_homecon.log'.format(self.__class__.__name__,self._testMethodName,append))
-
-        # check if there are errors in the log file
-        with open(self.logfile) as f:
-            errors = []
-            for l in f:
-                if ' ERROR ' in l:
-                    errors.append(l)
-
-            self.assertEqual(len(errors),0,msg='\n' + '\n'.join(errors))
 
     def setUp(self):
         """
         Executed before every test
-
-        clear the smarthome log file
-        start smarthome
         """
 
-        # clear the log file
-        open(self.logfile, 'w').close()
-
-        # clear the database
         self.clear_database()
+        homecon.core.initialize(dbname=dbname)
+
 
     def tearDown(self):
         """
         Executed after every test
-
-        stop smarthome
-        copy the smarthome log file
-        check the log file for errors
         """
         
-        # stop smarthome if it is still running
-        try:
-            self.stop_smarthome()
-        except:
-            pass
-
-        # clear the database
+        homecon.core.websocket.close()
+        loop = asyncio.get_event_loop()
+        loop.close()
         self.clear_database()
+
 
 
 class Client(object):
@@ -199,6 +79,9 @@ class Client(object):
     """
 
     async def connect(self,address):
+        """
+        connect to a websocket server
+        """
         self.websocket = await asyncws.connect(address)
 
     async def send(self,message):
@@ -214,6 +97,6 @@ class Client(object):
         message = await self.websocket.recv()
         return json.loads( message )
 
-    async def close(self):
-        await self.websocket.close()
+    def close(self):
+        self.websocket.close()
 

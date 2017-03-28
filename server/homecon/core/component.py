@@ -208,8 +208,8 @@ class Components(object):
         """
 
         if not path in self._components and type in self._component_types:
-            
-            return self._component_types[type](path,config=config,db_entry=db_entry)
+            component = self._component_types[type](path,config=config,db_entry=db_entry)
+            return component
 
             """
             # check if the component is in the database and add it if not
