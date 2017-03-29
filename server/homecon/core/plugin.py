@@ -407,7 +407,7 @@ class Plugin(object):
         pass
 
 
-    def create_ocp_model_variables(self,model):
+    def create_ocp_variables(self,model):
         """
         Base method to create ocp model variables
 
@@ -416,7 +416,7 @@ class Plugin(object):
         pass
 
 
-    def create_ocp_model_constraints(self,model):
+    def create_ocp_constraints(self,model):
         """
         Base method to create ocp model constraints
 
@@ -425,7 +425,7 @@ class Plugin(object):
         pass
 
 
-    def postprocess_ocp_model(self,model):
+    def postprocess_ocp(self,model):
         """
         Base method to retrieve data from the ocp solution
 

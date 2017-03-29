@@ -33,7 +33,8 @@ class Building(core.plugin.Plugin):
         self._set_model(core.states['building/model'].value)
 
         # schedule cross validation
-        self._loop.create_task(self.schedule_cross_validation())
+        #self._loop.create_task(self.schedule_cross_validation())
+        self.cross_validation_task = asyncio.ensure_future(self.schedule_cross_validation())
 
 
         logging.debug('Building plugin initialized')
@@ -45,14 +46,20 @@ class Building(core.plugin.Plugin):
 
     def identify(self):
         result = self.model.identify()
-        core.states['building/identification/result'].value = result
+        if not result is None:
+            core.states['building/identification/result'].value = result
+        else:
+            logging.warning('Isufficient data for system identification, retaining previous parameters')
 
         return result
 
 
     def validate(self):
         result = self.model.validate()
-        core.states['building/validation/result'].value = result
+        if not result is None:
+            core.states['building/validation/result'].value = result
+        else:
+            logging.warning('Isufficient data for model validation')
 
         return result
 
@@ -85,16 +92,22 @@ class Building(core.plugin.Plugin):
             await asyncio.sleep(timestamp_when-timestamp_now)
 
 
-    def preprocess_ocp_model(self,model):
+    def create_ocp_variables(self,model):
         key = core.states['building/model'].value
         if key in models.models:
-            result = self.model.preprocess_ocp_model()
+            result = self.model.create_ocp_variables(model)
 
 
-    def postprocess_ocp_model(self,model):
+    def create_ocp_constraints(self,model):
         key = core.states['building/model'].value
         if key in models.models:
-            result = self.model.postprocess_ocp_model()
+            result = self.model.create_ocp_constraints(model)
+
+
+    def postprocess_ocp(self,model):
+        key = core.states['building/model'].value
+        if key in models.models:
+            result = self.model.postprocess_ocp(model)
 
 
 

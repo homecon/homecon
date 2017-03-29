@@ -9,25 +9,27 @@ from .... import core
 
 
 """
-Notation constraints:
+Notation
+--------
+Q : heat flow                          [W]
+P : electric power                     [W]
+C : thermal heat capacity            [J/K]
+UA : thermal UA value                [W/K]
 
-Q : Heat flow,
-P : Electric power,
-C : thermal heat capacity
-UA : thermal UA value
+T : temperature                     [degC]
 
-T : temperature
+Subscripts
+----------
+_amb : ambient
+_liv : living zone
+_nig : night zone
+_bat : bathroom
+_sol : solar
+_hea : heating
+_int : internal
 
-
-
-_amb for ambient
-_liv for living zone
-_nig for night zone
-_bat for bathroom
-
-_est for estimated
-
-_ini for initial
+_est : estimated
+_ini : initial
 
 """
 
@@ -35,14 +37,14 @@ _ini for initial
 class Singlezone_1(model.Buildingmodel):
 
     def __init__(self):
-        self.timestep = 15*60           # timestep in seconds
+
         self.parameters = {'C_liv': 10e6, 'UA_liv_amb': 800} 
 
 
         # state constraints are used in both models
         def state_T_liv(model, i):
-            if i < len(model.i)-1:
-                return model.C_liv*(model.T_liv_est[i+1]-model.T_liv_est[i])/self.timestep == model.UA_liv_amb*(model.T_amb[i]-model.T_liv_est[i]) + model.Q_hea[i] + model.Q_sol[i] + model.Q_int[i]
+            if i+1 < len(model.i):
+                return model.C_liv*(model.T_liv_est[i+1]-model.T_liv_est[i])/(model.timestamp[i+1]-model.timestamp[i]) == model.UA_liv_amb*(model.T_amb[i]-model.T_liv_est[i]) + model.Q_hea[i] + model.Q_sol[i] + model.Q_int[i]
             else:
                 return pyomo.Constraint.Feasible
 
@@ -70,15 +72,15 @@ class Singlezone_1(model.Buildingmodel):
 
         model.C_liv = pyomo.Var(domain=pyomo.NonNegativeReals, initialize=self.parameters['C_liv'], bounds=(1e3,100e9))
         model.UA_liv_amb = pyomo.Var(domain=pyomo.NonNegativeReals, initialize=self.parameters['UA_liv_amb'], bounds=(1,10000e3))
-        model.T_liv_est = pyomo.Var(model.i,domain=pyomo.Reals,initialize=lambda model,i: model.T_liv[i])
+        model.T_liv_est = pyomo.Var(model.i,domain=pyomo.Reals,initialize=lambda model,i: model.T_liv[i] if not np.isnan(model.T_liv[i]) else 20.)
 
 
         # contstraints
         model.state_liv = pyomo.Constraint(model.i,rule=self.identification_constraints['state_T_liv'])
-        model.state_liv_ini = pyomo.Constraint(rule=lambda model: model.T_liv_est[0] == model.T_liv[0])
+        model.state_liv_ini = pyomo.Constraint(rule=lambda model: model.T_liv_est[0] == model.T_liv[0] if not np.isnan(model.T_liv[0]) else pyomo.Constraint.Feasible)
 
         # objective
-        model.objective = pyomo.Objective(rule=lambda model: sum( (model.T_liv[i]-model.T_liv_est[i])**2 for i in model.i ), sense=pyomo.minimize)
+        model.objective = pyomo.Objective(rule=lambda model: sum( (model.T_liv[i]-model.T_liv_est[i])**2 for i in model.i if not np.isnan(model.T_liv[i])), sense=pyomo.minimize)
 
         self.identification_model = model
 
@@ -111,32 +113,34 @@ class Singlezone_1(model.Buildingmodel):
         self.validation_model = model
 
 
-    def get_data(self,timestamp):
+    def get_identification_data(self):
+
+        data = super().get_identification_data()
 
         zones = [zone for zone in core.components.find(type='zone')]
 
-        data = {}
-        data['T_amb'] = core.states['weather/temperature'].history(timestamp)
-        data['T_liv'] = np.mean( [zone.states['temperature'].history(timestamp) for zone in zones], axis=0)
-        data['Q_sol'] = np.sum( [zone.states['solargain'].history(timestamp) for zone in zones], axis=0 )
-        data['Q_int'] = np.sum( [zone.states['internalgain'].history(timestamp) for zone in zones], axis=0 )
-        data['Q_hea'] = np.sum( [heatemissionsystem.calculate_power(timestamp=timestamp) for zone in zones for heatemissionsystem in core.components.find(type='heatemissionsystem',zone=zone)], axis=0 )
-        
-        if data['Q_hea']==0 and hasattr(timestamp,'__len__'):
-            data['Q_hea'] += np.zeros(len(timestamp))
+        data['T_amb'] = core.states['weather/temperature'].history(data['timestamp'])
+        data['T_liv'] = np.mean( [zone.states['temperature'].history(data['timestamp']) for zone in zones], axis=0)
+        data['Q_sol'] = np.sum( [zone.states['solargain'].history(data['timestamp']) for zone in zones], axis=0 )
+        data['Q_int'] = np.sum( [zone.states['internalgain'].history(data['timestamp']) for zone in zones], axis=0 )
+        data['Q_hea'] = np.sum( [heatemissionsystem.calculate_power(timestamp=data['timestamp']) for zone in zones for heatemissionsystem in core.components.find(type='heatemissionsystem',zone=zone)], axis=0 )
+
+
+        # make sure all values are lists
+        if not hasattr(data['Q_hea'],'__len__'):
+            data['Q_sol'] += np.zeros(len(data['timestamp']))
+        if not hasattr(data['Q_hea'],'__len__'):
+            data['Q_int'] += np.zeros(len(data['timestamp']))
+        if not hasattr(data['Q_hea'],'__len__'):
+            data['Q_hea'] += np.zeros(len(data['timestamp']))
+
 
         return data
 
 
-    def get_result(self,model):
+    def get_identification_result(self,model):
 
-        result = {
-            'parameters': {},
-            'inputs': {},
-            'estimates': {},
-            'observations': {},
-            'fitquality': {},
-        }
+        result = super().get_identification_result(model)
 
         result['parameters']['C_liv'] = pyomo.value(model.C_liv)
         result['parameters']['UA_liv_amb'] = pyomo.value(model.UA_liv_amb)
@@ -165,9 +169,7 @@ class Singlezone_1(model.Buildingmodel):
         return result
 
 
-
-
-    def create_ocp_model_variables(self,model):
+    def create_ocp_variables(self,model):
         
         # get data
         timestamps = [model.timestamp[i] for i in model.i]
@@ -216,7 +218,7 @@ class Singlezone_1(model.Buildingmodel):
 
 
 
-    def create_ocp_model_constraints(self,model):
+    def create_ocp_constraints(self,model):
 
         # state estimation?  # FIXME
         T_liv_ini = np.mean( [zone.states['temperature'].history(timestamps[0]) for zone in core.components.find(type='zone')], axis=0)

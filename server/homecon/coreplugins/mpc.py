@@ -76,17 +76,17 @@ class Mpc(core.plugin.Plugin):
 
         # create variables from plugins and components in that order
         for plugin in core.plugins:
-            plugin.create_ocp_model_variables(model)
+            plugin.create_ocp_variables(model)
 
         for component in core.components:
-            component.create_ocp_model_variables(model)
+            component.create_ocp_variables(model)
 
         # create constraints from plugins and components in that order
         for plugin in core.plugins:
-            plugin.create_ocp_model_constraints(model)
+            plugin.create_ocp_constraints(model)
 
         for component in core.components:
-            component.create_ocp_model_constraints(model)
+            component.create_ocp_constraints(model)
 
 
         P_el_list = [attr for attr in dir(model) if attr.endswith('P_el')]
@@ -107,12 +107,12 @@ class Mpc(core.plugin.Plugin):
 
         # pass control program to plugins
         for plugin in core.plugins:
-            plugin.postprocess_ocp_model(model)
+            plugin.postprocess_ocp(model)
 
 
         # pass control program to components
         for component in core.components:
-            component.postprocess_ocp_model(model)
+            component.postprocess_ocp(model)
 
 
         return True

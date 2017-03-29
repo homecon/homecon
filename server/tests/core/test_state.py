@@ -17,6 +17,8 @@
 #    along with HomeCon.  If not, see <http://www.gnu.org/licenses/>.
 ################################################################################
 
+import datetime
+import numpy as np
 
 from .. import common
 
@@ -98,6 +100,93 @@ class StateTests(common.TestCase):
         states['myotherstate'].set(20,async=False)
 
         self.assertEqual(states['mycomputedstate'].value, 10+20)
+
+
+    def test_history(self):
+        states = homecon.core.states
+
+        mystate = states.add('mystate')
+
+        # add data tot the database
+        timestamps = np.array([ int( (datetime.datetime.utcnow()-datetime.datetime(1970, 1, 1)).total_seconds() ) + 100*(i-10) for i in range(10) ])
+        values = np.array([i for i,ts in enumerate(timestamps)])
+
+
+        connection,cursor = homecon.core.measurements_db.create_cursor()
+        for ts,val in zip(timestamps,values):
+            cursor.execute('INSERT INTO measurements (`time`,`path`,`value`) VALUES ({},{},{})'.format(ts,'\'{}\''.format(mystate.path),val  ))
+        connection.commit()
+        connection.close()
+
+        hist = mystate.history(timestamps)
+
+        self.assertEqual(max(abs(hist-values)), 0)
+
+
+    def test_history_interpolate(self):
+        states = homecon.core.states
+
+        mystate = states.add('mystate')
+
+        # add data tot the database
+        timestamps = np.array([ int( (datetime.datetime.utcnow()-datetime.datetime(1970, 1, 1)).total_seconds() ) + 100*(i-10) for i in range(10) ])
+        values = np.array([i for i,ts in enumerate(timestamps)])
+
+
+        connection,cursor = homecon.core.measurements_db.create_cursor()
+        for ts,val in zip(timestamps,values):
+            cursor.execute('INSERT INTO measurements (`time`,`path`,`value`) VALUES ({},{},{})'.format(ts,'\'{}\''.format(mystate.path),val  ))
+        connection.commit()
+        connection.close()
+
+        intermediatetimestamps = timestamps[1:]-50
+        hist = mystate.history(intermediatetimestamps)
+
+        self.assertEqual(max(abs(hist-np.interp(intermediatetimestamps,timestamps,values))), 0)
+
+
+    def test_history_extrapolate(self):
+        states = homecon.core.states
+
+        mystate = states.add('mystate')
+
+        # add data tot the database
+        timestamps = np.array([ int( (datetime.datetime.utcnow()-datetime.datetime(1970, 1, 1)).total_seconds() ) + 100*(i-10) for i in range(10) ])
+        values = np.array([i for i,ts in enumerate(timestamps)])
+
+
+        connection,cursor = homecon.core.measurements_db.create_cursor()
+        for ts,val in zip(timestamps,values):
+            cursor.execute('INSERT INTO measurements (`time`,`path`,`value`) VALUES ({},{},{})'.format(ts,'\'{}\''.format(mystate.path),val  ))
+        connection.commit()
+        connection.close()
+
+        intermediatetimestamps = timestamps-250
+        hist = mystate.history(intermediatetimestamps)
+
+        self.assertTrue(np.isnan(hist[0]))
+        self.assertTrue(np.isnan(hist[1]))
+        self.assertTrue(np.isnan(hist[2]))
+
+
+    def test_history_nodata(self):
+        states = homecon.core.states
+
+        mystate = states.add('mystate')
+
+        timestamps = np.array([ int( (datetime.datetime.utcnow()-datetime.datetime(1970, 1, 1)).total_seconds() ) + 100*(i-10) for i in range(10) ])
+        values = np.array([i for i,ts in enumerate(timestamps)])
+
+
+        connection,cursor = homecon.core.measurements_db.create_cursor()
+        for ts,val in zip(timestamps,values):
+            cursor.execute('INSERT INTO measurements (`time`,`path`,`value`) VALUES ({},{},{})'.format(ts,'\'{}\''.format(mystate.path),val  ))
+        connection.commit()
+        connection.close()
+
+        hist = mystate.history(timestamps-10000)
+        self.assertTrue(all(np.isnan(hist)))
+
 
 
 

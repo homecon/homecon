@@ -5,54 +5,94 @@ import datetime
 import numpy as np
 import pyomo.environ as pyomo
 
+
 class Buildingmodel(object):
     """
     base class for building models
 
     """
     def __init__(self):
+        """
+        Notes
+        -----
+        redefine in a child class
+        """
 
-        self.timestep = 15*60
         self.parameters = {}
-        self.constraints = {}
+
         self.identification_model = None
         self.validation_model = None
 
 
-    def get_data(self,timestamp):
+    def get_identification_data(self):
+        """
+        Redefine in child class
+
+        Returns
+        -------
+        A dictionary with the data required for the identification model.
+        'timestamp' must be a key
         """
 
+        timestep = 15*60
+
+        dt_ref = datetime.datetime(1970, 1, 1)
+        dt_end = datetime.datetime.utcnow()
+        dt_ini = dt_end - datetime.timedelta(days=7)
+
+        timestamp_end = int( (dt_end-dt_ref).total_seconds() )
+        timestamp_ini = int( (dt_ini-dt_ref).total_seconds() )
+
+        timestamps = np.arange(timestamp_ini,timestamp_end,timestep)
+
+        return {'timestamp':timestamps}
+
+
+    def get_identification_result(self,model):
+        """
+        Redefine in child class
         """
 
-        return {}
-
-
-    def get_result(self,model):
-        """
-
-        """
-
-        results = {
-            'success': False,
+        result = {
+            'parameters': {},
+            'inputs': {},
+            'estimates': {},
+            'observations': {},
+            'fitquality': {},
         }
-        return results
 
+        return result
 
-    def _parse_data(self,timestamp,data):
+    def _check_data(self,data):
+
+        for key,val in data.items():
+            ind = np.where(np.isnan(val))[0]
+            if len(ind) > 0.5*len(val):
+                # more than half the values are nan, the data is not usable
+                return False
+
+        return True
+
+    def _parse_data(self,data):
         """
-        Prepare a data dictionary of pyomo
+        Prepare a data dictionary for pyomo
+
+        Parameters
+        ----------
+        timestamp : list or numpy.array
+            list of timestamps
+
+        data : dict of lists or numpy.arrays
+            dictionary with the data with keys corresponding to the pyomo model variables
 
         """
-
-        # add the timestamp to data
-        data['timestamp'] = timestamp
 
         pyomodata={None:{
-            'i':{None: range(len(timestamp))},
+            'i':{None: range(len(data['timestamp']))},
         }}
 
         for key,val in data.items():
-            pyomodata[None][key] = {(i,): val[i] for i in range(len(timestamp))}
+            pyomodata[None][key] = {(i,): val[i] for i in range(len(data['timestamp']))}
 
         # add the parameters
         for key,val in self.parameters.items():
@@ -61,76 +101,76 @@ class Buildingmodel(object):
         return pyomodata
 
 
-    def identify(self):
+
+    def identify(self,verbose=0):
+        """
+        Retrieves data and performs the system identification
+
+        """
         # retrieve data
-        dt_ref = datetime.datetime(1970, 1, 1)
-        dt_end = datetime.datetime.utcnow()
-        dt_ini = dt_end - datetime.timedelta(days=7)
+        data = self.get_identification_data()
 
-        timestamp_end = int( (dt_end-dt_ref).total_seconds() )
-        timestamp_ini = int( (dt_ini-dt_ref).total_seconds() )
+        if self._check_data(data):
+            data = self._parse_data(data)
 
-        timestamp = range(timestamp_ini,timestamp_end,self.timestep)
+            # create the instance
+            instance = self.identification_model.create_instance(data)
 
-        data = self.get_data(timestamp)
-        data = self._parse_data(timestamp,data)
+            # set initial values
+            for key,val in self.parameters.items():
+                if hasattr(instance,key):
+                    setattr(instance,key,val)
 
-        # create the instance
-        instance = self.identification_model.create_instance(data)
+            # solve
+            solver = pyomo.SolverFactory('ipopt')
+            results = solver.solve(instance, tee=True if verbose > 0 else False)
 
-        # set initial values
-        for key,val in self.parameters.items():
-            if hasattr(instance,key):
-                setattr(instance,key,val)
+            result = self.get_identification_result(instance)
 
-        # solve
-        solver = pyomo.SolverFactory('ipopt')
-        results = solver.solve(instance, tee=True)
+            # set parameters
+            for key in self.parameters:
+                self.parameters[key] = result['parameters'][key]
 
-        result = self.get_result(instance)
+            return result
 
-        # set results
-        for key in self.parameters:
-            self.parameters[key] = result['parameters'][key]
+        else:
+            # the data is insufficient to perform the identification
+            return None
 
+        
 
-        return result
+    def validate(self,verbose=0):
+        """
+        Retrieves data and performs the model validation
 
-
-    def validate(self):
+        """
         # retrieve data
-        dt_ref = datetime.datetime(1970, 1, 1)
-        dt_end = datetime.datetime.utcnow()
-        dt_ini = dt_end - datetime.timedelta(days=7)
+        data = self.get_identification_data()
+        if self._check_data(data):
+            data = self._parse_data(data)
+            
+            # create the instance
+            instance = self.validation_model.create_instance(data)
 
-        timestamp_end = int( (dt_end-dt_ref).total_seconds() )
-        timestamp_ini = int( (dt_ini-dt_ref).total_seconds() )
+            # solve
+            solver = pyomo.SolverFactory('ipopt')
+            results = solver.solve(instance, tee=True if verbose > 0 else False)
 
-        timestamp = range(timestamp_ini,timestamp_end,self.timestep)
+            result = self.get_identification_result(instance)
 
-        data = self.get_data(timestamp)
-        data = self._parse_data(timestamp,data)
+            return result
 
-
-        # create the instance
-        instance = self.validation_model.create_instance(data)
-
-
-        # solve
-        solver = pyomo.SolverFactory('ipopt')
-        results = solver.solve(instance, tee=True)
-
-        result = self.get_result(instance)
-
-        return result
+        else:
+            # the data is insufficient to perform the validation
+            return None
 
 
-    def create_ocp_model_variables(self,model):
+    def create_ocp_variables(self,model):
         pass
 
-    def create_ocp_model_constraints(self,model):
+    def create_ocp_constraints(self,model):
         pass
 
-    def postprocess_ocp_model(self,model):
+    def postprocess_ocp(self,model):
         pass
     

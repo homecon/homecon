@@ -86,7 +86,7 @@ class Component(state.BaseObject):
         pass
 
 
-    def create_ocp_model_variables(self,model):
+    def create_ocp_variables(self,model):
         """
         Redefine this method to add variables to the optimal control pyomo model
         
@@ -99,7 +99,7 @@ class Component(state.BaseObject):
         pass
 
 
-    def create_ocp_model_constraints(self,model):
+    def create_ocp_constraints(self,model):
         """
         Redefine this method to add constraints to the optimal control pyomo
         model
@@ -113,7 +113,7 @@ class Component(state.BaseObject):
         pass
 
 
-    def postprocess_ocp_model(self,model):
+    def postprocess_ocp(self,model):
         """
         Redefine this method to use values from the optimal control problem solution
         

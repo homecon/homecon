@@ -65,10 +65,23 @@ class TestCase(unittest.TestCase):
         """
         Executed after every test
         """
-        
-        homecon.core.websocket.close()
+
         loop = asyncio.get_event_loop()
+
+        # close the websocket connection
+        homecon.core.websocket.close()
+
+        # cancel all tasks
+        pending = asyncio.Task.all_tasks()
+        for task in pending:
+            task.cancel()
+
+        # run the event loop for a small time
+        async def test():
+            await asyncio.sleep(0.01)
+        loop.run_until_complete(test())
         loop.close()
+
         self.clear_database()
 
 
