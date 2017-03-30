@@ -11,7 +11,7 @@ from .. import core
 from .. import util
 
 
-def emulate_building(initialdata,weatherdata,lookahead=0,heatingcurve=False):
+def emulate_building(initialdata,weatherdata,finaltimestamp=-1,heatingcurve=False):
     """
     emulate extremely simple building dynamics
     C_em*d(T_em)/dt = UA_em*(T_em-T_in) + Q_em 
@@ -21,25 +21,26 @@ def emulate_building(initialdata,weatherdata,lookahead=0,heatingcurve=False):
     ----------
     initialdata : dict
         Dictionary with intial data.
-        Must have a 'utcdatetime', 'T_in', 'T_em' keys with array like values
+        Must have a 'timestamp', 'T_in', 'T_em' keys with array like values
 
     lookahead : number
         Number of seconds to look ahead from now
 
     """
 
-    # time
-    dt_ref = datetime.datetime(1970, 1, 1)
-    dt_now = datetime.datetime.utcnow()
-    timestep = 60
+    # generate timestep vector
+    timestep = 300
 
-    utcdatetime = [initialdata['utcdatetime'][-1]+datetime.timedelta(seconds=t) for t in np.arange(0,(dt_now-initialdata['utcdatetime'][-1]).total_seconds()+lookahead,timestep)]
-    if utcdatetime[-1] < dt_now:
-        utcdatetime.append(dt_now)
+    if finaltimestamp < 0:
+        
+        dt_ref = datetime.datetime(1970, 1, 1)
+        dt_now = datetime.datetime.utcnow()
+        finaltimestamp = int( (dt-dt_ref).total_seconds() )
 
-    utcdatetime = np.array(utcdatetime)
+    timestamp = np.arange( initialdata['timestamp'][-1],finaltimestamp,timestep )
+    if not timestamp[-1] == finaltimestamp:
+        timestamp = np.append(timestamp,finaltimestamp)
 
-    timestamp = np.array( [int( (dt-dt_ref).total_seconds() ) for dt in utcdatetime] )
 
     # parameters
     UA_in = 800
@@ -70,9 +71,11 @@ def emulate_building(initialdata,weatherdata,lookahead=0,heatingcurve=False):
             shading_relativeposition=shading_relativeposition)
 
         Q_int_zone[zone.path] = 0.0*np.ones(len(timestamp))
+        
 
-    Q_sol = np.sum([Q for Q in Q_sol_zone.values()],axis=0)
-    Q_int = np.sum([Q for Q in Q_int_zone.values()],axis=0)
+    Q_sol = np.sum([Q for Q in Q_sol_zone.values()],axis=0) + 0.0*np.ones(len(timestamp))
+    Q_int = np.sum([Q for Q in Q_int_zone.values()],axis=0) + 0.0*np.ones(len(timestamp))
+
 
     #for window in core.components.find(type='window'):
     #    Q_so = Q_so + window.calculate_solargain(
@@ -95,7 +98,7 @@ def emulate_building(initialdata,weatherdata,lookahead=0,heatingcurve=False):
 
 
     # solve discrete equation
-    for i,t in enumerate(utcdatetime[:-1]):
+    for i,ts in enumerate(timestamp[:-1]):
 
         delta_t = timestamp[i+1]-timestamp[i]
 
@@ -103,14 +106,13 @@ def emulate_building(initialdata,weatherdata,lookahead=0,heatingcurve=False):
         if heatingcurve:
             Q_em[i] = min(Q_em_max,max(0, (T_in[i]-T_am[i])*K_am + (T_set-T_in[i])*K_set ))
         else:
-            Q_em[i] = core.components['floorheating_groundfloor'].calculate_power()
+            Q_em[i] = sum(component.calculate_power() for component in core.components.find(type='heatemissionsystem'))
 
         T_em[i+1] = T_em[i] + (T_in[i]-T_em[i])*delta_t*UA_em/C_em + Q_em[i]*delta_t/C_em
         T_in[i+1] = T_in[i] + (T_am[i]-T_in[i])*delta_t*UA_in/C_in + (T_em[i]-T_in[i])*delta_t*UA_em/C_in + Q_sol[i]*delta_t/C_in + Q_int[i]*delta_t/C_in
 
     # set the output data
     data = {
-        'utcdatetime': utcdatetime[1:],
         'timestamp': timestamp[1:],
         'T_in': T_in[1:],
         'T_em': T_em[1:],

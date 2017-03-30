@@ -16,7 +16,6 @@ pip install pytz
 pip install ephem
 pip install passlib
 pip install PyJWT
-pip install websocket-client
 pip install asyncws
 pip install aiohttp
 pip install numpy

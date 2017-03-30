@@ -35,7 +35,11 @@ try:
 
     if 'demo' in sys.argv:
         import homecon.demo
-
+        
+        homecon.demo.prepare_database()
+        homecon.demo.emulatorthread.start()
+        homecon.demo.forecastthread.start()
+        
     hc.main()
 
 except:

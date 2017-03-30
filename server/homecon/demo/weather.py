@@ -11,7 +11,7 @@ from .. import core
 from .. import util
 
 
-def emulate_weather(initialdata,lookahead=0):
+def emulate_weather(initialdata,finaltimestamp=-1,mincloudcover=0,maxcloudcover=1,minambienttemperature=-10,maxambienttemperature=35):
     """
     emulate weather conditions
 
@@ -19,7 +19,7 @@ def emulate_weather(initialdata,lookahead=0):
     ----------
     initialdata : dict
         Dictionary with intial data.
-        Must have a 'utcdatetime', 'cloudcover' and 'ambienttemperature' 
+        Must have a 'timestamp', 'cloudcover' and 'ambienttemperature' 
         keys with array like values
 
     lookahead : number
@@ -27,18 +27,19 @@ def emulate_weather(initialdata,lookahead=0):
 
     """
 
-    # generate new datetime vector
-    dt_ref = datetime.datetime(1970, 1, 1)
-    dt_now = datetime.datetime.utcnow()
+    
+    # generate timestep vector
     timestep = 300
 
-    utcdatetime = [initialdata['utcdatetime'][-1]+datetime.timedelta(seconds=t) for t in np.arange(0,(dt_now-initialdata['utcdatetime'][-1]).total_seconds()+lookahead,timestep)]
-    if utcdatetime[-1] < dt_now:
-        utcdatetime.append(dt_now)
+    if finaltimestamp < 0:
+        
+        dt_ref = datetime.datetime(1970, 1, 1)
+        dt_now = datetime.datetime.utcnow()
+        finaltimestamp = int( (dt-dt_ref).total_seconds() )
 
-    utcdatetime = np.array(utcdatetime)
-
-    timestamp = np.array( [int( (dt-dt_ref).total_seconds() ) for dt in utcdatetime] )
+    timestamp = np.arange( initialdata['timestamp'][-1],finaltimestamp,timestep )
+    if not timestamp[-1] == finaltimestamp:
+        timestamp = np.append(timestamp,finaltimestamp)
 
 
     solar_azimuth = np.zeros(len(timestamp))
@@ -71,22 +72,30 @@ def emulate_weather(initialdata,lookahead=0):
         # random variation in cloud cover
         if i < len(timestamp)-1:
             delta_t = timestamp[i+1]-timestamp[i]
-            cloudcover[i+1] = min(1.,max(0., cloudcover[i] + 0.0001*(2*np.random.random()-1)*delta_t ))
+            cloudcover[i+1] = min(maxcloudcover,max(mincloudcover, cloudcover[i] + 0.0001*(2*np.random.random()-1)*delta_t ))
 
         I_direct_cloudy[i],I_diffuse_cloudy[i] = util.weather.cloudyskyirrradiance(I_direct_clearsky[i],I_diffuse_clearsky[i],cloudcover[i],solar_azimuth[i],solar_altitude[i],timestamp=ts)
         
         I_total_horizontal[i], I_direct_horizontal[i], I_diffuse_horizontal[i], I_ground_horizontal[i] = util.weather.incidentirradiance(I_direct_cloudy[i],I_diffuse_cloudy[i],solar_azimuth[i],solar_altitude[i],0,0)
 
         # ambient temperature dependent on horizontal irradiance
-        if i < len(timestamp)-1:
+
+
+
+        if i+1 < len(timestamp):
+            c_tot = 800e3
+
+            skytemperature = -15*(1-cloudcover[i]) -10*cloudcover[i]
+            U_sky = 7.0*(1-cloudcover[i]) + 2.0*cloudcover[i]
+            
+            T_avg = ambienttemperature[i]
+            q_corr = 0*100*( np.exp(-(T_avg-minambienttemperature)) - np.exp(-(maxambienttemperature-T_avg)) )
+            
+
             delta_t = timestamp[i+1]-timestamp[i]
-            ambienttemperature[i+1] = ambienttemperature[i] + I_total_horizontal[i]*delta_t/(30*24*3600) + (-10-ambienttemperature[i])*delta_t/(5*24*3600) + 10*delta_t/(30*24*3600)  + (2*np.random.random()-1)*delta_t/(2*3600)
-
-
-    utcdatetime_ref = datetime.datetime(1970, 1, 1)
+            ambienttemperature[i+1] = ambienttemperature[i] + (skytemperature-ambienttemperature[i])*U_sky*delta_t/c_tot + I_total_horizontal[i]*delta_t/c_tot + q_corr*delta_t/c_tot
 
     data = {
-        'utcdatetime': utcdatetime,
         'timestamp': timestamp,
         'solar_azimuth': solar_azimuth,
         'solar_altitude': solar_altitude,
@@ -103,3 +112,5 @@ def emulate_weather(initialdata,lookahead=0):
     }
 
     return data
+
+

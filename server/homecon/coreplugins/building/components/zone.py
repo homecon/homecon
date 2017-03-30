@@ -110,7 +110,6 @@ class Zone(core.component.Component):
 core.components.register(Zone)
 
 
-
 class Zonetemperaturesensor(core.component.Component):
     """
     a class implementing a temperature sensor
