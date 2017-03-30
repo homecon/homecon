@@ -328,7 +328,9 @@ class BaseState(BaseObject):
             self._value = value
 
             # update the value in the database
-            self.db_table.PUT(value=json.dumps(value), where='path=\'{}\''.format(self._path))
+            jsonvalue = json.dumps(value)
+            self.db_table.PUT(value=jsonvalue, where='path=\'{}\''.format(self._path))
+
 
             return True,oldvalue
 

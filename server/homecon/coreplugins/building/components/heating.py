@@ -122,11 +122,15 @@ class Heatemissionsystem(core.component.Component):
 
 
     def calculate_power(self,timestamp=None):
-        emissionsystems = core.components.find(type='heatemissionsystem',group=core.components[self.config['group']])
+        emissionsystems = core.components.find(type='heatemissionsystem',group=self.config['group'])
 
+        valveposition = self.states['valve_position'].history(timestamp)
         valvepositions = np.array([(system.states['valve_position'].history(timestamp)-system.config['valve_position_closed'])/(system.config['valve_position_open']-system.config['valve_position_closed']) for system in emissionsystems])
-
-        relativepower = (self.states['valve_position'].history(timestamp)-self.config['valve_position_closed'])/(self.config['valve_position_open']-self.config['valve_position_closed'])/sum(valvepositions)
+        
+        if hasattr(timestamp,'__len__'):
+            relativepower = np.array([(p-self.config['valve_position_closed'])/(self.config['valve_position_open']-self.config['valve_position_closed'])/s if s>0 else 0 for p,s in zip(valveposition,np.sum(valvepositions,axis=0))])
+        else:
+            relativepower = (valveposition-self.config['valve_position_closed'])/(self.config['valve_position_open']-self.config['valve_position_closed'])/sum(valvepositions) if sum(valvepositions)>0 else 0
 
         grouppower = core.components[self.config['group']].calculate_power(timestamp=timestamp)
 

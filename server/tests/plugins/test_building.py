@@ -21,6 +21,7 @@
 import asyncio
 import numpy as np
 import datetime
+import json
 
 from .. import common
 
@@ -63,6 +64,7 @@ class Singlezone_1Tests(common.TestCase):
         buildingmodel = Singlezone_1_patch()
 
         result = buildingmodel.identify()
+        jsonresult = json.dumps(result)
 
         self.assertNotEqual(result,None)
 

@@ -48,8 +48,7 @@ class BuildingTests(common.TestCase):
         core.components.add('heatinggroup1'              , 'heatinggroup'    ,{})
         core.components.add('floorheating_groundfloor'   , 'heatemissionsystem'       , {'type':'floorheating'    ,'zone':'dayzone', 'group':'heatinggroup1'})
 
-        print(core.components._component_types)
-        
+
         initialtimestamp = int( (datetime.datetime(2016,1,1)-datetime.datetime(1970,1,1)).total_seconds() )
 
         weatherdata = {
@@ -65,6 +64,13 @@ class BuildingTests(common.TestCase):
             'T_in': [21.],
             'T_em': [22.],
         }
-        buildingdata = demo.building.emulate_building(buildingdata,weatherdata,finaltimestamp=initialtimestamp+7*24*3600)
+        buildingdata = demo.building.emulate_building(buildingdata,weatherdata,finaltimestamp=initialtimestamp+7*24*3600,heatingcurve=True)
 
- 
+        print( 'T_amb (degC)  {}'.format([int(v*10)/10 for v in weatherdata['ambienttemperature'][-24*12::12]]) )
+        print( 'T_in  (degC)  {}'.format([int(v*10)/10 for v in buildingdata['T_in'][-24*12::12]]) )
+        print( 'T_em  (degC)  {}'.format([int(v*10)/10 for v in buildingdata['T_em'][-24*12::12]]) )
+        print( 'Q_em    (kW)  {}'.format([int(v/100)/10 for v in buildingdata['Q_em'][-24*12::12]]) )
+
+
+
+

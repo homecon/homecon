@@ -16,6 +16,9 @@ from .. import core
 from .. import util
 
 
+weatherdata = None
+buildingdata = None
+
 
 class DemoThread(threading.Thread):
     """
@@ -41,13 +44,14 @@ class DemoThread(threading.Thread):
             time.sleep(max(0,nextrun-runtime))
 
 
-
 def prepare_database():
     """
     Add entries to the database as if HomeCon was already running for 2 weeks
     
     """
-    
+    global weatherdata
+    global buildingdata
+
     logging.info('Starting Demo mode')
 
     ########################################################################
@@ -69,59 +73,59 @@ def prepare_database():
     ########################################################################
     logging.debug('Adding demo components')
 
-    # systems
-    core.components.add('heatpump'            , 'heatgenerationsystem'       , {'type':'heatpump'    ,'power':10000,})
-
-
     # outside sensors
-    core.components.add('outside/temperature'      ,'ambienttemperaturesensor'    ,{'confidence':0.5})
-    core.components.add('outside/irradiance'       ,'irradiancesensor'            ,{'confidence':0.8, 'azimuth':0.0, 'tilt':0.0})
+    core.components.add('outside/temperature'      ,'ambienttemperaturesensor'    , config={'confidence':0.5})
+    core.components.add('outside/irradiance'       ,'irradiancesensor'            , config={'confidence':0.8, 'azimuth':0.0, 'tilt':0.0})
 
 
     # dayzone
-    core.components.add('dayzone'      ,'zone'    ,{})
+    core.components.add('dayzone'      ,'zone'    , config={})
 
-    core.components.add('living/temperature_wall'        ,'zonetemperaturesensor'    ,{'zone':'dayzone','confidence':0.5})
-    core.components.add('living/temperature_window'      ,'zonetemperaturesensor'    ,{'zone':'dayzone','confidence':0.8})
+    core.components.add('living/temperature_wall'        ,'zonetemperaturesensor'    , config={'zone':'dayzone','confidence':0.5})
+    core.components.add('living/temperature_window'      ,'zonetemperaturesensor'    , config={'zone':'dayzone','confidence':0.8})
 
-    core.components.add('living/window_west_1'    ,'window'       ,{'zone':'dayzone', 'area':7.2, 'azimuth':270})
-    core.components.add('living/window_west_2'    ,'window'       ,{'zone':'dayzone', 'area':5.8, 'azimuth':270})
-    core.components.add('kitchen/window_west'     ,'window'       ,{'zone':'dayzone', 'area':6.2, 'azimuth':270})
-    core.components.add('kitchen/window_south'    ,'window'       ,{'zone':'dayzone', 'area':6.2, 'azimuth':180})
+    core.components.add('living/window_west_1'    ,'window'       , config={'zone':'dayzone', 'area':7.2, 'azimuth':270})
+    core.components.add('living/window_west_2'    ,'window'       , config={'zone':'dayzone', 'area':5.8, 'azimuth':270})
+    core.components.add('kitchen/window_west'     ,'window'       , config={'zone':'dayzone', 'area':6.2, 'azimuth':270})
+    core.components.add('kitchen/window_south'    ,'window'       , config={'zone':'dayzone', 'area':6.2, 'azimuth':180})
 
-    core.components.add('living/window_west_1/screen'   ,'shading'       ,{'window':'living/window_west_1', 'transmittance_closed':0.4})
-    core.components.add('living/window_west_2/screen'   ,'shading'       ,{'window':'living/window_west_2', 'transmittance_closed':0.4})
-    core.components.add('kitchen/window_west/screen'    ,'shading'       ,{'window':'kitchen/window_west' , 'transmittance_closed':0.4})
-    core.components.add('kitchen/window_south/screen'   ,'shading'       ,{'window':'kitchen/window_south', 'transmittance_closed':0.4})
-
-
-    core.components.add('living/light_dinnertable', 'light'       , {'type':'hallogen','power':35   ,'zone':'dayzone'})
-    core.components.add('living/light_tv'         , 'light'       , {'type':'led'     ,'power':10   ,'zone':'dayzone'})
-    core.components.add('living/light_couch'      , 'dimminglight', {'type':'led'     ,'power':15   ,'zone':'dayzone'})
-    core.components.add('kitchen/light'           , 'light'       , {'type':'led'     ,'power':5    ,'zone':'dayzone'})
+    core.components.add('living/window_west_1/screen'   ,'shading'       , config={'window':'living/window_west_1', 'transmittance_closed':0.4})
+    core.components.add('living/window_west_2/screen'   ,'shading'       , config={'window':'living/window_west_2', 'transmittance_closed':0.4})
+    core.components.add('kitchen/window_west/screen'    ,'shading'       , config={'window':'kitchen/window_west' , 'transmittance_closed':0.4})
+    core.components.add('kitchen/window_south/screen'   ,'shading'       , config={'window':'kitchen/window_south', 'transmittance_closed':0.4})
 
 
-    core.components.add('floorheating_groundfloor'            , 'heatemissionsystem'       , {'type':'floorheating'    ,'zone':'dayzone', 'heatgenerationsystem':'heatpump'})
+    core.components.add('living/light_dinnertable', 'light'       , config={'type':'hallogen','power':35   ,'zone':'dayzone'})
+    core.components.add('living/light_tv'         , 'light'       , config={'type':'led'     ,'power':10   ,'zone':'dayzone'})
+    core.components.add('living/light_couch'      , 'dimminglight', config={'type':'led'     ,'power':15   ,'zone':'dayzone'})
+    core.components.add('kitchen/light'           , 'light'       , config={'type':'led'     ,'power':5    ,'zone':'dayzone'})
+
 
 
 
     # nightzone
     core.components.add('nightzone'    ,'zone'    ,{})
 
-    core.components.add('bedroom/temperature'      ,'zonetemperaturesensor'    ,{'zone':'nightzone','confidence':0.8})
+    core.components.add('bedroom/temperature'      ,'zonetemperaturesensor'    , config={'zone':'nightzone','confidence':0.8})
 
-    core.components.add('bedroom/window_east'       ,'window'       ,{'zone':'nightzone', 'area':1.2, 'azimuth':90})
-    core.components.add('bedroom/window_north'      ,'window'       ,{'zone':'nightzone', 'area':0.8, 'azimuth':0})
+    core.components.add('bedroom/window_east'       ,'window'       , config={'zone':'nightzone', 'area':1.2, 'azimuth':90})
+    core.components.add('bedroom/window_north'      ,'window'       , config={'zone':'nightzone', 'area':0.8, 'azimuth':0})
 
-    core.components.add('bedroom/window_east/shutter'      ,'shading'       ,{'window':'bedroom/window_east' , 'closed_transmittance':0.0})
-    core.components.add('bedroom/window_north/shutter'     ,'shading'       ,{'window':'bedroom/window_north', 'closed_transmittance':0.0})
+    core.components.add('bedroom/window_east/shutter'      ,'shading'       , config={'window':'bedroom/window_east' , 'closed_transmittance':0.0})
+    core.components.add('bedroom/window_north/shutter'     ,'shading'       , config={'window':'bedroom/window_north', 'closed_transmittance':0.0})
 
-    core.components.add('bedroom/light'           , 'dimminglight', {'type':'led'     ,'power':20   ,'zone':'nightzone'})
+    core.components.add('bedroom/light'           , 'dimminglight', config={'type':'led'     ,'power':20   ,'zone':'nightzone'})
 
 
 
     # bathroom
     core.components.add('bathroomzone'     ,'zone'    ,{})
+
+
+    # heatingsystem
+    core.components.add('heatinggroup1'           , 'heatinggroup'        , config={})
+    core.components.add('heatpump'                , 'heatgenerationsystem', config={'type':'heatpump'    , 'power':10000   , 'group':'heatinggroup1'})
+    core.components.add('floorheating_groundfloor', 'heatemissionsystem'  , config={'type':'floorheating', 'zone':'dayzone', 'group':'heatinggroup1'})
 
 
 
@@ -196,7 +200,7 @@ def prepare_database():
 
 
     logging.debug('Calculating past demo weather data')
-    weatherdata = {'utcdatetime':[timestamp_start], 'cloudcover':[0], 'ambienttemperature':[5]}
+    weatherdata = {'timestamp':[timestamp_start], 'cloudcover':[0], 'ambienttemperature':[5]}
     weatherdata = weather.emulate_weather(weatherdata,finaltimestamp=timestamp_now+10*24*3600)
 
     # write data to homecon measurements database
@@ -238,8 +242,6 @@ def prepare_database():
                 if key in core.states:
                     cursor.execute('INSERT INTO measurements (`time`,`path`,`value`) VALUES ({},{},{})'.format(buildingdata['timestamp'][i],'\'{}\''.format(key),np.round(val[i],2)  ))
 
-        else:
-            break
 
     connection.commit()
     connection.close()

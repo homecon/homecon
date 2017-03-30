@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import logging
+logger = logging.getLogger()
 
 BACKEND = 'sqlite3'
 
@@ -9,6 +10,22 @@ if BACKEND == 'sqlite3':
     import sqlite3
 else:
     import pymysql
+
+
+
+
+# add a debugdb loglevel just below debug
+DEBUGDB_LEVEL_NUM = 9
+logging.addLevelName(DEBUGDB_LEVEL_NUM, "DEBUGDB")
+def debugdb(self, message, *args, **kwargs):
+    # Yes, logger takes its '*args' as 'args'.
+    if self.isEnabledFor(DEBUGDB_LEVEL_NUM):
+        self._log(DEBUGDB_LEVEL_NUM, message, args, **kwargs) 
+
+logging.Logger.debugdb = debugdb
+
+
+
 
 
 class Database(object):
@@ -67,7 +84,7 @@ class Database(object):
             connection.commit()
         except Exception as e:
             connection.rollback()
-            logging.error('Database query \'{}\' raised an exception exception {}'.format(query,e))
+            logger.error('Database query \'{}\' raised an exception exception {}'.format(query,e))
         
         return cursor
         
@@ -182,7 +199,7 @@ class Table(object):
         if not limit is None:
             query = query + ' LIMIT {}'.format(limit)
 
-        logging.debug(query)
+        logger.debugdb(query)
         cursor = self.database.execute_query( query, data )
         
         if cursor == None:
@@ -207,7 +224,7 @@ class Table(object):
         
         query = 'INSERT INTO {} ({}) VALUES ({})'.format(self.name,columns,values)
 
-        logging.debug(query)
+        logger.debugdb(query)
         cursor = self.database.execute_query( query, data )
         
     def PUT(self,where='',**kwargs):
@@ -224,7 +241,7 @@ class Table(object):
         
         query = 'UPDATE {} SET {} WHERE {}'.format(self.name,columnsvalues,where)
 
-        logging.debug(query)
+        logger.debugdb(query)
         cursor = self.database.execute_query( query, data )
         
     def DELETE(self,**kwargs):
@@ -253,7 +270,7 @@ class Table(object):
 
         query = 'DELETE FROM {} {}'.format(self.name,where)
 
-        logging.debug(query)
+        logger.debugdb(query)
         cursor = self.database.execute_query( query,data )
 
 

@@ -65,10 +65,12 @@ class HomeCon(object):
                 consoleHandler.set_name('homecon.consoleHandler')
                 logger.addHandler(consoleHandler)
 
-        if self.loglevel=='info':
-            logger.setLevel(logging.INFO)
-        else:
+        if self.loglevel=='debug':
             logger.setLevel(logging.DEBUG)
+        elif self.loglevel=='debugdb':
+            logger.setLevel(9)
+        else:
+            logger.setLevel(logging.INFO)
 
         logging.info('Creating HomeCon object')
 

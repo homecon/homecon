@@ -15,9 +15,22 @@ if 'debug' in sys.argv:
     kwargs['loglevel'] = 'debug'
     kwargs['printlog'] = True
 
+if 'debugdb' in sys.argv:
+    kwargs['loglevel'] = 'debugdb'
+    kwargs['printlog'] = True
+
 if 'demo' in sys.argv:
     kwargs['demo'] = True
 
+    # clear the demo database
+    try:
+        os.remove('demo_homecon.db')
+    except:
+        pass
+    try:
+        os.remove('demo_homecon_measurements.db')
+    except:
+        pass
 
 
 
@@ -39,7 +52,8 @@ try:
         homecon.demo.prepare_database()
         homecon.demo.emulatorthread.start()
         homecon.demo.forecastthread.start()
-        
+
+
     hc.main()
 
 except:

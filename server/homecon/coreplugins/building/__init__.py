@@ -45,7 +45,7 @@ class Building(core.plugin.Plugin):
 
 
     def identify(self):
-        result = self.model.identify()
+        result = self.model.identify(verbose=0)
         if not result is None:
             core.states['building/identification/result'].value = result
         else:
@@ -55,7 +55,7 @@ class Building(core.plugin.Plugin):
 
 
     def validate(self):
-        result = self.model.validate()
+        result = self.model.validate(verbose=0)
         if not result is None:
             core.states['building/validation/result'].value = result
         else:

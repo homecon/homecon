@@ -145,7 +145,7 @@ class Singlezone_1(model.Buildingmodel):
         result['parameters']['C_liv'] = pyomo.value(model.C_liv)
         result['parameters']['UA_liv_amb'] = pyomo.value(model.UA_liv_amb)
 
-        result['inputs']['timestamp'] = [pyomo.value(model.timestamp[i]) for i in model.i]
+        result['inputs']['timestamp'] = [int(pyomo.value(model.timestamp[i])) for i in model.i]
         result['inputs']['T_amb'] = [np.round(pyomo.value(model.T_amb[i]),2) for i in model.i]
         result['inputs']['Q_hea'] = [np.round(pyomo.value(model.Q_hea[i]),2) for i in model.i]
         result['inputs']['Q_sol'] = [np.round(pyomo.value(model.Q_sol[i]),2) for i in model.i]

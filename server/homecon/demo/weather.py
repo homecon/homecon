@@ -35,7 +35,7 @@ def emulate_weather(initialdata,finaltimestamp=-1,mincloudcover=0,maxcloudcover=
         
         dt_ref = datetime.datetime(1970, 1, 1)
         dt_now = datetime.datetime.utcnow()
-        finaltimestamp = int( (dt-dt_ref).total_seconds() )
+        finaltimestamp = int( (dt_now-dt_ref).total_seconds() )
 
     timestamp = np.arange( initialdata['timestamp'][-1],finaltimestamp,timestep )
     if not timestamp[-1] == finaltimestamp:
@@ -96,7 +96,7 @@ def emulate_weather(initialdata,finaltimestamp=-1,mincloudcover=0,maxcloudcover=
             ambienttemperature[i+1] = ambienttemperature[i] + (skytemperature-ambienttemperature[i])*U_sky*delta_t/c_tot + I_total_horizontal[i]*delta_t/c_tot + q_corr*delta_t/c_tot
 
     data = {
-        'timestamp': timestamp,
+        'timestamp': timestamp.tolist(),
         'solar_azimuth': solar_azimuth,
         'solar_altitude': solar_altitude,
         'I_direct_clearsky': I_direct_clearsky,

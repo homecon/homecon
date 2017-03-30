@@ -15,7 +15,7 @@ def emulate_building(initialdata,weatherdata,finaltimestamp=-1,heatingcurve=Fals
     """
     emulate extremely simple building dynamics
     C_em*d(T_em)/dt = UA_em*(T_em-T_in) + Q_em 
-    C_in*d(T_in)/dt = UA_in*(T_in-T_am) + UA_em*(T_in-T_em) + Q_so + Q_in
+    C_in*d(T_in)/dt = UA_in*(T_in-T_am) + UA_em*(T_in-T_em) + Q_sol + Q_int
 
     Parameters
     ----------
@@ -35,7 +35,7 @@ def emulate_building(initialdata,weatherdata,finaltimestamp=-1,heatingcurve=Fals
         
         dt_ref = datetime.datetime(1970, 1, 1)
         dt_now = datetime.datetime.utcnow()
-        finaltimestamp = int( (dt-dt_ref).total_seconds() )
+        finaltimestamp = int( (dt_now-dt_ref).total_seconds() )
 
     timestamp = np.arange( initialdata['timestamp'][-1],finaltimestamp,timestep )
     if not timestamp[-1] == finaltimestamp:
@@ -43,10 +43,10 @@ def emulate_building(initialdata,weatherdata,finaltimestamp=-1,heatingcurve=Fals
 
 
     # parameters
-    UA_in = 800
+    UA_in = 600
     C_in = 10e6
 
-    UA_em = 600
+    UA_em = 1200
     C_em = 8e6
 
     Q_em_max = 16000
@@ -75,17 +75,6 @@ def emulate_building(initialdata,weatherdata,finaltimestamp=-1,heatingcurve=Fals
 
     Q_sol = np.sum([Q for Q in Q_sol_zone.values()],axis=0) + 0.0*np.ones(len(timestamp))
     Q_int = np.sum([Q for Q in Q_int_zone.values()],axis=0) + 0.0*np.ones(len(timestamp))
-
-
-    #for window in core.components.find(type='window'):
-    #    Q_so = Q_so + window.calculate_solargain(
-    #        I_direct=np.interp(timestamp,weatherdata['timestamp'],weatherdata['I_direct_cloudy']),
-    #        I_diffuse=np.interp(timestamp,weatherdata['timestamp'],weatherdata['I_diffuse_cloudy']),
-    #        solar_azimuth=np.interp(timestamp,weatherdata['timestamp'],weatherdata['solar_azimuth']),
-    #        solar_altitude=np.interp(timestamp,weatherdata['timestamp'],weatherdata['solar_altitude']),
-    #        shading_relativeposition=[np.zeros(len(timestamp)) for shading in core.components.find(type='shading',window=window.path) ])
-
-    Q_int = np.zeros(len(timestamp))
     Q_em = np.zeros(len(timestamp))
 
 
@@ -118,28 +107,30 @@ def emulate_building(initialdata,weatherdata,finaltimestamp=-1,heatingcurve=Fals
         'T_em': T_em[1:],
         'Q_em': Q_em[1:],
         'Q_sol': Q_sol[1:],
-        'dayzone/temperature': T_in[1:],
-        'dayzone/solargain': Q_sol_zone['dayzone'][1:],
-        'dayzone/internalgain': Q_int_zone['dayzone'][1:],
-        'nightzone/temperature': T_in[1:],
-        'nightzone/solargain': Q_sol_zone['nightzone'][1:],
-        'nightzone/internalgain': Q_int_zone['nightzone'][1:],
-        'bathroomzone/temperature': T_in[1:],
-        'bathroomzone/solargain': Q_sol_zone['bathroomzone'][1:],
-        'bathroomzone/internalgain': Q_int_zone['bathroomzone'][1:],
-        'living/temperature_wall/value': 0.90*T_in[1:] + 0.10*T_em[1:],
-        'living/temperature_window/value': 0.98*T_in[1:] + 0.02*T_em[1:],
-        'heatpump/power_setpoint': Q_em[1:],
-        'heatpump/power': Q_em[1:],
-        'floorheating_groundfloor/valve_position': 1.0*np.ones(len(utcdatetime[1:])),
-        'living/window_west_1/screen/position': 0.0*np.ones(len(utcdatetime[1:])),
-        'living/window_west_2/screen/position': 0.0*np.ones(len(utcdatetime[1:])),
-        'kitchen/window_west/screen/position': 0.0*np.ones(len(utcdatetime[1:])),
-        'kitchen/window_south/screen/position': 0.0*np.ones(len(utcdatetime[1:])),
-        'bedroom/window_east/shutter/position': 0.0*np.ones(len(utcdatetime[1:])),
-        'bedroom/window_north/shutter/position': 0.0*np.ones(len(utcdatetime[1:])),
-
     }
+
+    for zone in core.components.find(type='zone'):
+        data[ zone.states['temperature'].path ] = T_in[1:]
+        data[ zone.states['solargain'].path ] = Q_sol_zone[zone.path][1:]
+        data[ zone.states['internalgain'].path ] = Q_int_zone[zone.path][1:]
+
+    for sensor in core.components.find(type='zonetemperaturesensor'):
+        f = 0.9+0.1*np.random.random()
+        data[ sensor.states['value'].path ] = f*T_in[1:] + (1-f)*T_em[1:]
+
+    for shading in core.components.find(type='shading'):
+        data[ shading.states['position'].path ] = 0.0*np.ones(len(timestamp[1:]))
+
+    for system in core.components.find(type='heatemissionsystem'):
+        data[ system.states['valve_position'].path ] = 1.0*np.ones(len(timestamp[1:]))
+
+    heatgenerationsystems = core.components.find(type='heatgenerationsystem')
+    if len(heatgenerationsystems) >0:
+        system = heatgenerationsystems[0]
+        data[ system.states['power'].path ] = Q_em[1:]
+        data[ system.states['power_setpoint'].path ] = Q_em[1:]
+
+
     return data
 
 
