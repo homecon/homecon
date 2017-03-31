@@ -39,7 +39,7 @@ class Component(state.BaseObject):
 
         super().__init__(path,config=config,db_entry=db_entry)
         self.states = {}
-
+        self.ocp_variables = {}
 
         # update the type in the database
         self.db_table.PUT(type=self.type, where='path=\'{}\''.format(self._path))

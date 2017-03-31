@@ -77,12 +77,18 @@ class TestCase(unittest.TestCase):
             task.cancel()
 
         # run the event loop for a small time
-        async def test():
-            await asyncio.sleep(0.01)
-        loop.run_until_complete(test())
+        self.run_loop()
         loop.close()
 
         self.clear_database()
+
+    def run_loop(self,seconds=0.01):
+        
+        async def test():
+            await asyncio.sleep(seconds)
+
+        loop = asyncio.get_event_loop()
+        loop.run_until_complete(test())
 
 
 

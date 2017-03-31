@@ -28,7 +28,6 @@ class Heatgenerationsystem(core.component.Component):
         },
     }
 
-
     def calculate_power(self,timestamp=None):
 
         if self.states['power'].value is None:
@@ -40,7 +39,7 @@ class Heatgenerationsystem(core.component.Component):
     def create_ocp_variables(self,model):
         self.ocp_variables['Q'] = pyomo.Var(model.i, domain=pyomo.NonNegativeReals, bounds=(0,self.config['power']), initialize=0.)
         
-        for key,val in self.ocp_variables:
+        for key,val in self.ocp_variables.items():
             setattr(model,'{}_{}'.format(self.path.replace('/',''),key),val)
 
 
@@ -104,10 +103,11 @@ class Heatemissionsystem(core.component.Component):
         },
     }
 
+
     def create_ocp_variables(self,model):
         self.ocp_variables['Q']        = pyomo.Var(model.i, domain=pyomo.NonNegativeReals, initialize=0)
 
-        for key,val in self.ocp_variables:
+        for key,val in self.ocp_variables.items():
             setattr(model,'{}_{}'.format(self.path.replace('/',''),key),val)
 
     def postprocess_ocp_variables(self,model):
@@ -164,7 +164,7 @@ class Heatinggroup(core.component.Component):
         Q_emission_list = [system.ocp_variables['Q'] for system in core.components.find(type='heatemissionsystem',group=self.path)]
 
 
-        setattr(model,'constraint_{}_Q'.format(self.path.replace('/','')),pyomo.Constraint(model.i,rule=lambda model,i: sum(var for var[i] in Q_generation_list) == sum(var for var[i] in Q_emission_list)))
+        setattr(model,'constraint_{}_Q'.format(self.path.replace('/','')),pyomo.Constraint(model.i,rule=lambda model,i: sum(var[i] for var in Q_generation_list) == sum(var[i] for var in Q_emission_list)))
 
 core.components.register(Heatinggroup)
 

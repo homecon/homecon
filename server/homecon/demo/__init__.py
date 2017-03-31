@@ -298,7 +298,7 @@ def emulate():
 
 
 
-def weatherforecast():
+def weatherforecast(async=True):
     """
     Set the weather forecast states
     
@@ -327,7 +327,7 @@ def weatherforecast():
             'precipitation_intensity': 0,
             'precipitation_probability': 0,
         }
-        core.states['weather/forecast/daily/{}'.format(i)].value = forecast
+        core.states['weather/forecast/daily/{}'.format(i)].set(forecast,async=async)
 
 
 
@@ -346,7 +346,7 @@ def weatherforecast():
             'precipitation_intensity': 0,
             'precipitation_probability': 0,
         }
-        core.states['weather/forecast/hourly/{}'.format(i)].value = forecast
+        core.states['weather/forecast/hourly/{}'.format(i)].set(forecast,async=async)
 
 
 
