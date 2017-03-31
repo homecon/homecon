@@ -19,7 +19,7 @@ class Window(core.component.Component):
         'area': 1,
         'azimuth': 0,
         'tilt': 90,
-        'transmittance': 0.8,
+        'transmittance': 0.5,
         'zone': '',
         'cost_visibility': 1.0,
     }

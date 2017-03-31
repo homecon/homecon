@@ -253,7 +253,11 @@ class BaseState(BaseObject):
             if source is None:
                 # get the source from inspection
                 stack = inspect.stack()
-                source = stack[1][0].f_locals["self"].__class__
+                try:
+                    source = stack[1][0].f_locals['self'].__class__
+                except:
+                    source = 'unknown' # FIXME if the source is not an instance
+
 
             if threading.current_thread() == self._thread:
                 task = asyncio.ensure_future(self.set_async(value,source=source))
@@ -608,7 +612,7 @@ class State(BaseState):
             if interpolation == 'linear':
                 # linear interpolation
                 if len(db_timestamps)>0:
-                    values = np.interp(timestamps,db_timestamps,db_values,left=np.nan,right=np.nan)
+                    values = np.interp(timestamps,db_timestamps,db_values,left=np.nan)
                 else:
                     values = np.ones(len(timestamps))*np.nan
             else:

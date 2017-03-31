@@ -45,6 +45,8 @@ class Building(core.plugin.Plugin):
 
 
     def identify(self):
+        logging.debug('Starting the building system identification')
+
         result = self.model.identify(verbose=0)
         if not result is None:
             core.states['building/identification/result'].value = result
@@ -55,6 +57,8 @@ class Building(core.plugin.Plugin):
 
 
     def validate(self):
+        logging.debug('Starting the building model validation')
+
         result = self.model.validate(verbose=0)
         if not result is None:
             core.states['building/validation/result'].value = result
@@ -93,21 +97,15 @@ class Building(core.plugin.Plugin):
 
 
     def create_ocp_variables(self,model):
-        key = core.states['building/model'].value
-        if key in models.models:
-            result = self.model.create_ocp_variables(model)
+        result = self.model.create_ocp_variables(model)
 
 
     def create_ocp_constraints(self,model):
-        key = core.states['building/model'].value
-        if key in models.models:
-            result = self.model.create_ocp_constraints(model)
+        result = self.model.create_ocp_constraints(model)
 
 
     def postprocess_ocp(self,model):
-        key = core.states['building/model'].value
-        if key in models.models:
-            result = self.model.postprocess_ocp(model)
+        result = self.model.postprocess_ocp(model)
 
 
 

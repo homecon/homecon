@@ -42,7 +42,6 @@ class Heatgenerationsystem(core.component.Component):
         for key,val in self.ocp_variables.items():
             setattr(model,'{}_{}'.format(self.path.replace('/',''),key),val)
 
-
     def postprocess_ocp(self,model):
         self.Q_schedule = [(pyomo.value(model.timestamp[i]),pyomo.value(self.ocp_variables['Q'][i])) for i in model.i]
 
@@ -67,6 +66,11 @@ class Heatpump(Heatgenerationsystem):
     def create_ocp_constraints(self,model):
         setattr(model,'constraint_{}_COP'.format(self.path.replace('/','')), pyomo.Constraint(model.i,rule=lambda model,i: self.ocp_variables['COP'][i] == 3.0))
         setattr(model,'constraint_{}_P_el'.format(self.path.replace('/','')),pyomo.Constraint(model.i,rule=lambda model,i: self.ocp_variables['P_el'][i]*self.ocp_variables['COP'][i] == self.ocp_variables['Q'][i]))
+
+
+    def postprocess_ocp(self,model):
+        super().postprocess_ocp(model)
+        self.P_el_schedule = [(pyomo.value(model.timestamp[i]),pyomo.value(self.ocp_variables['P_el'][i])) for i in model.i]
 
 
     def maxpower(self,timestamp):

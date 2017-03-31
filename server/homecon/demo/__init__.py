@@ -78,6 +78,7 @@ def prepare_database():
     core.components.add('outside/irradiance'       ,'irradiancesensor'            , config={'confidence':0.8, 'azimuth':0.0, 'tilt':0.0})
 
 
+
     # dayzone
     core.components.add('dayzone'      ,'zone'    , config={})
 
@@ -89,18 +90,16 @@ def prepare_database():
     core.components.add('kitchen/window_west'     ,'window'       , config={'zone':'dayzone', 'area':6.2, 'azimuth':270})
     core.components.add('kitchen/window_south'    ,'window'       , config={'zone':'dayzone', 'area':6.2, 'azimuth':180})
 
-    core.components.add('living/window_west_1/screen'   ,'shading'       , config={'window':'living/window_west_1', 'transmittance_closed':0.4})
-    core.components.add('living/window_west_2/screen'   ,'shading'       , config={'window':'living/window_west_2', 'transmittance_closed':0.4})
-    core.components.add('kitchen/window_west/screen'    ,'shading'       , config={'window':'kitchen/window_west' , 'transmittance_closed':0.4})
-    core.components.add('kitchen/window_south/screen'   ,'shading'       , config={'window':'kitchen/window_south', 'transmittance_closed':0.4})
+    core.components.add('living/window_west_1/screen'   ,'shading'       , config={'window':'living/window_west_1', 'transmittance_closed':0.2})
+    core.components.add('living/window_west_2/screen'   ,'shading'       , config={'window':'living/window_west_2', 'transmittance_closed':0.2})
+    core.components.add('kitchen/window_west/screen'    ,'shading'       , config={'window':'kitchen/window_west' , 'transmittance_closed':0.2})
+    core.components.add('kitchen/window_south/screen'   ,'shading'       , config={'window':'kitchen/window_south', 'transmittance_closed':0.2})
 
 
     core.components.add('living/light_dinnertable', 'light'       , config={'type':'hallogen','power':35   ,'zone':'dayzone'})
     core.components.add('living/light_tv'         , 'light'       , config={'type':'led'     ,'power':10   ,'zone':'dayzone'})
     core.components.add('living/light_couch'      , 'dimminglight', config={'type':'led'     ,'power':15   ,'zone':'dayzone'})
     core.components.add('kitchen/light'           , 'light'       , config={'type':'led'     ,'power':5    ,'zone':'dayzone'})
-
-
 
 
     # nightzone
@@ -111,21 +110,24 @@ def prepare_database():
     core.components.add('bedroom/window_east'       ,'window'       , config={'zone':'nightzone', 'area':1.2, 'azimuth':90})
     core.components.add('bedroom/window_north'      ,'window'       , config={'zone':'nightzone', 'area':0.8, 'azimuth':0})
 
-    core.components.add('bedroom/window_east/shutter'      ,'shading'       , config={'window':'bedroom/window_east' , 'closed_transmittance':0.0})
-    core.components.add('bedroom/window_north/shutter'     ,'shading'       , config={'window':'bedroom/window_north', 'closed_transmittance':0.0})
+    core.components.add('bedroom/window_east/shutter'      ,'shading'       , config={'window':'bedroom/window_east' , 'transmittance_closed':0.0})
+    core.components.add('bedroom/window_north/shutter'     ,'shading'       , config={'window':'bedroom/window_north', 'transmittance_closed':0.0})
 
     core.components.add('bedroom/light'           , 'dimminglight', config={'type':'led'     ,'power':20   ,'zone':'nightzone'})
-
 
 
     # bathroom
     core.components.add('bathroomzone'     ,'zone'    ,{})
 
 
+
+
     # heatingsystem
     core.components.add('heatinggroup1'           , 'heatinggroup'        , config={})
-    core.components.add('heatpump'                , 'heatgenerationsystem', config={'type':'heatpump'    , 'power':10000   , 'group':'heatinggroup1'})
+    core.components.add('heatpump'                , 'heatpump'            , config={'type':'heatpump'    , 'power':10000   , 'group':'heatinggroup1'})
     core.components.add('floorheating_groundfloor', 'heatemissionsystem'  , config={'type':'floorheating', 'zone':'dayzone', 'group':'heatinggroup1'})
+
+
 
 
 

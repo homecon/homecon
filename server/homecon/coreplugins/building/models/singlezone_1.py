@@ -6,7 +6,7 @@ import pyomo.environ as pyomo
 
 from . import model
 from .... import core
-
+from .... import util
 
 """
 Notation
@@ -184,7 +184,7 @@ class Singlezone_1(model.Buildingmodel):
         if elevation is None:
             elevation = 0
 
-        forecasts = [core.states['weather/forecast/hourly/{}'.format(i)] for i in range(24*7)]
+        forecasts = [core.states['weather/forecast/hourly/{}'.format(i)].value for i in range(24*7)]
         cloudcover = np.interp(timestamps,[f['timestamp'] for f in forecasts],[f['cloudcover'] for f in forecasts])
         solargain = np.zeros(len(timestamps))
         I_direct = np.zeros(len(timestamps))
@@ -195,7 +195,7 @@ class Singlezone_1(model.Buildingmodel):
         for i,ts in enumerate(timestamps):
             solar_azimuth[i],solar_altitude[i] = util.weather.sunposition(latitude,longitude,elevation=elevation,timestamp=ts)
             I_direct_clearsky,I_diffuse_clearsky = util.weather.clearskyirrradiance(solar_azimuth[i],solar_altitude[i],timestamp=ts)
-            I_direct[i], I_diffuse[i] = util.weather.cloudyskyirrradiance(I_direct_clearsky[i],I_diffuse_clearsky[i],cloudcover[i],solar_azimuth[i],solar_altitude[i],timestamp=ts)
+            I_direct[i], I_diffuse[i] = util.weather.cloudyskyirrradiance(I_direct_clearsky,I_diffuse_clearsky,cloudcover[i],solar_azimuth[i],solar_altitude[i],timestamp=ts)
 
 
         Q_sol_max_zone = {}
@@ -203,34 +203,54 @@ class Singlezone_1(model.Buildingmodel):
         for zone in zones:
             # FIXME take schedules into account in min/max shading position dertermination
             shading_relativeposition = [[0.0*np.ones(len(timestamps)) for shading in core.components.find(type='shading',window=window.path)] for window in core.components.find(type='window',zone=zone.path)]
-            Q_sol_max_zone[zone.path] = zone.calculate_solargain(I_direct=I_direct_cloudy,I_diffuse=I_diffuse_cloudy,solar_azimuth=solar_azimuth,solar_altitude=solar_altitude,shading_relativeposition=shading_relativeposition)
+            Q_sol_max_zone[zone.path] = zone.calculate_solargain(I_direct=I_direct,I_diffuse=I_diffuse,solar_azimuth=solar_azimuth,solar_altitude=solar_altitude,shading_relativeposition=shading_relativeposition)
 
             shading_relativeposition = [[1.0*np.ones(len(timestamps)) for shading in core.components.find(type='shading',window=window.path)] for window in core.components.find(type='window',zone=zone.path)]
-            Q_sol_min_zone[zone.path] = zone.calculate_solargain(I_direct=I_direct_cloudy,I_diffuse=I_diffuse_cloudy,solar_azimuth=solar_azimuth,solar_altitude=solar_altitude,shading_relativeposition=shading_relativeposition)
+            Q_sol_min_zone[zone.path] = zone.calculate_solargain(I_direct=I_direct,I_diffuse=I_diffuse,solar_azimuth=solar_azimuth,solar_altitude=solar_altitude,shading_relativeposition=shading_relativeposition)
 
 
         Q_sol_max = sum(Q for Q in Q_sol_max_zone.values())
         Q_sol_min = sum(Q for Q in Q_sol_min_zone.values())
 
+
+
         model.building_Q_sol = pyomo.Var(model.i,domain=pyomo.NonNegativeReals,initialize=0,bounds=lambda model,i:(Q_sol_min[i],Q_sol_max[i]))
         model.building_Q_int = pyomo.Var(model.i,domain=pyomo.NonNegativeReals,initialize=0,bounds=lambda model,i:(0,0))
         model.building_Q_hea = pyomo.Var(model.i,domain=pyomo.NonNegativeReals,initialize=0)
+
+        model.building_T_liv = pyomo.Var(model.ip,domain=pyomo.Reals,initialize=20)
+
+        model.building_liv_D_tc = pyomo.Var(model.i,domain=pyomo.NonNegativeReals,initialize=0,doc='Temperature discomfort too cold (K)')
+        model.building_liv_D_th = pyomo.Var(model.i,domain=pyomo.NonNegativeReals,initialize=0,doc='Temperature discomfort too hot (K)')
+        model.building_liv_D_vi = pyomo.Var(model.i,domain=pyomo.NonNegativeReals,initialize=0,doc='Visual discomfort (xxx)')
 
 
 
     def create_ocp_constraints(self,model):
 
         # state estimation?  # FIXME
-        T_liv_ini = np.mean( [zone.states['temperature'].history(timestamps[0]) for zone in core.components.find(type='zone')], axis=0)
-
+        T_liv_ini = np.mean( [zone.states['temperature'].history(model.timestamp[0]) for zone in core.components.find(type='zone')], axis=0)
 
         # constraints
-        model.building_constraint_state_liv= pyomo.Constraint(model.i,
+        # states
+        model.constraint_building_state_liv= pyomo.Constraint(model.i,
             rule=lambda model,i: self.parameters['C_liv']*(model.building_T_liv[i+1]-model.building_T_liv[i])/model.timestep[i] == self.parameters['UA_liv_amb']*(model.T_amb[i]-model.building_T_liv[i]) + model.building_Q_hea[i] + model.building_Q_sol[i] + model.building_Q_int[i] if i < len(model.i)-1 else pyomo.Constraint.Feasible 
         )
-        model.building_constraint_state_liv_ini = pyomo.Constraint(rule=lambda model: model.building_T_liv[0] == T_liv_ini)
+        model.constraint_building_state_liv_ini = pyomo.Constraint(rule=lambda model: model.building_T_liv[0] == T_liv_ini)
+
+        # discomfort
+        model.constraint_liv_D_tc = pyomo.Constraint(model.i,
+            rule=lambda model,i: model.building_liv_D_tc[i] >= 20-(0.5*model.building_T_liv[i]+0.5*model.building_T_liv[i+1])  # FIXME minimum temperature bound must be defined through a state and the gui but different bounds can exist for other models
+        )
+        model.constraint_liv_D_th = pyomo.Constraint(model.i,
+            rule=lambda model,i: model.building_liv_D_th[i] >= (0.5*model.building_T_liv[i]+0.5*model.building_T_liv[i+1])-24  # FIXME maximum temperature ...
+        )
+        model.constraint_liv_D_vi = pyomo.Constraint(model.i,
+            rule=lambda model,i: model.building_liv_D_vi[i] >= model.building_Q_sol[i].bounds[1]-model.building_Q_sol[i]
+        )
 
 
+        # heatemissionsystems
         zones = core.components.find(type='zone')
 
         Q_list = []
@@ -238,11 +258,19 @@ class Singlezone_1(model.Buildingmodel):
             heatemissionsystems = core.components.find(type='heatemissionsystem',zone=zone.path)
             Q_list += [heatemissionsystem.ocp_variables['Q'] for heatemissionsystem in heatemissionsystems]
 
-
         model.building_constraint_Q_hea = pyomo.Constraint(model.i,rule=lambda model,i: model.building_Q_hea[i] == sum(var[i] for var in Q_list))
 
 
 
+    def postprocess_ocp(self,model):
+        # FIXME pass schedules in a structured way to the gui, see system identification
+        self.T_liv_schedule = [(pyomo.value(model.timestamp[i]),pyomo.value(model.building_T_liv[i])) for i in model.ip]
+        self.Q_hea_schedule = [(pyomo.value(model.timestamp[i]),pyomo.value(model.building_Q_hea[i])) for i in model.i]
+        self.Q_sol_schedule = [(pyomo.value(model.timestamp[i]),pyomo.value(model.building_Q_sol[i])) for i in model.i]
+        
+        print(self.T_liv_schedule[:24*4])
+        print(self.Q_hea_schedule[:24*4])
+        print(self.Q_sol_schedule[:24*4])
 
 
 

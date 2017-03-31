@@ -52,11 +52,13 @@ class MpcTests(common.TestCase):
 
         states = homecon.coreplugins.states.States()
 
-        # set location states
+        # set states
         core.states['settings/location/latitude'].set(51.0500,async=False)
         core.states['settings/location/longitude'].set(5.5833,async=False)
         core.states['settings/location/elevation'].set(74,async=False)
         core.states['settings/location/timezone'].set('Europe/Brussels',async=False)
+
+        livingzone.states['temperature'].set(20.5,async=False)
 
         weather = homecon.coreplugins.weather.Weather()
 
@@ -72,14 +74,15 @@ class MpcTests(common.TestCase):
         demo.weatherforecast(async=False)
 
         building = homecon.coreplugins.building.Building()
-        mpc = homecon.coreplugins.mpc.Mpc()
+        core.plugins._plugins['building'] = building
+        print(core.plugins.values())
 
-        
+        mpc = homecon.coreplugins.mpc.Mpc()
         mpc.optimization()
 
 
         #self.run_loop(seconds=2)
-
-        print(heatgenerationsystem.Q_schedule)
-
+    
+        print(heatgenerationsystem.Q_schedule[::4])
+        print(building.model.T_liv_schedule[::4])
 

@@ -32,56 +32,81 @@ class Mpc(core.plugin.Plugin):
 
     def optimization(self):
 
-        # common data gathering
-        dt_ref = datetime.datetime(1970, 1, 1)
-        dt_ini = datetime.datetime.utcnow()
-
-        timestamp_ini = int( (dt_ini-dt_ref).total_seconds() )
-        timestamps = [ts for ts in range(timestamp_ini,timestamp_ini+self.horizon,self.timestep)]
-
-        p_el = [0.250 for ts in timestamps]
-        p_ng = [0.070 for ts in timestamps]
-        
-
-        weatherforecast_timestamps = []
-        weatherforecast_T_amb = []
-        for i in range(24*7):
-            weatherforecast_timestamps.append( core.states['weather/forecast/hourly/{}'.format(i)].value['timestamp'] )
-            weatherforecast_T_amb.append( core.states['weather/forecast/hourly/{}'.format(i)].value['temperature'] )
-
-        print(weatherforecast_timestamps)
-        print(weatherforecast_T_amb)
-            
-        T_amb = np.interp(timestamps,weatherforecast_timestamps,weatherforecast_T_amb)
-
-
         """
         Optimal control problem naming conventions
 
         T_xxx: Temperature
         Q_xxx: Heat flow
         V_xxx: Volume flow
-        xxx_P_el: Electrical power
-        xxx_P_ng: Natural gas power
-        p_xx: price
+        xxx_P_el: Electrical power                     (W)
+        xxx_P_ng: Natural gas power                    (W)
+        xxx_D_tc: Discomfort thermal too cold          (K)
+        xxx_D_th: Discomfort thermal too hot           (K)
+        xxx_D_aq: Discomfort air quality        (g CO2/m3)?
+        xxx_D_vi: Discomfort visual                   (??)?
+
+        xxxx_p: price                              (EUR/xxx)
        
         """
+
+
+        logging.debug('Starting the control optimization')
+
+        # common data gathering
+        dt_ref = datetime.datetime(1970, 1, 1)
+        dt_ini = datetime.datetime.utcnow()
+
+        nsecs = dt_ini.minute*60 + dt_ini.second + dt_ini.microsecond*1e-6
+        delta = np.round( nsecs/900 ) * 900 - nsecs  # the optimization timesteps coincide with 0min, 15min, 30min, 45min
+
+        timestamp_ini = int( (dt_ini-dt_ref).total_seconds()+delta )
+        timestamps = [ts for ts in range(timestamp_ini,timestamp_ini+self.horizon,self.timestep)]
+
+        weatherforecast_timestamps = []
+        weatherforecast_T_amb = []
+        for i in range(24*7):
+            weatherforecast_timestamps.append( core.states['weather/forecast/hourly/{}'.format(i)].value['timestamp'] )
+            weatherforecast_T_amb.append( core.states['weather/forecast/hourly/{}'.format(i)].value['temperature'] )
+            
+        T_amb = np.interp(timestamps,weatherforecast_timestamps,weatherforecast_T_amb)
+
+
+        P_el_p = [0.250 for ts in timestamps]
+        P_ng_p = [0.070 for ts in timestamps]
+        D_tc_p = [1.100 for ts in timestamps]
+        D_th_p = [1.000 for ts in timestamps]
+        D_aq_p = [0.000 for ts in timestamps]
+        D_vi_p = [0.001 for ts in timestamps]
+
 
         # control optimization
         model = pyomo.ConcreteModel()
         model.i = pyomo.Set(initialize=range(len(timestamps)-1), doc='time index, the last timestamp is not included (-)')
-        model.ip = pyomo.Set(initialize=range(len(timestamps)-1), doc='time index, the last timestamp is included (-)')
+        model.ip = pyomo.Set(initialize=range(len(timestamps)), doc='time index, the last timestamp is included (-)')
 
         model.timestamp = pyomo.Param(model.ip,initialize={i:timestamps[i] for i in model.ip}, doc='timestamp (s)')
         model.timestep = pyomo.Param(model.i,initialize={i:timestamps[i+1]-timestamps[i] for i in model.i}, doc='timestep of the interval [i,i+1] (s)')
 
-        model.p_el = pyomo.Param(model.ip, initialize={i:p_el[i] for i in model.ip}, doc='electricity price (EUR/kWh)')
-        model.p_ng = pyomo.Param(model.ip, initialize={i:p_el[i] for i in model.ip}, doc='natural gas price (EUR/kWh)')
+
+        model.T_amb = pyomo.Param(model.ip, initialize={i:T_amb[i] for i in model.ip}, doc='ambient temperature at timestep i (degC)')
+
+
+
+        model.P_el_p = pyomo.Param(model.i, initialize={i:P_el_p[i] for i in model.i}, doc='electricity price (EUR/kWh)')
+        model.P_ng_p = pyomo.Param(model.i, initialize={i:P_ng_p[i] for i in model.i}, doc='natural gas price (EUR/kWh)')
+
+        model.D_tc_p = pyomo.Param(model.i, initialize={i:D_tc_p[i] for i in model.i}, doc='thermal discomfort too cold price (EUR/Kh)')
+        model.D_th_p = pyomo.Param(model.i, initialize={i:D_th_p[i] for i in model.i}, doc='thermal discomfort too cold price (EUR/Kh)')
+        model.D_aq_p = pyomo.Param(model.i, initialize={i:D_aq_p[i] for i in model.i}, doc='air quality discomfort(EUR/xxx)')
+        model.D_vi_p = pyomo.Param(model.i, initialize={i:D_vi_p[i] for i in model.i}, doc='visual discomfort(EUR/xxx)')
 
         model.P_el_tot = pyomo.Var(model.i,domain=pyomo.NonNegativeReals, initialize=0, doc='average electricity use in the interval [i,i+1] (W)')
         model.P_ng_tot = pyomo.Var(model.i,domain=pyomo.NonNegativeReals, initialize=0, doc='average natural gas use in the interval [i,i+1] (W)')
 
-        model.T_amb = pyomo.Param(model.ip, initialize={i:T_amb[i] for i in model.ip}, doc='ambient temperature at timestep i (degC)')
+        model.D_tc_tot = pyomo.Var(model.i,domain=pyomo.NonNegativeReals, initialize=0, doc='average thermal discomfort too cold in the interval [i,i+1] (K)')
+        model.D_th_tot = pyomo.Var(model.i,domain=pyomo.NonNegativeReals, initialize=0, doc='average thermal discomfort too hot in the interval [i,i+1] (K)')
+        model.D_aq_tot = pyomo.Var(model.i,domain=pyomo.NonNegativeReals, initialize=0, doc='average air quality discomfort in the interval [i,i+1] (xxx)')
+        model.D_vi_tot = pyomo.Var(model.i,domain=pyomo.NonNegativeReals, initialize=0, doc='average visual discomfort in the interval [i,i+1] (xxx)')
 
 
 
@@ -99,21 +124,38 @@ class Mpc(core.plugin.Plugin):
         for component in core.components.values():
             component.create_ocp_constraints(model)
 
+        P_el_list = [attr for attr in dir(model) if attr.endswith('P_el') and not attr.startswith('constraint')]
+        P_ng_list = [attr for attr in dir(model) if attr.endswith('P_ng') and not attr.startswith('constraint')]
+        D_tc_list = [attr for attr in dir(model) if attr.endswith('D_tc') and not attr.startswith('constraint')]
+        D_th_list = [attr for attr in dir(model) if attr.endswith('D_th') and not attr.startswith('constraint')]
+        D_aq_list = [attr for attr in dir(model) if attr.endswith('D_aq') and not attr.startswith('constraint')]
+        D_vi_list = [attr for attr in dir(model) if attr.endswith('D_vi') and not attr.startswith('constraint')]
 
-        P_el_list = [attr for attr in dir(model) if attr.endswith('P_el')]
-        P_ng_list = [attr for attr in dir(model) if attr.endswith('P_ng')]
 
         model.constraint_P_el_tot = pyomo.Constraint(model.i,rule=lambda model,i: model.P_el_tot[i] == sum(getattr(model,var)[i] for var in P_el_list), doc='summing the total elctrical power demand')
         model.constraint_P_ng_tot = pyomo.Constraint(model.i,rule=lambda model,i: model.P_ng_tot[i] == sum(getattr(model,var)[i] for var in P_ng_list), doc='summing the total natural gas power demand')
+        
+        model.constraint_D_tc_tot = pyomo.Constraint(model.i,rule=lambda model,i: model.D_tc_tot[i] == sum(getattr(model,var)[i] for var in D_tc_list), doc='summing the total thermal discomfort too cold')
+        model.constraint_D_th_tot = pyomo.Constraint(model.i,rule=lambda model,i: model.D_th_tot[i] == sum(getattr(model,var)[i] for var in D_th_list), doc='summing the total thermal discomfort too hot')
+        model.constraint_D_aq_tot = pyomo.Constraint(model.i,rule=lambda model,i: model.D_aq_tot[i] == sum(getattr(model,var)[i] for var in D_aq_list), doc='summing the total air quality discomfort')
+        model.constraint_D_vi_tot = pyomo.Constraint(model.i,rule=lambda model,i: model.D_vi_tot[i] == sum(getattr(model,var)[i] for var in D_vi_list), doc='summing the total visual discomfort')
 
 
         # add an objective
-        model.objective = pyomo.Objective(rule=lambda model: sum( model.p_el[i]*model.P_el_tot[i]*model.timestep[i] + model.p_ng[i]*model.P_ng_tot[i]*model.timestep[i] for i in model.i), sense=pyomo.minimize)
+        model.objective = pyomo.Objective(sense=pyomo.minimize, rule=lambda model:
+            sum( model.P_el_p[i]/1000*model.P_el_tot[i]*model.timestep[i]/3600 for i in model.i) 
+          + sum( model.P_ng_p[i]/1000*model.P_ng_tot[i]*model.timestep[i]/3600 for i in model.i)
+          + sum( model.D_tc_p[i]*model.D_tc_tot[i]*model.timestep[i]/3600 for i in model.i)
+          + sum( model.D_th_p[i]*model.D_th_tot[i]*model.timestep[i]/3600 for i in model.i)
+          + sum( model.D_aq_p[i]*model.D_aq_tot[i]*model.timestep[i]/3600 for i in model.i)
+          + sum( model.D_vi_p[i]*model.D_vi_tot[i]*model.timestep[i]/3600 for i in model.i)
+        )
 
 
         # solve
         solver = pyomo.SolverFactory('ipopt')
         results = solver.solve(model, tee=True)  # FIXME should be done in a separate thread to not stop the event loop
+
 
         # pass control program to plugins
         for plugin in core.plugins.values():
@@ -138,6 +180,8 @@ class Mpc(core.plugin.Plugin):
         """
 
         while True:
+            await asyncio.sleep(30)  # run the optimization 30 seconds after the quarterhour
+
             # timestamps
             dt_ref = datetime.datetime(1970, 1, 1)
             dt_now = datetime.datetime.utcnow()
@@ -148,7 +192,6 @@ class Mpc(core.plugin.Plugin):
 
             timestamp_now = int( (dt_now-dt_ref).total_seconds() )
             timestamp_when = int( (dt_when-dt_ref).total_seconds() )
-
 
             # optimize
             result = self.optimization()

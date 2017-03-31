@@ -11,7 +11,7 @@ from .. import core
 from .. import util
 
 
-def emulate_weather(initialdata,finaltimestamp=-1,mincloudcover=0,maxcloudcover=1,minambienttemperature=-10,maxambienttemperature=35):
+def emulate_weather(initialdata,finaltimestamp=-1,mincloudcover=0,maxcloudcover=1,minambienttemperature=-10,maxambienttemperature=30):
     """
     emulate weather conditions
 
@@ -78,18 +78,15 @@ def emulate_weather(initialdata,finaltimestamp=-1,mincloudcover=0,maxcloudcover=
         
         I_total_horizontal[i], I_direct_horizontal[i], I_diffuse_horizontal[i], I_ground_horizontal[i] = util.weather.incidentirradiance(I_direct_cloudy[i],I_diffuse_cloudy[i],solar_azimuth[i],solar_altitude[i],0,0)
 
-        # ambient temperature dependent on horizontal irradiance
-
-
-
+        # ambient temperature dependent on horizontal irradiance and cloud cover
         if i+1 < len(timestamp):
             c_tot = 800e3
 
-            skytemperature = -15*(1-cloudcover[i]) -10*cloudcover[i]
+            skytemperature = -20*(1-cloudcover[i]) -15*cloudcover[i]
             U_sky = 7.0*(1-cloudcover[i]) + 2.0*cloudcover[i]
             
             T_avg = ambienttemperature[i]
-            q_corr = 0*100*( np.exp(-(T_avg-minambienttemperature)) - np.exp(-(maxambienttemperature-T_avg)) )
+            q_corr = 100*( np.exp(-(T_avg-minambienttemperature)) - np.exp(-(maxambienttemperature-T_avg)) )
             
 
             delta_t = timestamp[i+1]-timestamp[i]

@@ -63,7 +63,7 @@ class Plugins(object):
         classlist.append( (self._import('measurements',         'coreplugins'),True) )
         classlist.append( (self._import('weather',              'coreplugins'),True) )
         classlist.append( (self._import('building',             'coreplugins'),True) )
-
+        classlist.append( (self._import('mpc',                  'coreplugins'),True) )
 
 
 

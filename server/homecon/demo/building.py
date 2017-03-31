@@ -29,7 +29,7 @@ def emulate_building(initialdata,weatherdata,finaltimestamp=-1,heatingcurve=Fals
     """
 
     # generate timestep vector
-    timestep = 300
+    timestep = 150
 
     if finaltimestamp < 0:
         
@@ -52,8 +52,8 @@ def emulate_building(initialdata,weatherdata,finaltimestamp=-1,heatingcurve=Fals
     Q_em_max = 16000
     T_set = 20
     K_set = 5000
-    K_am = 800
-
+    K_amb = 800
+    K_sha = 0.2
 
     # disturbances
     T_am = np.interp(timestamp,weatherdata['timestamp'],weatherdata['ambienttemperature'])
@@ -76,7 +76,7 @@ def emulate_building(initialdata,weatherdata,finaltimestamp=-1,heatingcurve=Fals
     Q_sol = np.sum([Q for Q in Q_sol_zone.values()],axis=0) + 0.0*np.ones(len(timestamp))
     Q_int = np.sum([Q for Q in Q_int_zone.values()],axis=0) + 0.0*np.ones(len(timestamp))
     Q_em = np.zeros(len(timestamp))
-
+    p_sha = np.zeros(len(timestamp))
 
     # initialization
     T_in = np.zeros(len(timestamp))
@@ -93,12 +93,15 @@ def emulate_building(initialdata,weatherdata,finaltimestamp=-1,heatingcurve=Fals
 
         # emission heat flow
         if heatingcurve:
-            Q_em[i] = min(Q_em_max,max(0, (T_in[i]-T_am[i])*K_am + (T_set-T_in[i])*K_set ))
+            Q_em[i] = min(Q_em_max,max(0, (T_in[i]-T_am[i])*K_amb + (T_set-T_in[i])*K_set ))
+            p_sha[i] = min(1,max(0, (T_in[i]-T_set-2)*K_sha))
+
         else:
             Q_em[i] = sum(component.calculate_power() for component in core.components.find(type='heatemissionsystem'))
+            p_sha[i] = 0
 
         T_em[i+1] = T_em[i] + (T_in[i]-T_em[i])*delta_t*UA_em/C_em + Q_em[i]*delta_t/C_em
-        T_in[i+1] = T_in[i] + (T_am[i]-T_in[i])*delta_t*UA_in/C_in + (T_em[i]-T_in[i])*delta_t*UA_em/C_in + Q_sol[i]*delta_t/C_in + Q_int[i]*delta_t/C_in
+        T_in[i+1] = T_in[i] + (T_am[i]-T_in[i])*delta_t*UA_in/C_in + (T_em[i]-T_in[i])*delta_t*UA_em/C_in + p_sha[i]*Q_sol[i]*delta_t/C_in + Q_int[i]*delta_t/C_in
 
     # set the output data
     data = {
@@ -108,6 +111,7 @@ def emulate_building(initialdata,weatherdata,finaltimestamp=-1,heatingcurve=Fals
         'Q_em': Q_em[1:],
         'Q_sol': Q_sol[1:],
     }
+
 
     for zone in core.components.find(type='zone'):
         data[ zone.states['temperature'].path ] = T_in[1:]
