@@ -83,7 +83,7 @@ def emulate_weather(initialdata,finaltimestamp=-1,mincloudcover=0,maxcloudcover=
             c_tot = 800e3
 
             skytemperature = -20*(1-cloudcover[i]) -15*cloudcover[i]
-            U_sky = 7.0*(1-cloudcover[i]) + 2.0*cloudcover[i]
+            U_sky = 7.5*(1-cloudcover[i]) + 2.0*cloudcover[i]
             
             T_avg = ambienttemperature[i]
             q_corr = 100*( np.exp(-(T_avg-minambienttemperature)) - np.exp(-(maxambienttemperature-T_avg)) )

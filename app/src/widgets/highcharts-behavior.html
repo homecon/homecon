@@ -4,15 +4,23 @@
     highchartsBehavior = {
 
         _setXLabel: function(chart,label){
-            chart.xAxis[0].axisTitle.attr({
-                text: label
-            });
+            try{
+                chart.xAxis[0].axisTitle.attr({
+                    text: label
+                });
+            }
+            catch(e){
+            }
         },
 
         _setYLabel: function(chart,label){
-            chart.yAxis[0].axisTitle.attr({
-                text: label
-            });
+            try{
+                chart.yAxis[0].axisTitle.attr({
+                    text: label
+                });
+            }
+            catch(e){
+            }
         },
 
         _setTitle: function(chart,title){
@@ -28,7 +36,13 @@
                 chart.redraw();
             }
         },
-
+        _getSeries: function(chart,name){
+            for(var i=0;i<chart.series.length;i++){
+                if(chart.series[i].name == name){
+                    return chart.series[i];
+                }
+            }
+        },
         _resizeChart: function(chart,h){
             var w = Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
             

@@ -22,6 +22,8 @@ class Mpc(core.plugin.Plugin):
 
         self.horizon = 24*7*3600      # the prediction and control horizon in seconds
         self.timestep = 900           # the control timestep in seconds
+        self.program_old = []
+
 
         # add program
         core.states.add('mpc/power/program',       config={'datatype': 'dict', 'quantity':'', 'unit':''  , 'label':'', 'description':'', 'log': False})
@@ -81,10 +83,17 @@ class Mpc(core.plugin.Plugin):
 
         P_el_p = [0.250 for ts in timestamps]
         P_ng_p = [0.070 for ts in timestamps]
-        D_tc_p = [1.100 for ts in timestamps]
-        D_th_p = [1.000 for ts in timestamps]
-        D_aq_p = [0.000 for ts in timestamps]
-        D_vi_p = [0.001 for ts in timestamps]
+
+
+        # determine scale for discomfort costs
+        max_energy_cost = 100
+
+        # Price of 1 Kh is equal to the maximum weekly energy cost ever encountered, temporary 100EUR
+        D_tc_p = [1.100*max_energy_cost for ts in timestamps]
+        D_th_p = [1.000*max_energy_cost for ts in timestamps]
+
+        D_aq_p = [0.000*max_energy_cost for ts in timestamps]
+        D_vi_p = [1e-12 for ts in timestamps]
 
 
         # control optimization
@@ -161,8 +170,17 @@ class Mpc(core.plugin.Plugin):
 
 
         # solve
-        solver = pyomo.SolverFactory('ipopt')
-        results = solver.solve(model, tee=True)  # FIXME should be done in a separate thread to not stop the event loop
+        try:
+            solver = pyomo.SolverFactory('glpk')
+            results = solver.solve(model, tee=True)  # FIXME should be done in a separate thread to not stop the event loop
+            logging.debug('OCP solved using GLPK')
+
+        except:
+            # the proble mis not linear
+            solver = pyomo.SolverFactory('ipopt')
+            results = solver.solve(model, tee=True)
+            logging.debug('OCP solved using IPOPT')
+
 
         # pass control program to plugins
         for plugin in core.plugins.values():
@@ -182,10 +200,22 @@ class Mpc(core.plugin.Plugin):
         
         core.states['mpc/power/program'].value = result
 
-        # FIXME how to keep the old program available
-        if core.states['mpc/power/program'].value is None:
-            pass
-    
+
+        # set the old result
+        result = {}
+        result['timestamp'] = [int(pyomo.value(model.timestamp[i])) for i in model.i]
+        result['old_P_el'] = [float(np.round(pyomo.value(model.P_el_tot[i]),2)) for i in model.i]
+        result['old_P_ng'] = [float(np.round(pyomo.value(model.P_ng_tot[i]),2)) for i in model.i]
+        
+        self.program_old.append(result)
+        if len(self.program_old) == 24*4:
+            result_old = self.program_old.pop(0)
+        else:
+            result_old = self.program_old[0]
+
+        core.states['mpc/power/program_old'].value = result_old
+
+
 
         return True
 

@@ -26,8 +26,10 @@
         </style>
         
 
-        <homecon-web-socket-object event="state" path="mpc/power/program" data="{{powerProgram}}" on-change="_powerProgramChanged" send-on-authenticated></homecon-web-socket-object>
-        <homecon-web-socket-object event="state" path="mpc/building/program" data="{{buildingProgram}}" on-change="_buildingProgramChanged" send-on-authenticated></homecon-web-socket-object>
+        <homecon-web-socket-object event="state" path="mpc/power/program" data="{{powerProgram}}" on-change="_programChanged" send-on-authenticated></homecon-web-socket-object>
+        <homecon-web-socket-object event="state" path="mpc/building/program" data="{{buildingProgram}}" on-change="_programChanged" send-on-authenticated></homecon-web-socket-object>
+        <homecon-web-socket-object event="state" path="mpc/power/program_old" data="{{powerProgramOld}}" on-change="_programChanged" send-on-authenticated></homecon-web-socket-object>
+        <homecon-web-socket-object event="state" path="mpc/building/program_old" data="{{buildingProgramOld}}" on-change="_programChanged" send-on-authenticated></homecon-web-socket-object>
 
         <div id="containerTemperature" class="chart"></div>
         <div id="containerHeat" class="chart"></div>
@@ -81,65 +83,106 @@
                 window.addEventListener("resize", function(){
                     that._resizeChart(that.chartPower,200);
                 });
-            },
 
-            _powerProgramChanged : function(event,data){
 
-                this._updateChart(data,this.chartPower);
+
+                this._setYLabel(this.chartHeat,'W')
                 this._setYLabel(this.chartPower,'W')
+            },
+
+            _programChanged: function(event,data){
+
+                // temperature chart
+                this._programChangedBase(this.chartTemperature,'T','°C',data);
+                this._programChangedBase(this.chartHeat,'Q','W',data);
+                this._programChangedBase(this.chartPower,'P','W',data);
 
             },
 
-            _buildingProgramChanged : function(event,data){
+            _programChangedBase(chart,quantity,unit,data){
 
                 var tempdata = {};
                 tempdata['timestamp'] = data['timestamp']
                 for(key in data){
-                    if(key[0] == 'T'){
+                    if(key[0] == quantity && key != 'timestamp'){
                         tempdata[key] = data[key]
                     }
                 }
 
-                this._updateChart(tempdata,this.chartTemperature);
-                this._setYLabel(this.chartTemperature,'°C');
-
-
-                var tempdata = {};
-                tempdata['timestamp'] = data['timestamp']
-                for(key in data){
-                    if(key[0] == 'Q'){
-                        tempdata[key] = data[key]
-                    }
+                var keys = []
+                for(key in tempdata){
+                    keys.push(key)
                 }
+                keys.sort()
 
-                this._updateChart(tempdata,this.chartHeat);
-                this._setYLabel(this.chartHeat,'W');
 
-            },
-
-            _updateChart: function(data,chart){
-                var num = 0;
-                for(key in data){
+                for(var i=0;i<keys.length;i++){
+                    var key = keys[i];
                     if(key != 'timestamp'){
-                        if(chart.series.length > num){
-                            var series = chart.series[num]
-                        }
-                        else{
-                            var series = chart.addSeries({});
-                            num += 1;
-                        }
-
-                        series.update({name:key}, false);
-
-                        var chartdata = []
-                        for(var i=0;i<data['timestamp'].length;i++){
-                            chartdata.push([data['timestamp'][i]*1000,data[key][i]]);
-                        }
-
-                        series.setData(chartdata)
+                        this._updateSeries(chart,tempdata,key)
                     }
                 }
+                this._updateMinMaxColor(chart)
+                this._updateOldColor(chart)
+                this.chartTemperature.redraw()
+                this._setYLabel(chart,unit)
 
+            },
+
+            _updateSeries: function(chart,data,key){
+
+                var seriesdata = []
+                for(var j=0;j<data['timestamp'].length;j++){
+                    seriesdata.push([data['timestamp'][j]*1000,data[key][j]]);
+                }
+
+                var series = this._getSeries(chart,key);
+                if(typeof series == 'undefined'){
+                    var series = chart.addSeries({});
+                    series.update({name:key}, false);
+                }
+                
+                series.setData(seriesdata, false)
+
+            },
+
+            _updateMinMaxColor: function(chart,data){
+                names = []
+                for(var i=0;i<chart.series.length;i++){
+                    names.push(chart.series[i].name)
+                }
+
+                // change colors of min and max
+                for(var i=0;i<chart.series.length;i++){
+                    var series = chart.series[i];
+                    if((series.name.endsWith('_max') || series.name.endsWith('_min')) && names.indexOf(series.name.slice(0,series.name.length-4))>-1){
+                        var base_series = this._getSeries(chart,series.name.slice(0,series.name.length-4));
+
+                        series.options.color = base_series.color;
+                        series.options.dashStyle = 'dash';
+                        series.options.marker.enabled = false;
+                        series.update(series.options, false);
+                    }
+                }
+            },
+
+            _updateOldColor: function(chart){
+                names = []
+                for(var i=0;i<chart.series.length;i++){
+                    names.push(chart.series[i].name)
+                }
+                // change colors of min and max
+                for(var i=0;i<chart.series.length;i++){
+                    var series = chart.series[i];
+                    if(series.name.endsWith('_old') && names.indexOf(series.name.slice(0,series.name.length-4))>-1){
+                        var base_series = this._getSeries(chart,series.name.slice(0,series.name.length-4));
+
+                        series.options.color = base_series.color;
+                        series.options.dashStyle = 'dot';
+                        series.options.marker.enabled = false;
+                        series.update(series.options, false);
+                    }
+                }
             },
 
         });

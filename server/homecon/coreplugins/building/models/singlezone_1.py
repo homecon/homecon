@@ -39,7 +39,7 @@ class Singlezone_1(model.Buildingmodel):
     def __init__(self):
 
         self.parameters = {'C_liv': 10e6, 'UA_liv_amb': 800} 
-
+        self.program_old = []
 
         # state constraints are used in both models
         def state_T_liv(model, i):
@@ -279,11 +279,31 @@ class Singlezone_1(model.Buildingmodel):
         result['timestamp'] = [int(pyomo.value(model.timestamp[i])) for i in model.i]
         result['T_liv'] = [float(np.round(pyomo.value(model.building_T_liv[i]),2)) for i in model.i]
         result['T_amb'] = [float(np.round(pyomo.value(model.T_amb[i]),2)) for i in model.i]
+
         result['Q_hea'] = [float(np.round(pyomo.value(model.building_Q_hea[i]),2)) for i in model.i]
+
         result['Q_sol'] = [float(np.round(pyomo.value(model.building_Q_sol[i]),2)) for i in model.i]
+        result['Q_sol_max'] = [float(np.round(pyomo.value(model.building_Q_sol[i].bounds[1]),2)) for i in model.i]
+        result['Q_sol_min'] = [float(np.round(pyomo.value(model.building_Q_sol[i].bounds[0]),2)) for i in model.i]
+
         result['Q_int'] = [float(np.round(pyomo.value(model.building_Q_int[i]),2)) for i in model.i]
 
         core.states['mpc/building/program'].value = result
 
 
+        # old
+        result = {}
+        result['timestamp'] = [int(pyomo.value(model.timestamp[i])) for i in model.i]
+        result['T_liv_old'] = [float(np.round(pyomo.value(model.building_T_liv[i]),2)) for i in model.i]
+        result['Q_hea_old'] = [float(np.round(pyomo.value(model.building_Q_hea[i]),2)) for i in model.i]
+        result['Q_sol_old'] = [float(np.round(pyomo.value(model.building_Q_sol[i]),2)) for i in model.i]
+        result['Q_int_old'] = [float(np.round(pyomo.value(model.building_Q_int[i]),2)) for i in model.i]
+
+        self.program_old.append(result)
+        if len(self.program_old) == 24*4:
+            result_old = self.program_old.pop(0)
+        else:
+            result_old = self.program_old[0]
+
+        core.states['mpc/building/program_old'].value = result_old
 
