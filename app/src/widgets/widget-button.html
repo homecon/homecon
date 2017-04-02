@@ -11,9 +11,9 @@
 <link rel="import" href="../homecon-icon-select.html">
 <link rel="import" href="../homecon-web-socket-sender.html">
 
-<link rel="import" href="homecon-base-button.html">
+<link rel="import" href="base-button.html">
 
-<dom-module is="homecon-widget-button">
+<dom-module is="widget-button">
     <template>
         <style include="iron-flex iron-flex-alignment">
             :host{
@@ -36,7 +36,7 @@
         
         <homecon-web-socket-sender id="websocket"></homecon-web-socket-sender>
         
-        <homecon-base-button class="button" event="[[config.event]]" data="[[config.data]]" raised="true" >{{config.label}}</homecon-base-button>
+        <base-button class="button" event="[[config.event]]" data="[[config.data]]" raised="true" >{{config.label}}</base-button>
         
         <div class="edit" hidden="{{!edit}}">
             <paper-icon-button icon="editor:mode-edit" noink="true" on-tap="openEditDialog"></paper-icon-button>
@@ -53,7 +53,7 @@
     </template>
     <script>
         Polymer({
-            is: 'homecon-widget-button',
+            is: 'widget-button',
             properties: {
                 config: {
                     type: 'Object',

@@ -28,18 +28,27 @@ class Zone(core.component.Component):
             'default_config': {'datatype': 'number', 'quantity': 'heat flow rate', 'unit': 'W', 'description':'Solar heat flow through all windows in the zone'},
             'fixed_config': {},
         },
-        'solargain_setpoint': {
-            'default_config': {'datatype': 'program', 'quantity': 'heat flow rate', 'unit': 'W', 'description':'Setpoint for solar heat flow through all windows in the zone'},
-            'fixed_config': {},
-        },
         'internalgain': {
             'default_config': {'datatype': 'number', 'quantity': 'heat flow rate', 'unit': 'W', 'description':'Internal heat flows to the zone'},
             'fixed_config': {},
         },
-        'internalgain_setpoint': {
-            'default_config': {'datatype': 'program', 'quantity': 'heat flow rate', 'unit': 'W', 'description':'Setpoint for internal heat flows to the zone'},
+        'temperature_program': {
+            'default_config': {'datatype': 'program', 'quantity': 'temperature', 'unit': '°C', 'description':'Program for the zone temperature', 'log':False},
             'fixed_config': {},
         },
+        'humidity_program': {
+            'default_config': {'datatype': 'program', 'quantity': 'relative humidity', 'unit': '%', 'description':'Program for the zone humidity', 'log':False},
+            'fixed_config': {},
+        },
+        'solargain_program': {
+            'default_config': {'datatype': 'program', 'quantity': 'heat flow rate', 'unit': 'W', 'description':'Program for solar heat flow through all windows in the zone', 'log':False},
+            'fixed_config': {},
+        },
+        'internalgain_program': {
+            'default_config': {'datatype': 'program', 'quantity': 'heat flow rate', 'unit': 'W', 'description':'Program for internal heat flows to the zone', 'log':False},
+            'fixed_config': {},
+        },
+
     }
 
     def calculate_solargain(self,timestamp=None,I_direct=None,I_diffuse=None,solar_azimuth=None,solar_altitude=None,shading_relativeposition=None):

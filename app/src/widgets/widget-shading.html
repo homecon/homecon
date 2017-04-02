@@ -9,10 +9,10 @@
 <link rel="import" href="../homecon-edit-dialog.html">
 <link rel="import" href="../select-component.html">
 
-<link rel="import" href="homecon-base-button.html">
-<link rel="import" href="homecon-base-slider.html">
+<link rel="import" href="base-button.html">
+<link rel="import" href="base-slider.html">
 
-<dom-module is="homecon-widget-shading">
+<dom-module is="widget-shading">
     <template>
         <style include="iron-flex iron-flex-alignment">
             :host{
@@ -38,20 +38,20 @@
         
         <div class="horizontal layout">
             <div>
-                <homecon-base-button event="state" data="{{_upData(config)}}">
+                <base-button event="state" data="{{_upData(config)}}">
                     <img class="icon" src="/images/icon/ffffff/fts_shutter_10.png">
-                </homecon-base-button>
+                </base-button>
             </div>
             <div class="flex">
                 <div class="vertical layout center-justified">
                     <div class="label">{{config.label}}</div>
-                    <homecon-base-slider path="{{_positionPath(config)}}"></homecon-base-slider>
+                    <base-slider path="{{_positionPath(config)}}"></base-slider>
                 </div>
             </div>
             <div>
-                <homecon-base-button event="state" data="{{_downData(config)}}">
+                <base-button event="state" data="{{_downData(config)}}">
                     <img class="icon" src="/images/icon/ffffff/fts_shutter_100.png">
-                </homecon-base-button>
+                </base-button>
             </div>
         </div>
 
@@ -70,7 +70,7 @@
     </template>
     <script>
         Polymer({
-            is: 'homecon-widget-shading',
+            is: 'widget-shading',
             properties: {
                 config: {
                     type: 'Object',

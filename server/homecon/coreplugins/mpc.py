@@ -23,6 +23,14 @@ class Mpc(core.plugin.Plugin):
         self.horizon = 24*7*3600      # the prediction and control horizon in seconds
         self.timestep = 900           # the control timestep in seconds
 
+        # add program
+        core.states.add('mpc/power/program',       config={'datatype': 'dict', 'quantity':'', 'unit':''  , 'label':'', 'description':'', 'log': False})
+        core.states.add('mpc/building/program',     config={'datatype': 'dict', 'quantity':'', 'unit':''  , 'label':'', 'description':'', 'log': False})
+
+        core.states.add('mpc/power/program_old',       config={'datatype': 'dict', 'quantity':'', 'unit':''  , 'label':'', 'description':'', 'log': False})
+        core.states.add('mpc/building/program_old',     config={'datatype': 'dict', 'quantity':'', 'unit':''  , 'label':'', 'description':'', 'log': False})
+
+
         # schedule cross validation
         optimization_task = asyncio.ensure_future(self.schedule_optimization())
 
@@ -156,7 +164,6 @@ class Mpc(core.plugin.Plugin):
         solver = pyomo.SolverFactory('ipopt')
         results = solver.solve(model, tee=True)  # FIXME should be done in a separate thread to not stop the event loop
 
-
         # pass control program to plugins
         for plugin in core.plugins.values():
             plugin.postprocess_ocp(model)
@@ -166,6 +173,19 @@ class Mpc(core.plugin.Plugin):
         for component in core.components.values():
             component.postprocess_ocp(model)
 
+
+        # set states
+        result = {}
+        result['timestamp'] = [int(pyomo.value(model.timestamp[i])) for i in model.i]
+        result['P_el'] = [float(np.round(pyomo.value(model.P_el_tot[i]),2)) for i in model.i]
+        result['P_ng'] = [float(np.round(pyomo.value(model.P_ng_tot[i]),2)) for i in model.i]
+        
+        core.states['mpc/power/program'].value = result
+
+        # FIXME how to keep the old program available
+        if core.states['mpc/power/program'].value is None:
+            pass
+    
 
         return True
 

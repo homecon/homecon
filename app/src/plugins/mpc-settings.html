@@ -1,0 +1,53 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/paper-material/paper-material.html">
+<link rel="import" href="../../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../../bower_components/iron-icon/iron-icon.html">
+<link rel="import" href="../../bower_components/iron-icons/iron-icons.html">
+
+<link rel="import" href="../homecon-web-socket-object.html">
+<link rel="import" href="../homecon-web-socket-sender.html">
+<link rel="import" href="../homecon-edit-dialog.html">
+<link rel="import" href="../homecon-section.html">
+<link rel="import" href="../widgets/widget-control-program.html">
+
+<dom-module id="mpc-settings">
+
+    <template>
+
+        <style include="iron-flex iron-flex-alignment">
+            :host {
+                display: block;
+            }
+            .chart {
+                margin-bottom: 5px;
+            }
+            .fitquality{
+                width: 45%;
+                min-width: 200px;
+            }
+            .model-select{
+                width: 95%;
+                margin-bottom: 10px;
+            }
+        </style>
+
+
+        <paper-material class="vertical layout component">
+            <h3>Control program</h3>
+            <widget-control-program></widget-control-program>
+        <paper-material>
+
+    </template>
+
+    <script>
+        Polymer({
+            is: 'mpc-settings',
+
+            properties: {
+            },
+
+        });
+    </script>
+
+</dom-module>

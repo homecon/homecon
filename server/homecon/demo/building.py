@@ -43,13 +43,13 @@ def emulate_building(initialdata,weatherdata,finaltimestamp=-1,heatingcurve=Fals
 
 
     # parameters
-    UA_in = 600
+    UA_in = 300
     C_in = 10e6
 
     UA_em = 1200
     C_em = 8e6
 
-    Q_em_max = 16000
+    Q_em_max = 10000
     T_set = 20
     K_set = 5000
     K_amb = 800

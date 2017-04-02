@@ -3,13 +3,13 @@
 
 <link rel="import" href="homecon-web-socket-object.html">
 
-<link rel="import" href="widgets/homecon-widget-button.html">
-<link rel="import" href="widgets/homecon-widget-switch.html">
-<link rel="import" href="widgets/homecon-widget-shading.html">
-<link rel="import" href="widgets/homecon-widget-weather-block.html">
-<link rel="import" href="widgets/homecon-widget-chart.html">
-<link rel="import" href="widgets/homecon-widget-status-button.html">
-<link rel="import" href="widgets/homecon-widget-alarm.html">
+<link rel="import" href="widgets/widget-button.html">
+<link rel="import" href="widgets/widget-switch.html">
+<link rel="import" href="widgets/widget-shading.html">
+<link rel="import" href="widgets/widget-weather-block.html">
+<link rel="import" href="widgets/widget-chart.html">
+<link rel="import" href="widgets/widget-status-button.html">
+<link rel="import" href="widgets/widget-alarm.html">
 
 <dom-module is="homecon-pages-widget">
     <template>
@@ -57,7 +57,7 @@
                 // import the widget
                 //this.importHref( this.resolveUrl(type+'.html'), null, null, true );
 
-                var widget = document.createElement('homecon-widget-'+type);
+                var widget = document.createElement('widget-'+type);
                 if(typeof this.widget.config['initialized'] == 'undefined'){
                     widget.config['initialized'] = true;
                     for(var attrname in this.widget.config){

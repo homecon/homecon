@@ -85,10 +85,10 @@ def prepare_database():
     core.components.add('living/temperature_wall'        ,'zonetemperaturesensor'    , config={'zone':'dayzone','confidence':0.5})
     core.components.add('living/temperature_window'      ,'zonetemperaturesensor'    , config={'zone':'dayzone','confidence':0.8})
 
-    core.components.add('living/window_west_1'    ,'window'       , config={'zone':'dayzone', 'area':7.2, 'azimuth':270})
-    core.components.add('living/window_west_2'    ,'window'       , config={'zone':'dayzone', 'area':5.8, 'azimuth':270})
-    core.components.add('kitchen/window_west'     ,'window'       , config={'zone':'dayzone', 'area':6.2, 'azimuth':270})
-    core.components.add('kitchen/window_south'    ,'window'       , config={'zone':'dayzone', 'area':6.2, 'azimuth':180})
+    core.components.add('living/window_west_1'    ,'window'       , config={'zone':'dayzone', 'area':5.8, 'azimuth':270})
+    core.components.add('living/window_west_2'    ,'window'       , config={'zone':'dayzone', 'area':4.2, 'azimuth':270})
+    core.components.add('kitchen/window_west'     ,'window'       , config={'zone':'dayzone', 'area':3.8, 'azimuth':270})
+    core.components.add('kitchen/window_south'    ,'window'       , config={'zone':'dayzone', 'area':4.4, 'azimuth':180})
 
     core.components.add('living/window_west_1/screen'   ,'shading'       , config={'window':'living/window_west_1', 'transmittance_closed':0.2})
     core.components.add('living/window_west_2/screen'   ,'shading'       , config={'window':'living/window_west_2', 'transmittance_closed':0.2})
@@ -107,7 +107,7 @@ def prepare_database():
 
     core.components.add('bedroom/temperature'      ,'zonetemperaturesensor'    , config={'zone':'nightzone','confidence':0.8})
 
-    core.components.add('bedroom/window_east'       ,'window'       , config={'zone':'nightzone', 'area':1.2, 'azimuth':90})
+    core.components.add('bedroom/window_east'       ,'window'       , config={'zone':'nightzone', 'area':1.1, 'azimuth':90})
     core.components.add('bedroom/window_north'      ,'window'       , config={'zone':'nightzone', 'area':0.8, 'azimuth':0})
 
     core.components.add('bedroom/window_east/shutter'      ,'shading'       , config={'window':'bedroom/window_east' , 'transmittance_closed':0.0})

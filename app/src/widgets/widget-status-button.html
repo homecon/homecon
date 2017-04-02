@@ -10,10 +10,10 @@
 <link rel="import" href="../homecon-edit-dialog.html">
 <link rel="import" href="../homecon-icon-select.html">
 
-<link rel="import" href="homecon-base-button.html">
-<link rel="import" href="homecon-base-status-light.html">
+<link rel="import" href="base-button.html">
+<link rel="import" href="base-status-light.html">
 
-<dom-module is="homecon-widget-status-button">
+<dom-module is="widget-status-button">
     <template>
         <style include="iron-flex iron-flex-alignment">
             :host{
@@ -34,10 +34,10 @@
             }
         </style>
         
-        <homecon-base-button class="button" event="[[config.event]]" data="[[config.data]]" raised="true"> 
-            <homecon-base-status-light class="statuslight" icon="[[config.icon]]" path="[[config.path]]"></homecon-base-status-light>
+        <base-button class="button" event="[[config.event]]" data="[[config.data]]" raised="true"> 
+            <base-status-light class="statuslight" icon="[[config.icon]]" path="[[config.path]]"></base-status-light>
             <div class="label">{{config.label}}</div>
-        </homecon-base-button>
+        </base-button>
         
         <div class="edit" hidden="{{!edit}}">
             <paper-icon-button icon="editor:mode-edit" noink="true" on-tap="openEditDialog"></paper-icon-button>
@@ -60,7 +60,7 @@
     </template>
     <script>
         Polymer({
-            is: 'homecon-widget-status-button',
+            is: 'widget-status-button',
             properties: {
                 config: {
                     type: 'Object',

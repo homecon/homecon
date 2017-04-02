@@ -1,0 +1,147 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout-classes.html">
+<link rel="import" href="../../bower_components/iron-icon/iron-icon.html">
+<link rel="import" href="../../bower_components/iron-icons/iron-icons.html">
+<link rel="import" href="../../bower_components/iron-icons/editor-icons.html">
+<link rel="import" href="../../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../../bower_components/paper-toggle-button/paper-toggle-button.html">
+<link rel="import" href="../../bower_components/paper-button/paper-button.html">
+
+<link rel="import" href="../homecon-web-socket-object.html">
+<link rel="import" href="../homecon-edit-dialog.html">
+<link rel="import" href="highcharts-behavior.html">
+
+
+<dom-module is="widget-control-program">
+    <template>
+        <style include="iron-flex iron-flex-alignment">
+            :host{
+                display: inline-block;
+                position: relative;
+            }
+            .chart {
+                margin-bottom: 5px;
+            }
+
+        </style>
+        
+
+        <homecon-web-socket-object event="state" path="mpc/power/program" data="{{powerProgram}}" on-change="_powerProgramChanged" send-on-authenticated></homecon-web-socket-object>
+        <homecon-web-socket-object event="state" path="mpc/building/program" data="{{buildingProgram}}" on-change="_buildingProgramChanged" send-on-authenticated></homecon-web-socket-object>
+
+        <div id="containerTemperature" class="chart"></div>
+        <div id="containerHeat" class="chart"></div>
+        <div id="containerPower" class="chart"></div>
+
+
+    </template>
+    <script>
+        Polymer({
+            is: 'widget-control-program',
+            behaviors: [highchartsBehavior],
+            properties: {
+                config: {
+                    type: 'Object',
+                    value: {'title':'Control program'},
+                },
+                edit: {
+                    type: 'Boolean',
+                    value: false
+                },
+                classes: {
+                    type: 'String',
+                    value: 'fullwidth center',
+                },
+            },
+
+            ready: function(){
+                this.chartTemperature = this._createChart(this.$.containerTemperature);
+                this.chartHeat = this._createChart(this.$.containerHeat);
+                this.chartPower = this._createChart(this.$.containerPower);
+
+
+                this._setTitle(this.chartTemperature,'Temperature program')
+                this._setTitle(this.chartHeat,'Heat flow program')
+                this._setTitle(this.chartPower,'Power program')
+
+                var that = this;
+                that._resizeChart(that.chartTemperature,200);
+                window.addEventListener("resize", function(){
+                    that._resizeChart(that.chartTemperature,200);
+                });
+
+                var that = this;
+                that._resizeChart(that.chartHeat,200);
+                window.addEventListener("resize", function(){
+                    that._resizeChart(that.chartHeat,200);
+                });
+
+                var that = this;
+                that._resizeChart(that.chartPower,200);
+                window.addEventListener("resize", function(){
+                    that._resizeChart(that.chartPower,200);
+                });
+            },
+
+            _powerProgramChanged : function(event,data){
+
+                this._updateChart(data,this.chartPower);
+                this._setYLabel(this.chartPower,'W')
+
+            },
+
+            _buildingProgramChanged : function(event,data){
+
+                var tempdata = {};
+                tempdata['timestamp'] = data['timestamp']
+                for(key in data){
+                    if(key[0] == 'T'){
+                        tempdata[key] = data[key]
+                    }
+                }
+
+                this._updateChart(tempdata,this.chartTemperature);
+                this._setYLabel(this.chartTemperature,'°C');
+
+
+                var tempdata = {};
+                tempdata['timestamp'] = data['timestamp']
+                for(key in data){
+                    if(key[0] == 'Q'){
+                        tempdata[key] = data[key]
+                    }
+                }
+
+                this._updateChart(tempdata,this.chartHeat);
+                this._setYLabel(this.chartHeat,'W');
+
+            },
+
+            _updateChart: function(data,chart){
+                var num = 0;
+                for(key in data){
+                    if(key != 'timestamp'){
+                        if(chart.series.length > num){
+                            var series = chart.series[num]
+                        }
+                        else{
+                            var series = chart.addSeries({});
+                            num += 1;
+                        }
+
+                        series.update({name:key}, false);
+
+                        var chartdata = []
+                        for(var i=0;i<data['timestamp'].length;i++){
+                            chartdata.push([data['timestamp'][i]*1000,data[key][i]]);
+                        }
+
+                        series.setData(chartdata)
+                    }
+                }
+
+            },
+
+        });
+    </script>
+</dom-module>

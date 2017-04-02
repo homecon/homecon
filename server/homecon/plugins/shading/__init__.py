@@ -143,7 +143,7 @@ class Shading(core.plugin.Plugin):
             windows = core.components.find(type='window', zone=zone.path)
             shadings = {w.path: core.components.find(type='shading', window=w.path) for w in windows}
 
-            #solargain_set_program = zone.states['solargain_setpoint'].value
+            #solargain_set_program = zone.states['solargain_program'].value
             #solargain_set = np.interp(timestamp_now, [val[0] for val in solargain_set_program], [val[1] for val in solargain_set_program])
             solargain_set = 2000.
             solargain_tol = np.maximum(200,0.1*solargain_set)

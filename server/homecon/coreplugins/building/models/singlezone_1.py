@@ -146,16 +146,16 @@ class Singlezone_1(model.Buildingmodel):
         result['parameters']['UA_liv_amb'] = pyomo.value(model.UA_liv_amb)
 
         result['inputs']['timestamp'] = [int(pyomo.value(model.timestamp[i])) for i in model.i]
-        result['inputs']['T_amb'] = [np.round(pyomo.value(model.T_amb[i]),2) for i in model.i]
-        result['inputs']['Q_hea'] = [np.round(pyomo.value(model.Q_hea[i]),2) for i in model.i]
-        result['inputs']['Q_sol'] = [np.round(pyomo.value(model.Q_sol[i]),2) for i in model.i]
-        result['inputs']['Q_int'] = [np.round(pyomo.value(model.Q_int[i]),2) for i in model.i]
+        result['inputs']['T_amb'] = [float(np.round(pyomo.value(model.T_amb[i]),2)) for i in model.i]
+        result['inputs']['Q_hea'] = [float(np.round(pyomo.value(model.Q_hea[i]),2)) for i in model.i]
+        result['inputs']['Q_sol'] = [float(np.round(pyomo.value(model.Q_sol[i]),2)) for i in model.i]
+        result['inputs']['Q_int'] = [float(np.round(pyomo.value(model.Q_int[i]),2)) for i in model.i]
 
-        result['estimates']['T_liv'] = [np.round(pyomo.value(model.T_liv_est[i]),2) for i in model.i]
+        result['estimates']['T_liv'] = [float(np.round(pyomo.value(model.T_liv_est[i]),2)) for i in model.i]
 
-        result['observations']['T_liv'] = [np.round(pyomo.value(model.T_liv[i]),2) for i in model.i]
+        result['observations']['T_liv'] = [float(np.round(pyomo.value(model.T_liv[i]),2)) for i in model.i]
 
-        error = np.array([pyomo.value(model.T_liv[i]-model.T_liv_est[i]) for i in model.i])
+        error = np.array([float(pyomo.value(model.T_liv[i]-model.T_liv_est[i])) for i in model.i])
         rmse = np.mean( error**2 )**0.5
 
         result['fitquality']['rmse'] = rmse
@@ -263,14 +263,27 @@ class Singlezone_1(model.Buildingmodel):
 
 
     def postprocess_ocp(self,model):
-        # FIXME pass schedules in a structured way to the gui, see system identification
-        self.T_liv_schedule = [(pyomo.value(model.timestamp[i]),pyomo.value(model.building_T_liv[i])) for i in model.ip]
-        self.Q_hea_schedule = [(pyomo.value(model.timestamp[i]),pyomo.value(model.building_Q_hea[i])) for i in model.i]
-        self.Q_sol_schedule = [(pyomo.value(model.timestamp[i]),pyomo.value(model.building_Q_sol[i])) for i in model.i]
-        
-        print(self.T_liv_schedule[:24*4])
-        print(self.Q_hea_schedule[:24*4])
-        print(self.Q_sol_schedule[:24*4])
+        T_liv_program = [(pyomo.value(model.timestamp[i]),np.round(pyomo.value(model.building_T_liv[i]),2)) for i in model.ip]
+        Q_hea_program = [(pyomo.value(model.timestamp[i]),np.round(pyomo.value(model.building_Q_hea[i]),2)) for i in model.i]
+        Q_sol_program = [(pyomo.value(model.timestamp[i]),np.round(pyomo.value(model.building_Q_sol[i]),2)) for i in model.i]
+        Q_int_program = [(pyomo.value(model.timestamp[i]),np.round(pyomo.value(model.building_Q_int[i]),2)) for i in model.i]
+
+        zones = core.components.find(type='zone')
+        for zone in zones:
+            zone.states['temperature_program'].value = T_liv_program
+            zone.states['solargain_program'].value = [(val[0], val[1]/len(zones) )for val in Q_sol_program]     # FIXME divide base on maximum solargain
+            zone.states['internalgain_program'].value = [(val[0], val[1]/len(zones) )for val in Q_int_program] 
+
+
+        result = {}
+        result['timestamp'] = [int(pyomo.value(model.timestamp[i])) for i in model.i]
+        result['T_liv'] = [float(np.round(pyomo.value(model.building_T_liv[i]),2)) for i in model.i]
+        result['T_amb'] = [float(np.round(pyomo.value(model.T_amb[i]),2)) for i in model.i]
+        result['Q_hea'] = [float(np.round(pyomo.value(model.building_Q_hea[i]),2)) for i in model.i]
+        result['Q_sol'] = [float(np.round(pyomo.value(model.building_Q_sol[i]),2)) for i in model.i]
+        result['Q_int'] = [float(np.round(pyomo.value(model.building_Q_int[i]),2)) for i in model.i]
+
+        core.states['mpc/building/program'].value = result
 
 
 

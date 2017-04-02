@@ -16,9 +16,9 @@
 <link rel="import" href="../homecon-web-socket-sender.html">
 <link rel="import" href="../homecon-edit-dialog.html">
 
-<link rel="import" href="homecon-base-alarm.html">
+<link rel="import" href="base-alarm.html">
 
-<dom-module is="homecon-widget-alarm">
+<dom-module is="widget-alarm">
     <template>
         <style include="iron-flex iron-flex-alignment">
             :host{
@@ -55,7 +55,7 @@
         <template is="dom-repeat" items="{{alarms}}" as="path">
 
             <div class="alarm vertical layout">
-                <homecon-base-alarm path="{{path}}" actions="{{actions}}"></homecon-base-alarm>
+                <base-alarm path="{{path}}" actions="{{actions}}"></base-alarm>
                 <div class="delete">
                     <paper-icon-button icon="icons:delete" noink="true" on-tap="deleteAlarm"></paper-icon-button>
                 </div>

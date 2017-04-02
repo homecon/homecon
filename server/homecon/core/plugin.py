@@ -14,7 +14,7 @@ from . import event
 from . import state
 from . import component
 from . import database
-from . import websocket
+from . import ws
 
 # the worker thread pool
 executor = ThreadPoolExecutor(10)
@@ -525,7 +525,7 @@ class ObjectPlugin(Plugin):
 
             if obj:
                 self.fire('{}_added'.format(self.objectname),{self.objectname: obj})
-                websocket.websocket.send({'event':'list_{}s'.format(self.objectname), 'path':'', 'value':self.list()})
+                ws.websocket.send({'event':'list_{}s'.format(self.objectname), 'path':'', 'value':self.list()})
 
         def listen_delete_object(cls,event):
             """
@@ -540,7 +540,7 @@ class ObjectPlugin(Plugin):
 
                     logging.debug('deleted {} {}'.format(self.objectname.capitalize(), event.data['path']))
 
-                    websocket.websocket.send({'event':'list_{}s'.format(self.objectname), 'path':'', 'value':self.list()})
+                    ws.websocket.send({'event':'list_{}s'.format(self.objectname), 'path':'', 'value':self.list()})
 
                 else:
                     logging.error('{} does not exist {}'.format(self.objectname.capitalize(),event.data['path']))
@@ -556,7 +556,7 @@ class ObjectPlugin(Plugin):
             else:
                 filt = None
 
-            websocket.websocket.send({'event':'list_{}s'.format(self.objectname), 'path':event.data['path'], 'value':self.list(filter=filt)}, clients=[event.client])
+            ws.websocket.send({'event':'list_{}s'.format(self.objectname), 'path':event.data['path'], 'value':self.list(filter=filt)}, clients=[event.client])
 
 
         def listen_object(cls,event):
@@ -582,7 +582,7 @@ class ObjectPlugin(Plugin):
 
                     else:
                         # get
-                        websocket.websocket.send({'event':self.objectname, 'path':event.data['path'], 'value':obj.value}, clients=[event.client])
+                        ws.websocket.send({'event':self.objectname, 'path':event.data['path'], 'value':obj.value}, clients=[event.client])
 
                 else:
                     logging.error('{} does not exist {}'.format(self.objectname.capitalize(), event.data['path']))
