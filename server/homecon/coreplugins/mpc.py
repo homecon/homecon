@@ -32,6 +32,10 @@ class Mpc(core.plugin.Plugin):
         core.states.add('mpc/power/program_old',       config={'datatype': 'dict', 'quantity':'', 'unit':''  , 'label':'', 'description':'', 'log': False})
         core.states.add('mpc/building/program_old',     config={'datatype': 'dict', 'quantity':'', 'unit':''  , 'label':'', 'description':'', 'log': False})
 
+        core.states.add('mpc/priceprofiles/el', value=[(0,0.220)],    config={'datatype': 'list', 'quantity':'', 'unit':''  , 'label':'', 'description':'', 'log': False})
+        core.states.add('mpc/priceprofiles/ng', value=[(0,0.080)],    config={'datatype': 'list', 'quantity':'', 'unit':''  , 'label':'', 'description':'', 'log': False})
+
+
 
         # schedule cross validation
         optimization_task = asyncio.ensure_future(self.schedule_optimization())
@@ -61,16 +65,18 @@ class Mpc(core.plugin.Plugin):
 
 
         logging.debug('Starting the control optimization')
+        #util.time.set_timezone( core.states['settings/location/timezone'].value ) # FIXME should be defined on startup
 
         # common data gathering
-        dt_ref = datetime.datetime(1970, 1, 1)
         dt_ini = datetime.datetime.utcnow()
 
+        # make the optimization timesteps coincide with 0min, 15min, 30min, 45min
         nsecs = dt_ini.minute*60 + dt_ini.second + dt_ini.microsecond*1e-6
-        delta = np.round( nsecs/900 ) * 900 - nsecs  # the optimization timesteps coincide with 0min, 15min, 30min, 45min
+        delta = int( np.round( nsecs/900 ) * 900 - nsecs )
+        timestamp_ini = util.time.timestamp(dt_ini)+delta
 
-        timestamp_ini = int( (dt_ini-dt_ref).total_seconds()+delta )
         timestamps = [ts for ts in range(timestamp_ini,timestamp_ini+self.horizon,self.timestep)]
+
 
         weatherforecast_timestamps = []
         weatherforecast_T_amb = []
@@ -80,9 +86,16 @@ class Mpc(core.plugin.Plugin):
             
         T_amb = np.interp(timestamps,weatherforecast_timestamps,weatherforecast_T_amb)
 
+        timestamps_of_the_week = [util.time.timestamp_of_the_week(ts) for ts in timestamps]
+        print(util.time.timezone)
+        print(timestamps[0])
+        print(timestamps_of_the_week[0]/3600)
 
-        P_el_p = [0.250 for ts in timestamps]
-        P_ng_p = [0.070 for ts in timestamps]
+        P_el_p = util.interp.zoh(timestamps_of_the_week,[val[0] for val in core.states['mpc/priceprofiles/el'].value],[val[1] for val in core.states['mpc/priceprofiles/el'].value])
+        P_ng_p = util.interp.zoh(timestamps_of_the_week,[val[0] for val in core.states['mpc/priceprofiles/ng'].value],[val[1] for val in core.states['mpc/priceprofiles/ng'].value])
+
+        print(P_el_p)
+        print(P_ng_p)
 
 
         # determine scale for discomfort costs

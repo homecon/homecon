@@ -13,6 +13,7 @@ import threading
 
 from . import database
 from . import event
+from .. import util
 
 class BaseObject(object):
     """
@@ -218,6 +219,7 @@ class BaseState(BaseObject):
                 value = None
 
         self._value = self._check_value(value)
+
 
         if db_entry is None and not self._value is None:
             # update the value in the database
@@ -612,14 +614,13 @@ class State(BaseState):
             if interpolation == 'linear':
                 # linear interpolation
                 if len(db_timestamps)>0:
-                    values = np.interp(timestamps,db_timestamps,db_values,left=np.nan)
+                    values = util.interp.lin(timestamps,db_timestamps,db_values,left=np.nan)
                 else:
                     values = np.ones(len(timestamps))*np.nan
             else:
                 # zero order hold interpolation
                 if len(db_timestamps)>0:
-                    ind = np.interp( timestamps, db_timestamps, np.arange(len(db_timestamps)) )
-                    values = np.array([db_values[int(i)] for i in ind])
+                    values = util.interp.zoh(timestamps,db_timestamps,db_values,left=np.nan)
                 else:
                     values = np.ones(len(timestamps))*np.nan
 

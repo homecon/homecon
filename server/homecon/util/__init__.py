@@ -2,3 +2,5 @@
 # -*- coding: utf-8 -*-
 
 from . import weather
+from . import time
+from . import interp

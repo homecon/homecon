@@ -10,7 +10,7 @@ import uuid
 import asyncio
 
 from .. import core
-
+from .. import util
 
 class Schedule(core.state.BaseState):
     """
@@ -153,13 +153,6 @@ class Schedules(core.plugin.ObjectPlugin):
 
         """
 
-        # define the default timezone
-        try:
-            self.timezone = pytz.timezone(core.states['settings/location/timezone'].value)
-        except:
-            self.timezone = pytz.utc
-        
-
         # schedule schedule running
         self._loop.create_task(self.run_schedules())
 
@@ -180,7 +173,7 @@ class Schedules(core.plugin.ObjectPlugin):
 
             timestamp_when = int( (dt_when-dt_ref).total_seconds() )
 
-            dt = pytz.utc.localize( dt_now ).astimezone(self.timezone)
+            dt = pytz.utc.localize( dt_now ).astimezone(util.time.timezone)
 
             for path,schedule in self.items():
                 if schedule.match(dt):
@@ -235,13 +228,6 @@ class Schedules(core.plugin.ObjectPlugin):
     def listen_snooze_schedule(self,event):
         logging.warning('snooze schedule is not implemented yet')
 
-
-    def listen_state_changed(self,event):
-        if event.data['state'].path == 'settings/location/timezone':
-            try:
-                self.timezone = pytz.timezone(event.data['value'])
-            except:
-                logging.error('timezone {} is not available in pytz'.format(event.data['value']))
 
 
 

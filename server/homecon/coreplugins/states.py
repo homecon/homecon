@@ -3,8 +3,10 @@
 
 import logging
 import json
+import asyncio
 
 from .. import core
+from .. import util
 from .authentication import jwt_decode
 
 class States(core.plugin.Plugin):
@@ -48,8 +50,16 @@ class States(core.plugin.Plugin):
             core.states['settings/location/timezone'].value = 'Europe/Brussels'
 
 
+        # create a task to set the timezone
+        async def do_set_timezone():
+            util.time.set_timezone(core.states['settings/location/timezone'].value)
+
+        set_timezone_task = asyncio.ensure_future(do_set_timezone())
+
 
         logging.debug('States plugin Initialized')
+
+        
 
     def get(self,path):
         """
@@ -139,6 +149,12 @@ class States(core.plugin.Plugin):
     def listen_state_changed(self,event):
         #core.event.fire('send',{'event':'state', 'path':event.data['state'].path, 'value':event.data['state'].value, 'readusers':event.data['state'].config['readusers'], 'readgroups':event.data['state'].config['readgroups']},source=self)
         core.websocket.send({'event':'state', 'path':event.data['state'].path, 'value':event.data['state'].value}, readusers=event.data['state'].config['readusers'], readgroups=event.data['state'].config['readgroups'])
+
+        if event.data['state'].path == 'settings/location/timezone':
+            util.time.set_timezone(event.data['value'])
+
+
+
 
 
     def listen_state(self,event):
