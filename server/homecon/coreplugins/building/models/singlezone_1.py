@@ -127,9 +127,9 @@ class Singlezone_1(model.Buildingmodel):
 
 
         # make sure all values are lists
-        if not hasattr(data['Q_hea'],'__len__'):
+        if not hasattr(data['Q_sol'],'__len__'):
             data['Q_sol'] += np.zeros(len(data['timestamp']))
-        if not hasattr(data['Q_hea'],'__len__'):
+        if not hasattr(data['Q_int'],'__len__'):
             data['Q_int'] += np.zeros(len(data['timestamp']))
         if not hasattr(data['Q_hea'],'__len__'):
             data['Q_hea'] += np.zeros(len(data['timestamp']))
@@ -229,7 +229,9 @@ class Singlezone_1(model.Buildingmodel):
     def create_ocp_constraints(self,model):
 
         # state estimation?  # FIXME
-        T_liv_ini = np.mean( [zone.states['temperature'].history(model.timestamp[0]) for zone in core.components.find(type='zone')], axis=0)
+        print(  [zone.states['temperature'].history(model.timestamp[0]) for zone in core.components.find(type='zone')] )
+        T_liv_ini = np.nanmean( [zone.states['temperature'].history(model.timestamp[0]) for zone in core.components.find(type='zone')], axis=0)
+        print(T_liv_ini)
 
         # constraints
         # states
@@ -263,15 +265,15 @@ class Singlezone_1(model.Buildingmodel):
 
 
     def postprocess_ocp(self,model):
-        T_liv_program = [(pyomo.value(model.timestamp[i]),np.round(pyomo.value(model.building_T_liv[i]),2)) for i in model.ip]
-        Q_hea_program = [(pyomo.value(model.timestamp[i]),np.round(pyomo.value(model.building_Q_hea[i]),2)) for i in model.i]
-        Q_sol_program = [(pyomo.value(model.timestamp[i]),np.round(pyomo.value(model.building_Q_sol[i]),2)) for i in model.i]
-        Q_int_program = [(pyomo.value(model.timestamp[i]),np.round(pyomo.value(model.building_Q_int[i]),2)) for i in model.i]
+        T_liv_program = [(int(pyomo.value(model.timestamp[i])),float(np.round(pyomo.value(model.building_T_liv[i]),2))) for i in model.ip]
+        Q_hea_program = [(int(pyomo.value(model.timestamp[i])),float(np.round(pyomo.value(model.building_Q_hea[i]),2))) for i in model.i]
+        Q_sol_program = [(int(pyomo.value(model.timestamp[i])),float(np.round(pyomo.value(model.building_Q_sol[i]),2))) for i in model.i]
+        Q_int_program = [(int(pyomo.value(model.timestamp[i])),float(np.round(pyomo.value(model.building_Q_int[i]),2))) for i in model.i]
 
         zones = core.components.find(type='zone')
         for zone in zones:
             zone.states['temperature_program'].value = T_liv_program
-            zone.states['solargain_program'].value = [(val[0], val[1]/len(zones) )for val in Q_sol_program]     # FIXME divide base on maximum solargain
+            zone.states['solargain_program'].value = [(val[0], val[1]/len(zones) )for val in Q_sol_program]     # FIXME divide base on maximum solargain for that zone
             zone.states['internalgain_program'].value = [(val[0], val[1]/len(zones) )for val in Q_int_program] 
 
 

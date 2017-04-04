@@ -97,6 +97,18 @@
                 this._programChangedBase(this.chartHeat,'Q','W',data);
                 this._programChangedBase(this.chartPower,'P','W',data);
 
+                this.chartTemperature.redraw()
+
+                for(var i=0;i<this.chartHeat.series.length;i++){
+                    this.chartHeat.series[i].options.step='left';
+                }
+                this.chartHeat.redraw()
+
+                for(var i=0;i<this.chartPower.series.length;i++){
+                    this.chartPower.series[i].options.step='left';
+                }
+                this.chartPower.redraw()
+
             },
 
             _programChangedBase(chart,quantity,unit,data){
@@ -124,7 +136,6 @@
                 }
                 this._updateMinMaxColor(chart)
                 this._updateOldColor(chart)
-                this.chartTemperature.redraw()
                 this._setYLabel(chart,unit)
 
             },

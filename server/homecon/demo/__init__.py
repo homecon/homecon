@@ -118,7 +118,7 @@ def prepare_database():
 
     # bathroom
     core.components.add('bathroomzone'     ,'zone'    ,{})
-
+    core.components.add('bathroom/temperature'      ,'zonetemperaturesensor'    , config={'zone':'bathroomzone','confidence':0.8})
 
 
 
@@ -251,6 +251,8 @@ def prepare_database():
     # set the final values
     core.states['living/temperature_wall/value']._value = np.round(buildingdata['living/temperature_wall/value'][i],2)
     core.states['living/temperature_window/value']._value = np.round(buildingdata['living/temperature_window/value'][i],2)
+    core.states['bedroom/temperature/value']._value = np.round(buildingdata['bedroom/temperature/value'][i],2)
+    core.states['bathroom/temperature/value']._value = np.round(buildingdata['bathroom/temperature/value'][i],2)
     core.states['heatpump/power_setpoint']._value = np.round(buildingdata['Q_em'][i],1)
     core.states['heatpump/power']._value = np.round(buildingdata['Q_em'][i],1)
     core.states['floorheating_groundfloor/valve_position']._value = 1.0
@@ -296,8 +298,10 @@ def emulate():
     # update building states
     core.states['living/temperature_wall/value'].value = round(buildingdata['living/temperature_wall/value'][-1],2)
     core.states['living/temperature_window/value'].value = round(buildingdata['living/temperature_window/value'][-1],2)
-
-
+    core.states['bedroom/temperature/value'].value = round(buildingdata['bedroom/temperature/value'][-1],2)
+    core.states['bathroom/temperature/value'].value = round(buildingdata['bathroom/temperature/value'][-1],2)
+    #core.states['bedroom/temperature/value'].value = round(buildingdata['living/temperature_window/value'][-1],2)
+    #core.states['bathroom/temperature/value'].value = round(buildingdata['living/temperature_window/value'][-1],2)
 
 
 def weatherforecast(async=True):
