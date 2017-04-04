@@ -25,7 +25,7 @@ class Plugins(core.plugin.Plugin):
         
         """
         pluginslist = []
-        for name in core.plugins.availableplugins:
+        for name in core.plugins.optionalplugins:
             info = core.plugins.read_info(name)
 
             if name in core.plugins:
@@ -108,6 +108,7 @@ class Plugins(core.plugin.Plugin):
 
             core.plugins.deactivate(name)
 
+            logging.debug('plugin {} deactivated'.format(name))
             return True
         else:
             return False

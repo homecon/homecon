@@ -27,21 +27,67 @@ class Plugins(object):
     """
     def __init__(self):
 
-
-        self._coreplugins = {}
-        self._optionalplugins = {}
         self._plugins = {}
+        self._availableplugins = {}
 
-        # objects for all active optional plugins
+        self.pluginfolder = 'plugins'
+
+        # objects for all plugins
         self._db_plugins = database.Table(database.db,'plugins',[
-            {'name':'name', 'type':'char(255)', 'null': '', 'default':'', 'unique':'UNIQUE'},
+            {'name':'name',   'type':'char(255)', 'null': '', 'default':'', 'unique':'UNIQUE'},
+            {'name':'core',   'type':'int',  'null': '',  'default':'0',  'unique':''},
+            {'name':'active', 'type':'int',  'null': '',  'default':'0',  'unique':''},
         ]) 
         
-        
-        # list all plugins in the pluginfolder
-        self.pluginfolder = 'plugins'
-        path = os.path.join( os.path.dirname(os.path.realpath(__file__)) ,'..',self.pluginfolder)
-        self._availableplugins = [name for name in os.listdir(path) if os.path.isdir(os.path.join(path,name)) and not name=='__pycache__' ]
+
+        # check the core plugins
+        result = self._db_plugins.GET()
+        _list = []
+        for db_entry in result:
+            _list.append(db_entry['name'])
+
+        if not 'states' in _list:
+            self._db_plugins.POST(name='states',core=1,active=1)
+        if not 'components' in _list:
+            self._db_plugins.POST(name='components',core=1,active=1)
+        if not 'plugins' in _list:
+            self._db_plugins.POST(name='plugins',core=1,active=1)
+        if not 'authentication' in _list:
+            self._db_plugins.POST(name='authentication',core=1,active=1)
+        if not 'pages' in _list:
+            self._db_plugins.POST(name='pages',core=1,active=1)
+        if not 'schedules' in _list:
+            self._db_plugins.POST(name='schedules',core=1,active=1)
+        if not 'actions' in _list:
+            self._db_plugins.POST(name='actions',core=1,active=1)
+        if not 'measurements' in _list:
+            self._db_plugins.POST(name='measurements',core=1,active=1)
+        if not 'weather' in _list:
+            self._db_plugins.POST(name='weather',core=1,active=1)
+        if not 'building' in _list:
+            self._db_plugins.POST(name='building',core=1,active=1)
+        if not 'mpc' in _list:
+            self._db_plugins.POST(name='mpc',core=1,active=1)
+        if not 'shading' in _list:
+            self._db_plugins.POST(name='shading',core=1,active=1)
+
+
+        # check the included plugins
+        if not 'knx' in _list:
+            self._db_plugins.POST(name='knx',core=0,active=0)
+        if not 'darksky' in _list:
+            self._db_plugins.POST(name='darksky',core=0,active=0)
+
+
+        # list all plugins
+        result = self._db_plugins.GET()
+        for db_entry in result:
+            self._availableplugins[db_entry['name']] = {'name':db_entry['name'],'core':db_entry['core'] == 1,'active':db_entry['active'] == 1}
+
+
+
+        #path = os.path.join( os.path.dirname(os.path.realpath(__file__)) ,'..',self.pluginfolder)
+        #self._availableplugins = [name for name in os.listdir(path) if os.path.isdir(os.path.join(path,name)) and not name=='__pycache__' ]
         
 
     def start_import(self):
@@ -51,38 +97,24 @@ class Plugins(object):
 
         """
 
-        # import all core plugins
-        classlist = []
-        classlist.append( (self._import('states',               'coreplugins'),True) )
-        classlist.append( (self._import('components',           'coreplugins'),True) )
-        classlist.append( (self._import('plugins',              'coreplugins'),True) )
-        classlist.append( (self._import('authentication',       'coreplugins'),True) )
-        classlist.append( (self._import('pages',                'coreplugins'),True) )
-        classlist.append( (self._import('schedules',            'coreplugins'),True) )
-        classlist.append( (self._import('actions',              'coreplugins'),True) )
-        classlist.append( (self._import('measurements',         'coreplugins'),True) )
-        classlist.append( (self._import('weather',              'coreplugins'),True) )
-        classlist.append( (self._import('building',             'coreplugins'),True) )
-        classlist.append( (self._import('mpc',                  'coreplugins'),True) )
-
-
-
         # import all active plugins
-        result = self._db_plugins.GET(columns=['id','name'])
-        for p in result:
-            cls = self._import(p['name'])
-            if not cls is None:
-                classlist.append( (cls,False) )
+        classlist = []
 
+        for plugin in self._availableplugins.values():
+            if plugin['active']:
+                if plugin['core']:
+                    classlist.append( self._import(plugin['name']) )
+                else:
+                    classlist.append( self._import(plugin['name']) )
 
         self._classlist = classlist
 
 
     def start_activate(self):
-        
+        plugins
         # activate all plugins
-        for cls,core in self._classlist:
-            self._activate(cls,core=core)
+        for cls in self._classlist:
+            self._activate(cls)
 
         self._classlist = []
 
@@ -99,7 +131,7 @@ class Plugins(object):
 
         # move files to the correct folders
 
-        # add the plugin to the available plugins list
+        # add the plugin to the database and available plugins list
 
         return False
 
@@ -130,15 +162,17 @@ class Plugins(object):
 
         """
 
-        if name in self._optionalplugins:
+        if name in self._availableplugins and name in self._plugins and not self._availableplugins[name]['core']:
 
             # FIXME stop the plugin
+            self._plugins[name].stop()
 
-            # remove the plugin from the lists and database
-            del self._optionalplugins[name]
+            # remove the pluging from the pluginslist
             del self._plugins[name]
-            
-            self._db_plugins.DELETE(name=name)
+
+            # set the plugin as not active in the list and database
+            self._availableplugins[name]['active'] = False
+            self._db_plugins.PUT(active=0, where='name=\'{}\''.format(name))
 
             return True
 
@@ -148,7 +182,7 @@ class Plugins(object):
 
     def delete(self,name):
         """
-        delete a plugin from the plugins list and the hard disk 
+        delete a plugin from the availableplugins list and the hard disk 
 
         Parameters
         ----------
@@ -157,6 +191,7 @@ class Plugins(object):
 
         """
         return False
+
 
     def read_info(self,name):
         """
@@ -181,9 +216,12 @@ class Plugins(object):
     def availableplugins(self):
         return self._availableplugins
 
+
     @property
     def optionalplugins(self):
-        return self._optionalplugins
+        _optionalplugins = {plugin['name']: plugin for plugin in self._availableplugins.values() if not plugin['core']}
+
+        return _optionalplugins
 
 
     def _import(self,name,package=None):
@@ -222,7 +260,7 @@ class Plugins(object):
         return pluginclass
 
 
-    def _activate(self,pluginclass,core=False):
+    def _activate(self,pluginclass):
         """
         activates a plugin
 
@@ -231,22 +269,13 @@ class Plugins(object):
         pluginclass: class
             The plugin class
 
-        core: bool, optional
-            set to True for core plugins, false by default
-
         """
 
         name = pluginclass.__name__.lower()
         plugin = pluginclass()
-        if core:
-            self._coreplugins[name] = plugin
-        else:
-            self._optionalplugins[name] = plugin
 
-            result = self._db_plugins.GET(name=name)
-            if len(result) == 0:
-                self._db_plugins.POST(name=name)
-
+        self._availableplugins[name]['active'] = True
+        self._db_plugins.PUT(active=1, where='name=\'{}\''.format(name))
         self._plugins[name] = plugin
 
 
@@ -431,6 +460,14 @@ class Plugin(object):
 
         Called after the ocp is solved
         """
+        pass
+
+
+    def schedule_callback(self,callback,**kwargs):
+        """
+        Shedule a callback tu run at regular intervals
+        """
+        # FIXME, implement
         pass
 
 
