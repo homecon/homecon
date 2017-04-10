@@ -20,9 +20,14 @@
             }
         </style>
         
-        <homecon-web-socket-object id="websocketObject" event="state" path="{{path}}" data="{{value}}"></homecon-web-socket-object>
-        
-        <paper-slider min="[[min]]" max="[[max]]" value="{{value}}" on-change="call"></paper-slider>
+        <homecon-web-socket-object id="websocketObjectValue" event="state" path="{{path}}" data="{{value}}" on-change="_valueChanged" send-on-authenticated></homecon-web-socket-object>
+
+        <template is="dom-if" if="_useStatusPath(statusPath)">
+            <homecon-web-socket-object id="websocketObjectStatus" event="state" path="{{statusPath}}" data="{{statusValue}}" on-change="_statusValueChanged" send-on-authenticated></homecon-web-socket-object>
+        </template>
+
+
+        <paper-slider min="[[min]]" max="[[max]]" value="{{sliderValue}}" on-change="call"></paper-slider>
 
     </template>
     <script>
@@ -30,6 +35,9 @@
             is: 'base-slider',
             properties: {
                 path: {
+                    type: 'String',
+                },
+                statusPath: {
                     type: 'String',
                 },
                 value: {
@@ -46,9 +54,22 @@
             },
 
             call: function(){
-                this.$.websocketObject.send(this.value);
+                this.$.websocketObjectValue.send(this.sliderValue);
             },
 
+            _useStatusPath: function(statusPath){
+                return statusPath != '';
+            },
+
+            _valueChanged: function(event,data){
+                if(!this._useStatusPath(this.statusPath)){
+                    this.sliderValue = this.value;
+                }
+            },
+
+            _statusValueChanged: function(event,data){
+                this.sliderValue = this.statusValue;
+            },
 
         });
     </script>

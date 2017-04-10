@@ -3,6 +3,7 @@
 <link rel="import" href="../../bower_components/iron-icon/iron-icon.html">
 <link rel="import" href="../../bower_components/iron-icons/iron-icons.html">
 <link rel="import" href="../../bower_components/iron-icons/editor-icons.html">
+<link rel="import" href="../../bower_components/iron-collapse/iron-collapse.html">
 
 <link rel="import" href="../../bower_components/paper-icon-button/paper-icon-button.html">
 
@@ -28,6 +29,18 @@
                 font-size: 1.2em;
                 font-weight: 700;
             }
+            .toggle{
+                margin-top: -10px;
+            }
+            .details{
+                margin-top: -22px;
+                margin-bottom: 30px;
+                margin-right: 30px;
+            }
+
+            paper-toggle-button{
+                margin-right: 20px;
+            }
             .edit{
                 position: absolute;
                 top: -10px;
@@ -36,6 +49,10 @@
             }
         </style>
         
+        <homecon-web-socket-object id="websocketObjectAuto" event="state" path="[[config.path]]/auto" data="{{auto}}" auto></homecon-web-socket-object>
+        <homecon-web-socket-object id="websocketObjectOverride" event="state" path="[[config.path]]/override" data="{{override}}" auto></homecon-web-socket-object>
+
+
         <div class="horizontal layout">
             <div>
                 <base-button event="state" data="{{_upData(config)}}">
@@ -45,7 +62,7 @@
             <div class="flex">
                 <div class="vertical layout center-justified">
                     <div class="label">{{config.label}}</div>
-                    <base-slider path="{{_positionPath(config)}}"></base-slider>
+                    <base-slider path="[[config.path]]/position" status-path="[[config.path]]/position_status" min="{{config.valueUp}}" max="{{config.valueDown}}"></base-slider>
                 </div>
             </div>
             <div>
@@ -54,6 +71,21 @@
                 </base-button>
             </div>
         </div>
+
+        <div class="horizontal layout">
+            <div class="flex"></div>
+            <iron-icon class="toggle" on-tap="_toggleCollapse" icon="{{_collapseIcon(detailsOpened)}}"></iron-icon>
+        </div>
+
+        <iron-collapse id="details" opened="{{detailsOpened}}">
+            <div class="horizontal layout details">
+                <div class="flex"></div>
+                <paper-toggle-button checked="{{auto}}">Auto</paper-toggle-button>
+                <paper-toggle-button checked="{{overrideStatus}}">Override</paper-toggle-button>
+            </div>
+        </iron-collapse>
+
+
 
         <div class="edit" hidden="{{!edit}}">
             <paper-icon-button icon="editor:mode-edit" noink="true" on-tap="openEditDialog"></paper-icon-button>
@@ -85,13 +117,21 @@
                     value: 'fullwidth',
                 },
             },
-            
+            observers: [
+                '_overrideChanged(override)',
+                '_overrideStatusChanged(overrideStatus)',
+            ],
             ready: function(){
                 this.color = 'ffffff';
+                this.detailsOpened = false;
             },
 
             _positionPath: function(config){
                 return config.path+'/position';
+            },
+
+            _positionStatusPath: function(config){
+                return config.path+'/position_status';
             },
 
             _upData: function(config){
@@ -100,6 +140,32 @@
 
             _downData: function(config){
                 return {'path':config.path+'/position','value':config.valueDown}
+            },
+
+            _overrideChanged: function(override){
+                this.overrideStatus = (override>0)
+            },
+
+            _overrideStatusChanged: function(overrideStatus){
+                if(overrideStatus){
+                    this.$.websocketObjectOverride.send(180);
+                }
+                else{
+                    this.$.websocketObjectOverride.send(0);
+                }
+            },
+
+            _toggleCollapse: function(){
+                this.$.details.toggle()
+            },
+
+            _collapseIcon: function(detailsOpened){
+                if(detailsOpened){
+                    return 'expand-less';
+                }
+                else{
+                    return 'expand-more';
+                }
             },
 
             openEditDialog: function(){
