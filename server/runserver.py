@@ -33,6 +33,14 @@ if 'demo' in sys.argv:
         pass
 
 
+################################################################################
+# start the webserver in a different thread
+################################################################################
+if not 'noweb' in sys.argv:
+    pass
+
+
+
 
 ################################################################################
 # start homecon
@@ -52,7 +60,7 @@ try:
         homecon.demo.prepare_database()
         homecon.demo.emulatorthread.start()
         homecon.demo.forecastthread.start()
-
+        homecon.demo.responsethread.start()
 
     hc.main()
 

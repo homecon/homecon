@@ -143,15 +143,19 @@
             },
 
             _overrideChanged: function(override){
+                this.blockoverridesend = true
                 this.overrideStatus = (override>0)
+                this.blockoverridesend = false
             },
 
             _overrideStatusChanged: function(overrideStatus){
-                if(overrideStatus){
-                    this.$.websocketObjectOverride.send(180);
-                }
-                else{
-                    this.$.websocketObjectOverride.send(0);
+                if(!this.blockoverridesend){
+                    if(overrideStatus){
+                        this.$.websocketObjectOverride.send(180);
+                    }
+                    else{
+                        this.$.websocketObjectOverride.send(0);
+                    }
                 }
             },
 
