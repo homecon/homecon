@@ -8,10 +8,10 @@ import time
 import asyncio
 import logging
 
+
+from .__version__ import version as __version__
 from . import core
 from . import util
-from .__version__ import version as __version__
-#from . import plugins
 
 
 
@@ -79,7 +79,9 @@ class HomeCon(object):
         ########################################################################
         # initialize core components
         ########################################################################
-        kwargs = {}
+        kwargs = {
+            'dbpath': basedir
+        }
         if demo:
             kwargs['dbname'] = 'demo_homecon'
 

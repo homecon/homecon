@@ -110,6 +110,7 @@ class Shading(core.plugin.Plugin):
         relativeposition_min = {}
         relativeposition_max = {}
         relativeposition_old = {}
+        relativeposition_new = {}
         solargain_max = {}
         solargain_temp = {}
 
@@ -160,11 +161,11 @@ class Shading(core.plugin.Plugin):
 
 
                 # check if repositioning is required / allowed
-                c1 = abs(solargain_temp_zone-solargain_set) > solargain_tol
-                c2 = (solargain_temp_zone < solargain_tol and sum(relativeposition_old[(w.path,s.path)] if relativeposition_min[(w.path,s.path)]<relativeposition_max[(w.path,s.path)] else 0 for w in windows for s in shadings[w.path] )>1e-3)
+                outsidetolerance = abs(solargain_temp_zone-solargain_set) > solargain_tol
+                belowtolerance = (solargain_temp_zone < solargain_tol and sum(relativeposition_old[(w.path,s.path)] if relativeposition_min[(w.path,s.path)]<relativeposition_max[(w.path,s.path)] else 0 for w in windows for s in shadings[w.path] )>1e-3)
                 c3 = False
 
-                if c1 or c2 or c3:
+                if outsidetolerance or belowtolerance or c3:
 
                     # compute new shading positions through the optimization
                     data={None:{
@@ -179,8 +180,8 @@ class Shading(core.plugin.Plugin):
                         'transmittance_open':{(w.path,s.path): s.config['transmittance_open'] for w in windows for s in shadings[w.path]},
                         'transmittance_closed':{(w.path,s.path): s.config['transmittance_closed'] for w in windows for s in shadings[w.path]},
                         'cost_solargain':{None: 1.},
-                        'cost_visibility':{(w.path,): 0.*w.config['cost_visibility'] for w in windows},
-                        'cost_movement':{(w.path,s.path): 1.*s.config['cost_movement'] for w in windows for s in shadings[w.path]},
+                        'cost_visibility':{(w.path,): 0.1*w.config['cost_visibility'] for w in windows},
+                        'cost_movement':{(w.path,s.path): 1.0*s.config['cost_movement'] for w in windows for s in shadings[w.path]},
                     }}
 
                     # Create a problem instance and solve
@@ -191,13 +192,30 @@ class Shading(core.plugin.Plugin):
                     logging.info('Recalculated shading positions for zone {}'.format(zone.path))
 
 
-                    # Retrieve the results and set positions
+                    # Retrieve the results
                     for w in windows:
                         for s in shadings[w.path]:
                             if ((s.states['override'].value is None or not s.states['override'].value>0) and s.states['auto'].value):
-                                relativeposition = pyomo.value(instance.relativeposition[(w.path,s.path)])
-                                position = s.config['position_open']*(1-relativeposition) + s.config['position_closed']*(relativeposition)
-                                s.states['position'].set(position,source=self)
+
+                                if belowtolerance:
+                                    relativeposition_new[(w.path,s.path)] = 0
+                                else:                                
+                                    relativeposition_new[(w.path,s.path)] = pyomo.value(instance.relativeposition[(w.path,s.path)])
+
+
+        # set positions
+        windows = core.components.find(type='window')
+        for w in windows:
+
+            shadings = core.components.find(type='shading', window=w.path)
+            for s in shadings:
+
+                if not (w.path,s.path) in relativeposition_new:
+                    relativeposition_new[(w.path,s.path)] = min(relativeposition_max[(w.path,s.path)],max(relativeposition_min[(w.path,s.path)],relativeposition_old[(w.path,s.path)]))
+
+
+                position = s.config['position_open']*(1-relativeposition_new[(w.path,s.path)]) + s.config['position_closed']*(relativeposition_new[(w.path,s.path)])
+                s.states['position'].set(position,source=self)
 
 
         # update override
