@@ -138,7 +138,7 @@ class Building(core.plugin.Plugin):
                 zone = core.components[component.config['zone']]
                 zone.states['temperature'].value = np.round( zone.calculate_temperature(), 2)
 
-            elif component.type == 'shading' and event.data['state'] == component.states['position']:
+            elif component.type == 'shading' and event.data['state'] == component.states['position_status']:
                 window = core.components[component.config['window']]
                 window.states['solargain'].value = np.round( window.calculate_solargain(), 1)
 

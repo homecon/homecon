@@ -147,15 +147,15 @@ class Shading(core.component.Component):
         """
 
         if position is None:
-            position = self.states['position'].history(timestamp)
+            position = self.states['position_status'].history(timestamp)
 
         if position is None:
             if timestamp is None:
-                relativeposition = 0
+                relativeposition = 0.
             else:
                 relativeposition = np.zeros(len(timestamp))
         else:
-            relativeposition = (position-self.config['position_open'])/(self.config['position_closed']-self.config['position_open'])
+            relativeposition = max(0.,min(1., (position-self.config['position_open'])/(self.config['position_closed']-self.config['position_open']) ))
 
         return relativeposition
 

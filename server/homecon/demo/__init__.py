@@ -157,7 +157,12 @@ def prepare_database():
 
     g = pages.add_group({'title':'Home'})
     p = pages.add_page(g['path'],{'title':'Home','icon':'blank'})
-    s = pages.add_section(p['path'],{'type':'hidden'})
+
+    s = pages.add_section(p['path'],{'type':'underlined'})
+    w = pages.add_widget(s['path'],'clock',config={})
+    w = pages.add_widget(s['path'],'date',config={})
+
+    s = pages.add_section(p['path'],{'type':'underlined'})
     w = pages.add_widget(s['path'],'weather-block',config={'daily':True, 'timeoffset':0})
     w = pages.add_widget(s['path'],'weather-block',config={'daily':True, 'timeoffset':24})
     w = pages.add_widget(s['path'],'weather-block',config={'daily':True, 'timeoffset':48})
@@ -354,8 +359,17 @@ def weatherforecast(async=True):
         }
         core.states['weather/forecast/hourly/{}'.format(i)].set(forecast,async=async)
 
+def building_response():
+
+    # update shading
+    for shading in core.components.find(type='shading'):
+        shading.states['position_status'].value = shading.states['position'].value
+
+    logging.debug('updated building response')
 
 
+
+responsethread = DemoThread(building_response,name='ResponseThread',runevery=5)
 emulatorthread = DemoThread(emulate,name='EmulatorThread')
 forecastthread = DemoThread(weatherforecast,name='ForecastThread',runevery=3600)
 

@@ -67,7 +67,7 @@ class Websocket(object):
 
 
         # create a server and run it in the event loop
-        servergenerator = asyncws.start_server(connect_client, host='127.0.0.1', port=9024, loop=self._loop)
+        servergenerator = asyncws.start_server(connect_client, host='0.0.0.0', port=9024, loop=self._loop)
         self.server = self._loop.run_until_complete( servergenerator )
 
     def log_data(self,address,data):

@@ -273,7 +273,7 @@ class Singlezone_1(model.Buildingmodel):
         zones = core.components.find(type='zone')
         for zone in zones:
             zone.states['temperature_program'].value = T_liv_program
-            zone.states['solargain_program'].value = [(val[0], val[1]/len(zones) )for val in Q_sol_program]     # FIXME divide base on maximum solargain for that zone
+            zone.states['solargain_program'].value = [(val[0], val[1]/len(zones) )for val in Q_sol_program]     # FIXME divide based on maximum solargain for that zone
             zone.states['internalgain_program'].value = [(val[0], val[1]/len(zones) )for val in Q_int_program] 
 
 
