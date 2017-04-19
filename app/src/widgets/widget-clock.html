@@ -1,0 +1,212 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout-classes.html">
+<link rel="import" href="../../bower_components/iron-icon/iron-icon.html">
+<link rel="import" href="../../bower_components/iron-icons/iron-icons.html">
+<link rel="import" href="../../bower_components/iron-icons/editor-icons.html">
+<link rel="import" href="../../bower_components/paper-button/paper-button.html">
+
+<link rel="import" href="../homecon-edit-dialog.html">
+
+
+<dom-module is="widget-clock">
+    <template>
+        <style include="iron-flex iron-flex-alignment">
+            :host{
+                display: block;
+                position: relative;
+                margin-top: 20px;
+            }
+            .background{
+                width: 100%;
+            }
+            .hour, .minute{
+                position: relative;
+                width: 20%;
+                min-width: 100px;
+            }
+            .digit{
+                width: 42%;
+                position: absolute;
+                top: 0px;
+            }
+            .digit.left{
+                left: 10%;
+            }
+            .digit.right{
+                right: 10%;
+            }
+
+            .edit{
+                position: absolute;
+                top: -10px;
+                right: -10px;
+                color: var(--button-text-color);
+            }
+
+        </style>
+        
+        <div class="horizontal layout center-justified">
+            <div class="hour">
+                <img class="background" src="[[srcHourBackground]]">
+                <img class="digit left" src="[[srcHour0]]"/>
+                <img class="digit right" src="[[srcHour1]]"/>
+            </div>
+            <div class="minute">
+                <img class="background" src="[[srcMinuteBackground]]">
+                <img class="digit left" src="[[srcMinute0]]"/>
+                <img class="digit right" src="[[srcMinute1]]"/>
+            </div>
+        </div>
+
+        <div class="edit" hidden="{{!edit}}">
+            <paper-icon-button icon="editor:mode-edit" noink="true" on-tap="openEditDialog"></paper-icon-button>
+        </div>
+        
+        <homecon-edit-dialog id="editDialog" on-save="save">
+            <paper-button on-tap="delete">Delete</paper-button>
+        </homecon-edit-dialog>
+
+    </template>
+    <script>
+        Polymer({
+            is: 'widget-clock',
+            properties: {
+                config: {
+                    type: 'Object',
+                    value: {},
+                },
+                edit: {
+                    type: 'Boolean',
+                    value: false
+                },
+                hour: {
+                    type: 'String',
+                },
+                minute: {
+                    type: 'String',
+                },
+                classes: {
+                    type: 'String',
+                    value: 'fullwidth',
+                },
+            },
+
+            ready: function(){
+
+                this.h0_current = -1;
+                this.h1_current = -1;
+                this.m0_current = -1;
+                this.m1_current = -1;
+
+                this.srcHourBackground = '/images/clock/clockbg.png';
+                this.srcHour0 = '/images/clock/blank.png';
+                this.srcHour1 = '/images/clock/blank.png';
+
+                this.srcMinuteBackground = '/images/clock/clockbg.png';
+                this.srcMinute0 = '/images/clock/blank.png';
+                this.srcMinute1 = '/images/clock/blank.png';
+
+                var that = this;
+                that._setTime(false);
+                setInterval(function(){that._setTime(true)}, 5000);
+
+            },
+
+            _setTime: function(animate){
+
+                now = new Date();
+                h0 = Math.floor( now.getHours() / 10 );
+                h1 = now.getHours() % 10;
+
+                this.hour = ''+ h0 + h1
+
+                m0 = Math.floor( now.getMinutes() / 10 );
+                m1 = now.getMinutes() % 10;
+
+                this.minute = ''+ m0 + m1
+
+                if(h1 != this.h1_current){
+                    this._flip('srcHour1',animate,h1);
+                    this.h1_current = h1;
+
+                    this._flip('srcHour0',animate,h0);
+                    this.h0_current = h0;
+
+                    this._flip('srcHourBackground',animate);
+                }
+
+                if( m1 != this.m1_current){
+                    this._flip('srcMinute1',animate,m1);
+                    this.m1_current = m1;
+
+                    this._flip('srcMinute0',animate,m0);
+                    this.m0_current = m0;
+
+                    this._flip('srcMinuteBackground',animate);
+                }
+            },
+
+            _flip: function(prop,animate,num){
+
+                var that = this;
+
+                if(prop == 'srcMinuteBackground' || prop == 'srcHourBackground'){
+                    var src1 = '/images/clock/clockbg-1.png';
+                    var src2 = '/images/clock/clockbg-2.png';
+                    var src3 = '/images/clock/clockbg-3.png';
+                    var src = '/images/clock/clockbg.png';
+                }
+                else{
+                    var src1 = '/images/clock/'+num+'-1.png';
+                    var src2 = '/images/clock/'+num+'-2.png';
+                    var src3 = '/images/clock/'+num+'-3.png';
+                    var src  = '/images/clock/'+num+'.png';
+                }
+
+                if(!animate){
+                    that.set(prop,src)
+                }
+
+                else{
+                    that.set(prop,src1)
+
+                    setTimeout(function(){
+                        that.set(prop,src2)
+                    },60);
+                    setTimeout(function(){
+                        that.set(prop,src3)
+                    },120);
+                    setTimeout(function(){
+                        that.set(prop,src)
+                    },180);
+                }
+            },
+
+            openEditDialog: function(){
+                this.$.editDialog.open();
+            },
+
+            save: function(e){
+                e.stopPropagation()
+
+                this.$.editDialog.close();
+                this.fire('edit-widget',{
+                });
+            },
+
+            delete: function(e){
+                e.stopPropagation()
+                this.fire('delete')
+            },
+
+            moveUp: function(){
+                this.fire('move-up')
+            },
+
+            moveDown: function(){
+                this.fire('move-down')
+            },
+
+        });
+    </script>
+</dom-module>

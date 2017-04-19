@@ -35,7 +35,7 @@
         <homecon-web-socket-object id="websocketObject" event="state" path="[[_path(config)]]" data="{{forecast}}" send-on-authenticated></homecon-web-socket-object>
         
         <div>
-            <img class="icon" src="/images/weather/[[_icon(forecast)]].png">
+            <img class="icon" src="[[_icon(forecast)]]">
             <div class="value time">{{_time(config,forecast)}}</div>
             <div class="value">Temperature: [[_temperature(forecast)]]</div>
             <div class="value">Wind: [[_wind(forecast)]]</div>
@@ -162,10 +162,10 @@
                 };
 
                 if(forecast != null && forecast.icon in icons){
-                    return icons[forecast.icon];
+                    return '/images/weather/' + icons[forecast.icon] + '.png';
                 }
                 else{
-                    return 'blank';
+                    return '/images/weather/blank.png';
                 }
             },
 

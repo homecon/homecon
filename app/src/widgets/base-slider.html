@@ -27,7 +27,7 @@
         </template>
 
 
-        <paper-slider min="[[min]]" max="[[max]]" value="{{sliderValue}}" on-change="call"></paper-slider>
+        <paper-slider min="[[min]]" max="[[max]]" step="[[_sliderStep(min,max)]]" value="{{sliderValue}}" on-change="call"></paper-slider>
 
     </template>
     <script>
@@ -49,7 +49,7 @@
                 },
                 max: {
                     type: 'Number',
-                    value: 100,
+                    value: 1,
                 },
             },
 
@@ -70,7 +70,9 @@
             _statusValueChanged: function(event,data){
                 this.sliderValue = this.statusValue;
             },
-
+            _sliderStep: function(min,max){
+                return Math.min(1,(max-min)/100);
+            }
         });
     </script>
 </dom-module>
