@@ -6,7 +6,6 @@ import os
 import traceback
 import datetime
 
-
 ################################################################################
 # parse arguments
 ################################################################################
@@ -36,8 +35,12 @@ if 'demo' in sys.argv:
 ################################################################################
 # start the webserver in a different thread
 ################################################################################
-if not 'noweb' in sys.argv:
-    pass
+import web
+
+httpserverthread = web.HttpServer()
+
+if not 'nohttp' in sys.argv:
+    httpserverthread.start()
 
 
 
@@ -65,7 +68,7 @@ try:
     hc.main()
 
 except:
-
+    httpserverthread.stop()
     print('Stopping HomeCon')
     #hc.stop()
 

@@ -10,6 +10,7 @@ import logging
 
 from . import core
 from . import util
+from .__version__ import version as __version__
 #from . import plugins
 
 

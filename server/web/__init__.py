@@ -3,20 +3,23 @@
 
 import logging
 import os
-from http.server import BaseHTTPRequestHandler, HTTPServer
+import threading
+import http.server
+import inspect
 
 
-class PolymerRequestHandler(BaseHTTPRequestHandler):
+class PolymerRequestHandler(http.server.BaseHTTPRequestHandler):
 
     def do_GET(self):
 
-        logging.debug('GET {}'.format(self.path))
+        #logging.debug('GET {}'.format(self.path))
 
         if '.' in self.path:
+            # if an extension is supplied return the file
             abspath = os.path.abspath(os.path.join('..','app',self.path[1:]))
 
         else:
-            # return index.html
+            # else return index.html
             abspath = os.path.abspath(os.path.join('..','app','index.html'))
 
 
@@ -34,8 +37,7 @@ class PolymerRequestHandler(BaseHTTPRequestHandler):
             '.txt': 'text/plain',
         }
 
-        # If it is a known extension, set the correct
-        # content type in the response.
+        # If it is a known extension, set the correct content type
         if ext in content_type:
 
             if os.path.exists(abspath):
@@ -54,16 +56,27 @@ class PolymerRequestHandler(BaseHTTPRequestHandler):
 
 
 
-def run():
-    try:
-        print('starting server...')
+class HttpServer(threading.Thread):
+    def __init__(self, address='0.0.0.0',port=12300):
+        super().__init__()
 
-        # Server settings
-        server_address = ('0.0.0.0', 12300)
-        httpd = HTTPServer(server_address, PolymerRequestHandler)
-        print('running server...')
-        httpd.serve_forever()
-    except:
-        print('\nshutting down server...')
+        self.name = 'HttpServer'
+        self.address = address
+        self.port = port
 
-run()
+
+    def run(self):        
+        self.httpd = http.server.HTTPServer((self.address, self.port), PolymerRequestHandler)
+        print('Running the HomeCon http server at {}:{}'.format(self.address,self.port))
+        self.httpd.serve_forever()
+
+
+    def stop(self):
+        try:
+            self.httpd.shutdown()
+            self.httpd.socket.close()
+            print('HomeCon http server stopped')
+        except:
+            pass
+
+
