@@ -6,30 +6,31 @@ Installation
 
 Create a folder where you want to keep all files
 
-.. code:: bash
+.. code-block:: bash
     cd ~
     mkdir homecon
     cd homecon
 
 Create a virtual environment to hold the python dependencies
 
-.. code:: bash
+.. code-block:: bash
     virtualenv -p python3 env
 
 Activate the virtual environment with:
 
-.. code:: bash
+.. code-block:: bash
     source env/bin/activate
 
 
 Clone the homecon project
-.. code:: bash
+
+.. code-block:: bash
     git clone https://github.com/BrechtBa/homecon.git
 
 
 Install homecon
 
-.. code:: bash
+.. code-block:: bash
     python setup.py install
 
 
@@ -39,13 +40,13 @@ Running
 
 Running the homecon server can be done as a module:
 
-.. code:: bash
+.. code-block:: bash
     python -m homecon
 
 
 Or by using the predefined console script:
 
-.. code:: bash
+.. code-block:: bash
     homecon
 
 
@@ -56,7 +57,7 @@ Unit tests
 Run unit tests using the default procedure.
 An example for running all tests in a single module is shown below:
 
-.. code:: bash
+.. code-block:: bash
     python -m unittest tests.core.test_state
 
 
