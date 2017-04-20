@@ -38,7 +38,7 @@ if not 'homecon.fileHandler' in [lh.name for lh in logger.handlers]:
 # HomeCon object
 ################################################################################
 class HomeCon(object): 
-    def __init__(self,loglevel='info',printlog=False,demo=False):
+    def __init__(self,loglevel='info',printlog=True,demo=False):
         """
         Create a new HomeCon object
 

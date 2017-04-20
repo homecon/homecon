@@ -1,4 +1,6 @@
 #!/usr/bin/env/ python
+# -*- coding: utf-8 -*-
+
 from setuptools import setup, find_packages
 import os
 import sys
@@ -30,32 +32,66 @@ except:
 ################################################################################
 if ('install' in sys.argv or 'develop' in sys.argv):
 
-    user = subprocess.check_output(['whoami']).decode('UTF-8').rstrip()
+    if not '--nostaticip' in sys.argv:
+        # set a static ip address
+        ip = None
+        for arg in sys.argv:
+            if arg.startswith( '--ip='):
+                ip = arg[5:]
+                setip = True
+                del sys.argv[sys.argv.index(arg)]
+                break
 
+        if ip is None:
+            # use dialogs
+            setip = raw_input('Do you want to set a static ip address (yes): ')
+            if setip in ['','yes','y']:
+                setip = True
+                rawip = raw_input('Enter the desired static ip address (192.168.1.234): ')
+                if rawip == '':
+                    ip = '192.168.1.234'
+                else:
+                    ip = rawip
 
-    if not 'noip' in sys.argv:
-        # set fixed ip if required
-        # FIXME
-        pass
+            elif setip in ['no','n']:
+                setip = False
+            else:
+                raise Exception('{} is not a valid answer, yes/y/no/n'.format(setip))
+
+        if setip:
+            splitip = ip.split('.')
+
+            if not len(splitip) ==4:
+                raise Exception('{} is not a valid ip address'.format(ip))
+
+            with open('/etc/network/interfaces','w') as f:
+                f.write('auto lo\n')
+                f.write('iface lo inet loopback\n\n')
+                f.write('auto eth0\n')
+                f.write('iface eth0 inet static\n')
+                f.write('address {}\n'.format(ip))
+                f.write('gateway {}.{}.1.1\n'.format(splitip[0],splitip[1]))
+                f.write('netmask 255.255.255.0\n')
+
     else:
-        del sys.argv[sys.argv.index('noip')]
+        del sys.argv[sys.argv.index('--nostaticip')]
 
 
-    if not 'noglpk' in sys.argv:
+
+    if not '--noglpk' in sys.argv:
         # get and compile glpk
-        print('\ninstalling glpk\n')
+        print('\n'+'#'*80 + '\ninstalling glpk\n' +'#'*80 + '\n')
 
         # get compilation dependencies
-        subprocess.call(['sudo', 'apt-get', '-y', 'install', 'gcc', 'g++', 'gfortran', 'wget'])
+        subprocess.call(['apt-get', '-y', 'install', 'gcc', 'g++', 'gfortran', 'wget'])
 
 
         glpkdir = '/usr/local/glpk'
         glpkver = '4.60'
 
         if not os.path.exists(glpkdir):
-            subprocess.call(['sudo', 'mkdir', glpkdir])
-            subprocess.call(['sudo', 'chown', '{}:{}'.format(user,user), glpkdir])
-
+            subprocess.call(['mkdir', glpkdir])
+            
         os.chdir(glpkdir)
 
         if not os.path.exists('glpk-{}'.format(glpkver)):
@@ -70,25 +106,24 @@ if ('install' in sys.argv or 'develop' in sys.argv):
         subprocess.call(['./configure'])
         subprocess.call(['make'])
         subprocess.call(['make', 'check'])
-        subprocess.call(['sudo', 'make', 'install'])
-        subprocess.call(['sudo', 'ldconfig', '/usr/local/lib'])
+        subprocess.call(['make', 'install'])
+        subprocess.call(['ldconfig', '/usr/local/lib'])
     else:
-        del sys.argv[sys.argv.index('noglpk')]
+        del sys.argv[sys.argv.index('--noglpk')]
 
 
-    if not 'noipopt' in sys.argv:
+    if not '--noipopt' in sys.argv:
         # get and compile ipopt
-        print('\ninstalling ipopt\n')
+        print('\n'+'#'*80 + '\ninstalling ipopt\n' +'#'*80 + '\n')
 
         # get compilation dependencies
-        subprocess.call(['sudo', 'apt-get', '-y', 'install', 'gcc', 'g++', 'gfortran', 'patch', 'wget'])
+        subprocess.call(['apt-get', '-y', 'install', 'gcc', 'g++', 'gfortran', 'patch', 'wget'])
 
         ipoptdir = '/usr/local/ipopt'
         ipoptver = '3.12.7'
 
         if not os.path.exists(ipoptdir):
-            subprocess.call(['sudo', 'mkdir', ipoptdir])
-            subprocess.call(['sudo', 'chown', '{}:{}'.format(user,user), ipoptdir])
+            subprocess.call(['mkdir', ipoptdir])
 
         os.chdir(ipoptdir)
 
@@ -131,15 +166,15 @@ if ('install' in sys.argv or 'develop' in sys.argv):
         subprocess.call(['../configure', '--prefix=/usr/local/', '-C', 'ADD_CFLAGS=-DNO_fpu_control'])
         subprocess.call(['make'])
         subprocess.call(['make', 'test'])
-        subprocess.call(['sudo', 'make', 'install'])
+        subprocess.call(['make', 'install'])
     else:
-        del sys.argv[sys.argv.index('noipopt')]
-
+        del sys.argv[sys.argv.index('--noipopt')]
+        
     # return to the setup file directory
     os.chdir(basedir)
 
 
-print(sys.argv)
+
 ################################################################################
 # run the setup command
 ################################################################################

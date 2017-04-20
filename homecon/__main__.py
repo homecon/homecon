@@ -21,17 +21,20 @@ def runserver():
         kwargs['loglevel'] = 'debugdb'
         kwargs['printlog'] = True
 
+    if 'daemon' in sys.argv:
+        kwargs['printlog'] = False
+
     if 'demo' in sys.argv:
         kwargs['demo'] = True
 
         # clear the demo database
         basedir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
         try:
-            os.remove(os.path.join(basedir,'homecon','demo_homecon.db'))
+            os.remove(os.path.join(basedir,'demo_homecon.db'))
         except:
             pass
         try:
-            os.remove(os.path.join(basedir,'homecon','demo_homecon_measurements.db'))
+            os.remove(os.path.join(basedir,'demo_homecon_measurements.db'))
         except:
             pass
 

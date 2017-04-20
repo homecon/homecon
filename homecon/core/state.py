@@ -602,7 +602,7 @@ class State(BaseState):
             if len(result)>0:
                 db_timestamps = [res['time'] for res in result]
                 db_values = [res['value'] for res in result]
-
+                
             else:
                 # did not find any value, expand the horizon
                 # FIXME find the 1st value before the 1st timestamp
@@ -611,10 +611,10 @@ class State(BaseState):
                 db_values = [res['value'] for res in result]
 
             # interpolate to the correct timestamps
-            if interpolation == 'linear':
+            if interpolation == 'linear' and self.config['datatype'] == 'number':
                 # linear interpolation
                 if len(db_timestamps)>0:
-                    values = util.interp.lin(timestamps,db_timestamps,db_values,left=np.nan)
+                    values = util.interp.lin(timestamps,db_timestamps,np.array(db_values,dtype=float),left=np.nan)
                 else:
                     values = np.ones(len(timestamps))*np.nan
             else:
