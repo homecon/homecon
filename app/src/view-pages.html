@@ -17,11 +17,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="../bower_components/paper-menu/paper-menu.html">
 <link rel="import" href="../bower_components/paper-item/paper-item.html">
 
-<link rel="import" href="../bower_components/Sortable/Sortable.html">
-
-
-
-
 <link rel="import" href="homecon-web-socket-object.html">
 <link rel="import" href="homecon-pages-page.html">
 
@@ -101,106 +96,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
             },
 
-            addPageSection: function(e){
-                /*
-                var pageindex = parseInt(e.model.__data__.index);
-                var pageid = this.pages[pageindex].id;
-
-                var pagesections = this.pages[pageindex].pagesections;
-                var order = this._getNextOrder(pagesections);
-                var id = new Date().valueOf();
-
-                this.push('pages.'+pageindex+'.pagesections',{'id': id,'page':pageid,'type':'collapsible','title':'','widgets':[],'order':order});
-                */
-            },
-
-            deletePageSection: function(e){
-                /*
-                e.stopPropagation()
-
-                var pageindex = this._indexFromId(this.pages,e.target.pagesection.page);
-                var pagesectionindex = this._indexFromId(this.pages[pageindex].pagesections,e.target.pagesection.id);
-                
-                if(pagesectionindex>-1){
-                    this.splice('pages.'+pageindex+'.pagesections',pagesectionindex,1);
-                }
-                */
-            },
-
-            _updatePageSectionsOrder: function(e){
-                /*
-                if(typeof e.from != 'undefined'){
-
-                    var list = e.from.children;
-                    for(var i=0; i<list.length; i++){
-
-                        if(typeof list[i].pagesection != 'undefined'){
-                            list[i].pagesection.order = i;
-                        }
-                    }
-                }
-                */
-            },
-
-            addWidgetDialog: function(e){
-                /*
-                this.addWidgetPageindex = this.$.pages.modelForElement(e.target).__data__.index;
-                this.addWidgetPagesectionindex = e.model.__data__.pagesectionIndex;
-                this.addWidgetPagesectionid = this.pages[this.addWidgetPageindex].pagesections[this.addWidgetPagesectionindex].id;
-
-                this.addWidgetType = 'homecon-widget-switch';
-
-                this.$.addWidgetDialog.open();
-                */
-            },
-
-            addWidget: function(e){
-                /*
-                this.$.addWidgetDialog.close();
-
-                var pageindex = this.addWidgetPageindex;
-                var pagesectionindex = this.addWidgetPagesectionindex;
-                var pagesectionid = this.addWidgetPagesectionid;
-
-
-                var widgets = this.pages[pageindex].pagesections[pagesectionindex].widgets;
-                var order = this._getNextOrder(widgets);
-                var id = new Date().valueOf();
-
-                this.push('pages.'+pageindex+'.pagesections.'+pagesectionindex+'.widgets',{'id':id,'pagesection':pagesectionid,'type':this.addWidgetType,'config':{'initialize':true},'order':order});
-                */
-            },
-
-            deleteWidget: function(e){
-                /*
-                e.stopPropagation()
-                
-                var pageindex = parseInt(e.model.__data__.index);
-                var pagesectionindex = this._indexFromId(this.pages[pageindex].pagesections,e.target.widget.pagesection);
-
-                var widgetindex = this._indexFromId(this.pages[pageindex].pagesections[pagesectionindex].widgets,e.target.widget.id);
-                
-                if(widgetindex>-1){
-                    this.splice('pages.'+pageindex+'.pagesections.'+pagesectionindex+'.widgets',widgetindex,1);
-                }
-                */
-            },
-
-            _updateWidgetsOrder: function(e){
-                /*
-                if(typeof e.from != 'undefined'){
-
-                    var list = e.from.children;
-                    for(var i=0; i<list.length; i++){
-
-                        if(typeof list[i].widget != 'undefined'){
-                            list[i].widget.order = i;
-                        }
-                    }
-                }
-                */
-            },
-
             _authenticatedChanged: function(authenticated){
                 if(authenticated){
                     this.$.websocketPages.send();
@@ -278,7 +173,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 }
             },
 
-            _getNextOrder(items){
+            _getNextOrder: function(items){
                 var order = 0;
                 if(typeof items != 'undefined'){
                     items.forEach(function(item){

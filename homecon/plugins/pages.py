@@ -73,15 +73,24 @@ class Pages(core.plugin.Plugin):
             self.add_group({'title':'Home'})
             self.add_group({'title':'Central'})
             self.add_group({'title':'Ground floor'})
+            self.add_group({'title':'First floor'})
 
         if len(self._pages) == 0:
             self.add_page('home',{'title':'Home','icon':'blank'})
             self.add_page('central',{'title':'Heating','icon':'sani_heating'})
             self.add_page('groundfloor',{'title':'Living room','icon':'scene_livingroom'})
             self.add_page('groundfloor',{'title':'Kitchen','icon':'scene_dinner'})
+            self.add_page('firstfloor',{'title':'Bathroom','icon':'scene_bath'})
+            self.add_page('firstfloor',{'title':'Master Bedroom','icon':'scene_sleeping'})
 
         if len(self._sections) == 0:
-            s = self.add_section('home/home',{'type':'transparent'})
+
+            s = self.add_section('home/home',{'type':'underlined'})
+
+            self.add_widget(s['path'],'clock',config={},order=None)
+            self.add_widget(s['path'],'date',config={},order=None)
+
+            s = self.add_section('home/home',{'type':'underlined'})
 
             self.add_widget(s['path'],'weather-block',config={'daily':True, 'timeoffset':0},order=None)
             self.add_widget(s['path'],'weather-block',config={'daily':True, 'timeoffset':24},order=None)

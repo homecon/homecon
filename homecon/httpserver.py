@@ -9,7 +9,7 @@ import inspect
 
 
 basedir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
-
+documentroot = ''
 
 class HttpRequestHandler(http.server.BaseHTTPRequestHandler):
 
@@ -19,12 +19,19 @@ class HttpRequestHandler(http.server.BaseHTTPRequestHandler):
 
         if '.' in self.path:
             # if an extension is supplied return the file
-            abspath = os.path.abspath(os.path.join(basedir,'..','app',self.path[1:]))
+            if '?' in self.path:
+                splitpath = self.path.split('?')
+                temppath = splitpath[0][1:]
+            else:
+                temppath = self.path[1:]
+
+            abspath = os.path.abspath(os.path.join(basedir,'..',documentroot,temppath))
 
         else:
             # else return index.html
-            abspath = os.path.abspath(os.path.join(basedir,'..','app','index.html'))
+            abspath = os.path.abspath(os.path.join(basedir,'..',documentroot,'index.html'))
 
+        print(abspath)
 
         _, ext = os.path.splitext(abspath)
         ext = ext.lower()
@@ -60,15 +67,18 @@ class HttpRequestHandler(http.server.BaseHTTPRequestHandler):
 
 
 class HttpServerThread(threading.Thread):
-    def __init__(self, address='0.0.0.0',port=12300):
+    def __init__(self, address='0.0.0.0',port=12300,documentroot='app'):
         super().__init__()
 
         self.name = 'HttpServer'
         self.address = address
         self.port = port
+        self.documentroot = documentroot
 
+    def run(self):
+        global documentroot
+        documentroot = self.documentroot
 
-    def run(self):        
         self.httpd = http.server.HTTPServer((self.address, self.port), HttpRequestHandler)
         print('Running the HomeCon http server at {}:{}'.format(self.address,self.port))
         self.httpd.serve_forever()

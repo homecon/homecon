@@ -12,20 +12,20 @@ def runserver():
     ################################################################################
     # parse arguments
     ################################################################################
-    kwargs = {}
+    hc_kwargs = {}
     if 'debug' in sys.argv:
-        kwargs['loglevel'] = 'debug'
-        kwargs['printlog'] = True
+        hc_kwargs['loglevel'] = 'debug'
+        hc_kwargs['printlog'] = True
 
     if 'debugdb' in sys.argv:
-        kwargs['loglevel'] = 'debugdb'
-        kwargs['printlog'] = True
+        hc_kwargs['loglevel'] = 'debugdb'
+        hc_kwargs['printlog'] = True
 
     if 'daemon' in sys.argv:
-        kwargs['printlog'] = False
+        hc_kwargs['printlog'] = False
 
     if 'demo' in sys.argv:
-        kwargs['demo'] = True
+        hc_kwargs['demo'] = True
 
         # clear the demo database
         basedir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
@@ -39,12 +39,17 @@ def runserver():
             pass
 
 
+    app_kwargs = {}
+    if 'appsrc' in sys.argv:
+        app_kwargs['documentroot'] = ''
+
+
     ################################################################################
     # start the webserver in a different thread
     ################################################################################
     from . import httpserver
 
-    httpserverthread = httpserver.HttpServerThread()
+    httpserverthread = httpserver.HttpServerThread(**app_kwargs)
 
     if not 'nohttp' in sys.argv:
         httpserverthread.start()
@@ -62,7 +67,7 @@ def runserver():
     print('')
 
     try:
-        hc = homecon.HomeCon(**kwargs)
+        hc = homecon.HomeCon(**hc_kwargs)
 
         if 'demo' in sys.argv:
             from . import demo
