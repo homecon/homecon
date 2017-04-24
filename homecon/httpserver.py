@@ -3,13 +3,13 @@
 
 import logging
 import os
+import sys
 import threading
 import http.server
-import inspect
 
 
-basedir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
-documentroot = ''
+documentroot = os.path.join(sys.prefix,'homecon','app','build','bundled')
+
 
 class HttpRequestHandler(http.server.BaseHTTPRequestHandler):
 
@@ -25,13 +25,11 @@ class HttpRequestHandler(http.server.BaseHTTPRequestHandler):
             else:
                 temppath = self.path[1:]
 
-            abspath = os.path.abspath(os.path.join(basedir,'..',documentroot,temppath))
+            abspath = os.path.abspath(os.path.join(documentroot,temppath))
 
         else:
             # else return index.html
-            abspath = os.path.abspath(os.path.join(basedir,'..',documentroot,'index.html'))
-
-        print(abspath)
+            abspath = os.path.abspath(os.path.join(documentroot,'index.html'))
 
         _, ext = os.path.splitext(abspath)
         ext = ext.lower()
@@ -67,7 +65,23 @@ class HttpRequestHandler(http.server.BaseHTTPRequestHandler):
 
 
 class HttpServerThread(threading.Thread):
-    def __init__(self, address='0.0.0.0',port=12300,documentroot='app'):
+    def __init__(self, address='0.0.0.0',port=12300,documentroot=documentroot):
+        """
+        
+        Parameters
+        ----------
+        address : str
+            The ip-address to serve on.
+
+        port : int
+            The port to serve on.
+
+        documentroot : int
+            The root path from where files are retrieved.
+            Defaults to :code:`sys.prefix + '/homecon/app/build/bundled'`.
+
+        """
+
         super().__init__()
 
         self.name = 'HttpServer'
