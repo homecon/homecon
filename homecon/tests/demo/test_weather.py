@@ -76,6 +76,16 @@ class WeatherTests(common.TestCase):
         self.emulate_weater_extremes(month=1,cloudy=True)
         print('')
 
+    def test_emulate_weather_spring_clearsky(self):
+        print('spring, clear sky:')
+        self.emulate_weater_extremes(month=4,cloudy=False)
+        print('')
+
+    def test_emulate_weather_spring_cloudysky(self):
+        print('spring, cloudy sky:')
+        self.emulate_weater_extremes(month=4,cloudy=True)
+        print('')
+
     def test_emulate_weather_summer_clearsky(self):
         print('summer, clear sky:')
         self.emulate_weater_extremes(month=7,cloudy=False)
@@ -84,6 +94,16 @@ class WeatherTests(common.TestCase):
     def test_emulate_weather_summer_cloudysky(self):
         print('summer, cloudy sky:')
         self.emulate_weater_extremes(month=7,cloudy=True)
+        print('')
+
+    def test_emulate_weather_fall_clearsky(self):
+        print('fall, clear sky:')
+        self.emulate_weater_extremes(month=10,cloudy=False)
+        print('')
+
+    def test_emulate_weather_fall_cloudysky(self):
+        print('fall, cloudy sky:')
+        self.emulate_weater_extremes(month=10,cloudy=True)
         print('')
 
 

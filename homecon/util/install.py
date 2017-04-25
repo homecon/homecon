@@ -153,3 +153,65 @@ def install_ipopt():
 
     os.chdir(currentdir)
 
+
+def install_bonmin():
+    """
+    get and compile bonmin
+    """
+
+    currentdir = os.getcwd()
+    os.chdir(basedir)
+
+    # get compilation dependencies
+    subprocess.call(['apt-get', '-y', 'install', 'gcc', 'g++', 'wget'])
+
+    installdir = '/usr/local/bonmin'
+    installver = '1.8.4'
+
+    if not os.path.exists(installdir):
+        subprocess.call(['mkdir', installdir])
+
+    os.chdir(installdir)
+
+    if not os.path.exists('Bonmin-{}'.format(installver)):
+
+        if not os.path.exists('Bonmin-{}.tgz'.format(installver)):
+            subprocess.call(['wget', 'https://www.coin-or.org/download/source/Bonmin/Bonmin-{}.tgz'.format(installver)])
+
+        subprocess.call(['tar', 'xvf', 'Bonmin-{}.tgz'.format(installver)])
+
+    os.chdir('Bonmin-{}'.format(installver))
+
+    # get third party packages
+    os.chdir('ThirdParty/Blas')
+    subprocess.call(['./get.Blas'])
+    os.chdir('../..')
+
+    os.chdir('ThirdParty/Lapack')
+    subprocess.call(['./get.Lapack'])
+    os.chdir('../..')
+
+    os.chdir('ThirdParty/ASL')
+    subprocess.call(['./get.ASL'])
+    os.chdir('../..')
+
+    os.chdir('ThirdParty/Mumps')
+    subprocess.call(['./get.Mumps'])
+    os.chdir('../..')
+
+    os.chdir('ThirdParty/Metis')
+    subprocess.call(['./get.Metis'])
+    os.chdir('../..')
+
+    # compiling bonmin
+    if not os.path.exists('build'):
+        os.mkdir('build')
+
+    os.chdir('build')
+
+    subprocess.call(['../configure', '-C'])
+    subprocess.call(['make'])
+    subprocess.call(['make', 'test'])
+    subprocess.call(['make', 'install'])
+
+    os.chdir(currentdir)
