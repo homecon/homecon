@@ -10,6 +10,7 @@
 
                 margin: 8px 0px 16px 0px;
             }
+
             #header{
                 display: block;
 
@@ -49,6 +50,12 @@
             #content{
                 padding: 16px;
             }
+            @media only screen and (max-width: 768px) {
+                #content{
+                    padding: 1px;
+                }
+            }
+
             #content.collapsible{
                 background-color: var(--secondary-background-color);
                 border-color: var(--section-border-color);

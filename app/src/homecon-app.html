@@ -86,7 +86,11 @@
 
             .header .title{
                 margin-left: 10px;
-                
+            }
+
+            .header .title img{
+                height: 50px;
+                margin-right: 10px;
             }
 
             .header .title a:link, .header .title a:visited, .header .title a:hover, .header .title a:active{
@@ -169,7 +173,7 @@
         <app-header fixed shadow class$="header [[loginClass]]">
             <app-toolbar>
                 <paper-icon-button class="drawer-toggle" icon="icons:menu" on-tap="_toggleDrawer"></paper-icon-button>
-                <div class="title"><a class="home" href="/pages/home/home">Homecon</a></div>
+                <div class="title"><a class="horizontal layout center home" href="/pages/home/home"><img src="/images/logo/128.png">Homecon</a></div>
                 <div class="flex"></div>
                 <paper-icon-button class="menu-toggle" icon="icons:more-vert" on-tap="_toggleMenu"></paper-icon-button>
             </app-toolbar>

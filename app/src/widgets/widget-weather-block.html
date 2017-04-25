@@ -16,6 +16,7 @@
             :host{
                 display: inline-block;
                 position: relative;
+                max-width: 180px;
             }
             .icon{
                 width: 100%;
@@ -37,8 +38,8 @@
         <div>
             <img class="icon" src="[[_icon(forecast)]]">
             <div class="value time">{{_time(config,forecast)}}</div>
-            <div class="value">Temperature: [[_temperature(forecast)]]</div>
-            <div class="value">Wind: [[_wind(forecast)]]</div>
+            <div class="value">[[_temperature(forecast)]]</div>
+            <div class="value">[[_wind(forecast)]]</div>
             <div class="value">Clouds: [[_clouds(forecast)]]</div>
         </div>
 
@@ -206,7 +207,7 @@
 
             _clouds: function(forecast){
                 if(forecast != null){
-                    return parseInt(forecast.cloudcover*100) + ' %';
+                    return parseInt(forecast.cloudcover*100) + '%';
                 }
             },
 
