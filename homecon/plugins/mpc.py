@@ -178,6 +178,7 @@ class Mpc(core.plugin.Plugin):
             # solve
             try:
                 solver = pyomo.SolverFactory('glpk')
+                #util.executor.run_in_executor(solver.solve,model,tee=True)
                 results = solver.solve(model, tee=True)  # FIXME should be done in a separate thread to not stop the event loop
                 logging.debug('OCP solved using GLPK')
 
@@ -225,9 +226,6 @@ class Mpc(core.plugin.Plugin):
 
         except Exception as e:
             logging.error('the control optimization failed with error {}'.format(e))
-
-        
-
 
 
 

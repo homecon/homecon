@@ -8,6 +8,7 @@ import numpy as np
 import pyomo.environ as pyomo
 
 from ... import core
+from ... import util
 
 class Shading(core.plugin.Plugin):
     """
@@ -43,7 +44,7 @@ class Shading(core.plugin.Plugin):
 
 
         # variables
-        model.relativeposition = pyomo.Var(model.shadings, domain=pyomo.NonNegativeReals, bounds=lambda model,w,s:(model.relativeposition_min[w,s],model.relativeposition_max[w,s]), doc='current shading position')
+        model.relativeposition = pyomo.Var(model.shadings, domain=pyomo.NonNegativeReals, bounds=lambda model,w,s:(model.relativeposition_min[w,s],model.relativeposition_max[w,s]), doc='current shading position 0 is open 1 is closed')
         model.solargain = pyomo.Var(domain=pyomo.NonNegativeReals, doc='zone solargain')
         model.solargain_delta = pyomo.Var(domain=pyomo.NonNegativeReals, doc='absolute value of the difference from the setpoint')
         model.relativeposition_delta = pyomo.Var(model.shadings, domain=pyomo.NonNegativeReals, doc='absolute value of the difference from the current and old position')
@@ -114,6 +115,7 @@ class Shading(core.plugin.Plugin):
         solargain_max = {}
         solargain_temp = {}
 
+
         for w in windows:
 
             shadings = core.components.find(type='shading', window=w.path)
@@ -130,11 +132,16 @@ class Shading(core.plugin.Plugin):
                 relativeposition_min[(w.path,s.path)] = min(relativeposition_min_temp,relativeposition_max_temp)
                 relativeposition_max[(w.path,s.path)] = max(relativeposition_min_temp,relativeposition_max_temp)
 
-                relativeposition_old[(w.path,s.path)] = s.calculate_relative_position( s.states['position_status'].value )
-
+                relativeposition_old[(w.path,s.path)] = s.calculate_relative_position( position=s.states['position_status'].value )
+            
             solargain_max[w.path]  = w.calculate_solargain(shading_relativeposition=[0 for s in shadings])
             solargain_temp[w.path] = w.calculate_solargain(shading_relativeposition=[relativeposition_old[(w.path,s.path)] for s in shadings])
 
+        print('')
+
+        print(relativeposition_old)
+        print(solargain_max)
+        print(solargain_temp)
 
         # get the current timestamp
         dt_ref = datetime.datetime(1970, 1, 1)
@@ -148,21 +155,33 @@ class Shading(core.plugin.Plugin):
             shadings = {w.path: core.components.find(type='shading', window=w.path) for w in windows}
 
             if len(windows)>0:
+
+                solargain_max_zone = sum([solargain_max[w.path] for w in windows])
+                solargain_temp_zone = sum([solargain_temp[w.path] for w in windows])
+
                 solargain_program = zone.states['solargain_program'].value
 
                 if solargain_program is None or timestamp_now > solargain_program[-1][0]:
-                    solargain_set = sum([solargain_max[w.path] for w in windows])
+                    logging.warning('No solargain setpoint')
+                    solargain_set = solargain_max_zone
                 else:
                     solargain_set = np.interp(timestamp_now, [val[0] for val in solargain_program], [val[1] for val in solargain_program])
 
                 solargain_tol = np.maximum(200,0.1*solargain_set)
 
-                solargain_temp_zone = sum([solargain_temp[w.path] for w in windows])
 
+
+                print('')
+                print(zone.path)
+                print(sum([solargain_max[w.path] for w in windows]))
+                print(solargain_set)
+                print(solargain_tol)
+                print(solargain_temp_zone)
+                print('')
 
                 # check if repositioning is required / allowed
                 outsidetolerance = abs(solargain_temp_zone-solargain_set) > solargain_tol
-                belowtolerance = (solargain_temp_zone < solargain_tol and sum(relativeposition_old[(w.path,s.path)] if relativeposition_min[(w.path,s.path)]<relativeposition_max[(w.path,s.path)] else 0 for w in windows for s in shadings[w.path] )>1e-3)
+                belowtolerance = (solargain_max_zone < solargain_tol and sum(relativeposition_old[(w.path,s.path)] if relativeposition_min[(w.path,s.path)]<relativeposition_max[(w.path,s.path)] else 0 for w in windows for s in shadings[w.path] )>1e-3)
                 c3 = False
 
                 if outsidetolerance or belowtolerance or c3:
@@ -187,7 +206,8 @@ class Shading(core.plugin.Plugin):
                     # Create a problem instance and solve
                     instance = self.model.create_instance(data)
                     optimizer = pyomo.SolverFactory('ipopt')
-                    results = optimizer.solve(instance,tee=True)  # FIXME remove output
+                    results = optimizer.solve(instance,tee=True)
+                    print(results)
 
                     logging.info('Recalculated shading positions for zone {}'.format(zone.path))
 
@@ -239,10 +259,7 @@ class Shading(core.plugin.Plugin):
 
 
             if component.type == 'shading' and ( state == component.states['auto'] or state == component.states['position_min'] or state == component.states['position_max'] or (state == component.states['override'] and state.value<=0) ):
-                # FIXME add debouncing delay
-                self.auto_position()
-
-
+                util.executor.debounce(5,self.auto_position)
 
 
 

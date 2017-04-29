@@ -120,6 +120,7 @@ def prepare_database():
     core.components.add('bathroomzone'     ,'zone'    ,{})
     core.components.add('bathroom/temperature'      ,'zonetemperaturesensor'    , config={'zone':'bathroomzone','confidence':0.8})
 
+    core.components.add('bathroom/light'           , 'light', config={'type':'led'     ,'power':50   ,'zone':'bathroomzone'})
 
 
     # heatingsystem
@@ -182,11 +183,12 @@ def prepare_database():
     w = pages.add_widget(s['path'],'shading',config={'path':['living/window_west_2/screen'],'label':'Living west 2'})
     w = pages.add_widget(s['path'],'shading',config={'path':['kitchen/window_west/screen'],'label':'Kitchen west'})
     w = pages.add_widget(s['path'],'shading',config={'path':['kitchen/window_south/screen'],'label':'Kitchen south'})
+    w = pages.add_widget(s['path'],'shading',config={'path':['bedroom/window_east/shutter'],'label':'Bedroom east'})
+    w = pages.add_widget(s['path'],'shading',config={'path':['bedroom/window_north/shutter'],'label':'Bedroom north'})
 
     p = pages.add_page(g['path'],{'title':'Heating','icon':'sani_heating'})
     s = pages.add_section(p['path'],{'type':'raised'})
     w = pages.add_widget(s['path'],'chart',config={'pathlist':['living/temperature_wall/value','living/temperature_window/value'],'title':'Temperature'})
-
 
 
     g = pages.add_group({'title':'Ground floor'})
@@ -194,6 +196,19 @@ def prepare_database():
     s = pages.add_section(p['path'],{'type':'raised'})
     w = pages.add_widget(s['path'],'switch',config={'path':'living/light_dinnertable','label':'Dinner table'})
     w = pages.add_widget(s['path'],'switch',config={'path':'living/light_tv','label':'TV'})
+
+
+    g = pages.add_group({'title':'First floor'})
+    p = pages.add_page(g['path'],{'title':'Bedroom','icon':'scene_sleeping'})
+    s = pages.add_section(p['path'],{'type':'raised'})
+    w = pages.add_widget(s['path'],'switch',config={'path':'bedroom/light','label':'Light'})
+    s = pages.add_section(p['path'],{'type':'raised'})
+    w = pages.add_widget(s['path'],'shading',config={'path':['bedroom/window_east/shutter'],'label':'Bedroom east'})
+    w = pages.add_widget(s['path'],'shading',config={'path':['bedroom/window_north/shutter'],'label':'Bedroom north'})
+
+    p = pages.add_page(g['path'],{'title':'Bathroom','icon':'scene_bath'})
+    s = pages.add_section(p['path'],{'type':'raised'})
+    w = pages.add_widget(s['path'],'switch',config={'path':'bathroom/light','label':'Light'})
 
 
 

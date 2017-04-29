@@ -21,50 +21,62 @@ def main():
         ################################################################################
         # Install non python dependencies
         ################################################################################
-        from .util import install
+        from . import __install__
+
+
+        # create a user
+        if not '--nouser' in sys.argv:
+            print('\n\n\n'+'#'*80+'\nCreating the Homecon user\n'+'#'*80)
+            __install__.create_user()
+
+
+        if not '--nofolders' in sys.argv:
+            print('\n\n\n'+'#'*80+'\nCreating the Homecon folders\n'+'#'*80)
+            __install__.create_data_folders()
+
 
         # set a static ip address
-        if not '--nostaticip' in sys.argv: 
+        if not '--nostaticip' in sys.argv:
+
             setip = False
             for arg in sys.argv:
                 if arg.startswith( '--ip='):
                     ip = arg[5:]
-                    setip = True
+                    print('\n\n\n'+'#'*80+'\nSetting static ip address\n'+'#'*80)
+                    __install__.set_static_ip(ip)
                     break
 
             if not setip:
                 # use dialogs
                 setip = input('Do you want to set a static ip address (yes): ')
                 if setip in ['','yes','y']:
-                    setip = True
-                    rawip = input('Enter the desired static ip address (192.168.1.234): ')
-                    if rawip == '':
-                        ip = '192.168.1.234'
-                    else:
-                        ip = rawip
+                    print('\n\n\n'+'#'*80+'\nSetting static ip address\n'+'#'*80)
+                    __install__.set_static_ip()
 
                 elif setip in ['no','n']:
-                    setip = False
+                    pass
                 else:
                     raise Exception('{} is not a valid answer, yes/y/no/n'.format(setip))
 
-            if setip:
-                print('#'*80+'\nSetting static ip address\n'+'#'*80)
-                install.set_static_ip(ip)
+
+        # patch pyutilib
+        if not '--nopatchpyutilib' in sys.argv:
+            print('\n\n\n'+'#'*80+'\nPatching the pytuilib\n'+'#'*80)
+            __install__.patch_pyutilib()
 
 
         # install ipopt
         if not '--noipopt' in sys.argv:
             if not install.solver_available('ipopt'):
-                print('#'*80+'\nInstalling IPOPT\n'+'#'*80)
-                install.install_ipopt()
+                print('\n\n\n'+'#'*80+'\nInstalling IPOPT\n'+'#'*80)
+                __install__.install_ipopt()
 
 
         # install glpk
         if not '--noglpk' in sys.argv:    
             if not install.solver_available('glpk'):
-                print('#'*80+'\nInstalling GLPK\n'+'#'*80)
-                install.install_ipopt()
+                print('\n\n\n'+'#'*80+'\nInstalling GLPK\n'+'#'*80)
+                __install__.install_ipopt()
 
 
 

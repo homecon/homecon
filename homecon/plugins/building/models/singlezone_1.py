@@ -271,10 +271,18 @@ class Singlezone_1(model.Buildingmodel):
         Q_int_program = [(int(pyomo.value(model.timestamp[i])),float(np.round(pyomo.value(model.building_Q_int[i]),2))) for i in model.i]
 
         zones = core.components.find(type='zone')
+
+        Q_sol_max = {}
+        Q_int_max = {}
+        for zone in zones:
+            Q_sol_max[zone] = sum([w.calculate_solargain(shading_relativeposition=[0 for s in core.components.find(type='shading', window=w.path)]) for w in core.components.find(type='window', zone=zone.path) ])
+            Q_int_max[zone] = 1
+
+
         for zone in zones:
             zone.states['temperature_program'].value = T_liv_program
-            zone.states['solargain_program'].value = [(val[0], val[1]/len(zones) )for val in Q_sol_program]     # FIXME divide based on maximum solargain for that zone
-            zone.states['internalgain_program'].value = [(val[0], val[1]/len(zones) )for val in Q_int_program] 
+            zone.states['solargain_program'].value = [( val[0], val[1]*Q_sol_max[zone]/sum(Q_sol_max.values()) ) for val in Q_sol_program]
+            zone.states['internalgain_program'].value = [( val[0], val[1]*Q_int_max[zone]/sum(Q_int_max.values()) ) for val in Q_int_program] 
 
 
         result = {}
