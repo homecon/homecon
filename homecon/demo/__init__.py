@@ -78,7 +78,6 @@ def prepare_database():
     core.components.add('outside/irradiance'       ,'irradiancesensor'            , config={'confidence':0.8, 'azimuth':0.0, 'tilt':0.0})
 
 
-
     # dayzone
     core.components.add('dayzone'      ,'zone'    , config={})
 
@@ -129,7 +128,15 @@ def prepare_database():
     core.components.add('floorheating_groundfloor', 'heatemissionsystem'  , config={'type':'floorheating', 'zone':'dayzone', 'group':'heatinggroup1'})
 
 
-
+    ########################################################################
+    # Set some initial states
+    ########################################################################
+    core.states['living/window_west_1/screen/auto'].value= True
+    core.states['living/window_west_2/screen/auto'].value= True
+    core.states['kitchen/window_west/screen/auto'].value= True
+    core.states['kitchen/window_south/screen/auto'].value= True
+    core.states['bedroom/window_east/shutter/auto'].value= True
+    core.states['bedroom/window_north/shutter/auto'].value= True
 
 
     ########################################################################
@@ -196,6 +203,11 @@ def prepare_database():
     s = pages.add_section(p['path'],{'type':'raised'})
     w = pages.add_widget(s['path'],'switch',config={'path':'living/light_dinnertable','label':'Dinner table'})
     w = pages.add_widget(s['path'],'switch',config={'path':'living/light_tv','label':'TV'})
+    s = pages.add_section(p['path'],{'type':'raised'})
+    w = pages.add_widget(s['path'],'shading',config={'path':['living/window_west_1/screen'],'label':'Living west 1'})
+    w = pages.add_widget(s['path'],'shading',config={'path':['living/window_west_2/screen'],'label':'Living west 2'})
+    w = pages.add_widget(s['path'],'shading',config={'path':['kitchen/window_west/screen'],'label':'Kitchen west'})
+    w = pages.add_widget(s['path'],'shading',config={'path':['kitchen/window_south/screen'],'label':'Kitchen south'})
 
 
     g = pages.add_group({'title':'First floor'})

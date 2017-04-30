@@ -229,9 +229,8 @@ class Singlezone_1(model.Buildingmodel):
     def create_ocp_constraints(self,model):
 
         # state estimation?  # FIXME
-        print(  [zone.states['temperature'].history(model.timestamp[0]) for zone in core.components.find(type='zone')] )
         T_liv_ini = np.nanmean( [zone.states['temperature'].history(model.timestamp[0]) for zone in core.components.find(type='zone')], axis=0)
-        print(T_liv_ini)
+
 
         # constraints
         # states

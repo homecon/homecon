@@ -21,6 +21,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="../homecon-web-socket-sender.html">
 <link rel="import" href="../homecon-edit-dialog.html">
 
+<link rel="import" href="../widgets/base-slider.html">
+
 <link rel="import" href="../../style/style-scrollbar.html">
 
 <dom-module id="shading-settings">
@@ -40,6 +42,17 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 margin-bottom: 8px;
             }
         </style>
+
+
+        <div class="flex">
+            <div class="label">Visibility cost</div>
+            <base-slider path="settings/shading/cost_visibility" status-path="" min="0" max="100"></base-slider>
+        </div>
+
+        <div class="flex">
+            <div class="label">Movement cost</div>
+            <base-slider path="settings/shading/cost_movement" status-path="" min="0" max="100"></base-slider>
+        </div>
 
 
 

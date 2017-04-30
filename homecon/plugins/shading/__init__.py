@@ -18,6 +18,16 @@ class Shading(core.plugin.Plugin):
 
     def initialize(self):
 
+        # create states
+        core.states.add('settings/shading/cost_visibility', config={'datatype': 'number', 'quantity':'', 'unit':'W/m2'      ,'label':'', 'description':'', 'private':True})
+        core.states.add('settings/shading/cost_movement'  , config={'datatype': 'number', 'quantity':'', 'unit':'W/movement','label':'', 'description':'', 'private':True})
+
+        # add default values
+        if core.states['settings/shading/cost_visibility'].value is None:
+            core.states['settings/shading/cost_visibility'].value = 5
+        if core.states['settings/shading/cost_movement'].value is None:
+            core.states['settings/shading/cost_movement'].value = 1
+
 
         # create the optimization model
         model = pyomo.AbstractModel()
@@ -38,9 +48,8 @@ class Shading(core.plugin.Plugin):
         model.transmittance_open = pyomo.Param(model.shadings, doc='open shading transmittance')
         model.transmittance_closed = pyomo.Param(model.shadings, doc='closed shading transmittance')
 
-        model.cost_solargain = pyomo.Param(doc='cost for deviation from the setpoint')
-        model.cost_visibility = pyomo.Param(model.windows, doc='cost for degradation of visibility')
-        model.cost_movement = pyomo.Param(model.shadings, doc='cost for movement')
+        model.cost_visibility = pyomo.Param(model.windows, doc='cost for degradation of visibility (W/m2)')
+        model.cost_movement = pyomo.Param(model.shadings, doc='cost for movement (W/relative position)')
 
 
         # variables
@@ -71,7 +80,7 @@ class Shading(core.plugin.Plugin):
 
         # objective
         model.Objective = pyomo.Objective(
-            rule=lambda model: model.solargain_delta*model.cost_solargain + sum(model.area[w]*pyomo.prod(model.relativeposition[ww,s] for ww,s in model.shadings if w == ww)*model.cost_visibility[w] for w in model.windows) + sum(model.relativeposition_delta[s]*model.cost_movement[s] for s in model.shadings)
+            rule=lambda model: model.solargain_delta + sum(model.area[w]*pyomo.prod(model.relativeposition[ww,s] for ww,s in model.shadings if w == ww)*model.cost_visibility[w] for w in model.windows) + sum(model.relativeposition_delta[s]*model.cost_movement[s] for s in model.shadings)
         )
 
         self.model = model
@@ -97,15 +106,17 @@ class Shading(core.plugin.Plugin):
             await asyncio.sleep(timestamp_when-timestamp_now)
 
 
-    def auto_position(self):
+    def auto_position(self,force_recalculate=False):
         """
         
         """
+        cost_visibility = core.states['settings/shading/cost_visibility'].value
+        cost_movement = core.states['settings/shading/cost_movement'].value
+
 
         # get all windows and zones
         zones = core.components.find(type='zone')
         windows = core.components.find(type='window')
-
 
 
         relativeposition_min = {}
@@ -113,7 +124,8 @@ class Shading(core.plugin.Plugin):
         relativeposition_old = {}
         relativeposition_new = {}
         solargain_max = {}
-        solargain_temp = {}
+        solargain_min = {}
+        solargain_old = {}
 
 
         for w in windows:
@@ -121,27 +133,13 @@ class Shading(core.plugin.Plugin):
             shadings = core.components.find(type='shading', window=w.path)
             for s in shadings:
 
-                position_min_temp = (s.config['position_open'] if s.states['position_min'].value is None else s.states['position_min'].value) if ( (s.states['override'].value is None or s.states['override'].value<=0) and s.states['auto'].value) else s.states['position_status'].value
-                position_max_temp = (s.config['position_closed'] if s.states['position_max'].value is None else s.states['position_max'].value) if ( (s.states['override'].value is None or s.states['override'].value<=0) and s.states['auto'].value) else s.states['position_status'].value
-
-                relativeposition_min_temp = s.calculate_relative_position( position=position_min_temp )
-                relativeposition_max_temp = s.calculate_relative_position( position=position_max_temp )
-
-                # it is not sure that min is closed and max is open
-                # the relative position is defined so 0 is open and 1 is closed
-                relativeposition_min[(w.path,s.path)] = min(relativeposition_min_temp,relativeposition_max_temp)
-                relativeposition_max[(w.path,s.path)] = max(relativeposition_min_temp,relativeposition_max_temp)
-
+                (relativeposition_min[(w.path,s.path)],relativeposition_max[(w.path,s.path)]) = s.calculate_relative_position_bounds()
                 relativeposition_old[(w.path,s.path)] = s.calculate_relative_position( position=s.states['position_status'].value )
             
             solargain_max[w.path]  = w.calculate_solargain(shading_relativeposition=[0 for s in shadings])
-            solargain_temp[w.path] = w.calculate_solargain(shading_relativeposition=[relativeposition_old[(w.path,s.path)] for s in shadings])
+            solargain_min[w.path]  = w.calculate_solargain(shading_relativeposition=[1 for s in shadings])
+            solargain_old[w.path] = w.calculate_solargain(shading_relativeposition=[relativeposition_old[(w.path,s.path)] for s in shadings])
 
-        print('')
-
-        print(relativeposition_old)
-        print(solargain_max)
-        print(solargain_temp)
 
         # get the current timestamp
         dt_ref = datetime.datetime(1970, 1, 1)
@@ -157,7 +155,8 @@ class Shading(core.plugin.Plugin):
             if len(windows)>0:
 
                 solargain_max_zone = sum([solargain_max[w.path] for w in windows])
-                solargain_temp_zone = sum([solargain_temp[w.path] for w in windows])
+                solargain_min_zone = sum([solargain_min[w.path] for w in windows])
+                solargain_old_zone = sum([solargain_old[w.path] for w in windows])
 
                 solargain_program = zone.states['solargain_program'].value
 
@@ -169,22 +168,15 @@ class Shading(core.plugin.Plugin):
 
                 solargain_tol = np.maximum(200,0.1*solargain_set)
 
+                logging.debug('Shading position quantities for zone {}: max={:.0f} W, min={:.0f} W, set={:.0f} W, tol={:.0f} W, current={:.0f} W'.format(zone.path,solargain_max_zone,solargain_min_zone,solargain_set,solargain_tol,solargain_old_zone))
 
-
-                print('')
-                print(zone.path)
-                print(sum([solargain_max[w.path] for w in windows]))
-                print(solargain_set)
-                print(solargain_tol)
-                print(solargain_temp_zone)
-                print('')
 
                 # check if repositioning is required / allowed
-                outsidetolerance = abs(solargain_temp_zone-solargain_set) > solargain_tol
+                outsidetolerance = abs(solargain_old_zone-solargain_set) > solargain_tol
                 belowtolerance = (solargain_max_zone < solargain_tol and sum(relativeposition_old[(w.path,s.path)] if relativeposition_min[(w.path,s.path)]<relativeposition_max[(w.path,s.path)] else 0 for w in windows for s in shadings[w.path] )>1e-3)
                 c3 = False
 
-                if outsidetolerance or belowtolerance or c3:
+                if outsidetolerance or belowtolerance or c3 or force_recalculate:
 
                     # compute new shading positions through the optimization
                     data={None:{
@@ -198,9 +190,8 @@ class Shading(core.plugin.Plugin):
                         'relativeposition_old':{(w.path,s.path): relativeposition_old[(w.path,s.path)] for w in windows for s in shadings[w.path]},
                         'transmittance_open':{(w.path,s.path): s.config['transmittance_open'] for w in windows for s in shadings[w.path]},
                         'transmittance_closed':{(w.path,s.path): s.config['transmittance_closed'] for w in windows for s in shadings[w.path]},
-                        'cost_solargain':{None: 1.},
-                        'cost_visibility':{(w.path,): 0.1*w.config['cost_visibility'] for w in windows},
-                        'cost_movement':{(w.path,s.path): 1.0*s.config['cost_movement'] for w in windows for s in shadings[w.path]},
+                        'cost_visibility':{(w.path,): cost_visibility*w.config['cost_visibility'] for w in windows},
+                        'cost_movement':{(w.path,s.path): cost_movement*s.config['cost_movement'] for w in windows for s in shadings[w.path]},
                     }}
 
                     # Create a problem instance and solve
@@ -262,5 +253,6 @@ class Shading(core.plugin.Plugin):
                 util.executor.debounce(5,self.auto_position)
 
 
-
+        if state.path == 'settings/shading/cost_visibility' or state.path == 'settings/shading/cost_movement':
+            util.executor.debounce(5,self.auto_position,force_recalculate=True)
 

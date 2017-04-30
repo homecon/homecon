@@ -686,12 +686,17 @@ class States(object):
                     self._states[path].trigger.append(state)
 
     def delete(self,path):
-        self._states[path].delete()
-        self.parse_triggers()
+        try:
+            self._states[path].delete()
+            self.parse_triggers()
+        except:
+            logging.error('Attempt to delete state {} but it is not found'.format(path))
 
     def __getitem__(self,path):
-        return self._states[path]
-
+        try:
+            return self._states[path]
+        except:
+            logging.error('Attempt to access state {} but it is not found'.format(path))
 
     def __iter__(self):
         return iter(self._states)

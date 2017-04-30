@@ -3,7 +3,6 @@
 
 import logging
 import datetime
-import concurrent.futures
 import asyncio
 import ephem
 import numpy as np
@@ -19,10 +18,6 @@ class Weather(core.plugin.Plugin):
 
     def initialize(self):
         
-        # create a thread pool executor for loading api data
-        self.executor = concurrent.futures.ThreadPoolExecutor(7)
-
-
         # add forecast states
         core.states.add('weather/forecast/lastupdate', config={'datatype': 'number', 'quantity':'', 'unit':'','label':'', 'description':'', 'private':True})
 

@@ -111,6 +111,9 @@ class Shading(core.component.Component):
         'window': '',
         'override_duration': 180,
         'cost_movement': 1.0,
+        'cost_visibility': 1.0,
+        'open_if_rain': False,
+        'max_wind_speed': 100,
     }
     linked_states = {
         'position': {
@@ -158,6 +161,46 @@ class Shading(core.component.Component):
             relativeposition = max(0.,min(1., (position-self.config['position_open'])/(self.config['position_closed']-self.config['position_open']) ))
 
         return relativeposition
+
+
+    def calculate_relative_position_bounds(self,timestamp=None,rain=False,wind=0):
+        """
+        Calculates the minimum relative position
+        """
+        
+        if self.states['override'].value is None or self.states['override'].value<=0:
+            if self.config['open_if_rain'] and rain:
+                position_min_temp = self.config['position_open']
+                position_max_temp = self.config['position_open']
+
+            elif wind>self.config['max_wind_speed']:
+                position_min_temp = self.config['position_open']
+                position_max_temp = self.config['position_open']
+
+            else:
+                if self.states['position_min'].value is None:
+                    position_min_temp = self.config['position_open']
+                else:
+                    position_min_temp = self.states['position_min'].value
+
+                if self.states['position_max'].value is None:
+                    position_max_temp = self.config['position_closed']
+                else:
+                    position_min_temp = self.states['position_min'].value
+
+        else:
+            position_min_temp = self.states['position_status'].value
+            position_max_temp = self.states['position_status'].value
+
+        relativeposition_min_temp = self.calculate_relative_position( position=position_min_temp )
+        relativeposition_max_temp = self.calculate_relative_position( position=position_max_temp )
+
+        # it is not sure that min is closed and max is open
+        # the relative position is defined so 0 is open and 1 is closed
+        relativeposition_min = min(relativeposition_min_temp,relativeposition_max_temp)
+        relativeposition_max = max(relativeposition_min_temp,relativeposition_max_temp)
+
+        return (relativeposition_min,relativeposition_max)
 
 
     def calculate_transmittance(self,timestamp=None,relativeposition=None,position=None):

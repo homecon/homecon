@@ -22,7 +22,7 @@
         
         <homecon-web-socket-object id="websocketObjectValue" event="state" path="{{path}}" data="{{value}}" on-change="_valueChanged" send-on-authenticated></homecon-web-socket-object>
 
-        <template is="dom-if" if="_useStatusPath(statusPath)">
+        <template is="dom-if" if="{{_useStatusPath(statusPath)}}">
             <homecon-web-socket-object id="websocketObjectStatus" event="state" path="{{statusPath}}" data="{{statusValue}}" on-change="_statusValueChanged" send-on-authenticated></homecon-web-socket-object>
         </template>
 
@@ -35,20 +35,21 @@
             is: 'base-slider',
             properties: {
                 path: {
-                    type: 'String',
+                    type: String,
                 },
                 statusPath: {
-                    type: 'String',
+                    type: String,
+                    value: '',
                 },
                 value: {
-                    type: 'Number',
+                    type: Number,
                 },
                 min: {
-                    type: 'Number',
+                    type: Number,
                     value: 0,
                 },
                 max: {
-                    type: 'Number',
+                    type: Number,
                     value: 1,
                 },
             },
