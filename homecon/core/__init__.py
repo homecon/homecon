@@ -17,7 +17,7 @@ websocket = None
 
 
 
-def initialize(dbpath='',dbname='homecon'):
+def initialize(dbpath='/var/lib/homecon/',dbname='homecon'):
     global db, measurements_db, event, states, components, plugins, websocket
     
     corepackage = 'homecon.core'
@@ -29,7 +29,9 @@ def initialize(dbpath='',dbname='homecon'):
         importlib.reload(database)
     else:
         importlib.import_module('.database',package=corepackage)
-        
+
+    print(os.path.join(dbpath,'{}.db'.format(dbname)))
+
     db = database.Database(database=os.path.join(dbpath,'{}.db'.format(dbname)))
     measurements_db = database.Database(database=os.path.join(dbpath,'{}_measurements.db'.format(dbname)))
     database.db = db

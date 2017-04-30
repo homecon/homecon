@@ -57,9 +57,30 @@ It is probably not desired to set a static ip address on the development machine
 
 .. code-block:: bash
 
-    setup.py develop --nostaticip
+    setup.py develop
+
+Homecon must be run as the homecon user and it requires some files in the filesystem.
+A homecon user creation and the necessary files and permissions can be handled by the :code:`__install__.py` script:
+
+.. code-block:: bash
+
+    homecon install --nostaticip
 
 If Ipopt or Glpk are allready installed, you can avoid recompiling them using the :code:`--noipopt` and :code:`--noglpk` options respectively.
+
+To run Homecon from a development installation you must create a new shell as the homecon user and reenable the virtualenv:
+
+.. code-block:: bash
+
+    sudo -u homecon bash
+    source env/bin/activate
+
+Finally run Homecon in development and/or demo mode with:
+
+.. code-block:: bash
+
+    homecon debug demo appsrc
+
 
 
 Developing

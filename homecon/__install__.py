@@ -49,7 +49,7 @@ def create_data_folders():
     subprocess.call(['sudo', 'chmod', '755' , '/var/www/homecon'])
 
     # copy the app files
-    subprocess.call(['sudo', 'cp', '{}/homecon/app/build/bundled'.format(sys.prefix) , '/var/www/homecon'])
+    subprocess.call(['sudo', 'cp', '{}/homecon/app/build/bundled/*'.format(sys.prefix) , '/var/www/homecon'])
 
 
 

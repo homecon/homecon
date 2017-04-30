@@ -27,7 +27,7 @@ if not os.path.exists( os.path.join(basedir,'log')):
     os.makedirs(os.path.join(basedir,'log'))
 
 if not 'homecon.fileHandler' in [lh.name for lh in logger.handlers]:
-    fileHandler = logging.FileHandler(os.path.join(basedir,'log/homecon.log'))
+    fileHandler = logging.FileHandler(os.path.join(basedir,'/var/log/homecon/homecon.log'))
     fileHandler.setFormatter(logFormatter)
     fileHandler.set_name('homecon.fileHandler')
     logger.addHandler(fileHandler)
@@ -79,9 +79,7 @@ class HomeCon(object):
         ########################################################################
         # initialize core components
         ########################################################################
-        kwargs = {
-            'dbpath': basedir
-        }
+        kwargs = {}
         if demo:
             kwargs['dbname'] = 'demo_homecon'
 

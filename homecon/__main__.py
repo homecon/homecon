@@ -102,11 +102,11 @@ def main():
 
             # clear the demo database
             try:
-                os.remove(os.path.join(basedir,'demo_homecon.db'))
+                os.remove(os.path.join('/var/lib/homecon/demo_homecon.db'))
             except:
                 pass
             try:
-                os.remove(os.path.join(basedir,'demo_homecon_measurements.db'))
+                os.remove(os.path.join('/var/lib/homecon/demo_homecon_measurements.db'))
             except:
                 pass
 

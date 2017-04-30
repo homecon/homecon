@@ -8,7 +8,7 @@ import threading
 import http.server
 
 
-documentroot = os.path.join(sys.prefix,'homecon','app','build','bundled')
+documentroot = '/var/www/homecon'
 
 
 class HttpRequestHandler(http.server.BaseHTTPRequestHandler):
@@ -78,7 +78,7 @@ class HttpServerThread(threading.Thread):
 
         documentroot : int
             The root path from where files are retrieved.
-            Defaults to :code:`sys.prefix + '/homecon/app/build/bundled'`.
+            Defaults to :code:`/var/www/homecon`.
 
         """
 
