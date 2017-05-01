@@ -179,9 +179,9 @@ class Shading(core.plugin.Plugin):
                         'relativeposition_old':{(w.path,s.path): relativeposition_old[(w.path,s.path)] for w in windows for s in shadings[w.path]},
                         'transmittance_open':{(w.path,s.path): s.config['transmittance_open'] for w in windows for s in shadings[w.path]},
                         'transmittance_closed':{(w.path,s.path): s.config['transmittance_closed'] for w in windows for s in shadings[w.path]},
-                        'cost_solargain':{None: 2000*core.states['mpc/energy_cost_scale'].value},
-                        'cost_visibility':{(w.path,): 2000*core.states['mpc/energy_cost_scale'].value*core.states['mpc/relative_cost_discomfort_visual'].value*w.config['cost_visibility'] for w in windows},
-                        'cost_movement':{(w.path,s.path): 1*s.config['cost_movement'] for w in windows for s in shadings[w.path]},
+                        'cost_solargain':{None: 1.},
+                        'cost_visibility':{(w.path,): 0.1*w.config['cost_visibility'] for w in windows},
+                        'cost_movement':{(w.path,s.path): 0.1*s.config['cost_movement'] for w in windows for s in shadings[w.path]},
                     }}
 
                     # Create a problem instance and solve
@@ -201,7 +201,7 @@ class Shading(core.plugin.Plugin):
                                 if belowtolerance:
                                     relativeposition_new[(w.path,s.path)] = 0
                                 else:                                
-                                    relativeposition_new[(w.path,s.path)] = pyomo.value(instance.relativeposition[(w.path,s.path)])
+                                    relativeposition_new[(w.path,s.path)] = np.round( pyomo.value(instance.relativeposition[(w.path,s.path)]), 1 )
 
 
         # set positions
@@ -241,8 +241,4 @@ class Shading(core.plugin.Plugin):
 
             if component.type == 'shading' and ( state == component.states['auto'] or state == component.states['position_min'] or state == component.states['position_max'] or (state == component.states['override'] and state.value<=0) ):
                 util.executor.debounce(5,self.auto_position)
-
-
-        if state.path == 'settings/shading/cost_visibility' or state.path == 'settings/shading/cost_movement':
-            util.executor.debounce(5,self.auto_position,force_recalculate=True)
 

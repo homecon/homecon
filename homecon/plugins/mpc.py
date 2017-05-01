@@ -59,7 +59,7 @@ class Mpc(core.plugin.Plugin):
             core.states['mpc/relative_cost_discomfort_air_quality'].value = 0.
 
         if core.states['mpc/relative_cost_discomfort_visual'].value is None:
-            core.states['mpc/relative_cost_discomfort_visual'].value = 0.1
+            core.states['mpc/relative_cost_discomfort_visual'].value = 0.01
 
 
 
@@ -280,8 +280,8 @@ class Mpc(core.plugin.Plugin):
             await asyncio.sleep(timestamp_when-timestamp_now)
 
 
-    def listen_mpc_control_update(self,event):
-        result = self.control_update()
+    def listen_mpc_optimization(self,event):
+        result = self.optimization()
 
 
 

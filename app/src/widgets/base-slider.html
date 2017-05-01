@@ -17,6 +17,7 @@
                 --paper-slider-active-color: #f79a1f;
                 --paper-slider-knob-color: #333333;
                 --paper-slider-height: 10px;
+                --paper-slider-secondary-color: transparent;
             }
         </style>
         
@@ -27,7 +28,7 @@
         </template>
 
 
-        <paper-slider min="[[min]]" max="[[max]]" step="[[_sliderStep(min,max)]]" value="{{sliderValue}}" on-change="call"></paper-slider>
+        <paper-slider min="[[_valueToSliderValue(min,log)]]" max="[[_valueToSliderValue(max,log)]]" step="[[_sliderStep(min,max,log)]]" value="{{sliderValue}}" on-change="call"></paper-slider>
 
     </template>
     <script>
@@ -52,10 +53,32 @@
                     type: Number,
                     value: 1,
                 },
+                log: {
+                    type: Boolean,
+                    value: false,
+                },
             },
 
             call: function(){
-                this.$.websocketObjectValue.send(this.sliderValue);
+                this.$.websocketObjectValue.send(this._sliderValueToValue(this.sliderValue,this.log));
+            },
+
+            _valueToSliderValue: function(value,log){
+                if(log){
+                    return Math.log10(value);
+                }
+                else{
+                    return value;
+                }
+            },
+
+            _sliderValueToValue: function(value,log){
+                if(log){
+                    return Math.pow(10,value);
+                }
+                else{
+                    return value;
+                }
             },
 
             _useStatusPath: function(statusPath){
@@ -64,15 +87,15 @@
 
             _valueChanged: function(event,data){
                 if(!this._useStatusPath(this.statusPath)){
-                    this.sliderValue = this.value;
+                    this.sliderValue = this._valueToSliderValue(this.value,this.log);
                 }
             },
 
             _statusValueChanged: function(event,data){
-                this.sliderValue = this.statusValue;
+                this.sliderValue = this._valueToSliderValue(this.statusValue,this.log);
             },
-            _sliderStep: function(min,max){
-                return Math.min(1,(max-min)/100);
+            _sliderStep: function(min,max,log){
+                return Math.min(1,(this._valueToSliderValue(max,log)-this._valueToSliderValue(min,log))/100);
             }
         });
     </script>

@@ -36,6 +36,16 @@
         <div id="containerPower" class="chart"></div>
 
 
+        <div>
+            <div class="label">Environment cost</div>
+            <base-slider path="mpc/relative_cost_environment" status-path="" min="0" max="1"></base-slider>
+        </div>
+        <div>
+            <div class="label">Visibility cost</div>
+            <base-slider path="mpc/relative_cost_discomfort_visual" status-path="" min="1e-10" max="1" log></base-slider>
+        </div>
+
+
     </template>
     <script>
         Polymer({
@@ -191,6 +201,7 @@
                         series.options.color = base_series.color;
                         series.options.dashStyle = 'dot';
                         series.options.marker.enabled = false;
+                        series.options.visible = false;
                         series.update(series.options, false);
                     }
                 }
