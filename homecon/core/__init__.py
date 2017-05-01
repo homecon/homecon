@@ -30,8 +30,6 @@ def initialize(dbpath='/var/lib/homecon/',dbname='homecon'):
     else:
         importlib.import_module('.database',package=corepackage)
 
-    print(os.path.join(dbpath,'{}.db'.format(dbname)))
-
     db = database.Database(database=os.path.join(dbpath,'{}.db'.format(dbname)))
     measurements_db = database.Database(database=os.path.join(dbpath,'{}_measurements.db'.format(dbname)))
     database.db = db

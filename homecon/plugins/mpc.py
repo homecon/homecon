@@ -6,6 +6,7 @@ import datetime
 import numpy as np
 import pyomo.environ as pyomo
 import asyncio
+import traceback
 
 from .. import core
 from .. import util
@@ -34,6 +35,31 @@ class Mpc(core.plugin.Plugin):
 
         core.states.add('mpc/priceprofiles/el', value=[(0,0.220)],    config={'datatype': 'list', 'quantity':'', 'unit':''  , 'label':'', 'description':'', 'log': False})
         core.states.add('mpc/priceprofiles/ng', value=[(0,0.080)],    config={'datatype': 'list', 'quantity':'', 'unit':''  , 'label':'', 'description':'', 'log': False})
+        
+
+        core.states.add('mpc/energy_cost_scale', config={'datatype': 'number', 'quantity':'', 'unit':'EUR/h'      ,'label':'', 'description':'Average energy cost per hour', 'private':True})
+        
+        core.states.add('mpc/relative_cost_discomfort_too_hot'      , config={'datatype': 'number', 'quantity':'', 'unit':'1/K'      ,'label':'', 'description':'A value of 1 means a temperature of 1 K above the setpoint during 1 h costs as much as the energy cost scale', 'private':True})
+        core.states.add('mpc/relative_cost_discomfort_too_cold'     , config={'datatype': 'number', 'quantity':'', 'unit':'1/K'      ,'label':'', 'description':'A value of 1 means a temperature of 1 K below the setpoint during 1 h costs as much as the energy cost scale', 'private':True})
+        core.states.add('mpc/relative_cost_discomfort_air_quality'  , config={'datatype': 'number', 'quantity':'', 'unit':'1/m2'      ,'label':'', 'description':'A value of 1 means 1 m2 of lost visibility during 1 h costs as much as the energy cost scale', 'private':True})
+        core.states.add('mpc/relative_cost_discomfort_visual'       , config={'datatype': 'number', 'quantity':'', 'unit':'1/m2'      ,'label':'', 'description':'A value of 1 means 1 m2 of lost visibility during 1 h costs as much as the energy cost scale', 'private':True})
+
+
+        # set default values
+        if core.states['mpc/energy_cost_scale'].value is None:
+            core.states['mpc/energy_cost_scale'].value = 1.
+
+        if core.states['mpc/relative_cost_discomfort_too_hot'].value is None:
+            core.states['mpc/relative_cost_discomfort_too_hot'].value = 11.
+
+        if core.states['mpc/relative_cost_discomfort_too_cold'].value is None:
+            core.states['mpc/relative_cost_discomfort_too_cold'].value = 10.
+
+        if core.states['mpc/relative_cost_discomfort_air_quality'].value is None:
+            core.states['mpc/relative_cost_discomfort_air_quality'].value = 0.
+
+        if core.states['mpc/relative_cost_discomfort_visual'].value is None:
+            core.states['mpc/relative_cost_discomfort_visual'].value = 0.1
 
 
 
@@ -57,7 +83,7 @@ class Mpc(core.plugin.Plugin):
         xxx_D_tc: Discomfort thermal too cold          (K)
         xxx_D_th: Discomfort thermal too hot           (K)
         xxx_D_aq: Discomfort air quality        (g CO2/m3)?
-        xxx_D_vi: Discomfort visual                   (??)?
+        xxx_D_vi: Discomfort visual                   (m2)
 
         xxxx_p: price                              (EUR/xxx)
        
@@ -91,15 +117,12 @@ class Mpc(core.plugin.Plugin):
             P_ng_p = util.interp.zoh(timestamps_of_the_week,[val[0] for val in core.states['mpc/priceprofiles/ng'].value],[val[1] for val in core.states['mpc/priceprofiles/ng'].value])
 
 
-            # determine scale for discomfort costs
-            max_energy_cost = 100
+            # Discomfort costs
+            D_tc_p = [core.states['mpc/relative_cost_discomfort_too_cold'].value*core.states['mpc/energy_cost_scale'].value for ts in timestamps]
+            D_th_p = [core.states['mpc/relative_cost_discomfort_too_hot'].value*core.states['mpc/energy_cost_scale'].value for ts in timestamps]
 
-            # Price of 1 Kh is equal to the maximum weekly energy cost ever encountered, temporary 100EUR
-            D_tc_p = [1.100*max_energy_cost for ts in timestamps]
-            D_th_p = [1.000*max_energy_cost for ts in timestamps]
-
-            D_aq_p = [0.000*max_energy_cost for ts in timestamps]
-            D_vi_p = [1e-12 for ts in timestamps]
+            D_aq_p = [core.states['mpc/relative_cost_discomfort_air_quality'].value*core.states['mpc/energy_cost_scale'].value for ts in timestamps]
+            D_vi_p = [core.states['mpc/relative_cost_discomfort_visual'].value*core.states['mpc/energy_cost_scale'].value for ts in timestamps]
 
 
             # control optimization
@@ -129,7 +152,7 @@ class Mpc(core.plugin.Plugin):
             model.D_tc_tot = pyomo.Var(model.i,domain=pyomo.NonNegativeReals, initialize=0, doc='average thermal discomfort too cold in the interval [i,i+1] (K)')
             model.D_th_tot = pyomo.Var(model.i,domain=pyomo.NonNegativeReals, initialize=0, doc='average thermal discomfort too hot in the interval [i,i+1] (K)')
             model.D_aq_tot = pyomo.Var(model.i,domain=pyomo.NonNegativeReals, initialize=0, doc='average air quality discomfort in the interval [i,i+1] (xxx)')
-            model.D_vi_tot = pyomo.Var(model.i,domain=pyomo.NonNegativeReals, initialize=0, doc='average visual discomfort in the interval [i,i+1] (xxx)')
+            model.D_vi_tot = pyomo.Var(model.i,domain=pyomo.NonNegativeReals, initialize=0, doc='average visual discomfort in the interval [i,i+1] (m2)')
 
 
 
@@ -224,8 +247,8 @@ class Mpc(core.plugin.Plugin):
 
             return True
 
-        except Exception as e:
-            logging.error('the control optimization failed with error {}'.format(e))
+        except:
+            logging.error('the control optimization failed with error:\n{}'.format(traceback.format_exc()))
 
 
 

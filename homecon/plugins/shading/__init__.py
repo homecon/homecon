@@ -18,16 +18,6 @@ class Shading(core.plugin.Plugin):
 
     def initialize(self):
 
-        # create states
-        core.states.add('settings/shading/cost_visibility', config={'datatype': 'number', 'quantity':'', 'unit':'W/m2'      ,'label':'', 'description':'', 'private':True})
-        core.states.add('settings/shading/cost_movement'  , config={'datatype': 'number', 'quantity':'', 'unit':'W/movement','label':'', 'description':'', 'private':True})
-
-        # add default values
-        if core.states['settings/shading/cost_visibility'].value is None:
-            core.states['settings/shading/cost_visibility'].value = 5
-        if core.states['settings/shading/cost_movement'].value is None:
-            core.states['settings/shading/cost_movement'].value = 1
-
 
         # create the optimization model
         model = pyomo.AbstractModel()
@@ -48,8 +38,9 @@ class Shading(core.plugin.Plugin):
         model.transmittance_open = pyomo.Param(model.shadings, doc='open shading transmittance')
         model.transmittance_closed = pyomo.Param(model.shadings, doc='closed shading transmittance')
 
-        model.cost_visibility = pyomo.Param(model.windows, doc='cost for degradation of visibility (W/m2)')
-        model.cost_movement = pyomo.Param(model.shadings, doc='cost for movement (W/relative position)')
+        model.cost_solargain = pyomo.Param(doc='cost for difference from the solargain setpoint (EUR/W)')
+        model.cost_visibility = pyomo.Param(model.windows, doc='cost for degradation of visibility (EUR/m2)')
+        model.cost_movement = pyomo.Param(model.shadings, doc='cost for movement (EUR/relative position)')
 
 
         # variables
@@ -80,7 +71,7 @@ class Shading(core.plugin.Plugin):
 
         # objective
         model.Objective = pyomo.Objective(
-            rule=lambda model: model.solargain_delta + sum(model.area[w]*pyomo.prod(model.relativeposition[ww,s] for ww,s in model.shadings if w == ww)*model.cost_visibility[w] for w in model.windows) + sum(model.relativeposition_delta[s]*model.cost_movement[s] for s in model.shadings)
+            rule=lambda model: model.cost_solargain*model.solargain_delta + sum(model.area[w]*pyomo.prod(model.relativeposition[ww,s] for ww,s in model.shadings if w == ww)*model.cost_visibility[w] for w in model.windows) + sum(model.relativeposition_delta[s]*model.cost_movement[s] for s in model.shadings)
         )
 
         self.model = model
@@ -110,8 +101,6 @@ class Shading(core.plugin.Plugin):
         """
         
         """
-        cost_visibility = core.states['settings/shading/cost_visibility'].value
-        cost_movement = core.states['settings/shading/cost_movement'].value
 
 
         # get all windows and zones
@@ -190,8 +179,9 @@ class Shading(core.plugin.Plugin):
                         'relativeposition_old':{(w.path,s.path): relativeposition_old[(w.path,s.path)] for w in windows for s in shadings[w.path]},
                         'transmittance_open':{(w.path,s.path): s.config['transmittance_open'] for w in windows for s in shadings[w.path]},
                         'transmittance_closed':{(w.path,s.path): s.config['transmittance_closed'] for w in windows for s in shadings[w.path]},
-                        'cost_visibility':{(w.path,): cost_visibility*w.config['cost_visibility'] for w in windows},
-                        'cost_movement':{(w.path,s.path): cost_movement*s.config['cost_movement'] for w in windows for s in shadings[w.path]},
+                        'cost_solargain':{None: 2000*core.states['mpc/energy_cost_scale'].value},
+                        'cost_visibility':{(w.path,): 2000*core.states['mpc/energy_cost_scale'].value*core.states['mpc/relative_cost_discomfort_visual'].value*w.config['cost_visibility'] for w in windows},
+                        'cost_movement':{(w.path,s.path): 1*s.config['cost_movement'] for w in windows for s in shadings[w.path]},
                     }}
 
                     # Create a problem instance and solve

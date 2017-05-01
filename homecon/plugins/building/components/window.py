@@ -153,12 +153,13 @@ class Shading(core.component.Component):
             position = self.states['position_status'].history(timestamp)
 
         if position is None:
-            if timestamp is None:
+            if not hasattr(timestamp,'__len__'):
                 relativeposition = 0.
             else:
                 relativeposition = np.zeros(len(timestamp))
+
         else:
-            relativeposition = max(0.,min(1., (position-self.config['position_open'])/(self.config['position_closed']-self.config['position_open']) ))
+            relativeposition = np.maximum(0.,np.minimum(1., (position-self.config['position_open'])/(self.config['position_closed']-self.config['position_open']) ))
 
         return relativeposition
 
@@ -167,38 +168,48 @@ class Shading(core.component.Component):
         """
         Calculates the minimum relative position
         """
-        
-        if self.states['override'].value is None or self.states['override'].value<=0:
-            if self.config['open_if_rain'] and rain:
-                position_min_temp = self.config['position_open']
-                position_max_temp = self.config['position_open']
+        if timestamp is None:
 
-            elif wind>self.config['max_wind_speed']:
-                position_min_temp = self.config['position_open']
-                position_max_temp = self.config['position_open']
+            if self.states['override'].value is None or self.states['override'].value<=0:
+                if self.config['open_if_rain'] and rain:
+                    position_min_temp = self.config['position_open']
+                    position_max_temp = self.config['position_open']
+
+                elif wind>self.config['max_wind_speed']:
+                    position_min_temp = self.config['position_open']
+                    position_max_temp = self.config['position_open']
+
+                else:
+                    if self.states['position_min'].value is None:
+                        position_min_temp = self.config['position_open']
+                    else:
+                        position_min_temp = self.states['position_min'].value
+
+                    if self.states['position_max'].value is None:
+                        position_max_temp = self.config['position_closed']
+                    else:
+                        position_max_temp = self.states['position_max'].value
 
             else:
-                if self.states['position_min'].value is None:
-                    position_min_temp = self.config['position_open']
-                else:
-                    position_min_temp = self.states['position_min'].value
-
-                if self.states['position_max'].value is None:
-                    position_max_temp = self.config['position_closed']
-                else:
-                    position_min_temp = self.states['position_min'].value
+                position_min_temp = self.states['position_status'].value
+                position_max_temp = self.states['position_status'].value
 
         else:
-            position_min_temp = self.states['position_status'].value
-            position_max_temp = self.states['position_status'].value
+            if hasattr(timestamp,'__len__'):
+                position_min_temp = self.config['position_open']*np.ones(len(timestamp))
+                position_max_temp = self.config['position_closed']*np.ones(len(timestamp))
+            else:
+                position_min_temp = self.config['position_open']
+                position_max_temp = self.config['position_closed']
+
 
         relativeposition_min_temp = self.calculate_relative_position( position=position_min_temp )
         relativeposition_max_temp = self.calculate_relative_position( position=position_max_temp )
 
         # it is not sure that min is closed and max is open
         # the relative position is defined so 0 is open and 1 is closed
-        relativeposition_min = min(relativeposition_min_temp,relativeposition_max_temp)
-        relativeposition_max = max(relativeposition_min_temp,relativeposition_max_temp)
+        relativeposition_min = np.minimum(relativeposition_min_temp,relativeposition_max_temp)
+        relativeposition_max = np.maximum(relativeposition_min_temp,relativeposition_max_temp)
 
         return (relativeposition_min,relativeposition_max)
 

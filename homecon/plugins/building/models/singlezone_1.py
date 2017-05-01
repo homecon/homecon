@@ -198,33 +198,65 @@ class Singlezone_1(model.Buildingmodel):
             I_direct[i], I_diffuse[i] = util.weather.cloudyskyirrradiance(I_direct_clearsky,I_diffuse_clearsky,cloudcover[i],solar_azimuth[i],solar_altitude[i],timestamp=ts)
 
 
-        Q_sol_max_zone = {}
         Q_sol_min_zone = {}
-        for zone in zones:
-            # FIXME take schedules into account in min/max shading position dertermination
-            shading_relativeposition = [[0.0*np.ones(len(timestamps)) for shading in core.components.find(type='shading',window=window.path)] for window in core.components.find(type='window',zone=zone.path)]
-            Q_sol_max_zone[zone.path] = zone.calculate_solargain(I_direct=I_direct,I_diffuse=I_diffuse,solar_azimuth=solar_azimuth,solar_altitude=solar_altitude,shading_relativeposition=shading_relativeposition)
+        Q_sol_max_zone = {}
 
-            shading_relativeposition = [[1.0*np.ones(len(timestamps)) for shading in core.components.find(type='shading',window=window.path)] for window in core.components.find(type='window',zone=zone.path)]
+        Delta_D_vi_zone = {}
+
+        for zone in zones:
+            shading_relativeposition_bounds = {s.path: s.calculate_relative_position_bounds(timestamp=timestamps) for w in core.components.find(type='window',zone=zone.path) for s in core.components.find(type='shading',window=w.path) }
+
+            shading_relativeposition = [[shading_relativeposition_bounds[s.path][0] for s in core.components.find(type='shading',window=w.path)] for w in core.components.find(type='window',zone=zone.path)]
+            Q_sol_max_zone[zone.path] = zone.calculate_solargain(I_direct=I_direct,I_diffuse=I_diffuse,solar_azimuth=solar_azimuth,solar_altitude=solar_altitude,shading_relativeposition=shading_relativeposition)
+            
+            shading_relativeposition = [[shading_relativeposition_bounds[s.path][1] for s in core.components.find(type='shading',window=w.path)] for w in core.components.find(type='window',zone=zone.path)]
             Q_sol_min_zone[zone.path] = zone.calculate_solargain(I_direct=I_direct,I_diffuse=I_diffuse,solar_azimuth=solar_azimuth,solar_altitude=solar_altitude,shading_relativeposition=shading_relativeposition)
+
+            D_vi_min_zone = np.sum( [w.config['cost_visibility']*np.prod([shading_relativeposition_bounds[s.path][0] for s in core.components.find(type='shading',window=w.path)],axis=0) for w in core.components.find(type='window',zone=zone.path)],axis=0)
+            D_vi_max_zone = np.sum( [w.config['cost_visibility']*np.prod([shading_relativeposition_bounds[s.path][1] for s in core.components.find(type='shading',window=w.path)],axis=0) for w in core.components.find(type='window',zone=zone.path)],axis=0)
+            Delta_D_vi_zone[zone.path] = D_vi_max_zone-D_vi_min_zone
+
+
+            # FIXME take schedules into account in min/max shading position dertermination
+            #shading_relativeposition = [[0.0 for s in core.components.find(type='shading',window=w.path)] for w in core.components.find(type='window',zone=zone.path)]
+            #Q_sol_max_zone[zone.path] = zone.calculate_solargain(I_direct=I_direct,I_diffuse=I_diffuse,solar_azimuth=solar_azimuth,solar_altitude=solar_altitude,shading_relativeposition=shading_relativeposition)
+
+            #shading_relativeposition = [[1.0 for s in core.components.find(type='shading',window=w.path)] for w in core.components.find(type='window',zone=zone.path)]
+            #Q_sol_min_zone[zone.path] = zone.calculate_solargain(I_direct=I_direct,I_diffuse=I_diffuse,solar_azimuth=solar_azimuth,solar_altitude=solar_altitude,shading_relativeposition=shading_relativeposition)
 
 
         Q_sol_max = sum(Q for Q in Q_sol_max_zone.values())
         Q_sol_min = sum(Q for Q in Q_sol_min_zone.values())
+        
+        D_vi_Q = [Delta_D/Delta_Q if Delta_Q > 10 else 0 for Delta_D,Delta_Q in zip( sum(D for D in Delta_D_vi_zone.values()), Q_sol_max-Q_sol_min)]
+
+
+        model.building_zones = pyomo.Set(initialize=[zone.path for zone in zones], doc='set of all zones')
+        model.building_zone_Q_sol_min = pyomo.Param(model.building_zones,model.i,initialize=lambda model,z,i:Q_sol_min_zone[z][i],doc='Minimum zone solar gain(W)')
+        model.building_zone_Q_sol_max = pyomo.Param(model.building_zones,model.i,initialize=lambda model,z,i:Q_sol_max_zone[z][i],doc='Maximum zone solar gain(W)')
 
 
 
-        model.building_Q_sol = pyomo.Var(model.i,domain=pyomo.NonNegativeReals,initialize=0,bounds=lambda model,i:(Q_sol_min[i],Q_sol_max[i]))
+        model.building_Q_sol_min = pyomo.Param(model.i,initialize=lambda model,i:Q_sol_min[i],doc='Minimum solar gain (W)')
+        model.building_Q_sol_max = pyomo.Param(model.i,initialize=lambda model,i:Q_sol_max[i],doc='Maximum solar gain (W)')
+        model.building_D_vi_Q = pyomo.Param(model.i,initialize=lambda model,i:D_vi_Q[i],doc='Visual discomfort per heat gain (m2/W)')
+
+        # FIXME minimum temperature bound must be defined through a state and the gui but different bounds can exist for other models
+        model.building_T_liv_min = pyomo.Param(model.i,domain=pyomo.NonNegativeReals,initialize=20.,doc='Minimum temperature (degC)')
+        model.building_T_liv_max = pyomo.Param(model.i,domain=pyomo.NonNegativeReals,initialize=24.,doc='Maximum temperature (degC)')
+
+
+        model.building_Q_sol = pyomo.Var(model.i,domain=pyomo.NonNegativeReals,initialize=0,bounds=lambda model,i:(model.building_Q_sol_min[i],model.building_Q_sol_max[i]))
         model.building_Q_int = pyomo.Var(model.i,domain=pyomo.NonNegativeReals,initialize=0,bounds=lambda model,i:(0,0))
         model.building_Q_hea = pyomo.Var(model.i,domain=pyomo.NonNegativeReals,initialize=0)
 
-        model.building_T_liv = pyomo.Var(model.ip,domain=pyomo.Reals,initialize=20)
+        model.building_T_liv = pyomo.Var(model.ip,domain=pyomo.Reals,initialize=20,doc='Living zone temperature (degC)')
 
         model.building_liv_D_tc = pyomo.Var(model.i,domain=pyomo.NonNegativeReals,initialize=0,doc='Temperature discomfort too cold (K)')
         model.building_liv_D_th = pyomo.Var(model.i,domain=pyomo.NonNegativeReals,initialize=0,doc='Temperature discomfort too hot (K)')
-        model.building_liv_D_vi = pyomo.Var(model.i,domain=pyomo.NonNegativeReals,initialize=0,doc='Visual discomfort (xxx)')
-
-
+        model.building_liv_D_vi = pyomo.Var(model.i,domain=pyomo.NonNegativeReals,initialize=0,doc='Visual discomfort (m2)')
+        
+        
 
     def create_ocp_constraints(self,model):
 
@@ -241,13 +273,13 @@ class Singlezone_1(model.Buildingmodel):
 
         # discomfort
         model.constraint_liv_D_tc = pyomo.Constraint(model.i,
-            rule=lambda model,i: model.building_liv_D_tc[i] >= 20-(0.5*model.building_T_liv[i]+0.5*model.building_T_liv[i+1])  # FIXME minimum temperature bound must be defined through a state and the gui but different bounds can exist for other models
+            rule=lambda model,i: model.building_liv_D_tc[i] >= model.building_T_liv_min[i]-(0.5*model.building_T_liv[i]+0.5*model.building_T_liv[i+1])
         )
         model.constraint_liv_D_th = pyomo.Constraint(model.i,
-            rule=lambda model,i: model.building_liv_D_th[i] >= (0.5*model.building_T_liv[i]+0.5*model.building_T_liv[i+1])-24  # FIXME maximum temperature ...
+            rule=lambda model,i: model.building_liv_D_th[i] >= (0.5*model.building_T_liv[i]+0.5*model.building_T_liv[i+1])-model.building_T_liv_max[i]
         )
         model.constraint_liv_D_vi = pyomo.Constraint(model.i,
-            rule=lambda model,i: model.building_liv_D_vi[i] >= model.building_Q_sol[i].bounds[1]-model.building_Q_sol[i]
+            rule=lambda model,i: model.building_liv_D_vi[i] >= model.building_D_vi_Q[i]*(model.building_Q_sol_max[i]-model.building_Q_sol[i])
         )
 
 
@@ -274,14 +306,16 @@ class Singlezone_1(model.Buildingmodel):
         Q_sol_max = {}
         Q_int_max = {}
         for zone in zones:
-            Q_sol_max[zone] = sum([w.calculate_solargain(shading_relativeposition=[0 for s in core.components.find(type='shading', window=w.path)]) for w in core.components.find(type='window', zone=zone.path) ])
-            Q_int_max[zone] = 1
-
+            Q_sol_max[zone.path] = np.array([pyomo.value(model.building_zone_Q_sol_max[zone.path,i]) for i in model.i])
+            Q_int_max[zone.path] = 1*np.ones(len(model.timestamp))
 
         for zone in zones:
+            Q_sol_max_f = np.array([Q/Q_tot if Q_tot>0 else 1 for Q,Q_tot in zip(Q_sol_max[zone.path],np.sum([Q for Q in Q_sol_max.values()],axis=0))])
+            Q_int_max_f = np.array([Q/Q_tot if Q_tot>0 else 1 for Q,Q_tot in zip(Q_int_max[zone.path],np.sum([Q for Q in Q_int_max.values()],axis=0))])
+            
             zone.states['temperature_program'].value = T_liv_program
-            zone.states['solargain_program'].value = [( val[0], val[1]*Q_sol_max[zone]/sum(Q_sol_max.values()) ) for val in Q_sol_program]
-            zone.states['internalgain_program'].value = [( val[0], val[1]*Q_int_max[zone]/sum(Q_int_max.values()) ) for val in Q_int_program] 
+            zone.states['solargain_program'].value = [( val[0], val[1]*f ) for val,f in zip(Q_sol_program,Q_sol_max_f)]
+            zone.states['internalgain_program'].value = [( val[0], val[1]*f ) for val,f in zip(Q_int_program,Q_int_max_f)]
 
 
         result = {}
@@ -292,8 +326,8 @@ class Singlezone_1(model.Buildingmodel):
         result['Q_hea'] = [float(np.round(pyomo.value(model.building_Q_hea[i]),2)) for i in model.i]
 
         result['Q_sol'] = [float(np.round(pyomo.value(model.building_Q_sol[i]),2)) for i in model.i]
-        result['Q_sol_max'] = [float(np.round(pyomo.value(model.building_Q_sol[i].bounds[1]),2)) for i in model.i]
-        result['Q_sol_min'] = [float(np.round(pyomo.value(model.building_Q_sol[i].bounds[0]),2)) for i in model.i]
+        result['Q_sol_max'] = [float(np.round(pyomo.value(model.building_Q_sol_max[i]),2)) for i in model.i]
+        result['Q_sol_min'] = [float(np.round(pyomo.value(model.building_Q_sol_min[i]),2)) for i in model.i]
 
         result['Q_int'] = [float(np.round(pyomo.value(model.building_Q_int[i]),2)) for i in model.i]
 
