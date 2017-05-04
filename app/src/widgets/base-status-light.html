@@ -15,8 +15,8 @@
             }
         </style>
         
-        <template is="dom-if" if="_usepath">
-            <homecon-web-socket-object id="websocketObject" event="state" path="{{path}}" data="{{value}}"></homecon-web-socket-object>
+        <template is="dom-if" if="{{_usePath(path)}}">
+            <homecon-web-socket-object id="websocketObject" event="state" path="{{path}}" data="{{value}}" send-on-authenticated></homecon-web-socket-object>
         </template>
 
         <img class="icon" src="/images/icon/[[color]]/[[parseIcon(icon)]].png">
@@ -33,7 +33,6 @@
                 value: {
                     type: 'Number',
                     value: 0,
-                    notify: true,
                 },
                 valueThreshold: {
                     type: Number,
@@ -63,7 +62,7 @@
             },
 
             pathChanged: function(path){
-                if(this._usepath()){
+                if(this._usePath(path)){
                     this.$.websocketObject.send();
                 }
             },
@@ -87,13 +86,13 @@
             },
 
             send: function(value){
-                if(this._usepath()){
+                if(this._usePath(this.path)){
                     this.$.websocketObject.send(value);
                 }
             },
 
-            _usepath: function(){
-                return this.path != '';
+            _usePath: function(path){
+                return path != '';
             }
 
         });

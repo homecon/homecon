@@ -45,7 +45,7 @@
         <homecon-web-socket-object id="websocketObject" event="state" path="[[config.path]]/value" data="{{value}}" auto></homecon-web-socket-object>
         
         <paper-button noink class="button horizontal layout start-justified" on-tap="call">
-            <base-status-light class="icon" value="{{value}}" value-threshold="[[_valueThreshold(config.valueOn,config.valueOff)]]" icon="[[config.icon]]" color-on="[[config.colorOn]]"  color-off="[[config.colorOff]]"></base-status-light>
+            <base-status-light class="icon" value="{{value}}" value-threshold="[[_valueThreshold(config.valueOn,config.valueOff)]]" icon="[[config.icon]]" color-on="[[config.colorOn]]" color-off="[[config.colorOff]]"></base-status-light>
             <div class="label">[[config.label]]</div>
         </paper-button>
 
@@ -94,7 +94,6 @@
                 if(this.value > this._valueThreshold(this.config.valueOn,this.config.valueOff)){
                     sendvalue = this.config.valueOff;
                 }
-
                 this.$.websocketObject.send(sendvalue);
             },
 
