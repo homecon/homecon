@@ -24,12 +24,6 @@ def main():
         from . import __install__
 
 
-        # create a user
-        if not '--nouser' in sys.argv:
-            print('\n\n\n'+'#'*80+'\nCreating the Homecon user\n'+'#'*80)
-            __install__.create_user()
-
-
         if not '--nofolders' in sys.argv:
             print('\n\n\n'+'#'*80+'\nCreating the Homecon folders\n'+'#'*80)
             __install__.create_data_folders()
@@ -86,6 +80,8 @@ def main():
         ################################################################################
 
         hc_kwargs = {}
+        app_kwargs = {}
+
         if 'debug' in sys.argv:
             hc_kwargs['loglevel'] = 'debug'
             hc_kwargs['printlog'] = True
@@ -102,19 +98,22 @@ def main():
 
             # clear the demo database
             try:
-                os.remove(os.path.join('/var/lib/homecon/demo_homecon.db'))
+                os.remove(os.path.join(sys.prefix,'lib/homecon/demo_homecon.db'))
             except:
                 pass
             try:
-                os.remove(os.path.join('/var/lib/homecon/demo_homecon_measurements.db'))
+                os.remove(os.path.join(sys.prefix,'lib/homecon/demo_homecon_measurements.db'))
             except:
                 pass
 
+        for arg in sys.argv:
+            if arg.startswith( '--port='):
+                app_kwargs['port'] = int(arg[7:])
+                break
 
-        app_kwargs = {}
         if 'appsrc' in sys.argv:
             app_kwargs['documentroot'] = os.path.abspath(os.path.join(basedir,'..','app'))
-
+        
 
         ################################################################################
         # start the webserver in a different thread

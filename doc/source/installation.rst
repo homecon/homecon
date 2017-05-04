@@ -1,6 +1,14 @@
 Installation
 ============
 
+Dependencies:
+
+* wget
+* gcc
+* g++
+* gfortran
+* patch
+
 
 Create a folder where you want to keep all files
 
@@ -28,5 +36,11 @@ Install homecon
 .. code-block:: bash
 
     pip install homecon
+
+Install additional packages
+
+.. code-block:: bash
+
+    homecon install
 
 

@@ -17,7 +17,7 @@ websocket = None
 
 
 
-def initialize(dbpath='/var/lib/homecon/',dbname='homecon'):
+def initialize(dbpath='{}/lib/homecon/'.format(sys.prefix),dbname='homecon'):
     global db, measurements_db, event, states, components, plugins, websocket
     
     corepackage = 'homecon.core'

@@ -59,21 +59,15 @@ It is probably not desired to set a static ip address on the development machine
 
     setup.py develop
 
-Homecon must be run as the homecon user and it requires some files in the filesystem.
-A homecon user creation and the necessary files and permissions can be handled by the :code:`__install__.py` script:
+HomeCon requires some files in the filesystem.
+The necessary files and optimizers can be handled by the :code:`__install__.py` script.
+Everything is installed in the local environment so multiple instances of HomeCon can be run on the same machine.
 
 .. code-block:: bash
 
     homecon install --nostaticip
 
-If Ipopt or Glpk are allready installed, you can avoid recompiling them using the :code:`--noipopt` and :code:`--noglpk` options respectively.
-
-To run Homecon from a development installation you must create a new shell as the homecon user and reenable the virtualenv:
-
-.. code-block:: bash
-
-    sudo -u homecon bash
-    source env/bin/activate
+If Ipopt, Glpk or Bonmin are allready installed, you can avoid recompiling them using the :code:`--noipopt`, :code:`--noglpk` and :code:`--nobonmin` options respectively.
 
 Finally run Homecon in development and/or demo mode with:
 
@@ -115,11 +109,11 @@ Create a new release using python-git-package:
 
 This will:
 
-    * ask for a new version number
-    * edit the :code:`homecon/__version__.py` file
-    * create a release commit in the current branch
-    * merge the current branch into master
-    * create a git tag with the version number
+* ask for a new version number
+* edit the :code:`homecon/__version__.py` file
+* create a release commit in the current branch
+* merge the current branch into master
+* create a git tag with the version number
 
 Create a source distribution:
 

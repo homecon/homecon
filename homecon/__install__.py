@@ -15,45 +15,29 @@ basedir = os.path.join(os.path.dirname(os.path.abspath(inspect.getfile(inspect.c
 username = 'homecon'
 
 
-################################################################################
-# userdata
-################################################################################
-
-def create_user():
-    res = subprocess.call(['sudo', 'id', '-u', username],stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-
-    if res == 1:
-        password = getpass.getpass('Password:')
-        password2 = getpass.getpass('Repeat password:')
-
-        if password == password2:
-            subprocess.call(['sudo', 'useradd', username ])
-            subprocess.call(['sudo', 'echo', '-e', '"{}\n{}\n"'.format(password,password), '|', 'passwd', username])
-        else:
-            raise Exception('Passwords did not match')
-
-
 def create_data_folders():
 
     # create the data folder
-    subprocess.call(['sudo', 'mkdir', '-p', '/var/lib/homecon'])
-    subprocess.call(['sudo', 'chown', '{}:{}'.format(username,username) , '/var/lib/homecon'])
+    os.mkdir(os.path.join(sys.prefix,'lib/homecon'))
 
     # create the log folder
-    subprocess.call(['sudo', 'mkdir', '-p', '/var/log/homecon'])
-    subprocess.call(['sudo', 'chown', '{}:{}'.format(username,username) , '/var/log/homecon'])
-
-    # create the app folder
-    subprocess.call(['sudo', 'mkdir', '-p', '/var/www/homecon'])
-    subprocess.call(['sudo', 'chown', '{}:{}'.format(username,username) , '/var/www/homecon'])
-    subprocess.call(['sudo', 'chmod', '755' , '/var/www/homecon'])
-
-    # copy the app files
-    subprocess.call(['sudo', 'cp', '{}/homecon/app/build/bundled/*'.format(sys.prefix) , '/var/www/homecon'])
-
+    try:
+        os.mkdir(os.path.join(sys.prefix,'log'))
+    except:
+        pass
+    try:
+        os.mkdir(os.path.join(sys.prefix,'log/homecon'))
+    except:
+        pass
 
 
 def set_static_ip(ip=None):
+    """
+    Notes
+    -----
+    needs superuser privileges
+
+    """
 
     currentdir = os.getcwd()
     os.chdir(basedir)
@@ -131,32 +115,28 @@ def install_glpk():
     currentdir = os.getcwd()
     os.chdir(basedir)
 
-    # get compilation dependencies
-    subprocess.call(['sudo', 'apt-get', '-y', 'install', 'gcc', 'g++', 'gfortran', 'wget'])
-
-
-    installdir = '/usr/local/glpk'
+    installdir = '{}/local/glpk'.format(sys.prefix)
     installver = '4.60'
 
     if not os.path.exists(installdir):
-        subprocess.call(['sudo', 'mkdir', installdir])
-        
+        os.mkdir(installdir)
+
     os.chdir(installdir)
 
     if not os.path.exists('glpk-{}'.format(installver)):
 
         if not os.path.exists('glpk-{}.tar.gz'.format(installver)):
-            subprocess.call(['sudo', 'wget', 'http://ftp.gnu.org/gnu/glpk/glpk-{}.tar.gz'.format(installver)])
+            subprocess.call([ 'wget', 'http://ftp.gnu.org/gnu/glpk/glpk-{}.tar.gz'.format(installver)])
 
-        subprocess.call(['sudo', 'tar', 'xvf', 'glpk-{}.tar.gz'.format(installver)])
+        subprocess.call(['tar', 'xvf', 'glpk-{}.tar.gz'.format(installver)])
     
     os.chdir('glpk-{}'.format(installver))
 
-    subprocess.call(['sudo', './configure'])
-    subprocess.call(['sudo', 'make'])
-    subprocess.call(['sudo', 'make', 'check'])
-    subprocess.call(['sudo', 'make', 'install'])
-    subprocess.call(['sudo', 'ldconfig', '/usr/local/lib'])
+    subprocess.call(['./configure'])
+    subprocess.call(['make'])
+    subprocess.call([ 'make', 'check'])
+    subprocess.call(['make', 'install'])
+    subprocess.call(['ldconfig', '{}/local/lib'.format(sys.prefix)])
 
     os.chdir(currentdir)
 
@@ -170,45 +150,42 @@ def install_ipopt():
     currentdir = os.getcwd()
     os.chdir(basedir)
 
-    # get compilation dependencies
-    subprocess.call(['apt-get', '-y', 'install', 'gcc', 'g++', 'gfortran', 'patch', 'wget'])
-
-    installdir = '/usr/local/ipopt'
+    installdir = '{}/local/ipopt'.format(sys.prefix)
     installver = '3.12.7'
 
     if not os.path.exists(installdir):
-        subprocess.call(['sudo', 'mkdir', installdir])
+        os.mkdir(installdir)
 
     os.chdir(installdir)
 
     if not os.path.exists('Ipopt-{}'.format(installver)):
 
         if not os.path.exists('Ipopt-{}.tgz'.format(installver)):
-            subprocess.call(['sudo', 'wget', 'http://www.coin-or.org/download/source/Ipopt/Ipopt-{}.tgz'.format(installver)])
+            subprocess.call(['wget', 'http://www.coin-or.org/download/source/Ipopt/Ipopt-{}.tgz'.format(installver)])
 
-        subprocess.call(['sudo', 'tar', 'xvf', 'Ipopt-{}.tgz'.format(installver)])
+        subprocess.call(['tar', 'xvf', 'Ipopt-{}.tgz'.format(installver)])
 
     os.chdir('Ipopt-{}'.format(installver))
 
     # get third party packages
     os.chdir('ThirdParty/Blas')
-    subprocess.call(['sudo', './get.Blas'])
+    subprocess.call(['./get.Blas'])
     os.chdir('../..')
 
     os.chdir('ThirdParty/Lapack')
-    subprocess.call(['sudo', './get.Lapack'])
+    subprocess.call(['./get.Lapack'])
     os.chdir('../..')
 
     os.chdir('ThirdParty/ASL')
-    subprocess.call(['sudo', './get.ASL'])
+    subprocess.call(['./get.ASL'])
     os.chdir('../..')
 
     os.chdir('ThirdParty/Mumps')
-    subprocess.call(['sudo', './get.Mumps'])
+    subprocess.call(['./get.Mumps'])
     os.chdir('../..')
 
     os.chdir('ThirdParty/Metis')
-    subprocess.call(['sudo', './get.Metis'])
+    subprocess.call(['./get.Metis'])
     os.chdir('../..')
 
     # compiling ipopt
@@ -217,10 +194,10 @@ def install_ipopt():
 
     os.chdir('build')
 
-    subprocess.call(['sudo', '../configure', '--prefix=/usr/local/', '-C', 'ADD_CFLAGS=-DNO_fpu_control'])
-    subprocess.call(['sudo', 'make'])
-    subprocess.call(['sudo', 'make', 'test'])
-    subprocess.call(['sudo', 'make', 'install'])
+    subprocess.call(['../configure', '--prefix={}/local/'.format(sys.prefix), '-C', 'ADD_CFLAGS=-DNO_fpu_control'])
+    subprocess.call(['make'])
+    subprocess.call(['make', 'test'])
+    subprocess.call(['make', 'install'])
 
     os.chdir(currentdir)
 
@@ -233,14 +210,11 @@ def install_bonmin():
     currentdir = os.getcwd()
     os.chdir(basedir)
 
-    # get compilation dependencies
-    subprocess.call(['sudo', 'apt-get', '-y', 'install', 'gcc', 'g++', 'wget'])
-
-    installdir = '/usr/local/bonmin'
+    installdir = '{}/local/bonmin'.format(sys.prefix)
     installver = '1.8.4'
 
     if not os.path.exists(installdir):
-        subprocess.call(['sudo', 'mkdir', installdir])
+        os.mkdir(installdir)
 
     os.chdir(installdir)
 
@@ -255,23 +229,23 @@ def install_bonmin():
 
     # get third party packages
     os.chdir('ThirdParty/Blas')
-    subprocess.call(['sudo', './get.Blas'])
+    subprocess.call(['./get.Blas'])
     os.chdir('../..')
 
     os.chdir('ThirdParty/Lapack')
-    subprocess.call(['sudo', './get.Lapack'])
+    subprocess.call(['./get.Lapack'])
     os.chdir('../..')
 
     os.chdir('ThirdParty/ASL')
-    subprocess.call(['sudo', './get.ASL'])
+    subprocess.call(['./get.ASL'])
     os.chdir('../..')
 
     os.chdir('ThirdParty/Mumps')
-    subprocess.call(['sudo', './get.Mumps'])
+    subprocess.call(['./get.Mumps'])
     os.chdir('../..')
 
     os.chdir('ThirdParty/Metis')
-    subprocess.call(['sudo', './get.Metis'])
+    subprocess.call(['./get.Metis'])
     os.chdir('../..')
 
     # compiling bonmin
@@ -280,9 +254,9 @@ def install_bonmin():
 
     os.chdir('build')
 
-    subprocess.call(['sudo', '../configure', '--prefix=/usr/local/', '-C'])
-    subprocess.call('sudo', ['make'])
-    subprocess.call(['sudo', 'make', 'test'])
-    subprocess.call(['sudo', 'make', 'install'])
+    subprocess.call(['../configure', '--prefix={}/local/'.format(sys.prefix), '-C'])
+    subprocess.call(['make'])
+    subprocess.call(['make', 'test'])
+    subprocess.call(['make', 'install'])
 
     os.chdir(currentdir)

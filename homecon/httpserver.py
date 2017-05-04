@@ -8,7 +8,7 @@ import threading
 import http.server
 
 
-documentroot = '/var/www/homecon'
+documentroot = os.path.join(sys.prefix,'www','homecon')
 
 
 class HttpRequestHandler(http.server.BaseHTTPRequestHandler):
