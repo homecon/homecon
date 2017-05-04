@@ -37,7 +37,7 @@ class Mpc(core.plugin.Plugin):
         core.states.add('mpc/priceprofiles/ng', value=[(0,0.080)],    config={'datatype': 'list', 'quantity':'', 'unit':''  , 'label':'', 'description':'', 'log': False})
         
 
-        core.states.add('mpc/energy_cost_scale', config={'datatype': 'number', 'quantity':'', 'unit':'EUR/h'      ,'label':'', 'description':'Average energy cost per hour', 'private':True})
+        core.states.add('mpc/energy_cost_scale'                     , value=0.2  , config={'datatype': 'number', 'quantity':'', 'unit':'EUR/h'      ,'label':'', 'description':'Average energy cost per hour', 'private':True})
         
         core.states.add('mpc/relative_cost_discomfort_too_hot'      , value=10.  , config={'datatype': 'number', 'quantity':'', 'unit':'1/K'      ,'label':'', 'description':'A value of 1 means a temperature of 1 K above the setpoint during 1 h costs as much as the energy cost scale', 'private':True})
         core.states.add('mpc/relative_cost_discomfort_too_cold'     , value=11.  , config={'datatype': 'number', 'quantity':'', 'unit':'1/K'      ,'label':'', 'description':'A value of 1 means a temperature of 1 K below the setpoint during 1 h costs as much as the energy cost scale', 'private':True})
@@ -49,7 +49,7 @@ class Mpc(core.plugin.Plugin):
         # schedule cross validation
         optimization_task = asyncio.ensure_future(self.schedule_optimization())
 
-        logging.debug('MPC plugin Initialized')
+        logging.info('MPC plugin Initialized')
 
 
 

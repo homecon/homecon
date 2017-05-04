@@ -635,7 +635,6 @@ class ObjectPlugin(Plugin):
         super(ObjectPlugin,self).__init__()
 
 
-
     def list(self,filter=None):
         """
         redefine if necessary

@@ -14,7 +14,8 @@ from . import building
 
 from .. import core
 from .. import util
-
+from ..plugins import actions
+from ..plugins import schedules
 
 weatherdata = None
 buildingdata = None
@@ -66,6 +67,7 @@ def prepare_database():
     core.states['settings/location/longitude'].set(longitude,async=False)
     core.states['settings/location/elevation'].set(elevation,async=False)
     core.states['settings/location/timezone'].set('Europe/Brussels',async=False)
+
 
 
     ########################################################################
@@ -128,6 +130,22 @@ def prepare_database():
     core.components.add('floorheating_groundfloor', 'heatemissionsystem'  , config={'type':'floorheating', 'zone':'dayzone', 'group':'heatinggroup1'})
 
 
+
+    ########################################################################
+    # Add actions
+    ########################################################################
+    actions.Action('Close shutters',config={},value=[{'event':'state', 'data':'{"path":"bedroom/window_east/shutter/position_min","value":1}','delay':0},{'event':'state', 'data':'{"path":"bedroom/window_north/shutter/position_min","value":1}','delay':0}])
+    actions.Action('Open shutters',config={},value=[{'event':'state', 'data':'{"path":"bedroom/window_east/shutter/position_min","value":0}','delay':0},{'event':'state', 'data':'{"path":"bedroom/window_north/shutter/position_min","value":0}','delay':0}])
+
+
+    ########################################################################
+    # Add schedules
+    ########################################################################
+    schedules.Schedule('_schedule1',config={'filter':'shading'},value={'hour':20,'minute':0,'mon':True,'tue':True,'wed':True,'thu':True,'fri':True,'sat':True,'sun':True,'action':'Close shutters'})
+    schedules.Schedule('_schedule2',config={'filter':'shading'},value={'hour':9,'minute':0,'mon':True,'tue':True,'wed':True,'thu':True,'fri':True,'sat':False,'sun':False,'action':'Open shutters'})
+    schedules.Schedule('_schedule3',config={'filter':'shading'},value={'hour':10,'minute':0,'mon':False,'tue':False,'wed':False,'thu':False,'fri':False,'sat':True,'sun':True,'action':'Open shutters'})
+
+
     ########################################################################
     # Set some initial states
     ########################################################################
@@ -137,6 +155,8 @@ def prepare_database():
     core.states['kitchen/window_south/screen/auto'].value= True
     core.states['bedroom/window_east/shutter/auto'].value= True
     core.states['bedroom/window_north/shutter/auto'].value= True
+
+
 
 
     ########################################################################
@@ -192,6 +212,9 @@ def prepare_database():
     w = pages.add_widget(s['path'],'shading',config={'path':['kitchen/window_south/screen'],'label':'Kitchen south'})
     w = pages.add_widget(s['path'],'shading',config={'path':['bedroom/window_east/shutter'],'label':'Bedroom east'})
     w = pages.add_widget(s['path'],'shading',config={'path':['bedroom/window_north/shutter'],'label':'Bedroom north'})
+
+    s = pages.add_section(p['path'],{'type':'raised'})
+    w = pages.add_widget(s['path'],'alarm',config={'label':'', 'filter':'shading'})
 
     p = pages.add_page(g['path'],{'title':'Heating','icon':'sani_heating'})
     s = pages.add_section(p['path'],{'type':'raised'})

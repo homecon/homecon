@@ -113,7 +113,6 @@ class Schedule(core.state.BaseState):
         if not 'mon' in value:
             value['mon'] = True
         if not 'tue' in value:
-
             value['tue'] = True
         if not 'wed' in value:
             value['wed'] = True
@@ -156,7 +155,7 @@ class Schedules(core.plugin.ObjectPlugin):
         # schedule schedule running
         self._loop.create_task(self.run_schedules())
 
-        logging.debug('Schedules plugin Initialized')
+        logging.info('Schedules plugin Initialized')
         
 
     async def run_schedules(self):
@@ -196,14 +195,14 @@ class Schedules(core.plugin.ObjectPlugin):
 
 
     def listen_add_schedule(self,event):
-
         path = str(uuid.uuid4())
-        obj = self.objectclass(self._objectdict,self._objects_db,path,config=event.data['config'])
+        obj = self.objectclass(path,config=event.data['config'])
 
         if obj:
             core.event.fire('schedule_added',{'schedule':obj})
             filt = obj.config['filter']
             core.websocket.send({'event':'list_schedules', 'path':filt, 'value':self.list(filter=filt)}, clients=[event.client])
+
 
     def listen_delete_schedule(self,event):
 
@@ -221,9 +220,9 @@ class Schedules(core.plugin.ObjectPlugin):
                 logging.error('{} does not exist {}'.format(self.objectname.capitalize(),event.data['path']))
 
 
-
     def listen_schedule_changed(self,event):
         core.websocket.send({'event':'schedule', 'path':event.data['schedule'].path, 'value':event.data['schedule'].value}, readusers=event.data['schedule'].config['readusers'], readgroups=event.data['schedule'].config['readgroups'])
+
 
     def listen_snooze_schedule(self,event):
         logging.warning('snooze schedule is not implemented yet')

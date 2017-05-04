@@ -81,7 +81,7 @@ class Actions(core.plugin.ObjectPlugin):
     objectname = 'action'
 
     def initialize(self):
-        logging.debug('Actions initialized')
+        logging.info('Actions initialized')
 
 
     def listen_run_action(self,event):
