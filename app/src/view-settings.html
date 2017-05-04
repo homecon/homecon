@@ -51,7 +51,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         <homecon-web-socket-sender id="websocket"></homecon-web-socket-sender>
 
         <homecon-page>
-            <homecon-page-header title="Settings" icon="homecon_gears"></homecon-page-header>
+            <homecon-page-header title="Settings" icon="edit_settings"></homecon-page-header>
             
             <homecon-web-socket-object event="list_activeplugins" path="" data="{{activeplugins}}" send-on-authenticated></homecon-web-socket-object>
 
@@ -73,7 +73,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             ],
             
             setPlugins: function(activeplugins){
-                this.plugins = ['location','plugins','components','actions','building','mpc','shading'].concat(activeplugins)
+                this.plugins = ['location','plugins','components','actions','building','mpc'].concat(activeplugins)
             },
 
         });

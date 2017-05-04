@@ -26,13 +26,28 @@
                 font-size: 16px;
                 margin-bottom: 0px;
             }
+            paper-material{
+                margin-bottom: 10px;
+            }
         </style>
 
 
         <paper-material class="vertical layout component">
             <h2>Control program</h2>
             <widget-control-program></widget-control-program>
-        <paper-material>
+        </paper-material>
+
+        <paper-material class="vertical layout component">
+            <h2>Trade-offs</h2>
+            <div>
+                <div class="label">Environment cost</div>
+                <base-slider path="mpc/relative_cost_environment" status-path="" min="0" max="1"></base-slider>
+            </div>
+            <div>
+                <div class="label">Visibility cost</div>
+                <base-slider path="mpc/relative_cost_discomfort_visual" status-path="" min="1e-10" max="1" log></base-slider>
+            </div>
+        </paper-material>
 
     </template>
 

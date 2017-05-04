@@ -10,14 +10,16 @@
                 position: relative;
             }
             .icon{
-                max-width: 26px;
-                max-height: 26px;
+                width: 100%;
+                height: 100%;
             }
         </style>
         
-        <homecon-web-socket-object id="websocketObject" event="state" path="{{path}}" data="{{value}}"></homecon-web-socket-object>
-        
-        <img class="icon" src="/images/icon/[[color]]/[[icon]].png">
+        <template is="dom-if" if="_usepath">
+            <homecon-web-socket-object id="websocketObject" event="state" path="{{path}}" data="{{value}}"></homecon-web-socket-object>
+        </template>
+
+        <img class="icon" src="/images/icon/[[color]]/[[parseIcon(icon)]].png">
 
     </template>
     <script>
@@ -26,18 +28,16 @@
             properties: {
                 path: {
                     type: 'String',
+                    value: '',
                 },
                 value: {
                     type: 'Number',
                     value: 0,
+                    notify: true,
                 },
-                valueOn: {
-                    type: 'Number',
-                    value: 1,
-                },
-                valueOff: {
-                    type: 'Number',
-                    value: 0,
+                valueThreshold: {
+                    type: Number,
+                    value: 0.01,
                 },
                 icon: {
                     type: 'String',
@@ -63,13 +63,13 @@
             },
 
             pathChanged: function(path){
-                if(path != ''){
+                if(this._usepath()){
                     this.$.websocketObject.send();
                 }
             },
 
             valueChanged: function(value){
-                if(value >= this.valueOn){
+                if(value >= this.valueThreshold){
                    this.color = this.colorOn;
                 }
                 else{
@@ -77,9 +77,24 @@
                 }
             },
 
-            send: function(value){
-                this.$.websocketObject.send(value);
+            parseIcon: function(icon){
+                if(icon==''){
+                    return 'blank';
+                }
+                else{
+                    return icon;
+                }
             },
+
+            send: function(value){
+                if(this._usepath()){
+                    this.$.websocketObject.send(value);
+                }
+            },
+
+            _usepath: function(){
+                return this.path != '';
+            }
 
         });
     </script>

@@ -33,6 +33,15 @@ class Dimminglight(Light):
     a class implementing an dimmable light
     
     """
-    pass
+    linked_states = {
+        'value': {
+            'default_config': {},
+            'fixed_config': {},
+        },
+        'value_status': {
+            'default_config': {},
+            'fixed_config': {},
+        },
+    }
 
 core.components.register(Dimminglight)

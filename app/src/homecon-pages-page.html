@@ -27,11 +27,11 @@
                 <homecon-page-header title="[[page.config.title]]" icon="[[page.config.icon]]"></homecon-page-header>
             </template>
 
-            <sortable-js on-update="_updatePageSectionsOrder" disabled="{{!edit}}">
+            <!--<sortable-js on-update="_updatePageSectionsOrder" disabled="{{!edit}}">-->
                 <template is="dom-repeat" id="sections" items="{{page.sections}}" as="sectionPath">
                     <homecon-pages-section path="[[sectionPath]]" edit="[[edit]]" on-delete="deletePageSection"></homecon-pages-section>
                 </template>
-            </sortable-js>
+            <!--</sortable-js>-->
 
             <div class$="vertical layout [[_hiddenClass(edit)]]">
                 <paper-button raised noink="true" on-tap="addSection">add section</paper-button>

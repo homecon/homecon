@@ -42,13 +42,13 @@
         
         <homecon-section type="{{section.config.type}}" title="{{section.config.title}}">
 
-            <sortable-js on-update="_updateWidgetsOrder" disabled="{{!edit}}" class="horizontal layout wrap">
+            <!--<sortable-js on-update="_updateWidgetsOrder" disabled="{{!edit}}" class="horizontal layout wrap">-->
                 <template is="dom-repeat" id="widgets" items="{{section.widgets}}" as="widgetPath">
 
                     <homecon-pages-widget path="{{widgetPath}}" edit="[[edit]]"></homecon-pages-widget>
 
                 </template>
-            </sortable-js>
+            <!--</sortable-js>-->
 
             <div class$="vertical layout [[_hiddenClass(edit)]]">
                 <paper-button raised noink="true" on-tap="addWidgetDialog">add widget</paper-button>
@@ -97,7 +97,7 @@
                 },
                 widgets: {
                     type: 'Array',
-                    value: ['switch','button','status-button','alarm','shading','weather-block','chart','clock','date'],
+                    value: ['switch','dimmer','button','status-button','alarm','shading','weather-block','chart','clock','date'],
                 },
             },
             openEditDialog: function(){

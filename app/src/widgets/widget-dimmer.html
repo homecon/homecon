@@ -11,18 +11,18 @@
 <link rel="import" href="../select-component.html">
 <link rel="import" href="../homecon-icon-select.html">
 
+<link rel="import" href="base-slider.html">
 <link rel="import" href="base-status-light.html">
 
-<dom-module is="widget-switch">
+<dom-module is="widget-dimmer">
     <template>
         <style include="iron-flex iron-flex-alignment">
             :host{
-                display: inline-block;
+                display: block;
                 position: relative;
             }
             .button {
                 text-transform: none;
-                min-width: 250px;
                 padding: 0px;
             }
             .icon{
@@ -41,17 +41,26 @@
             }
         </style>
         
-        <homecon-web-socket-object id="websocketObject" event="state" path="[[config.path]]/value" data="{{value}}" auto></homecon-web-socket-object>
-        
-        <paper-button noink class="button horizontal layout start-justified" on-tap="call">
-            <base-status-light class="icon" value="{{value}}" value-threshold="[[_valueThreshold(config.valueOn,config.valueOff)]]" icon="[[config.icon]]" color-on="[[config.colorOn]]"  color-off="[[config.colorOff]]"></base-status-light>
-            <div class="label">[[config.label]]</div>
-        </paper-button>
+        <div class="horizontal layout">
+            <div>
+                <paper-button noink class="button horizontal layout start-justified" on-tap="call">
+                    <base-status-light class="icon" value="{{value}}" value-threshold="[[_valueThreshold(config.valueOn,config.valueOff)]]" icon="[[config.icon]]" color-on="[[config.colorOn]]"  color-off="[[config.colorOff]]"></base-status-light>
+                </paper-button>
+
+            </div>
+            <div class="flex">
+                <div class="vertical layout center-justified">
+                    <div class="label">{{config.label}}</div>
+                    <base-slider id="slider" path="[[config.path]]/value" status-path="[[config.path]]/value_status" value="{{value}}" min="{{config.valueOff}}" max="{{config.valueOn}}"></base-slider>
+                </div>
+            </div>
+        </div>
 
 
         <div class="edit" hidden="{{!edit}}">
             <paper-icon-button icon="editor:mode-edit" noink="true" on-tap="openEditDialog"></paper-icon-button>
         </div>
+        
         
         <homecon-edit-dialog id="editDialog" on-save="save">
             <template is="dom-if" if="{{edit}}">
@@ -70,11 +79,11 @@
     </template>
     <script>
         Polymer({
-            is: 'widget-switch',
+            is: 'widget-dimmer',
             properties: {
                 config: {
                     type: 'Object',
-                    value: {'label':'new switch','path':'','valueOn':1,'valueOff':0,'colorOn':'f79a1f','colorOff':'ffffff','icon':'light_light'},
+                    value: {'label':'new dimmer','path':'','valueOn':1,'valueOff':0,'colorOn':'f79a1f','colorOff':'ffffff','icon':'light_light'},
                 },
                 edit: {
                     type: 'Boolean',
@@ -82,10 +91,10 @@
                 },
                 classes: {
                     type: 'String',
-                    value: 'halfwidth',
+                    value: 'fullwidth',
                 },
             },
-
+            
             call: function(){
                 var sendvalue = this.config.valueOn;
 
@@ -93,7 +102,9 @@
                     sendvalue = this.config.valueOff;
                 }
 
-                this.$.websocketObject.send(sendvalue);
+                this.value = sendvalue;
+                //this.$.slider.call(this.value);
+                this.$.slider.$.websocketObjectValue.send(this.value)
             },
 
             openEditDialog: function(){
@@ -124,7 +135,7 @@
 
             delete: function(e){
                 e.stopPropagation()
-                this.fire('delete');
+                this.fire('delete')
             },
 
             moveUp: function(){
@@ -132,11 +143,11 @@
             },
 
             moveDown: function(){
-                this.fire('move-down');
+                this.fire('move-down')
             },
 
             _valueThreshold: function(valueOn,valueOff){
-                return 0.5*valueOn + 0.5*valueOff
+                return 0.01*valueOn + 0.99*valueOff
             },
 
         });

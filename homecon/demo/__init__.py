@@ -213,7 +213,7 @@ def prepare_database():
     g = pages.add_group({'title':'First floor'})
     p = pages.add_page(g['path'],{'title':'Bedroom','icon':'scene_sleeping'})
     s = pages.add_section(p['path'],{'type':'raised'})
-    w = pages.add_widget(s['path'],'switch',config={'path':'bedroom/light','label':'Light'})
+    w = pages.add_widget(s['path'],'dimmer',config={'path':'bedroom/light','label':'Light'})
     s = pages.add_section(p['path'],{'type':'raised'})
     w = pages.add_widget(s['path'],'shading',config={'path':['bedroom/window_east/shutter'],'label':'Bedroom east'})
     w = pages.add_widget(s['path'],'shading',config={'path':['bedroom/window_north/shutter'],'label':'Bedroom north'})
@@ -391,6 +391,9 @@ def building_response():
     # update shading
     for shading in core.components.find(type='shading'):
         shading.states['position_status'].value = shading.states['position'].value
+
+    for dimminglight in core.components.find(type='dimminglight'):
+        dimminglight.states['value_status'].value = dimminglight.states['value'].value
 
     logging.debug('updated building response')
 

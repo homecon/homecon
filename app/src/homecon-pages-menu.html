@@ -26,15 +26,15 @@
         
         <homecon-web-socket-sender id="websocket"></homecon-web-socket-sender>
 
-        <sortable-js on-update="_updateSectionsOrder" disabled="{{!edit}}">
+        <!--<sortable-js on-update="_updateSectionsOrder" disabled="{{!edit}}">-->
             <template is="dom-repeat" id="groups" items="{{groups}}" as="group">
                 <homecon-pages-menu-group path="{{group.path}}" config="{{group.config}}" on-change-state="changeState" edit="{{edit}}" on-delete="deleteGroup">
 
-                    <sortable-js on-update="_updatePagesOrder" disabled="{{!edit}}">
+                    <!--<sortable-js on-update="_updatePagesOrder" disabled="{{!edit}}">-->
                         <template is="dom-repeat" id="pages" items="{{group.pages}}" as="page">
                             <homecon-pages-menu-page path="[[page.path]]" config="{{page.config}}" edit="{{edit}}" on-delete="deletePage"></homecon-menu-page>
                         </template>
-                    </sortable-js>
+                    <!--</sortable-js>-->
 
                     <div class$="vertical layout [[_hiddenclass(edit)]]">
                         <paper-button raised noink="true" on-click="addPage">add page</paper-button>
@@ -42,7 +42,7 @@
 
                 </homecon-pages-menu-group>
             </template>
-        </sortable-js>
+        <!--</sortable-js>-->
         
         <div class$="vertical layout [[_hiddenclass(edit)]]">
             <paper-button raised noink="true" on-click="addGroup">add group</paper-button>
