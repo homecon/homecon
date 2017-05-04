@@ -33,33 +33,16 @@ class Mpc(core.plugin.Plugin):
         core.states.add('mpc/power/program_old',       config={'datatype': 'dict', 'quantity':'', 'unit':''  , 'label':'', 'description':'', 'log': False})
         core.states.add('mpc/building/program_old',     config={'datatype': 'dict', 'quantity':'', 'unit':''  , 'label':'', 'description':'', 'log': False})
 
-        core.states.add('mpc/priceprofiles/el', value=[(0,0.220)],    config={'datatype': 'list', 'quantity':'', 'unit':''  , 'label':'', 'description':'', 'log': False})
+        core.states.add('mpc/priceprofiles/el', value=[(25200,0.25),(79200,0.22),(111600,0.25),(165600,0.22),(198000,0.25),(252000,0.22),(284400,0.25),(338400,0.22),(370800,0.25),(424800,0.22)],    config={'datatype': 'list', 'quantity':'', 'unit':''  , 'label':'', 'description':'', 'log': False})
         core.states.add('mpc/priceprofiles/ng', value=[(0,0.080)],    config={'datatype': 'list', 'quantity':'', 'unit':''  , 'label':'', 'description':'', 'log': False})
         
 
         core.states.add('mpc/energy_cost_scale', config={'datatype': 'number', 'quantity':'', 'unit':'EUR/h'      ,'label':'', 'description':'Average energy cost per hour', 'private':True})
         
-        core.states.add('mpc/relative_cost_discomfort_too_hot'      , config={'datatype': 'number', 'quantity':'', 'unit':'1/K'      ,'label':'', 'description':'A value of 1 means a temperature of 1 K above the setpoint during 1 h costs as much as the energy cost scale', 'private':True})
-        core.states.add('mpc/relative_cost_discomfort_too_cold'     , config={'datatype': 'number', 'quantity':'', 'unit':'1/K'      ,'label':'', 'description':'A value of 1 means a temperature of 1 K below the setpoint during 1 h costs as much as the energy cost scale', 'private':True})
-        core.states.add('mpc/relative_cost_discomfort_air_quality'  , config={'datatype': 'number', 'quantity':'', 'unit':'1/m2'      ,'label':'', 'description':'A value of 1 means 1 m2 of lost visibility during 1 h costs as much as the energy cost scale', 'private':True})
-        core.states.add('mpc/relative_cost_discomfort_visual'       , config={'datatype': 'number', 'quantity':'', 'unit':'1/m2'      ,'label':'', 'description':'A value of 1 means 1 m2 of lost visibility during 1 h costs as much as the energy cost scale', 'private':True})
-
-
-        # set default values
-        if core.states['mpc/energy_cost_scale'].value is None:
-            core.states['mpc/energy_cost_scale'].value = 1.
-
-        if core.states['mpc/relative_cost_discomfort_too_hot'].value is None:
-            core.states['mpc/relative_cost_discomfort_too_hot'].value = 11.
-
-        if core.states['mpc/relative_cost_discomfort_too_cold'].value is None:
-            core.states['mpc/relative_cost_discomfort_too_cold'].value = 10.
-
-        if core.states['mpc/relative_cost_discomfort_air_quality'].value is None:
-            core.states['mpc/relative_cost_discomfort_air_quality'].value = 0.
-
-        if core.states['mpc/relative_cost_discomfort_visual'].value is None:
-            core.states['mpc/relative_cost_discomfort_visual'].value = 0.01
+        core.states.add('mpc/relative_cost_discomfort_too_hot'      , value=10.  , config={'datatype': 'number', 'quantity':'', 'unit':'1/K'      ,'label':'', 'description':'A value of 1 means a temperature of 1 K above the setpoint during 1 h costs as much as the energy cost scale', 'private':True})
+        core.states.add('mpc/relative_cost_discomfort_too_cold'     , value=11.  , config={'datatype': 'number', 'quantity':'', 'unit':'1/K'      ,'label':'', 'description':'A value of 1 means a temperature of 1 K below the setpoint during 1 h costs as much as the energy cost scale', 'private':True})
+        core.states.add('mpc/relative_cost_discomfort_air_quality'  , value=0.   , config={'datatype': 'number', 'quantity':'', 'unit':'1/m2'      ,'label':'', 'description':'A value of 1 means 1 m2 of lost visibility during 1 h costs as much as the energy cost scale', 'private':True})
+        core.states.add('mpc/relative_cost_discomfort_visual'       , value=1e-6 , config={'datatype': 'number', 'quantity':'', 'unit':'1/m2'      ,'label':'', 'description':'A value of 1 means 1 m2 of lost visibility during 1 h costs as much as the energy cost scale', 'private':True})
 
 
 
@@ -113,8 +96,8 @@ class Mpc(core.plugin.Plugin):
 
             timestamps_of_the_week = [util.time.timestamp_of_the_week(ts) for ts in timestamps]
 
-            P_el_p = util.interp.zoh(timestamps_of_the_week,[val[0] for val in core.states['mpc/priceprofiles/el'].value],[val[1] for val in core.states['mpc/priceprofiles/el'].value])
-            P_ng_p = util.interp.zoh(timestamps_of_the_week,[val[0] for val in core.states['mpc/priceprofiles/ng'].value],[val[1] for val in core.states['mpc/priceprofiles/ng'].value])
+            P_el_p = util.interp.zoh(timestamps_of_the_week,[val[0] for val in core.states['mpc/priceprofiles/el'].value],[val[1] for val in core.states['mpc/priceprofiles/el'].value],period=7*24*3600)
+            P_ng_p = util.interp.zoh(timestamps_of_the_week,[val[0] for val in core.states['mpc/priceprofiles/ng'].value],[val[1] for val in core.states['mpc/priceprofiles/ng'].value],period=7*24*3600)
 
 
             # Discomfort costs

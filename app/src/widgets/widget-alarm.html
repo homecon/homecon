@@ -77,7 +77,8 @@
     </template>
     <script>
         Polymer({
-            is: 'homecon-widget-alarm',
+            is: 'widget-alarm',
+            behaviors: [widgetBehavior],
             properties: {
                 config: {
                     type: 'Object',

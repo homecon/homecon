@@ -10,6 +10,7 @@
 <link rel="import" href="../homecon-edit-dialog.html">
 <link rel="import" href="../homecon-section.html">
 <link rel="import" href="../widgets/widget-control-program.html">
+<link rel="import" href="../widgets/widget-profile.html">
 
 <dom-module id="mpc-settings">
 
@@ -38,6 +39,12 @@
         </paper-material>
 
         <paper-material class="vertical layout component">
+            <h2>Profiles</h2>
+            <widget-profile config="{{elConfig}}"></widget-profile>
+            <widget-profile config="{{ngConfig}}"></widget-profile>
+        </paper-material>
+
+        <paper-material class="vertical layout component">
             <h2>Trade-offs</h2>
             <div>
                 <div class="label">Environment cost</div>
@@ -57,6 +64,10 @@
 
             properties: {
             },
+            ready: function(){
+                this.elConfig={"label":"Electricity price", "path":"mpc/priceprofiles/el", "period":"604800"};
+                this.ngConfig={"label":"Natural gas price", "path":"mpc/priceprofiles/ng", "period":"604800"};
+            }
 
         });
     </script>

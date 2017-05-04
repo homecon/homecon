@@ -11,6 +11,7 @@
 <link rel="import" href="../select-component.html">
 <link rel="import" href="../homecon-icon-select.html">
 
+<link rel="import" href="widget-behavior.html">
 <link rel="import" href="base-status-light.html">
 
 <dom-module is="widget-switch">
@@ -71,6 +72,7 @@
     <script>
         Polymer({
             is: 'widget-switch',
+            behaviors: [widgetBehavior],
             properties: {
                 config: {
                     type: 'Object',
@@ -120,19 +122,6 @@
                     'colorOn':this.newColorOn,
                     'colorOff':this.newColorOff,
                 });
-            },
-
-            delete: function(e){
-                e.stopPropagation()
-                this.fire('delete');
-            },
-
-            moveUp: function(){
-                this.fire('move-up')
-            },
-
-            moveDown: function(){
-                this.fire('move-down');
             },
 
             _valueThreshold: function(valueOn,valueOff){

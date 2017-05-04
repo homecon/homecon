@@ -9,6 +9,8 @@
 
 <link rel="import" href="../homecon-web-socket-object.html">
 <link rel="import" href="../homecon-edit-dialog.html">
+
+<link rel="import" href="widget-behavior.html">
 <link rel="import" href="highcharts-behavior.html">
 
 
@@ -35,11 +37,16 @@
         <div id="containerHeat" class="chart"></div>
         <div id="containerPower" class="chart"></div>
 
+        <homecon-edit-dialog id="editDialog" on-save="save">
+            <paper-button on-tap="delete">Delete</paper-button>
+        </homecon-edit-dialog>
+
+
     </template>
     <script>
         Polymer({
             is: 'widget-control-program',
-            behaviors: [highchartsBehavior],
+            behaviors: [widgetBehavior, highchartsBehavior],
             properties: {
                 config: {
                     type: 'Object',
@@ -152,7 +159,7 @@
                     series.update({name:key}, false);
                 }
                 
-                series.setData(seriesdata, false)
+                series.setData(seriesdata, false);
 
             },
 

@@ -1,0 +1,18 @@
+<script>
+    widgetBehavior = {
+
+        delete: function(e){
+            e.stopPropagation()
+            this.fire('delete');
+        },
+
+        moveUp: function(){
+            this.fire('move-up')
+        },
+
+        moveDown: function(){
+            this.fire('move-down');
+        },
+
+    };
+</script>
