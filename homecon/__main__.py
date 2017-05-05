@@ -58,19 +58,23 @@ def main():
             print('\n\n\n'+'#'*80+'\nPatching the pytuilib\n'+'#'*80)
             __install__.patch_pyutilib()
 
+        # install bonmin
+        if not '--nobonmin' in sys.argv:
+            if not __install__.solver_available('bonmin'):
+                print('\n\n\n'+'#'*80+'\nInstalling BONMIN\n'+'#'*80)
+                __install__.install_bonmin()
 
         # install ipopt
         if not '--noipopt' in sys.argv:
-            if not install.solver_available('ipopt'):
+            if not __install__.solver_available('ipopt'):
                 print('\n\n\n'+'#'*80+'\nInstalling IPOPT\n'+'#'*80)
                 __install__.install_ipopt()
 
-
         # install glpk
         if not '--noglpk' in sys.argv:    
-            if not install.solver_available('glpk'):
+            if not __install__.solver_available('glpk'):
                 print('\n\n\n'+'#'*80+'\nInstalling GLPK\n'+'#'*80)
-                __install__.install_ipopt()
+                __install__.install_glpk()
 
 
 

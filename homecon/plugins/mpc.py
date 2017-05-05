@@ -182,17 +182,11 @@ class Mpc(core.plugin.Plugin):
 
 
             # solve
-            try:
-                solver = pyomo.SolverFactory('glpk')
-                #util.executor.run_in_executor(solver.solve,model,tee=True)
-                results = solver.solve(model, tee=True)  # FIXME should be done in a separate thread to not stop the event loop
-                logging.debug('OCP solved using GLPK')
-
-            except:
-                # the proble mis not linear
-                solver = pyomo.SolverFactory('ipopt')
-                results = solver.solve(model, tee=True)
-                logging.debug('OCP solved using IPOPT')
+            # the problem contains integers
+            solver = pyomo.SolverFactory('bonmin')  # FIXME should be done in a separate thread to not stop the event loop
+            #util.executor.run_in_executor(solver.solve,model,tee=True)
+            results = solver.solve(model, tee=True)
+            logging.debug('OCP solved using BONMIN')
 
 
             # pass control program to plugins

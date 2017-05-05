@@ -18,15 +18,14 @@ username = 'homecon'
 def create_data_folders():
 
     # create the data folder
-    os.mkdir(os.path.join(sys.prefix,'lib/homecon'))
+    try:
+        os.makedirs(os.path.join(sys.prefix,'lib/homecon'))
+    except:
+        pass
 
     # create the log folder
     try:
-        os.mkdir(os.path.join(sys.prefix,'log'))
-    except:
-        pass
-    try:
-        os.mkdir(os.path.join(sys.prefix,'log/homecon'))
+        os.makedirs(os.path.join(sys.prefix,'log/homecon'))
     except:
         pass
 
@@ -115,11 +114,12 @@ def install_glpk():
     currentdir = os.getcwd()
     os.chdir(basedir)
 
+
     installdir = '{}/local/glpk'.format(sys.prefix)
     installver = '4.60'
 
     if not os.path.exists(installdir):
-        os.mkdir(installdir)
+        os.makedirs(installdir)
 
     os.chdir(installdir)
 
@@ -136,7 +136,7 @@ def install_glpk():
     subprocess.call(['make'])
     subprocess.call([ 'make', 'check'])
     subprocess.call(['make', 'install'])
-    subprocess.call(['ldconfig', '{}/local/lib'.format(sys.prefix)])
+    subprocess.call(['ldconfig', '{}'.format(sys.prefix)])
 
     os.chdir(currentdir)
 
@@ -154,7 +154,7 @@ def install_ipopt():
     installver = '3.12.7'
 
     if not os.path.exists(installdir):
-        os.mkdir(installdir)
+        os.makedirs(installdir)
 
     os.chdir(installdir)
 
@@ -194,7 +194,7 @@ def install_ipopt():
 
     os.chdir('build')
 
-    subprocess.call(['../configure', '--prefix={}/local/'.format(sys.prefix), '-C', 'ADD_CFLAGS=-DNO_fpu_control'])
+    subprocess.call(['../configure', '--prefix={}'.format(sys.prefix), '-C', 'ADD_CFLAGS=-DNO_fpu_control'])
     subprocess.call(['make'])
     subprocess.call(['make', 'test'])
     subprocess.call(['make', 'install'])
@@ -214,7 +214,7 @@ def install_bonmin():
     installver = '1.8.4'
 
     if not os.path.exists(installdir):
-        os.mkdir(installdir)
+        os.makedirs(installdir)
 
     os.chdir(installdir)
 
@@ -254,7 +254,7 @@ def install_bonmin():
 
     os.chdir('build')
 
-    subprocess.call(['../configure', '--prefix={}/local/'.format(sys.prefix), '-C'])
+    subprocess.call(['../configure', '--prefix={}'.format(sys.prefix), '-C'])
     subprocess.call(['make'])
     subprocess.call(['make', 'test'])
     subprocess.call(['make', 'install'])
