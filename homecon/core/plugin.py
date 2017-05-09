@@ -6,7 +6,7 @@ import asyncio
 import os
 import sys
 import uuid
-
+import pip
 
 from concurrent.futures import ThreadPoolExecutor
 
@@ -35,6 +35,7 @@ class Plugins(object):
         # objects for all plugins
         self._db_plugins = database.Table(database.db,'plugins',[
             {'name':'name',   'type':'char(255)', 'null': '', 'default':'', 'unique':'UNIQUE'},
+            {'name':'package','type':'char(255)', 'null': '', 'default':'', 'unique':''},
             {'name':'core',   'type':'int',  'null': '',  'default':'0',  'unique':''},
             {'name':'active', 'type':'int',  'null': '',  'default':'0',  'unique':''},
         ]) 
@@ -47,48 +48,43 @@ class Plugins(object):
             _list.append(db_entry['name'])
 
         if not 'states' in _list:
-            self._db_plugins.POST(name='states',core=1,active=1)
+            self._db_plugins.POST(name='states',core=1,active=1,package='homecon.plugins')
         if not 'components' in _list:
-            self._db_plugins.POST(name='components',core=1,active=1)
+            self._db_plugins.POST(name='components',core=1,active=1,package='homecon.plugins')
         if not 'plugins' in _list:
-            self._db_plugins.POST(name='plugins',core=1,active=1)
+            self._db_plugins.POST(name='plugins',core=1,active=1,package='homecon.plugins')
         if not 'authentication' in _list:
-            self._db_plugins.POST(name='authentication',core=1,active=1)
+            self._db_plugins.POST(name='authentication',core=1,active=1,package='homecon.plugins')
         if not 'pages' in _list:
-            self._db_plugins.POST(name='pages',core=1,active=1)
+            self._db_plugins.POST(name='pages',core=1,active=1,package='homecon.plugins')
         if not 'schedules' in _list:
-            self._db_plugins.POST(name='schedules',core=1,active=1)
+            self._db_plugins.POST(name='schedules',core=1,active=1,package='homecon.plugins')
         if not 'actions' in _list:
-            self._db_plugins.POST(name='actions',core=1,active=1)
+            self._db_plugins.POST(name='actions',core=1,active=1,package='homecon.plugins')
         if not 'measurements' in _list:
-            self._db_plugins.POST(name='measurements',core=1,active=1)
+            self._db_plugins.POST(name='measurements',core=1,active=1,package='homecon.plugins')
         if not 'weather' in _list:
-            self._db_plugins.POST(name='weather',core=1,active=1)
+            self._db_plugins.POST(name='weather',core=1,active=1,package='homecon.plugins')
         if not 'building' in _list:
-            self._db_plugins.POST(name='building',core=1,active=1)
+            self._db_plugins.POST(name='building',core=1,active=1,package='homecon.plugins')
         if not 'mpc' in _list:
-            self._db_plugins.POST(name='mpc',core=1,active=1)
+            self._db_plugins.POST(name='mpc',core=1,active=1,package='homecon.plugins')
         if not 'shading' in _list:
-            self._db_plugins.POST(name='shading',core=1,active=1)
+            self._db_plugins.POST(name='shading',core=1,active=1,package='homecon.plugins')
 
 
         # check the included plugins
         if not 'knx' in _list:
-            self._db_plugins.POST(name='knx',core=0,active=0)
+            self._db_plugins.POST(name='knx',core=0,active=0,package='homecon.plugins')
         if not 'darksky' in _list:
-            self._db_plugins.POST(name='darksky',core=0,active=0)
+            self._db_plugins.POST(name='darksky',core=0,active=0,package='homecon.plugins')
 
 
         # list all plugins
         result = self._db_plugins.GET()
         for db_entry in result:
-            self._availableplugins[db_entry['name']] = {'name':db_entry['name'],'core':db_entry['core'] == 1,'active':db_entry['active'] == 1}
+            self._availableplugins[db_entry['name']] = {'name':db_entry['name'],'id':db_entry['id'],'core':db_entry['core'] == 1,'package':db_entry['package'],'active':db_entry['active'] == 1}
 
-
-
-        #path = os.path.join( os.path.dirname(os.path.realpath(__file__)) ,'..',self.pluginfolder)
-        #self._availableplugins = [name for name in os.listdir(path) if os.path.isdir(os.path.join(path,name)) and not name=='__pycache__' ]
-        
 
     def start_import(self):
         """
@@ -100,12 +96,12 @@ class Plugins(object):
         # import all active plugins
         classlist = []
 
-        for plugin in self._availableplugins.values():
+        # sorted pluginlist respect the loading/installation order
+        _availableplugins = sorted(self._availableplugins.values(),key=lambda x:x['id'])
+
+        for plugin in _availableplugins:
             if plugin['active']:
-                if plugin['core']:
-                    classlist.append( self._import(plugin['name']) )
-                else:
-                    classlist.append( self._import(plugin['name']) )
+                classlist.append( self._import(plugin['name'],package=plugin['package']) )
 
         self._classlist = classlist
 
@@ -119,20 +115,54 @@ class Plugins(object):
         self._classlist = []
 
 
-    def download(self,url):
+    def install(self,url):
         """
         Download a plugin from a url
 
         """
 
-        # download the zip file and unzip to a temp dir
+        try:
+            os.mkdir(os.path.join(sys.prefix,'downloads'))
+        except:
+            pass
 
-        # check the contents
 
-        # move files to the correct folders
+        # download the package zip
+        fname = os.path.split(url)[-1].split('#')[0]
 
-        # add the plugin to the database and available plugins list
+        r = requests.get(url, stream=True)
+        if r.status_code == 200:
+            with open(os.path.join(sys.prefix,'downloads',fname), 'wb') as f:
+                r.raw.decode_content = True
+                shutil.copyfileobj(r.raw, f) 
 
+                # install using pip
+                pip.main(['install', os.path.join(sys.prefix,'downloads',fname)])
+
+                # add the plugin to the database and available plugins list
+                pluginname = fname.split('-')[0]
+                self._db_plugins.POST(name=pluginname,core=0,active=0,package='')
+
+                result = self._db_plugins.GET(name=pluginname)
+                for db_entry in result:
+                    self._availableplugins[db_entry['name']] = {'name':db_entry['name'],'id':db_entry['id'],'core':db_entry['core'] == 1,'package':db_entry['package'],'active':db_entry['active'] == 1}
+
+
+                return True
+
+        return False
+
+
+    def uninstall(self,name):
+        """
+        delete a plugin from the availableplugins list and the hard disk 
+
+        Parameters
+        ----------
+        name: string
+            The module name of the plugin
+
+        """
         return False
 
 
@@ -146,9 +176,11 @@ class Plugins(object):
             The module name of the plugin
 
         """
-
-        cls = self._import(name)
-        self._activate(cls)
+        # check if the name is in the available plugins
+        if name in self._availableplugins:
+    
+            cls = self._import(name,package=self._availableplugins[name]['package'])
+            self._activate(cls)
 
 
     def deactivate(self,name):
@@ -178,19 +210,6 @@ class Plugins(object):
 
         else:
             return False
-
-
-    def delete(self,name):
-        """
-        delete a plugin from the availableplugins list and the hard disk 
-
-        Parameters
-        ----------
-        name: string
-            The module name of the plugin
-
-        """
-        return False
 
 
     def read_info(self,name):
@@ -246,11 +265,10 @@ class Plugins(object):
 
         """
 
-        if package is None:
-            package = self.pluginfolder
-
-        pluginmodule = __import__('homecon.{}.{}'.format(package,name), fromlist=[name])
-        
+        if package is None or package == '':
+            pluginmodule = __import__(name, fromlist=[name])
+        else:
+            pluginmodule = __import__('{}.{}'.format(package,name), fromlist=[name])
 
         pluginclass = None
         pluginclassname = name.capitalize()

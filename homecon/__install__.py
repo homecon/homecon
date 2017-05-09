@@ -254,7 +254,7 @@ def install_bonmin():
 
     os.chdir('build')
 
-    subprocess.call(['../configure', '--prefix={}'.format(sys.prefix), '-C'])
+    subprocess.call(['../configure', '--prefix={}'.format(sys.prefix), '-C', 'ADD_CFLAGS=-DNO_fpu_control'])
     subprocess.call(['make'])
     subprocess.call(['make', 'test'])
     subprocess.call(['make', 'install'])

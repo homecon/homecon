@@ -113,7 +113,12 @@ class Plugins(core.plugin.Plugin):
         else:
             return False
 
-    
+
+    def install(self,url):
+        logging.debug('installing plugin from'.format(url))
+        return core.plugins.install(url)
+
+
 
     def listen_list_optionalplugins(self,event):
         core.websocket.send({'event':'list_optionalplugins', 'path':'', 'value':self.get_optionalplugins_list()}, clients=[event.client])
@@ -126,7 +131,7 @@ class Plugins(core.plugin.Plugin):
 
     def listen_activate_plugin(self,event):
         self.activate(event.data['plugin'])
-        core.websocket.send({'event':'list_optionalplugins', 'path':'', 'value':self.get_optionalplugins_list()}, clients=[event.client])
+        core.websocket.send({'event':'list_optionalplugins', 'path':'', 'value':self.get_optionalplugins_list()}, clients=[event.client]) # FIXME should all clients be notified of plugin changes?
         core.websocket.send({'event':'list_activeplugins', 'path':'', 'value':self.get_activeplugins_list()}, clients=[event.client])
 
     def listen_deactivate_plugin(self,event):
@@ -134,8 +139,8 @@ class Plugins(core.plugin.Plugin):
         core.websocket.send({'event':'list_optionalplugins', 'path':'', 'value':self.get_optionalplugins_list()}, clients=[event.client])
         core.websocket.send({'event':'list_activeplugins', 'path':'', 'value':self.get_activeplugins_list()}, clients=[event.client])
 
-    def listen_download_plugin(self,event):
-        if self.download(event.data['url']):
+    def listen_install_plugin(self,event):
+        if self.install(event.data['url']):
             core.websocket.send({'event':'list_optionalplugins', 'path':'', 'value':self.get_optionalplugins_list()}, clients=[event.client])
-
+            core.websocket.send({'event':'list_activeplugins', 'path':'', 'value':self.get_optionalplugins_list()}, clients=[event.client])
 

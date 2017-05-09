@@ -25,7 +25,7 @@ def main():
 
 
         if not '--nofolders' in sys.argv:
-            print('\n\n\n'+'#'*80+'\nCreating the Homecon folders\n'+'#'*80)
+            print('### Creating the Homecon folders')
             __install__.create_data_folders()
 
 
@@ -36,16 +36,18 @@ def main():
             for arg in sys.argv:
                 if arg.startswith( '--ip='):
                     ip = arg[5:]
-                    print('\n\n\n'+'#'*80+'\nSetting static ip address\n'+'#'*80)
-                    __install__.set_static_ip(ip)
+                    print('### Setting static ip address')
+                    print('requires sudo and is not implemented')
+                    #__install__.set_static_ip(ip)
                     break
 
             if not setip:
                 # use dialogs
                 setip = input('Do you want to set a static ip address (yes): ')
                 if setip in ['','yes','y']:
-                    print('\n\n\n'+'#'*80+'\nSetting static ip address\n'+'#'*80)
-                    __install__.set_static_ip()
+                    print('### Setting static ip address')
+                    print('requires sudo and is not implemented')
+                    #__install__.set_static_ip()
 
                 elif setip in ['no','n']:
                     pass
@@ -55,26 +57,27 @@ def main():
 
         # patch pyutilib
         if not '--nopatchpyutilib' in sys.argv:
-            print('\n\n\n'+'#'*80+'\nPatching the pytuilib\n'+'#'*80)
+            print('### Patching the pytuilib')
             __install__.patch_pyutilib()
 
         # install bonmin
         if not '--nobonmin' in sys.argv:
             if not __install__.solver_available('bonmin'):
-                print('\n\n\n'+'#'*80+'\nInstalling BONMIN\n'+'#'*80)
+                print('### Installing BONMIN')
                 __install__.install_bonmin()
 
         # install ipopt
         if not '--noipopt' in sys.argv:
             if not __install__.solver_available('ipopt'):
-                print('\n\n\n'+'#'*80+'\nInstalling IPOPT\n'+'#'*80)
+                print('### Installing IPOPT')
                 __install__.install_ipopt()
 
         # install glpk
-        if not '--noglpk' in sys.argv:    
+        if not '--noglpk' in sys.argv:
             if not __install__.solver_available('glpk'):
-                print('\n\n\n'+'#'*80+'\nInstalling GLPK\n'+'#'*80)
-                __install__.install_glpk()
+                print('### Installing GLPK')
+                print('installation does not work locally yet and is omitted')
+                #__install__.install_glpk()
 
 
 
