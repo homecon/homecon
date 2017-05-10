@@ -31,7 +31,7 @@ setup(
     author_email='brecht.baeten@gmail.com',
     packages=find_packages(),
     data_files=[(os.path.join('www','homecon','/'.join(d.split('/')[3:])), [os.path.join(d,f) for f in files]) for d, folders, files in os.walk('app/build/unbundled')],
-    install_requires=['pytz','ephem','passlib','PyJWT','asyncws','aiohttp','numpy','pyomo'],
+    install_requires=['pytz','ephem','passlib','PyJWT','asyncws','aiohttp','numpy','pyomo','knxpy'],
     classifiers=['Programming Language :: Python :: 3.5'],
     entry_points={'console_scripts': [
         'homecon=homecon.__main__:main',
