@@ -17,16 +17,16 @@ def main():
 
     """
 
-    if 'install' in sys.argv:
+    if 'configure' in sys.argv:
         ################################################################################
         # Install non python dependencies
         ################################################################################
-        from . import __install__
+        from . import configure
 
 
         if not '--nofolders' in sys.argv:
             print('### Creating the Homecon folders')
-            __install__.create_data_folders()
+            configure.create_data_folders()
 
 
         # set a static ip address
@@ -37,8 +37,7 @@ def main():
                 if arg.startswith( '--ip='):
                     ip = arg[5:]
                     print('### Setting static ip address')
-                    print('requires sudo and is not implemented')
-                    #__install__.set_static_ip(ip)
+                    configure.set_static_ip(ip)
                     break
 
             if not setip:
@@ -46,8 +45,7 @@ def main():
                 setip = input('Do you want to set a static ip address (yes): ')
                 if setip in ['','yes','y']:
                     print('### Setting static ip address')
-                    print('requires sudo and is not implemented')
-                    #__install__.set_static_ip()
+                    configure.set_static_ip()
 
                 elif setip in ['no','n']:
                     pass
@@ -55,29 +53,39 @@ def main():
                     raise Exception('{} is not a valid answer, yes/y/no/n'.format(setip))
 
 
+        if not '--noinitscript' in sys.argv:
+            scriptname='homecon'
+            for arg in sys.argv:
+                if arg.startswith( '--initscriptname='):
+                    scriptname = arg[17:]
+                    break
+
+            configure.set_init_script(scriptname=scriptname)
+
+
         # patch pyutilib
         if not '--nopatchpyutilib' in sys.argv:
             print('### Patching the pytuilib')
-            __install__.patch_pyutilib()
+            configure.patch_pyutilib()
 
         # install bonmin
         if not '--nobonmin' in sys.argv:
-            if not __install__.solver_available('bonmin'):
+            if not configure.solver_available('bonmin'):
                 print('### Installing BONMIN')
-                __install__.install_bonmin()
+                configure.install_bonmin()
 
         # install ipopt
         if not '--noipopt' in sys.argv:
-            if not __install__.solver_available('ipopt'):
+            if not configure.solver_available('ipopt'):
                 print('### Installing IPOPT')
-                __install__.install_ipopt()
+                configure.install_ipopt()
 
         # install glpk
         if not '--noglpk' in sys.argv:
-            if not __install__.solver_available('glpk'):
+            if not configure.solver_available('glpk'):
                 print('### Installing GLPK')
                 print('installation does not work locally yet and is omitted')
-                #__install__.install_glpk()
+                #configure.install_glpk()
 
 
 

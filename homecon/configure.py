@@ -23,6 +23,12 @@ def create_data_folders():
     except:
         pass
 
+    # create a temp folder
+    try:
+        os.makedirs(os.path.join(sys.prefix,'var/tmp/homecon'))
+    except:
+        pass
+
     # create the log folder
     try:
         os.makedirs(os.path.join(sys.prefix,'log/homecon'))
@@ -38,9 +44,6 @@ def set_static_ip(ip=None):
 
     """
 
-    currentdir = os.getcwd()
-    os.chdir(basedir)
-
     if ip is None:
         rawip = input('Enter the desired static ip address (192.168.1.234): ')
         if rawip == '':
@@ -53,16 +56,28 @@ def set_static_ip(ip=None):
     if not len(splitip) ==4:
         raise Exception('{} is not a valid ip address'.format(ip))
 
-    with open('/etc/network/interfaces','w') as f:
-        f.write('auto lo\n')
-        f.write('iface lo inet loopback\n\n')
-        f.write('auto eth0\n')
-        f.write('iface eth0 inet static\n')
-        f.write('address {}\n'.format(ip))
-        f.write('gateway {}.{}.1.1\n'.format(splitip[0],splitip[1]))
-        f.write('netmask 255.255.255.0\n')
 
-    os.chdir(currentdir)
+    with open(os.path.join(sys.prefix,'var','tmp','homecon','network_template'),'r') as f:
+        content = f.read()
+
+        with open(os.path.join(sys.prefix,'var','tmp','homecon','interfaces'),'w') as fw:
+            fw.write(content.format(ip=ip,ip0=splitip[0],ip1=splitip[1]))
+
+    
+    subprocess.call(['sudo', 'mv', os.path.join(sys.prefix,'var','tmp','homecon','interfaces'), '/etc/network/interfaces'])
+
+
+def set_init_script(scriptname='homecon'):
+    with open(os.path.join(sys.prefix,'var','tmp','homecon','init_template'),'r') as f:
+        content = f.read()
+
+        with open(os.path.join(sys.prefix,'var','tmp','homecon',scriptname),'w') as fw:
+            fw.write(content.format(env=os.path.join(sys.prefix,'bin')))
+
+    subprocess.call(['sudo', 'mv', os.path.join(sys.prefix,'var','tmp','homecon',scriptname), os.path.join('/etc/init.d',scriptname)])
+    subprocess.call(['sudo', 'chmod', '755', os.path.join('/etc/init.d',scriptname)])
+    subprocess.call(['sudo', 'chown', 'root:root', os.path.join('/etc/init.d',scriptname)])
+    subprocess.call(['sudo', 'update-rc.d', scriptname, 'enable'])
 
 
 def patch_pyutilib():

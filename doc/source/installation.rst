@@ -32,17 +32,17 @@ Activate the virtual environment with:
     source env/bin/activate
 
 
-Install homecon
+Install HomeCon
 
 .. code-block:: bash
 
     pip install homecon
 
-Install additional packages
+Configure HomeCon and install additional packages
 
 .. code-block:: bash
 
-    homecon install
+    homecon configure
 
 
 
@@ -63,9 +63,11 @@ On Raspbian python 3.5 can be installed through the following commands:
     sudo apt-get install python3-pip
     sudo pip3 install virtualenv
 
+This takes a very long time as the entire system is being updated.
+It is possible to update python3 only by first removing it and then reinstalling it.
 In the next Debian / Raspbian release (Debian Stretch) python 3.5 is included by default so these steps will be obsolete soon.
 
 Due to the low computing power on a Raspberry pi, the installation and compilation of packages required for HomeCon Takes a very long time.
 The compilation of Numpy and Bonmin can both take several hours.
 Patience is the keyword.
-In time a Raspbian image with HomeCon preinstalled might becom available. 
+In time a Raspbian image with HomeCon preinstalled might become available. 

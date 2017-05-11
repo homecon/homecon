@@ -132,12 +132,12 @@ class Plugins(object):
 
         r = requests.get(url, stream=True)
         if r.status_code == 200:
-            with open(os.path.join(sys.prefix,'downloads',fname), 'wb') as f:
+            with open(os.path.join(sys.prefix,'var','tmp','homecon',fname), 'wb') as f:
                 r.raw.decode_content = True
                 shutil.copyfileobj(r.raw, f) 
 
                 # install using pip
-                pip.main(['install', os.path.join(sys.prefix,'downloads',fname)])
+                pip.main(['install', os.path.join(sys.prefix,'var','tmp','homecon',fname)])
 
                 # add the plugin to the database and available plugins list
                 pluginname = fname.split('-')[0]

@@ -1,0 +1,8 @@
+auto lo
+iface lo inet loopback
+
+auto eth0
+iface eth0 inet static
+address {ip}
+gateway {ip0}.{ip1}.1.1
+netmask 255.255.255.0
