@@ -125,8 +125,8 @@ def prepare_database():
 
 
     # heatingsystem
-    core.components.add('heatinggroup1'           , 'heatinggroup'        , config={})
-    core.components.add('heatpump'                , 'heatpump'            , config={'type':'heatpump'    , 'power':10000   , 'group':'heatinggroup1'})
+    core.components.add('heatinggroup1'           , 'heatinggroup'        , config={'heatingcurve':False})
+    core.components.add('heatpump'                , 'heatpump'            , config={'type':'heatpump'    , 'power':10000   , 'group':'heatinggroup1', 'heatingcurve':False})
     core.components.add('floorheating_groundfloor', 'heatemissionsystem'  , config={'type':'floorheating', 'zone':'dayzone', 'group':'heatinggroup1'})
 
 

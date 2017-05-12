@@ -16,7 +16,7 @@ class Heatgenerationsystem(core.component.Component):
         'type': '',
         'power': 10000.,
         'group': '',
-        'heatingcurve': True,
+        'heatingcurve': False,
         'T_hc_nom': -10.,
         'T_hc_0': 15,
     }
@@ -179,6 +179,12 @@ class Heatinggroup(core.component.Component):
     a class implementing a group of connected heat generation systems and heat emission systems 
     
     """
+    default_config = {
+        'heatingcurve': True,
+        'T_hc_nom': -10.,
+        'T_hc_0': 15,
+        'Q_hc_nom': 10000.,
+    }
     
     def calculate_power(self,timestamp=None):
         heatgenerationsystems = core.components.find(type='heatgenerationsystem',group=self.path)
@@ -190,16 +196,33 @@ class Heatinggroup(core.component.Component):
 
         return Q
 
-
+    def create_ocp_variables(self,model):
+        self.ocp_variables['Q'] = pyomo.Var(model.i, domain=pyomo.NonNegativeReals, initialize=0.)
+        
+        for key,val in self.ocp_variables.items():
+            setattr(model,'{}_{}'.format(self.path.replace('/',''),key),val)
+            
     def create_ocp_constraints(self,model):
 
         # a list of all generation system heat flows connected to this heatemissionsystem
         Q_generation_list = [system.ocp_variables['Q'] for system in core.components.find(type='heatgenerationsystem',group=self.path)]
         Q_emission_list = [system.ocp_variables['Q'] for system in core.components.find(type='heatemissionsystem',group=self.path)]
 
+        setattr(model,'constraint_{}_Q_generation'.format(self.path.replace('/','')),pyomo.Constraint(model.i,rule=lambda model,i: self.ocp_variables['Q'][i] == sum(var[i] for var in Q_generation_list) ))
+        setattr(model,'constraint_{}_Q_emission'.format(self.path.replace('/','')),pyomo.Constraint(model.i,rule=lambda model,i: self.ocp_variables['Q'][i] == sum(var[i] for var in Q_emission_list) ))
+        
+        if self.config['heatingcurve']:
 
-        setattr(model,'constraint_{}_Q'.format(self.path.replace('/','')),pyomo.Constraint(model.i,rule=lambda model,i: sum(var[i] for var in Q_generation_list) == sum(var[i] for var in Q_emission_list)))
+            for system in core.components.find(type='heatgenerationsystem',group=self.path):
+                all_systems_have_heatingcurve = True
+                if not system.config['heatingcurve']:
+                    all_systems_have_heatingcurve = False
+                    break
+            if all_systems_have_heatingcurve:
+                logging.warning('All heat generation systems in the heating group are controlled by a heating curve. Heatinggroup {} heatingcurve is not applied.'.format(self.path))
+            else:
+                setattr(model,'constraint_{}_Q_heatingcurve'.format(self.path.replace('/','')),pyomo.Constraint(model.i,rule=lambda model,i: self.ocp_variables['Q'][i] >= max(0.,min(self.config['Q_hc_nom'] , self.config['Q_hc_nom']*(model.T_amb[i]-self.config['T_hc_0'])/(self.config['T_hc_nom']-self.config['T_hc_0'])))  ))
 
-
+                
 core.components.register(Heatinggroup)
 
