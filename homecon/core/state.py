@@ -630,7 +630,8 @@ class State(BaseState):
             else:
                 return values[0]
                 
-
+    def parse_triggers():
+        pass
 
     def __repr__(self):
         formattedvalue = '{}'.format(self._value)
