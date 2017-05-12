@@ -59,29 +59,6 @@ class States(core.plugin.Plugin):
 
         logging.debug('States plugin Initialized')
 
-        
-
-    def get(self,path):
-        """
-        gets a state given its path
-        
-        Parameters
-        ----------
-        path : string
-            the state path
-
-        Returns
-        -------
-        state : State
-            the state or :code`None`if the state is unknown
-
-        """
-
-        if path in core.states:
-            return core.states[path]
-        else:
-            logging.error('State {} is not defined'.format(path))
-            return None
 
     def list(self):
         """
@@ -122,7 +99,7 @@ class States(core.plugin.Plugin):
                 config[key] = val
 
             state.config = config
-            self.parse_triggers()
+            core.states.parse_triggers()
 
             core.websocket.send({'event':'list_states', 'path':'', 'value':self.list()}, clients=[event.client])
 
@@ -160,10 +137,9 @@ class States(core.plugin.Plugin):
     def listen_state(self,event):
         
         if 'path' in event.data:
-            # get or set a state
-            state = self.get(event.data['path'])
+            if event.data['path'] in core.states:
+                state = core.states[event.data['path']]
 
-            if not state is None:
                 tokenpayload = jwt_decode(event.data['token'])
 
                 if 'value' in event.data:

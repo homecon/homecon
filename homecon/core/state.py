@@ -487,7 +487,6 @@ class State(BaseState):
         super().__init__(*args,**kwargs)
         self.trigger = []
 
-
     def fire_changed(self,value,oldvalue,source):
         """
         """
@@ -541,10 +540,16 @@ class State(BaseState):
 
         triggers = self.config['triggers']
         if not triggers == '':
-            paths = eval(triggers.replace('`','\''),{'states':self.container,'np':np})
+            try:
+                paths = eval(triggers.replace('`','\''),{'states':self.container,'np':np})
+                
+                if isinstance(paths,list):
+                    return paths
+                elif isinstance(paths,str):
+                    return [paths]
 
-            if isinstance(paths,list):
-                return paths
+            except Exception as e:
+                logging.error('Triggers for state {} could not be parsed: {}'.format(self.path,e))
 
         return []
 
@@ -561,8 +566,8 @@ class State(BaseState):
             try:
                 value = eval(computed.replace('`','\''),{'states':self.container,'np':np})
                 return value
-            except:
-                pass
+            except Exception as e:
+                logging.error('Could not compute value for state {}: {}'.format(self.path,e))
 
         return None
 
@@ -629,9 +634,7 @@ class State(BaseState):
                 return values
             else:
                 return values[0]
-                
-    def parse_triggers():
-        pass
+
 
     def __repr__(self):
         formattedvalue = '{}'.format(self._value)
@@ -683,7 +686,7 @@ class States(object):
 
         for state in self._states.values():
             for path in state.triggers:
-                if not state in self._states[path].trigger:
+                if path in self._states and not state in self._states[path].trigger:
                     self._states[path].trigger.append(state)
 
     def delete(self,path):
