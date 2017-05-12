@@ -72,12 +72,12 @@ def set_init_script(scriptname='homecon'):
         content = f.read()
 
         with open(os.path.join(sys.prefix,'var','tmp','homecon',scriptname),'w') as fw:
-            fw.write(content.format(env=os.path.join(sys.prefix,'bin')))
+            fw.write(content.format(bin=os.path.join(sys.prefix,'bin')))
 
     subprocess.call(['sudo', 'mv', os.path.join(sys.prefix,'var','tmp','homecon',scriptname), os.path.join('/etc/init.d',scriptname)])
     subprocess.call(['sudo', 'chmod', '755', os.path.join('/etc/init.d',scriptname)])
     subprocess.call(['sudo', 'chown', 'root:root', os.path.join('/etc/init.d',scriptname)])
-    subprocess.call(['sudo', 'update-rc.d', scriptname, 'enable'])
+    subprocess.call(['sudo', 'update-rc.d', scriptname, 'defaults'])
 
 
 def patch_pyutilib():
@@ -147,11 +147,11 @@ def install_glpk():
     
     os.chdir('glpk-{}'.format(installver))
 
-    subprocess.call(['./configure'])
-    subprocess.call(['make'])
-    subprocess.call([ 'make', 'check'])
-    subprocess.call(['make', 'install'])
-    subprocess.call(['ldconfig', '{}'.format(sys.prefix)])
+    subprocess.call(['sudo', './configure', '--prefix={}'.format('/usr/local/bin')])
+    subprocess.call(['sudo', 'make'])
+    subprocess.call(['sudo', 'make', 'check'])
+    subprocess.call(['sudo', 'make', 'install'])
+    subprocess.call(['sudo', 'ldconfig', '{}'.format('/usr/local/bin')])
 
     os.chdir(currentdir)
 
@@ -209,10 +209,10 @@ def install_ipopt():
 
     os.chdir('build')
 
-    subprocess.call(['../configure', '--prefix={}'.format(sys.prefix), '-C', 'ADD_CFLAGS=-DNO_fpu_control'])
-    subprocess.call(['make'])
-    subprocess.call(['make', 'test'])
-    subprocess.call(['make', 'install'])
+    subprocess.call(['sudo', '../configure', '--prefix={}'.format('/usr/local/bin'), '-C', 'ADD_CFLAGS=-DNO_fpu_control'])
+    subprocess.call(['sudo', 'make'])
+    subprocess.call(['sudo', 'make', 'test'])
+    subprocess.call(['sudo', 'make', 'install'])
 
     os.chdir(currentdir)
 
@@ -269,9 +269,9 @@ def install_bonmin():
 
     os.chdir('build')
 
-    subprocess.call(['../configure', '--prefix={}'.format(sys.prefix), '-C', 'ADD_CFLAGS=-DNO_fpu_control'])
-    subprocess.call(['make'])
-    subprocess.call(['make', 'test'])
-    subprocess.call(['make', 'install'])
+    subprocess.call(['sudo', '../configure', '--prefix={}'.format('/usr/local/bin'), '-C', 'ADD_CFLAGS=-DNO_fpu_control'])
+    subprocess.call(['sudo', 'make'])
+    subprocess.call(['sudo', 'make', 'test'])
+    subprocess.call(['sudo', 'make', 'install'])
 
     os.chdir(currentdir)

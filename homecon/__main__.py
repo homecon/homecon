@@ -52,7 +52,7 @@ def main():
                 else:
                     raise Exception('{} is not a valid answer, yes/y/no/n'.format(setip))
 
-
+        # create an initscript
         if not '--noinitscript' in sys.argv:
             scriptname='homecon'
             for arg in sys.argv:
@@ -62,17 +62,16 @@ def main():
 
             configure.set_init_script(scriptname=scriptname)
 
-
         # patch pyutilib
         if not '--nopatchpyutilib' in sys.argv:
             print('### Patching the pytuilib')
             configure.patch_pyutilib()
 
         # install bonmin
-        if not '--nobonmin' in sys.argv:
-            if not configure.solver_available('bonmin'):
-                print('### Installing BONMIN')
-                configure.install_bonmin()
+        #if not '--nobonmin' in sys.argv:
+        #    if not configure.solver_available('bonmin'):
+        #        print('### Installing BONMIN')
+        #        configure.install_bonmin()
 
         # install ipopt
         if not '--noipopt' in sys.argv:
@@ -81,11 +80,11 @@ def main():
                 configure.install_ipopt()
 
         # install glpk
-        if not '--noglpk' in sys.argv:
-            if not configure.solver_available('glpk'):
-                print('### Installing GLPK')
-                print('installation does not work locally yet and is omitted')
-                #configure.install_glpk()
+        #if not '--noglpk' in sys.argv:
+        #    if not configure.solver_available('glpk'):
+        #        print('### Installing GLPK')
+        #        print('installation does not work locally yet and is omitted')
+        #        configure.install_glpk()
 
 
 

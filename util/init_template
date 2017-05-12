@@ -13,7 +13,7 @@
 
 DESC="HomeCon server"
 NAME=homecon
-DIR={env}
+DIR={bin}
 DAEMON=$NAME
 DAEMON_ARGS="debug"
 PIDFILE=/var/run/$NAME.pid
@@ -21,45 +21,44 @@ SCRIPTNAME=/etc/init.d/$NAME
 
 
 [ -x "$DAEMON" ] || exit 0
-[ -r /etc/default/$NAME ] && . /etc/default/$NAME
+#[ -r /etc/default/$NAME ] && . /etc/default/$NAME
 . /lib/init/vars.sh
-. /lib/lsb/init-functions
+#. /lib/lsb/init-functions
 
 do_start()
 {{
-  source $DIR/activate
-  start-stop-daemon --stop --quiet --retry=TERM/30/KILL/5 --pidfile $PIDFILE --name $NAME
-  RETVAL="$?"
-  [ "$RETVAL" = 2 ] && return 2
-  start-stop-daemon --stop --quiet --oknodo --retry=0/30/KILL/5 --exec $DAEMON
-  [ "$?" = 2 ] && return 2
-  rm -f $PIDFILE
-  return "$RETVAL"
+  echo "Starting HomeCon"
+  . $DIR/activate
+  start-stop-daemon --start --background --make-pidfile --pidfile $PIDFILE --name $NAME --startas $DAEMON $DAEMON_ARGS
+  case $? in
+    0)
+      echo "HomeCon started as daemon"
+      ;;
+  esac
+  return $?
 }}
 
 do_stop() {{
+  echo "Stopping HomeCon"
   start-stop-daemon --stop --signal 1 --quiet --pidfile $PIDFILE --name $NAME
-  deactivate
-  return 0
+  case $? in
+    0)
+      echo "HomeCon stopped"
+      ;;
+    *)
+      echo "HomeCon was not running"
+      ;;
+  esac
+  return $?
 }}
 
 case "$1" in
   start)
-    [ "$VERBOSE" != no ] && log_daemon_msg "Starting $DESC" "$NAME"
     do_start
-    case "$?" in
-      0|1) [ "$VERBOSE" != no ] && log_end_msg 0 ;;
-      2) [ "$VERBOSE" != no ] && log_end_msg 1 ;;
-    esac
     ;;
 
   stop)
-    [ "$VERBOSE" != no ] && log_daemon_msg "Stopping $DESC" "$NAME"
     do_stop
-    case "$?" in
-      0|1) [ "$VERBOSE" != no ] && log_end_msg 0 ;;
-      2) [ "$VERBOSE" != no ] && log_end_msg 1 ;;
-    esac
     ;;
 
   status)
@@ -67,25 +66,12 @@ case "$1" in
     ;;
 
   restart)
-    log_daemon_msg "Restarting $DESC" "$NAME"
     do_stop
-    case "$?" in
-      0|1)
-        do_start
-        case "$?" in
-          0) log_end_msg 0
-          1) log_end_msg 1
-            *) log_end_msg 1
-        esac
-        ;;
-      *)
-        log_end_msg 1
-        ;;
-    esac
+    do_start
     ;;
 
   *)
-    echo "Usage: $SCRIPTNAME {{start|stop|status|restart}}" >&2
+    echo "Usage: $SCRIPTNAME {start|stop|status|restart}" >&2
     exit 3
     ;;
 esac

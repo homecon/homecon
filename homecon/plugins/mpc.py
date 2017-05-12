@@ -183,10 +183,14 @@ class Mpc(core.plugin.Plugin):
 
             # solve
             # the problem contains integers
-            solver = pyomo.SolverFactory('bonmin')  # FIXME should be done in a separate thread to not stop the event loop
+            #solver = pyomo.SolverFactory('bonmin')  # FIXME should be done in a separate thread to not stop the event loop
             #util.executor.run_in_executor(solver.solve,model,tee=True)
+            #results = solver.solve(model, tee=True)
+            #logging.debug('OCP solved using BONMIN')
+
+            solver = pyomo.SolverFactory('ipopt')
             results = solver.solve(model, tee=True)
-            logging.debug('OCP solved using BONMIN')
+            logging.debug('OCP solved using IPOPT')
 
 
             # pass control program to plugins
