@@ -47,19 +47,19 @@ class Measurements(core.plugin.Plugin):
         return int( (datetime.datetime.utcnow()-datetime.datetime(1970,1,1)).total_seconds() )
     
 
-    def add(self,path,value,readusers=None,readgroups=None):
+    def add(self,path,value,time=None,readusers=None,readgroups=None):
         """
         Parameters
         ----------
         path : string
             the path of a state
-
         value : string
             the value as json
-
         """
 
-        time = self.time()
+        if time is None:
+            time = self.time()
+            
         self._db_measurements.POST(time=time,path=path,value=value)
 
         if path in self.measurements:
@@ -97,6 +97,22 @@ class Measurements(core.plugin.Plugin):
     def listen_state_changed(self,event):
         if 'log' in event.data['state'].config and event.data['state'].config['log']:
             self.add(event.data['state'].path,event.data['state'].value,readusers=event.data['state'].config['readusers'],readgroups=event.data['state'].config['readgroups'])
+
+
+    def listen_measurements_add(self,event):
+        if 'state' in event.data:
+            
+            if 'value' in event.data:
+                value = event.data['value']
+            else:
+                event.data['state'].value
+            
+            if 'timestamp' in event.data:
+                time = event.data['timestamp']
+            else:
+                time = None
+                
+            self.add(event.data['state'].path,value,time=time,readusers=event.data['state'].config['readusers'],readgroups=event.data['state'].config['readgroups'])
 
 
     def listen_timeseries(self,event):

@@ -78,6 +78,8 @@ class Plugins(object):
             self._db_plugins.POST(name='knx',core=0,active=0,package='homecon.plugins')
         if not 'darksky' in _list:
             self._db_plugins.POST(name='darksky',core=0,active=0,package='homecon.plugins')
+        if not 'flukso' in _list:
+            self._db_plugins.POST(name='flukso',core=0,active=0,package='homecon.plugins')
 
 
         # list all plugins

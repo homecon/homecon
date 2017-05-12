@@ -117,7 +117,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
         <homecon-edit-dialog id="addComponentDialog" on-save="addComponent">
             <h2>Add component</h2>
-            <paper-input id="pathInput" label="path:" value="{{newPath}}"></paper-input>
+            <paper-input id="pathInput" label="path:" value="{{newPath}}" required auto-validate error-message="a path is required"></paper-input>
 
             <paper-dropdown-menu label="type">
                 <paper-menu class="dropdown-content" attr-for-selected="value" selected="{{newType}}">

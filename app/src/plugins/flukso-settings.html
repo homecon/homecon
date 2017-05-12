@@ -14,7 +14,7 @@
 
 <link rel="import" href="../../style/style-scrollbar.html">
 
-<dom-module id="knx-settings">
+<dom-module id="flukso-settings">
 
     <template>
 
@@ -50,75 +50,74 @@
         </style>
 
         <homecon-web-socket-sender id="websocket"></homecon-web-socket-sender>
-
-        <homecon-web-socket-object auto event="state" path="knx/settings/interface/ip" data="{{interfaceip}}" debounce="800"></homecon-web-socket-object>
-        <homecon-web-socket-object auto event="state" path="knx/settings/interface/port" data="{{interfaceport}}" debounce="800"></homecon-web-socket-object>
+        <homecon-web-socket-object auto event="state" path="flukso/settings/ip" data="{{interfaceip}}" debounce="800"></homecon-web-socket-object>
 
         <h2>Interface settings:</h2>
         <div class="horizontal layout wrap">
-            <paper-input label="Interface ip address" value="{{interfaceip}}" class="address"></paper-input>
-            <paper-input label="Interface port" value="{{interfaceport}}" class="port"></paper-input>
+            <paper-input label="Fluksometer ip address" value="{{interfaceip}}" class="address"></paper-input>
         </div>
 
-        <h2>States:</h2>
-        <template is="dom-repeat" items="{{states}}" as="state">
+        <h2>Sensors:</h2>
+        <template is="dom-repeat" items="{{sensors}}" as="sensor">
             <paper-material class="horizontal layout wrap center state" on-tap="editDialog">
-                <div class="flex-2 path">{{state.path}}</div>
-                <div class="flex-1 horizontal layout">
-                    <div class="flex write">{{state.config.knx_ga_write}}</div>
-                    <div class="flex read">{{state.config.knx_ga_read}}</div>
-                </div>
+                <div class="path">{{sensor.path}}</div>
             </paper-material>
         </template>
+        <paper-button raised noink="true" on-tap="addComponentDialog">add sensor</paper-button>
+
 
         <homecon-edit-dialog id="editDialog" on-save="edit">
             <h2>{{newPath}}</h2>
-            <paper-input label="write group address" value="{{newConfig.knx_ga_write}}"></paper-input>
-            <paper-input label="read group address" value="{{newConfig.knx_ga_read}}"></paper-input>
-
-            <paper-dropdown-menu label="Data point type">
-                <paper-menu class="dropdown-content" attr-for-selected="value" selected="{{newConfig.knx_dpt}}">
-                    <paper-item value="">none</paper-item>
-                    <paper-item value="1">1 - boolean</paper-item>
-                    <paper-item value="2">2 - ?</paper-item>
-                    <paper-item value="3">3 - 4 bit</paper-item>
-                    <paper-item value="4.002">4.002 - character set</paper-item>
-                    <paper-item value="5">5 - 1 byte unsigned</paper-item>
-                    <paper-item value="5.001">5.001 - 1 byte unsigned</paper-item>
-                    <paper-item value="6">6 - 1 byte signed</paper-item>
-                    <paper-item value="7">7 - 2 bytes unsigned</paper-item>
-                    <paper-item value="8">8 - 2 bytes signed</paper-item>
-                    <paper-item value="9">9 - 2 bytes floating point number</paper-item>
-                    <paper-item value="10">10 - time</paper-item>
-                    <paper-item value="11">11 - date</paper-item>
+            <paper-input label="id" value="{{newConfig.id}}"></paper-input>
+            <paper-input label="token" value="{{newConfig.token}}"></paper-input>
+            <paper-input label="type" value="{{newConfig.type}}"></paper-input>
+            <paper-dropdown-menu label="unit">
+                <paper-menu class="dropdown-content" attr-for-selected="value" selected="{{newConfig.unit}}">
+                    <paper-item value="watt">watt</paper-item>
                 </paper-menu>
             </paper-dropdown-menu>
 
+        </homecon-edit-dialog>
+
+        <homecon-edit-dialog id="addComponentDialog" on-save="addComponent">
+            <h2>Add sensor</h2>
+            <paper-input id="pathInput" label="path:" value="{{newPath}}" required auto-validate error-message="a path is required"></paper-input>
         </homecon-edit-dialog>
 
     </template>
 
     <script>
         Polymer({
-            is: 'knx-settings',
+            is: 'flukso-settings',
 
             behaviors: [configUtilsBehavior],
 
             properties: {
             },
 
-            editDialog: function(e){
-                state = e.model.__data__.state;
+            addComponentDialog: function(e){
 
-                this.newPath = state.path;
-                this.newConfig = this._configToNewConfig(state.config);
+                this.newPath = '';
+                this.$.addComponentDialog.open()
+            },
+
+            addComponent: function(e){
+                this.$.addComponentDialog.close();
+                this.$.websocket.send({'event':'add_component','path':this.newPath,'type':'fluksosensor','config':{}});
+            },
+
+            editDialog: function(e){
+                sensor = e.model.__data__.sensor;
+
+                this.newPath = sensor.path;
+                this.newConfig = this._configToNewConfig(sensor.config);
                 this.$.editDialog.open()
             },
 
             edit: function(e){
                 this.$.editDialog.close();
                 config = this._newConfigToConfig(this.newConfig)
-                this.$.websocket.send({'event':'edit_state','path':this.newPath,'config':config});
+                this.$.websocket.send({'event':'edit_component','path':this.newPath,'config':config});
             },
 
             delete: function(e){
@@ -133,11 +132,17 @@
 
             ready: function(){
                 this.reload();
-                this.listen(window.app, 'app-states-changed', 'reload');
+                this.listen(window.app, 'app-components-changed', 'reload');
             },
 
             reload: function(){
-                this.states = window.app.states;
+                sensors = []
+                for(var i=0;i<window.app.components.length;i++){
+                    if( window.app.components[i].type == 'fluksosensor' ){
+                        sensors.push(window.app.components[i])
+                    }
+                }
+                this.sensors = sensors;
             },
 
         });

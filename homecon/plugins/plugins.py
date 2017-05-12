@@ -133,11 +133,14 @@ class Plugins(core.plugin.Plugin):
         self.activate(event.data['plugin'])
         core.websocket.send({'event':'list_optionalplugins', 'path':'', 'value':self.get_optionalplugins_list()}, clients=[event.client]) # FIXME should all clients be notified of plugin changes?
         core.websocket.send({'event':'list_activeplugins', 'path':'', 'value':self.get_activeplugins_list()}, clients=[event.client])
+        core.event.fire('component_types',{},client=event.client)
 
     def listen_deactivate_plugin(self,event):
         self.deactivate(event.data['plugin'])
         core.websocket.send({'event':'list_optionalplugins', 'path':'', 'value':self.get_optionalplugins_list()}, clients=[event.client])
         core.websocket.send({'event':'list_activeplugins', 'path':'', 'value':self.get_activeplugins_list()}, clients=[event.client])
+        #FIXME components defined in a plugin should be unregisterd and component instances deleted from the active list
+        core.event.fire('component_types',{},client=event.client)
 
     def listen_install_plugin(self,event):
         if self.install(event.data['url']):
