@@ -512,6 +512,8 @@ class State(BaseState):
             config['description'] = ''
         if 'log' not in config:
             config['log'] = True
+        if 'timestampdelta' not in config:
+            config['timestampdelta'] = 0
         if 'triggers' not in config:
             config['triggers'] = ''
         if 'computed' not in config:

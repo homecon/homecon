@@ -102,14 +102,12 @@ class Value(core.component.Component):
     """
     default_config = {
     }
-
-    def initialize(self):
-        self.states = {
-            'value': {
-                'default_config': {},
-                'fixed_config': {},
-            },
-        }
+    linked_states = {
+        'value': {
+            'default_config': {},
+            'fixed_config': {},
+        },
+    }
 
 core.components.register(Value)
 

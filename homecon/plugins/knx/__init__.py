@@ -19,13 +19,33 @@ class Knx(core.plugin.Plugin):
         core.states.add('knx/settings/interface/ip', value='192.168.1.1', config={'type': 'string', 'quantity':'', 'unit':'','label':'', 'description':'', 'private':True})
         core.states.add('knx/settings/interface/port', value='3671', config={'type': 'string', 'quantity':'', 'unit':'','label':'', 'description':'', 'private':True})
 
+        self.tunnel = None
         self.connected = False
-
+        
         # connect
         self.connect()
 
+        self._loop.create_task(self.schedule_check_connection())
+
         logging.debug('KNX plugin Initialized')
     
+    async def schedule_check_connection(self):
+        while True:
+            reconnect = True
+            try:
+                if not self.tunnel is None:
+                    
+                    print( dir(self.tunnel.data_server) )
+                    #reconnect = False
+            except Exception as e:
+                logging.error(e)
+
+            if reconnect:
+                await self._connect()
+
+            # sleep until the next call
+            await asyncio.sleep(20)
+
 
     def connect(self):
         self._loop.create_task(self._connect())
@@ -37,10 +57,13 @@ class Knx(core.plugin.Plugin):
             for state in states:
                 knx_dpt = None
                 if 'knx_dpt' in state.config:
-                    knx_dpt = state.config['knx_dpt']
-                    data = knxpy.util.decode_dpt(msg.data,str(knx_dpt))
+                    try:
+                        knx_dpt = state.config['knx_dpt']
+                        data = knxpy.util.decode_dpt(msg.data,str(knx_dpt))
 
-                    state.set(data,source=self)
+                        state.set(data,source=self)
+                    except Exception as e:
+                        logging.error('Could not parse knx message for state {}: {}'.format(state.path,e))
 
         self.connected = False
         self.tunnel = None

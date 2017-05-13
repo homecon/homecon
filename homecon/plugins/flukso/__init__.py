@@ -51,10 +51,13 @@ class Flukso(core.plugin.Plugin):
                         
                         timestamp =  data[0][0]
                         value = np.round(np.nanmean( [row[1] for row in data] ),3)
-    
+
+                        if np.isnan(value):
+                            value = 0
+
                         # FIXME the values are shifted by one minute or should be plotted with backward steps
-                        #await sensor.states['value'].set_async( value )
-                        core.event.fire('measurements_add',{'state':sensor.states['value'],'value':value,'timestamp':timestamp})
+                        await sensor.states['value'].set_async( value )
+                        #core.event.fire('measurements_add',{'state':sensor.states['value'],'value':value,'timestamp':timestamp})
                         
                         logging.debug('Flukso sensor {} updated'.format(sensor.path))
                         
@@ -72,8 +75,8 @@ class Fluksosensor(core.component.Component):
     }
     linked_states = {
         'value': {
-            'default_config': {'datatype': 'number'},
-            'fixed_config': {},
+            'default_config': {},
+            'fixed_config': {'datatype': 'number','timestampdelta':-60},
         },
     }
 
