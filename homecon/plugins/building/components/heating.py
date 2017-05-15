@@ -38,23 +38,18 @@ class Heatgenerationsystem(core.component.Component):
         else:
             return self.states['power'].history(timestamp)
 
-
     def create_ocp_variables(self,model):
-        self.ocp_variables['Q'] = pyomo.Var(model.i, domain=pyomo.NonNegativeReals, bounds=(0,self.config['power']), initialize=0.)
-        
-        for key,val in self.ocp_variables.items():
-            setattr(model,'{}_{}'.format(self.path.replace('/',''),key),val)
+        super().create_ocp_variables(model)
+        self.add_ocp_Var(model,'Q', model.i, domain=pyomo.NonNegativeReals, bounds=(0,self.config['power']), initialize=0.)
 
     def create_ocp_constraints(self,model):
-
+        super().create_ocp_constraints(model)
         if self.config['heatingcurve']:
-            setattr(model,'constraint_{}_Q'.format(self.path.replace('/','')),pyomo.Constraint(model.i,rule=lambda model,i: self.ocp_variables['Q'][i] == max(0.,min(self.config['power'] , self.config['power']*(model.T_amb[i]-self.config['T_hc_0'])/(self.config['T_hc_nom']-self.config['T_hc_0'])))  ))
-
-
+            self.add_ocp_Constraint(model,'Q_hc', model.i,rule=lambda model,i: self.ocp_variables['Q'][i] == max(0.,min(self.config['power'] , self.config['power']*(model.T_amb[i]-self.config['T_hc_0'])/(self.config['T_hc_nom']-self.config['T_hc_0'])))  )
 
     def postprocess_ocp(self,model):
         self.Q_schedule = [(pyomo.value(model.timestamp[i]),pyomo.value(self.ocp_variables['Q'][i])) for i in model.i]
-
+        self.states['power_setpoint'].value = self.Q_schedule[0] # FIXME interpolate to future
 
 core.components.register(Heatgenerationsystem)
 
@@ -67,13 +62,12 @@ class Gasboiler(Heatgenerationsystem):
     """
 
     def create_ocp_variables(self,model):
-        self.ocp_variables['P_ng'] = pyomo.Var(model.i, domain=pyomo.NonNegativeReals, bounds=(0,self.config['power']), initialize=0.)
         super().create_ocp_variables(model)
-
+        self.add_ocp_Var(model,'P_ng',model.i, domain=pyomo.NonNegativeReals, initialize=0.)
 
     def create_ocp_constraints(self,model):
         super().create_ocp_constraints(model)
-        setattr(model,'constraint_{}_P_ng'.format(self.path.replace('/','')),pyomo.Constraint(model.i,rule=lambda model,i: self.ocp_variables['P_ng'][i] == self.ocp_variables['Q'][i]))
+        self.add_ocp_Constraint(model,'P_ng',model.i,rule=lambda model,i: self.ocp_variables['P_ng'][i] == self.ocp_variables['Q'][i]  )
 
 core.components.register(Gasboiler)
 
@@ -86,22 +80,18 @@ class Heatpump(Heatgenerationsystem):
     """
 
     def create_ocp_variables(self,model):
-        self.ocp_variables['P_el'] = pyomo.Var(model.i, domain=pyomo.NonNegativeReals, bounds=(0,self.config['power']), initialize=0.)
-        #self.ocp_variables['COP']  = pyomo.Var(model.i, domain=pyomo.NonNegativeReals, bounds=(0.,10.), initialize=3.)
-        self.ocp_variables['COP'] = pyomo.Param(model.i, initialize=3.)
         super().create_ocp_variables(model)
-
+        self.add_ocp_Var(model,'P_el',model.i, domain=pyomo.NonNegativeReals, initialize=0.)
+        self.add_ocp_Param(model,'COP',model.i, initialize=lambda model,i: min(6.0,max(1.0,3.1+(model.T_amb[i]--2)/(7--2)*(4.2-3.1))) )
 
     def create_ocp_constraints(self,model):
         super().create_ocp_constraints(model)
-        #setattr(model,'constraint_{}_COP'.format(self.path.replace('/','')), pyomo.Constraint(model.i,rule=lambda model,i: self.ocp_variables['COP'][i] == 3.0))
-        setattr(model,'constraint_{}_P_el'.format(self.path.replace('/','')),pyomo.Constraint(model.i,rule=lambda model,i: self.ocp_variables['P_el'][i]*self.ocp_variables['COP'][i] == self.ocp_variables['Q'][i]))
-
+        #self.add_ocp_Constraint(model,'COP',model.i,rule=lambda model,i: self.ocp_variables['COP'][i] == 3.0)
+        self.add_ocp_Constraint(model,'P_el',model.i,rule=lambda model,i: self.ocp_variables['P_el'][i]*self.ocp_variables['COP'][i] == self.ocp_variables['Q'][i])
 
     def postprocess_ocp(self,model):
         super().postprocess_ocp(model)
         self.P_el_schedule = [(pyomo.value(model.timestamp[i]),pyomo.value(self.ocp_variables['P_el'][i])) for i in model.i]
-
 
     def maxpower(self,timestamp):
         return self.config['power']
@@ -139,10 +129,8 @@ class Heatemissionsystem(core.component.Component):
 
 
     def create_ocp_variables(self,model):
-        self.ocp_variables['Q']        = pyomo.Var(model.i, domain=pyomo.NonNegativeReals, initialize=0)
-
-        for key,val in self.ocp_variables.items():
-            setattr(model,'{}_{}'.format(self.path.replace('/',''),key),val)
+        super().create_ocp_variables(model)
+        self.add_ocp_Var(model,'Q',model.i, domain=pyomo.NonNegativeReals, initialize=0.)
 
     def postprocess_ocp_variables(self,model):
 
@@ -153,7 +141,6 @@ class Heatemissionsystem(core.component.Component):
 
         # set the valve position
         self.states['valve_position'].value = position
-
 
     def calculate_power(self,timestamp=None):
         emissionsystems = core.components.find(type='heatemissionsystem',group=self.config['group'])
@@ -197,20 +184,20 @@ class Heatinggroup(core.component.Component):
         return Q
 
     def create_ocp_variables(self,model):
-        self.ocp_variables['Q'] = pyomo.Var(model.i, domain=pyomo.NonNegativeReals, initialize=0.)
-        
-        for key,val in self.ocp_variables.items():
-            setattr(model,'{}_{}'.format(self.path.replace('/',''),key),val)
-            
+        super().create_ocp_variables(model)
+        self.add_ocp_Var(model,'Q',model.i, domain=pyomo.NonNegativeReals, initialize=0.)
+
     def create_ocp_constraints(self,model):
+        super().create_ocp_constraints(model)
 
         # a list of all generation system heat flows connected to this heatemissionsystem
-        Q_generation_list = [system.ocp_variables['Q'] for system in core.components.find(type='heatgenerationsystem',group=self.path)]
-        Q_emission_list = [system.ocp_variables['Q'] for system in core.components.find(type='heatemissionsystem',group=self.path)]
+        Q_gen_list = [system.ocp_variables['Q'] for system in core.components.find(type='heatgenerationsystem',group=self.path)]
+        Q_emi_list = [system.ocp_variables['Q'] for system in core.components.find(type='heatemissionsystem',group=self.path)]
 
-        setattr(model,'constraint_{}_Q_generation'.format(self.path.replace('/','')),pyomo.Constraint(model.i,rule=lambda model,i: self.ocp_variables['Q'][i] == sum(var[i] for var in Q_generation_list) ))
-        setattr(model,'constraint_{}_Q_emission'.format(self.path.replace('/','')),pyomo.Constraint(model.i,rule=lambda model,i: self.ocp_variables['Q'][i] == sum(var[i] for var in Q_emission_list) ))
-        
+
+        self.add_ocp_Constraint(model,'Q_gen',model.i,rule=lambda model,i: self.ocp_variables['Q'][i] == sum(var[i] for var in Q_gen_list) )
+        self.add_ocp_Constraint(model,'Q_emi',model.i,rule=lambda model,i: self.ocp_variables['Q'][i] == sum(var[i] for var in Q_emi_list) )
+
         if self.config['heatingcurve']:
 
             for system in core.components.find(type='heatgenerationsystem',group=self.path):
@@ -221,8 +208,7 @@ class Heatinggroup(core.component.Component):
             if all_systems_have_heatingcurve:
                 logging.warning('All heat generation systems in the heating group are controlled by a heating curve. Heatinggroup {} heatingcurve is not applied.'.format(self.path))
             else:
-                setattr(model,'constraint_{}_Q_heatingcurve'.format(self.path.replace('/','')),pyomo.Constraint(model.i,rule=lambda model,i: self.ocp_variables['Q'][i] >= max(0.,min(self.config['Q_hc_nom'] , self.config['Q_hc_nom']*(model.T_amb[i]-self.config['T_hc_0'])/(self.config['T_hc_nom']-self.config['T_hc_0'])))  ))
+                self.add_ocp_Constraint(model,'Q_hc',model.i,rule=lambda model,i: self.ocp_variables['Q'][i] >= max(0.,min(self.config['Q_hc_nom'] , self.config['Q_hc_nom']*(model.T_amb[i]-self.config['T_hc_0'])/(self.config['T_hc_nom']-self.config['T_hc_0']))) )
 
-                
 core.components.register(Heatinggroup)
 

@@ -3,6 +3,7 @@
 
 import logging
 import json
+import pyomo.environ as pyomo
 
 from . import database
 from . import event
@@ -124,6 +125,81 @@ class Component(state.BaseObject):
  
         """
         pass
+
+
+    def add_ocp_Var(self,model,localname,*args,**kwargs):
+        """
+        Adds a variable to a pyomo model and adds it to the local variables dictionary
+        
+        Parameters
+        ----------
+        model : pyomo.environ.ConcreteModel
+            The optimization model.
+            
+        localname : str
+            A local name to reference the variable
+            
+        *args : 
+            positional parameters passed to pyomo.environ.Var
+            
+        *args : 
+            keyword parameters passed to pyomo.environ.Var
+            
+        """
+        
+        var = pyomo.Var(*args,**kwargs)
+        self.ocp_variables[localname] = var
+        setattr(model,'{}_{}'.format(self.path.replace('/',''),localname),var)
+        
+
+    def add_ocp_Param(self,model,localname,*args,**kwargs):
+        """
+        Adds a parameter to a pyomo model and adds it to the local variables dictionary
+        
+        Parameters
+        ----------
+        model : pyomo.environ.ConcreteModel
+            The optimization model.
+            
+        localname : str
+            A local name to reference the variable
+            
+        *args : 
+            positional parameters passed to pyomo.environ.Param
+            
+        *args : 
+            keyword parameters passed to pyomo.environ.Param
+            
+        """
+        
+        var = pyomo.Param(*args,**kwargs)
+        self.ocp_variables[localname] = var
+        setattr(model,'{}_{}'.format(self.path.replace('/',''),localname),var)
+        
+
+    def add_ocp_Constraint(self,model,localname,*args,**kwargs):
+        """
+        Adds a constraint to a pyomo model
+        
+        Parameters
+        ----------
+        model : pyomo.environ.ConcreteModel
+            The optimization model.
+            
+        localname : str
+            A local name to reference the constraint
+            
+        *args : 
+            positional parameters passed to pyomo.environ.Param
+            
+        *args : 
+            keyword parameters passed to pyomo.environ.Param
+            
+        """
+        
+        var = pyomo.Constraint(*args,**kwargs)
+        setattr(model,'constraint_{}_{}'.format(self.path.replace('/',''),localname),var)
+
 
     def set(self):
         pass

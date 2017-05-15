@@ -122,7 +122,7 @@ class Singlezone_1(model.Buildingmodel):
         data['T_amb'] = core.states['weather/temperature'].history(data['timestamp'])
         data['T_liv'] = np.mean( [zone.states['temperature'].history(data['timestamp']) for zone in zones], axis=0)
         data['Q_sol'] = np.sum( [zone.states['solargain'].history(data['timestamp']) for zone in zones], axis=0 )
-        data['Q_int'] = np.sum( [zone.states['internalgain'].history(data['timestamp']) for zone in zones], axis=0 )
+        data['Q_int'] = 0#np.sum( [zone.states['internalgain'].history(data['timestamp']) for zone in zones], axis=0 )
         data['Q_hea'] = np.sum( [heatemissionsystem.calculate_power(timestamp=data['timestamp']) for zone in zones for heatemissionsystem in core.components.find(type='heatemissionsystem',zone=zone)], axis=0 )
 
 
@@ -246,11 +246,11 @@ class Singlezone_1(model.Buildingmodel):
         model.building_T_liv_max = pyomo.Param(model.i,domain=pyomo.NonNegativeReals,initialize=24.,doc='Maximum temperature (degC)')
 
 
-        model.building_Q_sol = pyomo.Var(model.i,domain=pyomo.NonNegativeReals,initialize=0,bounds=lambda model,i:(model.building_Q_sol_min[i],model.building_Q_sol_max[i]))
-        model.building_Q_int = pyomo.Var(model.i,domain=pyomo.NonNegativeReals,initialize=0,bounds=lambda model,i:(0,0))
-        model.building_Q_hea = pyomo.Var(model.i,domain=pyomo.NonNegativeReals,initialize=0)
+        model.building_Q_sol = pyomo.Var(model.i,domain=pyomo.NonNegativeReals,initialize=lambda model,i: model.building_Q_sol_max[i], bounds=lambda model,i:(model.building_Q_sol_min[i],model.building_Q_sol_max[i]))
+        model.building_Q_int = pyomo.Var(model.i,domain=pyomo.NonNegativeReals,initialize=lambda model,i: 0                          , bounds=lambda model,i:(0,0))
+        model.building_Q_hea = pyomo.Var(model.i,domain=pyomo.NonNegativeReals,initialize=lambda model,i: 0                          ,)
 
-        model.building_T_liv = pyomo.Var(model.ip,domain=pyomo.Reals,initialize=20,doc='Living zone temperature (degC)')
+        model.building_T_liv = pyomo.Var(model.ip,domain=pyomo.Reals,initialize=20.,doc='Living zone temperature (degC)')
 
         model.building_liv_D_tc = pyomo.Var(model.i,domain=pyomo.NonNegativeReals,initialize=0,doc='Temperature discomfort too cold (K)')
         model.building_liv_D_th = pyomo.Var(model.i,domain=pyomo.NonNegativeReals,initialize=0,doc='Temperature discomfort too hot (K)')

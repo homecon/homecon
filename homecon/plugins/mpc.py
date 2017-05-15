@@ -184,7 +184,6 @@ class Mpc(core.plugin.Plugin):
             # solve
             # the problem contains integers
             #solver = pyomo.SolverFactory('bonmin')  # FIXME should be done in a separate thread to not stop the event loop
-            #util.executor.run_in_executor(solver.solve,model,tee=True)
             #results = solver.solve(model, tee=True)
             #logging.debug('OCP solved using BONMIN')
 
@@ -255,7 +254,7 @@ class Mpc(core.plugin.Plugin):
             timestamp_when = int( (dt_when-dt_ref).total_seconds() )
 
             # optimize
-            result = self.optimization()
+            util.executor.run_in_executor(self.optimization)
 
             # sleep until the next call
             await asyncio.sleep(timestamp_when-timestamp_now)

@@ -38,7 +38,7 @@ class Buildingmodel(object):
 
         dt_ref = datetime.datetime(1970, 1, 1)
         dt_end = datetime.datetime.utcnow()
-        dt_ini = dt_end - datetime.timedelta(days=7)
+        dt_ini = dt_end - datetime.timedelta(days=2)
 
         timestamp_end = int( (dt_end-dt_ref).total_seconds() )
         timestamp_ini = int( (dt_ini-dt_ref).total_seconds() )
@@ -66,6 +66,7 @@ class Buildingmodel(object):
     def _check_data(self,data):
 
         for key,val in data.items():
+
             ind = np.where(np.isnan(val))[0]
             if len(ind) > 0.5*len(val):
                 # more than half the values are nan, the data is not usable
