@@ -33,7 +33,7 @@ class Darksky(core.plugin.Plugin):
 
         """
 
-        while True:
+        while self.active:
             # timestamps
             dt_ref = datetime.datetime(1970, 1, 1)
             dt_now = datetime.datetime.utcnow()

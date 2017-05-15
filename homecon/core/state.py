@@ -518,11 +518,23 @@ class State(BaseState):
             config['triggers'] = ''
         if 'computed' not in config:
             config['computed'] = ''
+        if 'scale' not in config:
+            config['scale'] = 1
+        if 'offset' not in config:
+            config['offset'] = 0 
 
         return config
 
 
     def _set_value(self,value,async=True):
+
+        if self.config['datatype'] == 'number':
+            try:
+                value = value*self.config['scale'] + self.config['offset']
+            except:
+                pass
+
+
         success,oldvalue = super()._set_value(value,async=async)
 
         # computed states

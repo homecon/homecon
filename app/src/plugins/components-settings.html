@@ -176,9 +176,13 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                     <paper-item value="dict">dictionary</paper-item>
                 </paper-menu>
             </paper-dropdown-menu>
-            <paper-input label="Timestamp delta" value="{{newStateConfig.timestampdelta}}"></paper-input>
 
+            <paper-input label="Scale" value="{{newStateConfig.scale}}" type="number"></paper-input>
+            <paper-input label="Offset" value="{{newStateConfig.offset}}" type="number"></paper-input>
+
+            <h3>Logging</h3>
             <paper-toggle-button checked="{{newStateConfig.log}}">Log</paper-toggle-button>
+            <paper-input label="Timestamp delta" value="{{newStateConfig.timestampdelta}}"></paper-input>
 
             <h3>Permissions</h3>
             <paper-input label="Read groups" value="{{newStateConfig.readgroups}}"></paper-input>

@@ -22,12 +22,12 @@ class Flukso(core.plugin.Plugin):
         core.states.add('flukso/settings/ip', value='192.168.1.1', config={'type': 'string', 'quantity':'', 'unit':'','label':'', 'description':'', 'private':True})
 
         self._loop.create_task(self.schedule_retrieve_data())
-        
+
         logging.debug('Flukso plugin Initialized')
     
 
     async def schedule_retrieve_data(self):
-        while True:
+        while self.active:
             # timestamps
             dt_when = (datetime.datetime.utcnow() + datetime.timedelta(minutes=1)).replace(second=0,microsecond=0)
             ts_when = util.time.timestamp(dt_when)
@@ -43,6 +43,7 @@ class Flukso(core.plugin.Plugin):
         for sensor in core.components.find(type='fluksosensor'):
             try:
                 url = 'http://{}:8080/sensor/{}?version=1.0&unit={}&interval=minute'.format(core.states['flukso/settings/ip'].value,sensor.config['id'],sensor.config['unit'])
+
 
                 async with aiohttp.ClientSession() as session:
                     async with session.get(url) as resp:
@@ -60,11 +61,12 @@ class Flukso(core.plugin.Plugin):
                         #core.event.fire('measurements_add',{'state':sensor.states['value'],'value':value,'timestamp':timestamp})
                         
                         logging.debug('Flukso sensor {} updated'.format(sensor.path))
-                        
+
             except Exception as e:
                 logging.error('Could not load data from Flukso sensor {}: {}'.format(sensor.path,e))
                 
-                
+
+
 class Fluksosensor(core.component.Component):
 
     default_config = {

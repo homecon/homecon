@@ -30,12 +30,14 @@ class Knx(core.plugin.Plugin):
         logging.debug('KNX plugin Initialized')
     
     async def schedule_check_connection(self):
-        while True:
+        while self.active:
             reconnect = True
             try:
                 if not self.tunnel is None:
                     
                     print( dir(self.tunnel.data_server) )
+                    #self.tunnel.data_server.close()
+
                     #reconnect = False
             except Exception as e:
                 logging.error(e)
@@ -44,7 +46,7 @@ class Knx(core.plugin.Plugin):
                 await self._connect()
 
             # sleep until the next call
-            await asyncio.sleep(20)
+            await asyncio.sleep(5*60)
 
 
     def connect(self):
@@ -149,8 +151,4 @@ class Knx(core.plugin.Plugin):
                 self.tunnel.group_write(str(state.config['knx_ga_write']),state.value,str(state.config['knx_dpt']))
                 logging.debug('{} changed, written {} to knx group address: {}'.format(state.path,state.value,state.config['knx_ga_write']))
         
-
-
-
-
 

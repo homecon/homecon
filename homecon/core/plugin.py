@@ -371,6 +371,7 @@ class Plugin(object):
 
         self._get_listeners()
 
+        self.active = True
         self.initialize()
 
 
@@ -453,7 +454,7 @@ class Plugin(object):
 
         Called when a plugin is deactivated
         """
-        pass
+        self.active = False
 
 
     def create_ocp_variables(self,model):
