@@ -211,10 +211,15 @@ class BaseState(BaseObject):
                 value = json.loads(jsonvalue)
 
                 if 'datatype' in self._config and self._config['datatype']=='number' and not value is None:
-                    value = float(value)
+                    try:
+                        value = float(value)
 
-                    if math.isnan(value):
-                        value = None
+                        if math.isnan(value):
+                            value = None
+
+                    except Exception as e:
+                        logging.error('Could not convert database entry to value for state {}: {}'.format(self.path,e))
+
             else:
                 value = None
 

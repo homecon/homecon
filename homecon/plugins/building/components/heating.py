@@ -70,7 +70,7 @@ class Heatgenerationsystem(core.component.Component):
 
     def postprocess_ocp(self,model):
         self.Q_schedule = [(pyomo.value(model.timestamp[i]),pyomo.value(self.ocp_variables['Q'][i])) for i in model.i]
-        self.states['power_setpoint'].value = self.Q_schedule[0] # FIXME interpolate to future
+        self.states['power_setpoint'].value = self.Q_schedule[0][1] # FIXME interpolate to future
 
 core.components.register(Heatgenerationsystem)
 
