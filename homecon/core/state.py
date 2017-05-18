@@ -210,7 +210,7 @@ class BaseState(BaseObject):
             if not jsonvalue is None:
                 value = json.loads(jsonvalue)
 
-                if 'type' in self._config and self._config['type']=='number' and not value is None:
+                if 'datatype' in self._config and self._config['datatype']=='number' and not value is None:
                     value = float(value)
 
                     if math.isnan(value):

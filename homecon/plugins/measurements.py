@@ -91,14 +91,12 @@ class Measurements(core.plugin.Plugin):
 
 
         
-    def add(self,path,value,time=None,timedelta=0,readusers=None,readgroups=None):
+    def add(self,state,time=None,timedelta=0,readusers=None,readgroups=None):
         """
         Parameters
         ----------
-        path : string
-            the path of a state
-        value : string
-            the value as json
+        state: state object
+            The state to be logged
         """
 
         if time is None:
@@ -106,26 +104,30 @@ class Measurements(core.plugin.Plugin):
             
         time = time+timedelta
 
-        self._db_measurements.POST(time=time,path=path,value=value)
+        value = state.value
+        if 'datatype' in state.config and (state.config['datatype'] == 'number' or state.config['datatype'] == 'boolean'):
+            value = float(value)
+        print(value)
+        self._db_measurements.POST(time=time,path=state.path,value=value)
 
         # FIXME add the value to this_weekaverage
 
-        if path in self.measurements:
-            self.measurements[path].append([time,value])
+        if state.path in self.measurements:
+            self.measurements[state.path].append([time,value])
             
             # remove values older then maxtimedelta
             ind = []
-            for i,data in enumerate(self.measurements[path]):
+            for i,data in enumerate(self.measurements[state.path]):
                 if data[0] < time - self.maxtimedelta:
                     ind.append(i)
                 else:
                     break
 
             for i in ind:
-                del self.measurements[path][i]
+                del self.measurements[state.path][i]
 
 
-            core.websocket.send({'event':'append_timeseries', 'path':path, 'value':[time,value]}, readusers=readusers, readgroups=readgroups)
+            core.websocket.send({'event':'append_timeseries', 'path':state.path, 'value':[time,value]}, readusers=readusers, readgroups=readgroups)
 
 
     def get(self,path):
@@ -144,7 +146,7 @@ class Measurements(core.plugin.Plugin):
 
     def listen_state_changed(self,event):
         if 'log' in event.data['state'].config and event.data['state'].config['log']:
-            self.add(event.data['state'].path,event.data['state'].value,timedelta=event.data['state'].config['timestampdelta'],readusers=event.data['state'].config['readusers'],readgroups=event.data['state'].config['readgroups'])
+            self.add(event.data['state'],timedelta=event.data['state'].config['timestampdelta'],readusers=event.data['state'].config['readusers'],readgroups=event.data['state'].config['readgroups'])
 
 
 

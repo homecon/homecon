@@ -38,7 +38,7 @@ class Buildingmodel(object):
 
         timestep = 15*60
         ts_end = util.time.timestamp()
-        ts_ini = util.time.timestamp_timedelta(ts_end, days=-3)
+        ts_ini = util.time.timestamp_timedelta(ts_end, days=-7)
         timestamp = np.arange(ts_ini,ts_end,timestep)
 
         return {'timestamp':timestamp}
