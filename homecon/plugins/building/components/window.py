@@ -133,7 +133,7 @@ class Shading(core.component.Component):
             'fixed_config': {},
         },
         'auto': {
-            'default_config': {'datatype': 'number'},
+            'default_config': {'datatype': 'boolean'},
             'fixed_config': {},
         },
         'override': {

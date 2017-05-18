@@ -21,8 +21,10 @@
 import logging
 import json
 import datetime
+import asyncio
 
 from .. import core
+from .. import util
 
 class Measurements(core.plugin.Plugin):
     """
@@ -33,20 +35,62 @@ class Measurements(core.plugin.Plugin):
     def initialize(self):
         
         self._db_measurements = core.state.State.db_history
-
+        self._db_weekaverage = core.database.Table(core.database.measurements_db,'weekaverage',[
+            {'name':'time',   'type':'INT',   'null': '',  'default':'',  'unique':''},
+            {'name':'path',   'type':'TEXT',  'null': '',  'default':'',  'unique':''},
+            {'name':'value',  'type':'TEXT',  'null': '',  'default':'',  'unique':''},
+        ])
+        
         self.maxtimedelta = 7*24*3600
         self.measurements = {}
+        
+        self.weekaverage_maxtimedelta = (366+7+1)*24*3600
+        self.weekaverage = {}
+        self.this_weekaverage = {}
 
+        optimization_task = asyncio.ensure_future(self.schedule_compute_weekaverage())
         logging.debug('Measurements plugin Initialized')
 
-    def time(self):
-        """
-        returns a UTC timestamp
-        """
+        
+    async def schedule_compute_weekaverage(self):
+        while True:
+            await asyncio.sleep(8564)  # run some time later
 
-        return int( (datetime.datetime.utcnow()-datetime.datetime(1970,1,1)).total_seconds() )
+            # timestamps
+            dt_now = util.time.timestamp_to_datetime(util.time.timestamp())
+            dt_when = (dt_now + datetime.timedelta(days=(dt_now.weekday()+7)%7,hours=3)).replace(hour=0,minute=0,second=0,microsecond=0)
+            ts_when = util.time.timestamp(dt_when)
+            
+            self.compute_weekaverage()
+
+            # sleep until the next call
+            await asyncio.sleep(util.time.seconds_until(ts_when))
+        
+    def compute_weekaverage(self):
+        dt_now = util.time.timestamp_to_datetime(util.time.timestamp())
+        
+        dt_end = (dt_now + datetime.timedelta(days=-dt_now.weekday())).replace(hour=0,minute=0,second=0,microsecond=0)
+        dt_sta = (dt_end + datetime.timedelta(days=-6.5)).replace(hour=0,minute=0,second=0,microsecond=0)
+        
+        ts_sta = util.time.timestamp(dt_when)
+        ts_end = util.time.timestamp(dt_end)
     
+        logging.debug('Computing week averages from {} to {}'.format(ts_sta,ts_end))
 
+        for state in core.states:
+            if state.config['log']:
+                try:
+                    if state.path in self.this_weekaverage:
+                        value = self.this_weekaverage[state.path]
+                    else:
+                        value = 0
+                    # FIXME
+
+                except Exception as e:
+                    logging.error('Could not compute the week average for state {}:'.format(state.path,e))
+
+
+        
     def add(self,path,value,time=None,timedelta=0,readusers=None,readgroups=None):
         """
         Parameters
@@ -58,11 +102,13 @@ class Measurements(core.plugin.Plugin):
         """
 
         if time is None:
-            time = self.time()
+            time = util.time.timestamp()
             
         time = time+timedelta
 
         self._db_measurements.POST(time=time,path=path,value=value)
+
+        # FIXME add the value to this_weekaverage
 
         if path in self.measurements:
             self.measurements[path].append([time,value])
@@ -87,7 +133,7 @@ class Measurements(core.plugin.Plugin):
         """
 
         if not path in self.measurements:
-            data = self._db_measurements.GET(path=path,time__ge=self.time()-self.maxtimedelta)
+            data = self._db_measurements.GET(path=path,time__ge=util.time.timestamp()-self.maxtimedelta)
             
             self.measurements[path] = []
             for d in data:
