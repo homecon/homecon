@@ -105,7 +105,7 @@ class Singlezone_1(model.Buildingmodel):
 
         # contstraints
         model.state_liv = pyomo.Constraint(model.i,rule=self.identification_constraints['state_T_liv'])
-        model.state_liv_ini = pyomo.Constraint(rule=lambda model: model.T_liv_est[0] == model.T_liv[0])
+        model.state_liv_ini = pyomo.Constraint(rule=lambda model: model.T_liv_est[0] == model.T_liv[0] if not np.isnan(model.T_liv[0]) else pyomo.Constraint.Feasible)
 
         # objective
         model.objective = pyomo.Objective(rule=lambda model: sum( (model.T_liv[i]-model.T_liv_est[i])**2 for i in model.i ), sense=pyomo.minimize)
@@ -133,7 +133,6 @@ class Singlezone_1(model.Buildingmodel):
             data['Q_int'] += np.zeros(len(data['timestamp']))
         if not hasattr(data['Q_hea'],'__len__'):
             data['Q_hea'] += np.zeros(len(data['timestamp']))
-
 
         return data
 

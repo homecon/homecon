@@ -61,14 +61,17 @@ class Buildingmodel(object):
 
     def _check_data(self,data):
 
+        remove_ind = []
         for key,val in data.items():
 
-            ind = np.where(np.isnan(val))[0]
-            if len(ind) > 0.5*len(val):
-                # more than half the values are nan, the data is not usable
-                return False
+            remove_ind += list(np.where(np.isnan(val))[0])
 
-        return True
+        remove_ind = list(set(remove_ind))
+
+        for key,val in data.items():
+            data[key] = np.delete(val,remove_ind)
+
+        return data
 
     def _parse_data(self,data):
         """
@@ -107,8 +110,8 @@ class Buildingmodel(object):
         """
         # retrieve data
         data = self.get_identification_data()
-
-        if self._check_data(data):
+        data = self._check_data(data)
+        if data:
             data = self._parse_data(data)
 
             # create the instance
@@ -144,7 +147,8 @@ class Buildingmodel(object):
         """
         # retrieve data
         data = self.get_identification_data()
-        if self._check_data(data):
+        data = self._check_data(data)
+        if data:
             data = self._parse_data(data)
             
             # create the instance
