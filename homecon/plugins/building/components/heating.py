@@ -17,8 +17,12 @@ class Heatgenerationsystem(core.component.Component):
         'power': 10000.,
         'group': '',
         'heatingcurve': False,
-        'T_hc_nom': -10.,
-        'T_hc_0': 15,
+        'Q_hc_nom': 7000.,
+        'T_hc_sup_nom': 45.,
+        'T_hc_amb_nom': -10.,
+        'T_hc_sup_offset': -3.,
+        'K_hc': 3.,
+        'controlzone': '',
     }
     linked_states = {
         'power': {
@@ -40,12 +44,29 @@ class Heatgenerationsystem(core.component.Component):
 
     def create_ocp_variables(self,model):
         super().create_ocp_variables(model)
-        self.add_ocp_Var(model,'Q', model.i, domain=pyomo.NonNegativeReals, bounds=(0,self.config['power']), initialize=0.)
+        if self.config['heatingcurve']:
+            self.add_ocp_Var(model,'Q', model.i, domain=pyomo.NonNegativeReals, initialize=0.)
+        else:
+            self.add_ocp_Var(model,'Q', model.i, domain=pyomo.NonNegativeReals, bounds=(0,self.config['power']), initialize=0.)
 
     def create_ocp_constraints(self,model):
         super().create_ocp_constraints(model)
         if self.config['heatingcurve']:
-            self.add_ocp_Constraint(model,'Q_hc', model.i,rule=lambda model,i: self.ocp_variables['Q'][i] == max(0.,min(self.config['power'] , self.config['power']*(model.T_amb[i]-self.config['T_hc_0'])/(self.config['T_hc_nom']-self.config['T_hc_0'])))  )
+            UA_em_est = self.config['Q_hc_nom']/(self.config['T_hc_sup_nom']-20.)
+            
+            if self.config['controlzone'] in core.components:
+                controlzone = core.components[self.config['controlzone']]
+                T_in = controlzone.ocp_variables['T']
+                T_in_set = controlzone.ocp_variables['T_min']
+                
+                self.add_ocp_Constraint(model,'Q_hc',model.i,rule=lambda model,i: self.ocp_variables['Q'][i] >= self.config['Q_hc_nom']*(model.T_amb[i]-20.)/(self.config['T_hc_amb_nom']-20.)-self.config['K_hc']*UA_em_est*(T_in[i]-T_in_set[i]) - UA_em_est*(T_in[i]-(20.+self.config['T_hc_sup_offset'])) )
+
+            else:
+                # no zone temperature feedback
+                T_in = 20.
+                T_in_set = 20.
+                
+                self.add_ocp_Constraint(model,'Q_hc',model.i,rule=lambda model,i: self.ocp_variables['Q'][i] == max(0.,min(self.config['power'] , self.config['Q_hc_nom']*(model.T_amb[i]-20.)/(self.config['T_hc_amb_nom']-20.)-self.config['K_hc']*UA_em_est*(T_in-T_in_set) - UA_em_est*(T_in-(20.+self.config['T_hc_sup_offset'])) )) )
 
     def postprocess_ocp(self,model):
         self.Q_schedule = [(pyomo.value(model.timestamp[i]),pyomo.value(self.ocp_variables['Q'][i])) for i in model.i]
@@ -168,9 +189,12 @@ class Heatinggroup(core.component.Component):
     """
     default_config = {
         'heatingcurve': True,
-        'T_hc_nom': -10.,
-        'T_hc_0': 15,
-        'Q_hc_nom': 10000.,
+        'Q_hc_nom': 7000.,
+        'T_hc_sup_nom': 45.,
+        'T_hc_amb_nom': -10.,
+        'T_hc_sup_offset': -3.,
+        'K_hc': 3.,
+        'controlzone': '',
     }
     
     def calculate_power(self,timestamp=None):
@@ -208,7 +232,21 @@ class Heatinggroup(core.component.Component):
             if all_systems_have_heatingcurve:
                 logging.warning('All heat generation systems in the heating group are controlled by a heating curve. Heatinggroup {} heatingcurve is not applied.'.format(self.path))
             else:
-                self.add_ocp_Constraint(model,'Q_hc',model.i,rule=lambda model,i: self.ocp_variables['Q'][i] >= max(0.,min(self.config['Q_hc_nom'] , self.config['Q_hc_nom']*(model.T_amb[i]-self.config['T_hc_0'])/(self.config['T_hc_nom']-self.config['T_hc_0']))) )
+                UA_em_est = self.config['Q_hc_nom']/(self.config['T_hc_sup_nom']-20.)
+                
+                if self.config['controlzone'] in core.components:
+                    controlzone = core.components[self.config['controlzone']]
+                    T_in = controlzone.ocp_variables['T']
+                    T_in_set = controlzone.ocp_variables['T_min']
+                    
+                    self.add_ocp_Constraint(model,'Q_hc',model.i,rule=lambda model,i: self.ocp_variables['Q'][i] >= self.config['Q_hc_nom']*(model.T_amb[i]-20.)/(self.config['T_hc_amb_nom']-20.)-self.config['K_hc']*UA_em_est*(T_in[i]-T_in_set[i]) - UA_em_est*(T_in[i]-(20.+self.config['T_hc_sup_offset'])) )
+
+                else:
+                    # no zone temperature feedback
+                    T_in = 20.
+                    T_in_set = 20.
+                    
+                    self.add_ocp_Constraint(model,'Q_hc',model.i,rule=lambda model,i: self.ocp_variables['Q'][i] == max(0., self.config['Q_hc_nom']*(model.T_amb[i]-20.)/(self.config['T_hc_amb_nom']-20.)-self.config['K_hc']*UA_em_est*(T_in-T_in_set) - UA_em_est*(T_in-(20.+self.config['T_hc_sup_offset'])) ) )
 
 core.components.register(Heatinggroup)
 
