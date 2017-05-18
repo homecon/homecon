@@ -63,5 +63,12 @@ class TimeTests(unittest.TestCase):
         print(timestamps[0])
         print(timestamps_of_the_week[0]/3600)
 
+    def test_timestamp_timedelta(self):
+        util.time.set_timezone('Europe/Brussels')
 
+        timestep = 15*60
+        ts_end = util.time.timestamp()
+        ts_ini = util.time.timestamp_timedelta(ts_end, days=-3)
+        timestamp = np.arange(ts_ini,ts_end,timestep)
+        print(timestamp)
 

@@ -30,6 +30,17 @@ def timestamp(dt_utc=None):
 
     return int((dt_utc-dt_ref).total_seconds())
 
+def timestamp_timedelta(ts,**kwargs):
+    """
+    Returns a timestamp shifted in time 
+    """
+    
+    dt = timestamp_to_datetime(ts)
+    dt_shift = dt + datetime.timedelta(**kwargs)
+    dt_shift_utc = dt_shift.astimezone(pytz.utc).replace(tzinfo=None)
+    ts_shift = timestamp(dt_shift_utc)
+
+    return ts_shift
 
 def timestamp_to_datetime(ts,timezonestr=None):
     """

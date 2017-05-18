@@ -5,6 +5,8 @@ import datetime
 import numpy as np
 import pyomo.environ as pyomo
 
+from .... import core
+from .... import util
 
 class Buildingmodel(object):
     """
@@ -35,17 +37,11 @@ class Buildingmodel(object):
         """
 
         timestep = 15*60
-
-        dt_ref = datetime.datetime(1970, 1, 1)
-        dt_end = datetime.datetime.utcnow()
-        dt_ini = dt_end - datetime.timedelta(days=2)
-
-        timestamp_end = int( (dt_end-dt_ref).total_seconds() )
-        timestamp_ini = int( (dt_ini-dt_ref).total_seconds() )
-
-        timestamps = np.arange(timestamp_ini,timestamp_end,timestep)
-
-        return {'timestamp':timestamps}
+        ts_end = util.time.timestamp()
+        ts_ini = util.time.timestamp_timedelta(ts_end, days=-3)
+        timestamp = np.arange(ts_ini,ts_end,timestep)
+        print(timestamp)
+        return {'timestamp':timestamp}
 
 
     def get_identification_result(self,model):
@@ -90,6 +86,7 @@ class Buildingmodel(object):
 
         pyomodata={None:{
             'i':{None: range(len(data['timestamp']))},
+            'im':{None: range(len(data['timestamp'])-1)},
         }}
 
         for key,val in data.items():

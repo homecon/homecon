@@ -251,13 +251,17 @@ class Singlezone_1(model.Buildingmodel):
         model.building_Q_hea = pyomo.Var(model.i,domain=pyomo.NonNegativeReals,initialize=lambda model,i: 0                          ,)
 
         model.building_T_liv = pyomo.Var(model.ip,domain=pyomo.Reals,initialize=20.,doc='Living zone temperature (degC)')
-
+            
         model.building_liv_D_tc = pyomo.Var(model.i,domain=pyomo.NonNegativeReals,initialize=0,doc='Temperature discomfort too cold (K)')
         model.building_liv_D_th = pyomo.Var(model.i,domain=pyomo.NonNegativeReals,initialize=0,doc='Temperature discomfort too hot (K)')
         model.building_liv_D_vi = pyomo.Var(model.i,domain=pyomo.NonNegativeReals,initialize=0,doc='Visual discomfort (m2)')
         
-        
-
+        # link the zone temperature back to the zones
+        for zone in zones:
+            zone.ocp_variables['T'] = model.building_T_liv
+            zone.ocp_variables['T_min'] = model.building_T_liv_min
+            
+            
     def create_ocp_constraints(self,model):
 
         # state estimation?  # FIXME
