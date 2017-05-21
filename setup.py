@@ -25,7 +25,7 @@ setup(
     license='GPLv3',
     description='Integrated home optimization',
     long_description=open(os.path.join(os.path.dirname(__file__), 'README.rst')).read(),
-    url='http://github.com/BrechtBa/homecon',
+    url='http://github.com/homecon/homecon',
     author='Brecht Baeten',
     author_email='brecht.baeten@gmail.com',
     packages=find_packages(),

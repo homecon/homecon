@@ -65,9 +65,9 @@ Everything is installed in the local environment so multiple instances of HomeCo
 
 .. code-block:: bash
 
-    homecon install --nostaticip
+    homecon configure --nostaticip
 
-If Ipopt, Glpk or Bonmin are allready installed, you can avoid recompiling them using the :code:`--noipopt`, :code:`--noglpk` and :code:`--nobonmin` options respectively.
+If Ipopt, Glpk or Bonmin are already installed, you can avoid recompiling them using the :code:`--noipopt`, :code:`--noglpk` and :code:`--nobonmin` options respectively.
 
 Finally run Homecon in development and/or demo mode with:
 
@@ -81,6 +81,13 @@ Developing
 ----------
 
 Develop new features in branches starting with :code:`dev_`.
+
+Create unit tests if required in the :code:`homecon/tests` folder or create subfolders and run the unit tests from the root folder with:
+
+.. code-block:: bash
+
+    python -m unittest homecon.tests.yourtestfile
+
 
 
 Releasing
