@@ -52,21 +52,28 @@ class Heatgenerationsystem(core.component.Component):
     def create_ocp_constraints(self,model):
         super().create_ocp_constraints(model)
         if self.config['heatingcurve']:
+
             UA_em_est = self.config['Q_hc_nom']/(self.config['T_hc_sup_nom']-20.)
-            
+
             if self.config['controlzone'] in core.components:
                 controlzone = core.components[self.config['controlzone']]
                 T_in = controlzone.ocp_variables['T']
                 T_in_set = controlzone.ocp_variables['T_min']
                 
-                self.add_ocp_Constraint(model,'Q_hc',model.i,rule=lambda model,i: self.ocp_variables['Q'][i] >= self.config['Q_hc_nom']*(model.T_amb[i]-20.)/(self.config['T_hc_amb_nom']-20.)-self.config['K_hc']*UA_em_est*(T_in[i]-T_in_set[i]) - UA_em_est*(T_in[i]-(20.+self.config['T_hc_sup_offset'])) )
-
             else:
                 # no zone temperature feedback
-                T_in = 20.
-                T_in_set = 20.
-                
-                self.add_ocp_Constraint(model,'Q_hc',model.i,rule=lambda model,i: self.ocp_variables['Q'][i] == max(0.,min(self.config['power'] , self.config['Q_hc_nom']*(model.T_amb[i]-20.)/(self.config['T_hc_amb_nom']-20.)-self.config['K_hc']*UA_em_est*(T_in-T_in_set) - UA_em_est*(T_in-(20.+self.config['T_hc_sup_offset'])) )) )
+                T_in = [20. for i in model.i]
+                T_in_set = [20. for i in model.i]
+
+            # construct an approximation of the heating curve
+            T_hc_amb_0   = [20. + self.config['K_hc']*UA_em_est/self.config['Q_hc_nom']*(T_in[i]-T_in_set[i])*(self.config['T_hc_amb_nom']-20.) + UA_em_est/self.config['Q_hc_nom']*(T_in[i]-(20.+self.config['T_hc_sup_offset']))*(self.config['T_hc_amb_nom']-20.) for i in model.i]
+            T_hc_amb_max = [T_hc_amb_0[i] + self.config['power']/self.config['Q_hc_nom']*(self.config['T_hc_amb_nom']-20.) for i in model.i]
+            k = 5.
+
+            Q_hc = [ ( pyomo.log(1+pyomo.exp(-k*(model.T_amb[i]-T_hc_amb_0[i])))- pyomo.log(1+pyomo.exp(-k*(model.T_amb[i]-T_hc_amb_max[i]))) )*self.config['power']/(T_hc_amb_0[i]-T_hc_amb_max[i])/k  for i in model.i]
+
+            self.add_ocp_Constraint(model,'heatingcurve',model.i,rule=lambda model,i: self.ocp_variables['Q'][i] == Q_hc[i] )
+
 
     def postprocess_ocp(self,model):
         self.Q_schedule = [(pyomo.value(model.timestamp[i]),pyomo.value(self.ocp_variables['Q'][i])) for i in model.i]
@@ -233,20 +240,27 @@ class Heatinggroup(core.component.Component):
                 logging.warning('All heat generation systems in the heating group are controlled by a heating curve. Heatinggroup {} heatingcurve is not applied.'.format(self.path))
             else:
                 UA_em_est = self.config['Q_hc_nom']/(self.config['T_hc_sup_nom']-20.)
-                
+
                 if self.config['controlzone'] in core.components:
                     controlzone = core.components[self.config['controlzone']]
                     T_in = controlzone.ocp_variables['T']
                     T_in_set = controlzone.ocp_variables['T_min']
                     
-                    self.add_ocp_Constraint(model,'Q_hc',model.i,rule=lambda model,i: self.ocp_variables['Q'][i] >= self.config['Q_hc_nom']*(model.T_amb[i]-20.)/(self.config['T_hc_amb_nom']-20.)-self.config['K_hc']*UA_em_est*(T_in[i]-T_in_set[i]) - UA_em_est*(T_in[i]-(20.+self.config['T_hc_sup_offset'])) )
-
                 else:
                     # no zone temperature feedback
-                    T_in = 20.
-                    T_in_set = 20.
-                    
-                    self.add_ocp_Constraint(model,'Q_hc',model.i,rule=lambda model,i: self.ocp_variables['Q'][i] == max(0., self.config['Q_hc_nom']*(model.T_amb[i]-20.)/(self.config['T_hc_amb_nom']-20.)-self.config['K_hc']*UA_em_est*(T_in-T_in_set) - UA_em_est*(T_in-(20.+self.config['T_hc_sup_offset'])) ) )
+                    T_in = [20. for i in model.i]
+                    T_in_set = [20. for i in model.i]
+
+                # construct an approximation of the heating curve
+                power = sum([system.config['power'] for system in core.components.find(type='heatgenerationsystem',group=self.path)])
+
+                T_hc_amb_0   = [20. + self.config['K_hc']*UA_em_est/self.config['Q_hc_nom']*(T_in[i]-T_in_set[i])*(self.config['T_hc_amb_nom']-20.) + UA_em_est/self.config['Q_hc_nom']*(T_in[i]-(20.+self.config['T_hc_sup_offset']))*(self.config['T_hc_amb_nom']-20.) for i in model.i]
+                T_hc_amb_max = [T_hc_amb_0[i] + power/self.config['Q_hc_nom']*(self.config['T_hc_amb_nom']-20.) for i in model.i]
+                k = 5.
+                
+                Q_hc = [ ( pyomo.log(1+pyomo.exp(-k*(model.T_amb[i]-T_hc_amb_0[i])))- pyomo.log(1+pyomo.exp(-k*(model.T_amb[i]-T_hc_amb_max[i]))) )*power/(T_hc_amb_0[i]-T_hc_amb_max[i])/k  for i in model.i]
+
+                self.add_ocp_Constraint(model,'heatingcurve',model.i,rule=lambda model,i: self.ocp_variables['Q'][i] == Q_hc[i] )
 
 core.components.register(Heatinggroup)
 
