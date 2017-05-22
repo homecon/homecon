@@ -66,7 +66,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         </style>
 
         <div class="vertical layout  center-justified">
-            <form is="iron-form" id="loginform" on-iron-form-submit="requestToken">
+            <form is="iron-form" id="loginform" on-iron-form-submit="requestToken" method="GET">
                 <paper-material>
                     <h1>Login</h1>
                     <paper-input label="Username:" value="{{username}}"></paper-input>

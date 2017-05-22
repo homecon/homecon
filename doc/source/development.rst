@@ -6,6 +6,7 @@ Development dependencies
 
 * python >3.5  :code:`sudo apt-get install python3`
 * node.js      :code:`sudo apt-get install nodejs`
+* virtualenv   :code:`sudo apt-get install virtualenv`
 
 
 Development installation
@@ -15,7 +16,7 @@ Clone the homecon project:
 
 .. code-block:: bash
 
-    git clone https://github.com/BrechtBa/homecon
+    git clone https://github.com/homecon/homecon.git
     cd homecon
 
 
@@ -57,10 +58,10 @@ It is probably not desired to set a static ip address on the development machine
 
 .. code-block:: bash
 
-    setup.py develop
+    python setup.py develop
 
 HomeCon requires some files in the filesystem.
-The necessary files and optimizers can be handled by the :code:`__install__.py` script.
+The necessary files and optimizers can be handled by the :code:`__configure__.py` script.
 Everything is installed in the local environment so multiple instances of HomeCon can be run on the same machine.
 
 .. code-block:: bash
