@@ -9,29 +9,24 @@ import shutil
 import getpass
 import pyomo.environ as pyomo
 
-
-
-basedir = os.path.join(os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe()))),'..','..')
+basedir = os.path.join(os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe()))), '..', '..')
 username = 'homecon'
 
 
 def create_data_folders():
-
     # create the data folder
     try:
-        os.makedirs(os.path.join(sys.prefix,'lib/homecon'))
+        os.makedirs(os.path.join(sys.prefix, 'lib/homecon'))
     except:
         pass
-
     # create a temp folder
     try:
-        os.makedirs(os.path.join(sys.prefix,'var/tmp/homecon'))
+        os.makedirs(os.path.join(sys.prefix, 'var/tmp/homecon'))
     except:
         pass
-
     # create the log folder
     try:
-        os.makedirs(os.path.join(sys.prefix,'log/homecon'))
+        os.makedirs(os.path.join(sys.prefix, 'log/homecon'))
     except:
         pass
 
@@ -53,33 +48,33 @@ def set_static_ip(ip=None):
 
         splitip = ip.split('.')
 
-        if not len(splitip) ==4:
+        if not len(splitip) == 4:
             raise Exception('{} is not a valid ip address'.format(ip))
 
-
-        with open(os.path.join(sys.prefix,'var','tmp','homecon','network_template'),'r') as f:
+        with open(os.path.join(sys.prefix, 'var', 'tmp', 'homecon', 'network_template'), 'r') as f:
             content = f.read()
 
-            with open(os.path.join(sys.prefix,'var','tmp','homecon','interfaces'),'w') as fw:
-                fw.write(content.format(ip=ip,ip0=splitip[0],ip1=splitip[1]))
+            with open(os.path.join(sys.prefix, 'var', 'tmp', 'homecon', 'interfaces'), 'w') as fw:
+                fw.write(content.format(ip=ip, ip0=splitip[0], ip1=splitip[1]))
 
-        
-        subprocess.call(['sudo', 'mv', os.path.join(sys.prefix,'var','tmp','homecon','interfaces'), '/etc/network/interfaces'])
+        subprocess.call(['sudo', 'mv', os.path.join(sys.prefix, 'var', 'tmp', 'homecon', 'interfaces'),
+                         '/etc/network/interfaces'])
     except:
         print('Warning: Could not set static ip address')
 
-def set_init_script(scriptname='homecon'):
 
+def set_init_script(scriptname='homecon'):
     try:
-        with open(os.path.join(sys.prefix,'var','tmp','homecon','init_template'),'r') as f:
+        with open(os.path.join(sys.prefix, 'var', 'tmp', 'homecon', 'init_template'), 'r') as f:
             content = f.read()
 
-            with open(os.path.join(sys.prefix,'var','tmp','homecon',scriptname),'w') as fw:
-                fw.write(content.format(bin=os.path.join(sys.prefix,'bin')))
+            with open(os.path.join(sys.prefix, 'var', 'tmp', 'homecon', scriptname), 'w') as fw:
+                fw.write(content.format(bin=os.path.join(sys.prefix, 'bin')))
 
-        subprocess.call(['sudo', 'mv', os.path.join(sys.prefix,'var','tmp','homecon',scriptname), os.path.join('/etc/init.d',scriptname)])
-        subprocess.call(['sudo', 'chmod', '755', os.path.join('/etc/init.d',scriptname)])
-        subprocess.call(['sudo', 'chown', 'root:root', os.path.join('/etc/init.d',scriptname)])
+        subprocess.call(['sudo', 'mv', os.path.join(sys.prefix, 'var', 'tmp', 'homecon',scriptname),
+                         os.path.join('/etc/init.d',scriptname)])
+        subprocess.call(['sudo', 'chmod', '755', os.path.join('/etc/init.d', scriptname)])
+        subprocess.call(['sudo', 'chown', 'root:root', os.path.join('/etc/init.d', scriptname)])
         subprocess.call(['sudo', 'update-rc.d', scriptname, 'defaults'])
     except:
         print('Warning: Could not create init script')
@@ -87,34 +82,60 @@ def set_init_script(scriptname='homecon'):
 
 def patch_pyutilib():
     try:
-        path = os.path.join(sys.prefix,'lib','python{}'.format(sys.version[:3]),'site-packages','pyutilib','subprocess','processmngr.py')
+        path = os.path.join(sys.prefix, 'lib', 'python{}'.format(sys.version[:3]),
+                            'site-packages', 'pyutilib', 'subprocess', 'processmngr.py')
 
         if not os.path.exists(path):
-            for temppath in os.listdir(os.path.join(sys.prefix,'lib','python{}'.format(sys.version[:3]),'site-packages')):
+            for temppath in os.listdir(os.path.join(sys.prefix, 'lib', 'python{}'.format(sys.version[:3]),
+                                                    'site-packages')):
                 if temppath.startswith('PyUtilib'):
-                    path = os.path.join(sys.prefix,'lib','python{}'.format(sys.version[:3]),'site-packages',temppath,'pyutilib','subprocess','processmngr.py')
+                    path = os.path.join(sys.prefix, 'lib', 'python{}'.format(sys.version[:3]), 'site-packages',
+                                        temppath, 'pyutilib', 'subprocess', 'processmngr.py')
                     break
 
-        origpath = path.replace('.py','_orig.py')
+        origpath = path.replace('.py', '_orig.py')
 
         if not os.path.exists(origpath):
-            shutil.copyfile(path,origpath)
+            shutil.copyfile(path, origpath)
 
-        with open(path,'w') as f:
-            with open(origpath,'r') as f_orig:
+        with open(path, 'w') as f:
+            with open(origpath, 'r') as f_orig:
 
-                for i,l in enumerate(f_orig):
-                    if i+1 not in [496,497,498,499,500,501,502,503,504,505,506,507,508,509]:
+                for i, l in enumerate(f_orig):
+                    if i+1 not in [496, 497, 498, 499, 500, 501, 502, 503, 504, 505, 506, 507, 508, 509]:
                         f.write(l)
     except:
-        print('Warning: Could patch pyutilib')
+        print('Warning: Could not patch pyutilib')
 
+
+################################################################################
+# Plugin dependencies
+################################################################################
+def install_knxd():
+    """
+    https://github.com/knxd/knxd
+    """
+    try:
+        currentdir = os.getcwd()
+        installdir = '{}/local/knxd'.format(sys.prefix)
+        if not os.path.exists(installdir):
+            os.makedirs(installdir)
+        os.chdir(installdir)
+
+        subprocess.call(['git', 'clone', 'https://github.com/knxd/knxd.git'])
+        os.chdir('knxd')
+        subprocess.call(['dpkg-buildpackage' '-b' '-uc'])
+        os.chdir(installdir)
+        subprocess.call(['sudo', 'dpkg', '-i', 'knxd_*.deb', 'knxd-tools_*.deb'])
+    except:
+        print('Warning: Could not install knxd')
+    finally:
+        os.chdir(currentdir)
 
 
 ################################################################################
 # Optimization solvers
 ################################################################################
-
 model = pyomo.ConcreteModel()
 model.x = pyomo.Var(domain=pyomo.NonNegativeReals)
 model.y = pyomo.Var(domain=pyomo.NonNegativeReals)
@@ -144,7 +165,6 @@ def install_glpk():
     currentdir = os.getcwd()
     os.chdir(basedir)
 
-
     installdir = '{}/local/glpk'.format(sys.prefix)
     installver = '4.60'
 
@@ -169,8 +189,6 @@ def install_glpk():
     subprocess.call(['sudo', 'ldconfig', '{}'.format('/usr/local/bin')])
 
     os.chdir(currentdir)
-
-
 
 def install_ipopt():
     """

@@ -23,11 +23,9 @@ def main():
         ################################################################################
         from . import configure
 
-
         if not '--nofolders' in sys.argv:
             print('### Creating the Homecon folders')
             configure.create_data_folders()
-
 
         # set a static ip address
         if not '--nostaticip' in sys.argv:
@@ -56,16 +54,21 @@ def main():
         if not '--noinitscript' in sys.argv:
             scriptname='homecon'
             for arg in sys.argv:
-                if arg.startswith( '--initscriptname='):
+                if arg.startswith('--initscriptname='):
                     scriptname = arg[17:]
                     break
 
             configure.set_init_script(scriptname=scriptname)
 
         # patch pyutilib
-        if not '--nopatchpyutilib' in sys.argv:
-            print('### Patching the pytuilib')
-            configure.patch_pyutilib()
+        # if not '--nopatchpyutilib' in sys.argv:
+        #     print('### Patching the pytuilib')
+        #     configure.patch_pyutilib()
+
+        # install knxd
+        # if not '--noknxd' in sys.argv:
+        #     print('### Installing knxd')
+        #     configure.install_knxd()
 
         # install bonmin
         #if not '--nobonmin' in sys.argv:
@@ -80,19 +83,21 @@ def main():
                 configure.install_ipopt()
 
         # install glpk
-        #if not '--noglpk' in sys.argv:
-        #    if not configure.solver_available('glpk'):
-        #        print('### Installing GLPK')
-        #        print('installation does not work locally yet and is omitted')
-        #        configure.install_glpk()
+        # if not '--noglpk' in sys.argv:
+        #     if not configure.solver_available('glpk'):
+        #         print('### Installing GLPK')
+        #         print('installation does not work locally yet and is omitted')
+        #         configure.install_glpk()
 
-
+        # install knxd
+        if not '--noknxd' in sys.argv:
+            print('### Installing knxd')
+            configure.install_knxd()
 
     else:
         ################################################################################
-        # Run homecon
+        # Run HomeCon
         ################################################################################
-
         hc_kwargs = {}
         app_kwargs = {}
 
@@ -112,22 +117,21 @@ def main():
 
             # clear the demo database
             try:
-                os.remove(os.path.join(sys.prefix,'lib/homecon/demo_homecon.db'))
+                os.remove(os.path.join(sys.prefix, 'lib/homecon/demo_homecon.db'))
             except:
                 pass
             try:
-                os.remove(os.path.join(sys.prefix,'lib/homecon/demo_homecon_measurements.db'))
+                os.remove(os.path.join(sys.prefix, 'lib/homecon/demo_homecon_measurements.db'))
             except:
                 pass
 
         for arg in sys.argv:
-            if arg.startswith( '--port='):
+            if arg.startswith('--port='):
                 app_kwargs['port'] = int(arg[7:])
                 break
 
         if 'appsrc' in sys.argv:
-            app_kwargs['documentroot'] = os.path.abspath(os.path.join(basedir,'..','app'))
-        
+            app_kwargs['documentroot'] = os.path.abspath(os.path.join(basedir, '..', 'app'))
 
         ################################################################################
         # start the webserver in a different thread
@@ -139,9 +143,8 @@ def main():
         if not 'nohttp' in sys.argv:
             httpserverthread.start()
 
-
         ################################################################################
-        # start homecon
+        # start HomeCon
         ################################################################################
         from . import homecon
 
@@ -170,8 +173,6 @@ def main():
             exc_type, exc_value, exc_traceback = sys.exc_info()
             traceback.print_exception(exc_type, exc_value, exc_traceback, file=sys.stdout)
             print('\n'*3)
-
-
 
 if __name__ == '__main__':
     main()

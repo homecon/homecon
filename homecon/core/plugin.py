@@ -49,45 +49,48 @@ class Plugins(object):
             _list.append(db_entry['name'])
 
         if not 'states' in _list:
-            self._db_plugins.POST(name='states',core=1,active=1,package='homecon.plugins')
+            self._db_plugins.POST(name='states', core=1, active=1, package='homecon.plugins')
         if not 'components' in _list:
-            self._db_plugins.POST(name='components',core=1,active=1,package='homecon.plugins')
+            self._db_plugins.POST(name='components', core=1, active=1, package='homecon.plugins')
         if not 'plugins' in _list:
-            self._db_plugins.POST(name='plugins',core=1,active=1,package='homecon.plugins')
+            self._db_plugins.POST(name='plugins', core=1, active=1, package='homecon.plugins')
         if not 'authentication' in _list:
-            self._db_plugins.POST(name='authentication',core=1,active=1,package='homecon.plugins')
+            self._db_plugins.POST(name='authentication', core=1, active=1, package='homecon.plugins')
         if not 'pages' in _list:
-            self._db_plugins.POST(name='pages',core=1,active=1,package='homecon.plugins')
+            self._db_plugins.POST(name='pages', core=1, active=1, package='homecon.plugins')
         if not 'schedules' in _list:
-            self._db_plugins.POST(name='schedules',core=1,active=1,package='homecon.plugins')
+            self._db_plugins.POST(name='schedules', core=1, active=1, package='homecon.plugins')
         if not 'actions' in _list:
-            self._db_plugins.POST(name='actions',core=1,active=1,package='homecon.plugins')
+            self._db_plugins.POST(name='actions', core=1, active=1, package='homecon.plugins')
         if not 'measurements' in _list:
-            self._db_plugins.POST(name='measurements',core=1,active=1,package='homecon.plugins')
+            self._db_plugins.POST(name='measurements', core=1, active=1, package='homecon.plugins')
         if not 'weather' in _list:
-            self._db_plugins.POST(name='weather',core=1,active=1,package='homecon.plugins')
+            self._db_plugins.POST(name='weather', core=1, active=1, package='homecon.plugins')
         if not 'building' in _list:
-            self._db_plugins.POST(name='building',core=1,active=1,package='homecon.plugins')
+            self._db_plugins.POST(name='building', core=1, active=1, package='homecon.plugins')
         if not 'mpc' in _list:
-            self._db_plugins.POST(name='mpc',core=1,active=1,package='homecon.plugins')
+            self._db_plugins.POST(name='mpc', core=1, active=1, package='homecon.plugins')
         if not 'shading' in _list:
-            self._db_plugins.POST(name='shading',core=1,active=1,package='homecon.plugins')
-
+            self._db_plugins.POST(name='shading', core=1, active=1, package='homecon.plugins')
 
         # check the included plugins
         if not 'knx' in _list:
-            self._db_plugins.POST(name='knx',core=0,active=0,package='homecon.plugins')
+            self._db_plugins.POST(name='knx', core=0, active=0, package='homecon.plugins')
         if not 'darksky' in _list:
-            self._db_plugins.POST(name='darksky',core=0,active=0,package='homecon.plugins')
+            self._db_plugins.POST(name='darksky', core=0, active=0, package='homecon.plugins')
         if not 'flukso' in _list:
-            self._db_plugins.POST(name='flukso',core=0,active=0,package='homecon.plugins')
-
+            self._db_plugins.POST(name='flukso', core=0, active=0, package='homecon.plugins')
 
         # list all plugins
         result = self._db_plugins.GET()
         for db_entry in result:
-            self._availableplugins[db_entry['name']] = {'name':db_entry['name'],'id':db_entry['id'],'core':db_entry['core'] == 1,'package':db_entry['package'],'active':db_entry['active'] == 1}
-
+            self._availableplugins[db_entry['name']] = {
+                'name': db_entry['name'],
+                'id': db_entry['id'],
+                'core': db_entry['core'] == 1,
+                'package': db_entry['package'],
+                'active': db_entry['active'] == 1
+            }
 
     def start_import(self):
         """
@@ -108,17 +111,16 @@ class Plugins(object):
 
         self._classlist = classlist
 
-
     def start_activate(self):
-        plugins
-        # activate all plugins
+        """
+        activate all plugins
+        """
         for cls in self._classlist:
             self._activate(cls)
 
         self._classlist = []
 
-
-    def install(self,url):
+    def install(self, url):
         """
         Download a plugin from a url
 
@@ -128,7 +130,6 @@ class Plugins(object):
             os.mkdir(os.path.join(sys.prefix,'downloads'))
         except:
             pass
-
 
         # download the package zip
         fname = os.path.split(url)[-1].split('#')[0]
@@ -150,13 +151,11 @@ class Plugins(object):
                 for db_entry in result:
                     self._availableplugins[db_entry['name']] = {'name':db_entry['name'],'id':db_entry['id'],'core':db_entry['core'] == 1,'package':db_entry['package'],'active':db_entry['active'] == 1}
 
-
                 return True
 
         return False
 
-
-    def uninstall(self,name):
+    def uninstall(self, name):
         """
         delete a plugin from the availableplugins list and the hard disk 
 

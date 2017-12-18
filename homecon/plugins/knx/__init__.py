@@ -7,17 +7,20 @@ import knxpy
 
 from ... import core
 
+
 class Knx(core.plugin.Plugin):
     """
-    Communicate with an EIB-KNX home automation system through an ethernet
-    interface
+    Communicate with an EIB-KNX home automation system through an ethernet interface
 
     """
 
     def initialize(self):
-
-        core.states.add('knx/settings/interface/ip', value='192.168.1.1', config={'type': 'string', 'quantity':'', 'unit':'','label':'', 'description':'', 'private':True})
-        core.states.add('knx/settings/interface/port', value='3671', config={'type': 'string', 'quantity':'', 'unit':'','label':'', 'description':'', 'private':True})
+        core.states.add(
+            'knx/settings/interface/ip', value='192.168.1.1',
+            config={'type': 'string', 'quantity': '', 'unit': '', 'label': '', 'description': '', 'private': True})
+        core.states.add(
+            'knx/settings/interface/port', value='3671',
+            config={'type': 'string', 'quantity': '', 'unit': '', 'label': '', 'description': '', 'private': True})
 
         self.tunnel = None
         self.connected = False
@@ -47,7 +50,6 @@ class Knx(core.plugin.Plugin):
 
             # sleep until the next call
             await asyncio.sleep(5*60)
-
 
     def connect(self):
         self._loop.create_task(self._connect())
@@ -83,9 +85,8 @@ class Knx(core.plugin.Plugin):
                 # FIXME request all knx state values
             except:
                 logging.error('Could not connect with the KNX ip interface on {}:{}'.format(ip,port))
-                
 
-    def get_states_ga_write(self,ga=None):
+    def get_states_ga_write(self, ga=None):
         """
         Get states with a knx_ga_write config key
 
@@ -96,10 +97,9 @@ class Knx(core.plugin.Plugin):
 
         """
         
-        return self._get_states_ga_xxx(ga=ga,sub='write')
+        return self._get_states_ga_xxx(ga=ga, sub='write')
 
-
-    def get_states_ga_read(self,ga=None):
+    def get_states_ga_read(self, ga=None):
         """
         Get states with a knx_ga_write config key
 
@@ -110,10 +110,9 @@ class Knx(core.plugin.Plugin):
 
         """
         
-        return self._get_states_ga_xxx(ga=ga,sub='read')
+        return self._get_states_ga_xxx(ga=ga, sub='read')
 
-
-    def _get_states_ga_xxx(self,ga=None,sub='write'):
+    def _get_states_ga_xxx(self, ga=None, sub='write'):
         """
         Get states with a knx_ga_read config key
 
@@ -139,16 +138,13 @@ class Knx(core.plugin.Plugin):
 
         return states
 
-    def listen_state_changed(self,event):
+    def listen_state_changed(self, event):
         state = event.data['state']
 
         if state.path == 'knx/settings/interface/ip' or state.path == 'knx/settings/interface/port':
             self.connect()
-        
 
         elif self.connected and 'knx_ga_write' in state.config and 'knx_dpt' in state.config:
             if not event.source == self:
-                self.tunnel.group_write(str(state.config['knx_ga_write']),state.value,str(state.config['knx_dpt']))
-                logging.debug('{} changed, written {} to knx group address: {}'.format(state.path,state.value,state.config['knx_ga_write']))
-        
-
+                self.tunnel.group_write(str(state.config['knx_ga_write']), state.value, str(state.config['knx_dpt']))
+                logging.debug('{} changed, written {} to knx group address: {}'.format(state.path, state.value, state.config['knx_ga_write']))
