@@ -8,7 +8,7 @@ import threading
 import http.server
 
 
-documentroot = os.path.join(sys.prefix,'www','homecon')
+documentroot = os.path.join(sys.prefix, 'www', 'homecon')
 
 
 class HttpRequestHandler(http.server.BaseHTTPRequestHandler):
@@ -63,9 +63,8 @@ class HttpRequestHandler(http.server.BaseHTTPRequestHandler):
         return
 
 
-
 class HttpServerThread(threading.Thread):
-    def __init__(self, address='0.0.0.0',port=12300,documentroot=documentroot):
+    def __init__(self, address='0.0.0.0', port=12300, documentroot=documentroot):
         """
         
         Parameters

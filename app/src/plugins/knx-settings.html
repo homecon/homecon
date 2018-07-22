@@ -51,6 +51,7 @@
 
         <homecon-web-socket-sender id="websocket"></homecon-web-socket-sender>
 
+        <!--
         <homecon-web-socket-object auto event="state" path="knx/settings/interface/ip" data="{{interfaceip}}" debounce="800"></homecon-web-socket-object>
         <homecon-web-socket-object auto event="state" path="knx/settings/interface/port" data="{{interfaceport}}" debounce="800"></homecon-web-socket-object>
 
@@ -59,7 +60,7 @@
             <paper-input label="Interface ip address" value="{{interfaceip}}" class="address"></paper-input>
             <paper-input label="Interface port" value="{{interfaceport}}" class="port"></paper-input>
         </div>
-
+        -->
         <h2>States:</h2>
         <template is="dom-repeat" items="{{states}}" as="state">
             <paper-material class="horizontal layout wrap center state" on-tap="editDialog">
