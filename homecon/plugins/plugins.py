@@ -49,7 +49,8 @@ class Plugins(Plugin):
                 plugin_class = self._import(db_entry['name'], db_entry['package'])
                 self._active_plugins[db_entry['name']] = plugin_class()
 
-        logging.debug('Plugins plugin Initialized')
+    def initialize(self):
+        logger.debug('Plugins plugin Initialized')
 
     def get_available_plugins_list(self):
         """

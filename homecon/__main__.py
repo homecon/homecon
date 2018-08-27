@@ -7,23 +7,51 @@ import inspect
 import traceback
 import logging
 
+from logging.handlers import TimedRotatingFileHandler
 
-# configure logging
+
 logger = logging.getLogger(__name__)
-logging.basicConfig(level=logging.DEBUG,
-                    format='%(asctime)s %(levelname)7.7s  %(processName)-12.12s  %(name)-28.28s %(message)s',
-                    stream=sys.stdout)
-logging.getLogger('homecon.core.database').setLevel(logging.INFO)
+
 
 # the current file directory
-basedir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
+base_path = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
 
 
 def main():
     """
-    Main entrypoint
-
+    Main entry point
     """
+
+    # configure logging
+    os.makedirs(os.path.join(sys.prefix, 'var', 'log', 'homecon'), exist_ok=True)
+    logFormatter = logging.Formatter('%(asctime)s %(levelname)7.7s  %(processName)-12.12s  %(name)-28.28s %(message)s')
+    if 'homecon.file_handler' not in [lh.name for lh in logger.handlers]:
+        file_handler = TimedRotatingFileHandler(os.path.join(sys.prefix, 'var', 'log', 'homecon', 'homecon.log'),
+                                                when="midnight")
+        file_handler.setFormatter(logFormatter)
+        file_handler.set_name('homecon.file_handler')
+        logging.root.handlers.append(file_handler)
+
+    if '--printlog' in sys.argv:
+        if 'homecon.console_handler' not in [lh.name for lh in logger.handlers]:
+            console_handler = logging.StreamHandler()
+            console_handler.setFormatter(logFormatter)
+            console_handler.set_name('homecon.console_handler')
+            logging.root.handlers.append(console_handler)
+
+    for arg in sys.argv:
+        level = 'INFO'
+        if arg.startswith('--loglevel='):
+            level = arg[11:]
+            break
+    logging.root.setLevel(getattr(logging, level))
+
+    for arg in sys.argv:
+        level = 'INFO'
+        if arg.startswith('--dbloglevel='):
+            level = arg[13:]
+            break
+    logging.getLogger('homecon.core.database').setLevel(getattr(logging, level))
 
     if 'configure' in sys.argv:
         ################################################################################
@@ -139,7 +167,7 @@ def main():
                 break
 
         if 'appsrc' in sys.argv:
-            app_kwargs['document_root'] = os.path.abspath(os.path.join(basedir, '..', 'app'))
+            app_kwargs['document_root'] = os.path.abspath(os.path.join(base_path, '..', 'app'))
 
         ################################################################################
         # start the webserver in a different thread
