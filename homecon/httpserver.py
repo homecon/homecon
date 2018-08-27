@@ -56,6 +56,7 @@ class HttpRequestHandler(BaseHTTPRequestHandler):
                 with open(abspath, 'rb') as f:
                     self.wfile.write(f.read())
             else:
+                logger.error("404, {} not found".format(abspath))
                 self.send_error(404, 'File Not Found: {}'.format(self.path))
         return
 

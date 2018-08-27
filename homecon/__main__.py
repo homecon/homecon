@@ -53,6 +53,13 @@ def main():
             break
     logging.getLogger('homecon.core.database').setLevel(getattr(logging, level))
 
+    for arg in sys.argv:
+        level = 'INFO'
+        if arg.startswith('--httploglevel='):
+            level = arg[13:]
+            break
+    logging.getLogger('homecon.httpserver').setLevel(getattr(logging, level))
+
     if 'configure' in sys.argv:
         ################################################################################
         # Install non python dependencies
