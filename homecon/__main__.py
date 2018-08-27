@@ -139,16 +139,16 @@ def main():
                 break
 
         if 'appsrc' in sys.argv:
-            app_kwargs['documentroot'] = os.path.abspath(os.path.join(basedir, '..', 'app'))
+            app_kwargs['document_root'] = os.path.abspath(os.path.join(basedir, '..', 'app'))
 
         ################################################################################
         # start the webserver in a different thread
         ################################################################################
-        from homecon.httpserver import HttpServerThread
-        httpserverthread = HttpServerThread(**app_kwargs)
+        from homecon.httpserver import HttpServer
+        http_server = HttpServer(**app_kwargs)
 
         if 'nohttp' not in sys.argv:
-            httpserverthread.start()
+            http_server.start()
 
         ################################################################################
         # start HomeCon
@@ -170,13 +170,13 @@ def main():
             hc.start()
         except KeyboardInterrupt:
             print('\nStopping HomeCon\n')
-            httpserverthread.stop()
             hc.stop()
+            http_server.stop()
 
         except:
             print('Stopping HomeCon')
-            httpserverthread.stop()
             hc.stop()
+            http_server.stop()
 
             exc_type, exc_value, exc_traceback = sys.exc_info()
             traceback.print_exception(exc_type, exc_value, exc_traceback, file=sys.stdout)
