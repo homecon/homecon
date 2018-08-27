@@ -18,7 +18,7 @@
 ################################################################################
 
 
-from .. import common
+from homecon.tests import common
 
 import homecon.core
 
@@ -48,9 +48,9 @@ class DatabaseTests(common.TestCase):
             {'name':'permission', 'type':'int',       'null': '',  'default':'',  'unique':''},
         ])
         
-        users.POST(username='user1',password='test',permission=1)
-        users.POST(username='user2',password='test',permission=1)
-        users.POST(username='user3',password='test',permission=1)
+        users.post(username='user1', password='test', permission=1)
+        users.post(username='user2', password='test', permission=1)
+        users.post(username='user3', password='test', permission=1)
 
 
     def test_get(self):
@@ -61,11 +61,11 @@ class DatabaseTests(common.TestCase):
             {'name':'permission', 'type':'int',       'null': '',  'default':'',  'unique':''},
         ])
         
-        users.POST(username='user1',password='test',permission=1)
-        users.POST(username='user2',password='test',permission=1)
-        users.POST(username='user3',password='test',permission=1)
+        users.post(username='user1', password='test', permission=1)
+        users.post(username='user2', password='test', permission=1)
+        users.post(username='user3', password='test', permission=1)
         
-        db_users = users.GET(columns=['id','username','permission'])
+        db_users = users.get(columns=['id', 'username', 'permission'])
         self.assertEqual(db_users,[{'id':1,'username': 'user1', 'permission': 1}, {'id':2,'username': 'user2', 'permission': 1}, {'id':3,'username': 'user3', 'permission': 1}])
 
 
@@ -77,13 +77,13 @@ class DatabaseTests(common.TestCase):
             {'name':'permission', 'type':'int',       'null': '',  'default':'',  'unique':''},
         ])
         
-        users.POST(username='user1',password='test',permission=1)
-        users.POST(username='user2',password='test',permission=1)
-        users.POST(username='user3',password='test',permission=1)
+        users.post(username='user1', password='test', permission=1)
+        users.post(username='user2', password='test', permission=1)
+        users.post(username='user3', password='test', permission=1)
         
-        users.PUT(username='user4',permission=9,where='username=\'user3\'')
+        users.put(username='user4', permission=9, where='username=\'user3\'')
 
-        db_users = users.GET(columns=['username','permission'])
+        db_users = users.get(columns=['username', 'permission'])
         self.assertEqual(db_users,[{'username': 'user1', 'permission': 1}, {'username': 'user2', 'permission': 1}, {'username': 'user4', 'permission': 9}])
 
 
@@ -95,9 +95,9 @@ class DatabaseTests(common.TestCase):
             {'name':'permission', 'type':'int',       'null': '',  'default':'',  'unique':''},
         ])
         
-        users.POST(username='user1',password='test',permission=1)
-        users.POST(username='user2',password='test',permission=1)
-        users.POST(username='user3',password='test',permission=1)
+        users.post(username='user1', password='test', permission=1)
+        users.post(username='user2', password='test', permission=1)
+        users.post(username='user3', password='test', permission=1)
 
         del users
         del db
@@ -105,7 +105,7 @@ class DatabaseTests(common.TestCase):
         db = homecon.core.database.Database(database='{}.db'.format(common.dbname))
         users = homecon.core.database.Table(db,'users')
 
-        db_users = users.GET(columns=['username','permission'])
+        db_users = users.get(columns=['username', 'permission'])
         self.assertEqual(db_users,[{'username': 'user1', 'permission': 1}, {'username': 'user2', 'permission': 1}, {'username': 'user3', 'permission': 1}])
 
 

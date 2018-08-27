@@ -65,7 +65,7 @@ class MeasurementsPluginTests(HomeConTestCase):
         dt_now = datetime.datetime.utcnow()
         timestamp_now = int( (dt_now-dt_ref).total_seconds() )
 
-        data = measurements._db_measurements.GET(path=s.path)
+        data = measurements._db_measurements.get(path=s.path)
 
         self.assertEqual(len(data),1)
         self.assertEqual(data[0]['path'],'somestate')
@@ -90,7 +90,7 @@ class MeasurementsPluginTests(HomeConTestCase):
         measurements.add(s.path,1)
         measurements.add(s.path,0)
 
-        data = measurements._db_measurements.GET(path=s.path)
+        data = measurements._db_measurements.get(path=s.path)
 
         self.assertEqual(len(data),2)
 

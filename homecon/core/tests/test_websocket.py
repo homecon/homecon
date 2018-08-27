@@ -20,9 +20,10 @@
 import asyncio
 
 
-from .. import common
+from homecon.tests import common
 
-import homecon.core
+from homecon.core.websocket import Websocket
+
 
 class WebsocketTests(common.TestCase):
 

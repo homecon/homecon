@@ -5,151 +5,105 @@ import sys
 import os
 import inspect
 import time
-import asyncio
 import logging
 
-from .__version__ import version as __version__
-from . import core
-from . import util
+from queue import Empty
+
+from homecon.__version__ import version as __version__
+from homecon.core.event import queue
+from homecon.plugins.plugins import Plugins
+
+# from . import core
+# from . import util
 
 
-################################################################################
-# create the logger
-################################################################################
+# configure logging
+# logFormatter = logging.Formatter('%(asctime)s [%(levelname)s]  %(threadName)-15.15s  %(name)s: %(message)s',
+#                                  datefmt='%Y-%m-%d %H:%M:%S')
+logger = logging.getLogger(__name__)
 
-logFormatter = logging.Formatter('%(asctime)s    %(threadName)-15.15s %(levelname)-8.8s    %(message)s')
-logger = logging.getLogger()
-
-basedir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
-if not os.path.exists(os.path.join(basedir, 'log')):
-    os.makedirs(os.path.join(basedir, 'log'))
-
-if 'homecon.fileHandler' not in [lh.name for lh in logger.handlers]:
-    fileHandler = logging.FileHandler(os.path.join(sys.prefix, 'log/homecon/homecon.log'))
-    fileHandler.setFormatter(logFormatter)
-    fileHandler.set_name('homecon.fileHandler')
-    logger.addHandler(fileHandler)
+# basedir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
+# if not os.path.exists(os.path.join(basedir, 'log')):
+#     os.makedirs(os.path.join(basedir, 'log'))
+#
+# if 'homecon.fileHandler' not in [lh.name for lh in logger.handlers]:
+#     fileHandler = logging.FileHandler(os.path.join(sys.prefix, 'log/homecon/homecon.log'))
+#     fileHandler.setFormatter(logFormatter)
+#     fileHandler.set_name('homecon.fileHandler')
+#     logger.addHandler(fileHandler)
 
 
-################################################################################
 # HomeCon object
-################################################################################
 class HomeCon(object): 
-    def __init__(self, loglevel='info', printlog=True, demo=False):
+    def __init__(self):
         """
         Create a new HomeCon object
-
-        Parameters
-        ----------
-        loglevel : str
-            'info', 'debug', ...
-
-        printlog : boolean
-            print the log to the console or not
-
         """
-        self.loglevel = loglevel
-        self.printlog = printlog
-
-        ########################################################################
         # set logging properties
-        ########################################################################
-        if self.printlog:
-            if 'homecon.consoleHandler' not in [lh.name for lh in logger.handlers]:
-                consoleHandler = logging.StreamHandler()
-                consoleHandler.setFormatter(logFormatter)
-                consoleHandler.set_name('homecon.consoleHandler')
-                logger.addHandler(consoleHandler)
+        # if self.printlog:
+        #     if 'homecon.consoleHandler' not in [lh.name for lh in logger.handlers]:
+        #         consoleHandler = logging.StreamHandler()
+        #         consoleHandler.setFormatter(logFormatter)
+        #         consoleHandler.set_name('homecon.consoleHandler')
+        #         logger.addHandler(consoleHandler)
+        #
+        # if self.loglevel == 'debug':
+        #     logger.setLevel(logging.DEBUG)
+        # elif self.loglevel == 'debugdb':
+        #     logger.setLevel(9)
+        # else:
+        #     logger.setLevel(logging.INFO)
+        logger.info('Creating HomeCon object')
 
-        if self.loglevel == 'debug':
-            logger.setLevel(logging.DEBUG)
-        elif self.loglevel == 'debugdb':
-            logger.setLevel(9)
-        else:
-            logger.setLevel(logging.INFO)
-        logging.info('Creating HomeCon object')
+        # create the main event queue
+        self._queue = queue
+        self._running = False
 
-        ########################################################################
         # initialize core components
-        ########################################################################
-        kwargs = {}
-        if demo:
-            kwargs['dbname'] = 'demo_homecon'
+        # kwargs = {}
+        # if demo:
+        #     kwargs['dbname'] = 'demo_homecon'
+        # core.initialize(**kwargs)
 
-        core.initialize(**kwargs)
+        # start plugins
+        self.plugins = Plugins()
 
-        ########################################################################
-        # get the event loop and queue
-        ########################################################################
-        self._loop = asyncio.get_event_loop()
+        logger.info('HomeCon object Initialized')
 
-        if self.loglevel == 'debug':
-            self._loop.set_debug(True)
-        self._queue = core.event.queue  # asyncio.Queue(loop=self._loop)
-
-        ########################################################################
-        # load core components
-        ########################################################################
-        self.states = core.states
-        self.components = core.components
-        self.plugins = core.plugins
-
-        # import plugins
-        self.plugins.start_import()
-
-        # load components from the database
-        self.components.load()
-
-        # activate all plugins
-        self.plugins.start_activate()
-
-        logging.info('HomeCon object Initialized')
-
-    def fire(self, event):
+    def listen(self):
         """
-        fire an event, mainly used for testing
-
+        Listen for events in all plugins
         """
-        async def do_fire(event):
-            await self._queue.put(event)
+        while self._running:
+            try:
+                event = self._queue.get(timeout=1)
+                logger.debug(event)
+            except Empty:
+                pass
+            else:
+                for plugin in self.plugins.values():
+                    if event.target is None or event.target == plugin.name:
+                        plugin.listen(event)
 
-        def do_create_task():
-            self._loop.create_task(do_fire(event))
+    def start(self):
+        # start all plugins
+        logger.debug('Starting plugins')
+        for plugin in self.plugins.values():
+            plugin.start()
 
-        self._loop.call_soon_threadsafe(do_create_task)
-
-    async def listen(self):
-        """
-        listen for events in all plugins
-
-        """
-        while True:
-            event = await self._queue.get()
-            logging.debug(event)
-
-            for plugin in self.plugins.values():
-                self._loop.call_soon_threadsafe(plugin._listen, event)
-
-    def main(self):
+        time.sleep(1)
         # Start the event loop
-        logging.debug('Starting event loop')
-
-        self._loop.create_task(self.listen())
-
-        self._loop.run_forever()
-
-        logging.info('Homecon stopped\n\n')
+        logger.debug('Starting the event loop')
+        self._running = True
+        self.listen()
 
     def stop(self):
-        logging.info('Stopping HomeCon')
+        logger.info('Stopping HomeCon')
 
-        # cancel all tasks
-        for task in asyncio.Task.all_tasks():
-            task.cancel()
+        # stop plugins
+        for plugin in self.plugins.values():
+            plugin.stop()
+            plugin.join()
 
-        # stop the websocket
-        self._loop.call_soon_threadsafe(self.coreplugins['websocket'].stop)
-
-        # stop the event loop
-        self._loop.stop()
-        time.sleep(0.1)
+        self._running = False
+        logger.info('HomeCon stopped')

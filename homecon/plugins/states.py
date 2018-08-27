@@ -3,13 +3,17 @@
 
 import logging
 import json
-import asyncio
 
-from .. import core
+from homecon.core.plugin import Plugin
+from homecon.core.state import State
 from .. import util
 from .authentication import jwt_decode
 
-class States(core.plugin.Plugin):
+
+logger = logging.getLogger(__name__)
+
+
+class States(Plugin):
     """
     Class to control the HomeCon states
     
@@ -31,34 +35,28 @@ class States(core.plugin.Plugin):
     """
 
     def initialize(self):
-
-
         # add settings states
-        core.states.add('settings/location/latitude', config={'type': 'number', 'quantity':'angle', 'unit':'deg','label':'latitude', 'description':'HomeCon latitude', 'private':True})
-        core.states.add('settings/location/longitude',config={'type': 'number', 'quantity':'angle', 'unit':'deg','label':'longitude','description':'HomeCon longitude', 'private':True})
-        core.states.add('settings/location/elevation',config={'type': 'number', 'quantity':'height','unit':'m',  'label':'elevation','description':'HomeCon elevation', 'private':True})
-        core.states.add('settings/location/timezone', config={'type': 'string', 'quantity':'',      'unit':'',   'label':'time zone','description':'HomeCon time zone', 'private':True})
+        State.add('settings/location/latitude',  config={'type': 'number', 'quantity': 'angle',  'unit': 'deg',
+                                                         'label': 'Latitude',  'description': 'HomeCon latitude',
+                                                         'private': True}, value=51.05)
+        State.add('settings/location/longitude', config={'type': 'number', 'quantity': 'angle',  'unit': 'deg',
+                                                         'label': 'Longitude', 'description': 'HomeCon longitude',
+                                                         'private': True}, value=5.5833)
+        State.add('settings/location/elevation', config={'type': 'number', 'quantity': 'height', 'unit': 'm',
+                                                         'label': 'Elevation', 'description': 'HomeCon elevation',
+                                                         'private': True}, value=74.0)
+        State.add('settings/location/timezone',  config={'type': 'string', 'quantity': '',       'unit': '',
+                                                         'label': 'Time zone', 'description': 'HomeCon time zone',
+                                                         'private': True}, value='Europe/Brussels')
+        logger.debug('States plugin Initialized')
 
-        # add default values
-        if core.states['settings/location/latitude'].value is None:
-            core.states['settings/location/latitude'].value = 51.05
-        if core.states['settings/location/longitude'].value is None:
-            core.states['settings/location/longitude'].value = 5.5833
-        if core.states['settings/location/elevation'].value is None:
-            core.states['settings/location/elevation'].value = 74
-        if core.states['settings/location/timezone'].value is None:
-            core.states['settings/location/timezone'].value = 'Europe/Brussels'
-
-
-        # create a task to set the timezone
-        async def do_set_timezone():
-            util.time.set_timezone(core.states['settings/location/timezone'].value)
-
-        set_timezone_task = asyncio.ensure_future(do_set_timezone())
-
-
-        logging.debug('States plugin Initialized')
-
+    def parse_triggers(self):
+        for path in State.all_paths():
+            self.triggers[path] = {}
+            state = State.get(path=path)
+            for path in state.triggers:
+                if path in self._states and state not in self._states[path].trigger:
+                    self._states[path].trigger.append(state)
 
     def list(self):
         """
@@ -68,26 +66,22 @@ class States(core.plugin.Plugin):
         stateslist = []
         for state in core.states.values():
             if not 'private' in state.config or not state.config['private']:
-                stateslist.append({'path':state.path,'config':state.config})
+                stateslist.append({'path': state.path, 'config': state.config})
 
         newlist = sorted(stateslist, key=lambda k: k['path'])
 
         return newlist
 
-
-    def listen_list_states(self,event):
+    def listen_list_states(self, event):
         if event.type == 'list_states':
-            core.websocket.send({'event':'list_states', 'path':'', 'value':self.list()}, clients=[event.client])
+            core.websocket.send({'event': 'list_states', 'path': '', 'value': self.list()}, clients=[event.client])
 
-
-    def listen_add_state(self,event):
-        state = core.states.add(event.data['path'],config=event.data['config'])
+    def listen_add_state(self, event):
+        state = core.states.add(event.data['path'], config=event.data['config'])
 
         if state:
-            core.event.fire('state_added',{'state':state})
-            core.websocket.send({'event':'list_states', 'path':'', 'value':self.list()}, clients=[event.client])
-            
-
+            core.event.fire('state_added', {'state': state})
+            core.websocket.send({'event': 'list_states', 'path': '', 'value': self.list()}, clients=[event.client])
 
     def listen_edit_state(self,event):
         if event.data['path'] in core.states:
@@ -102,7 +96,6 @@ class States(core.plugin.Plugin):
             core.states.parse_triggers()
 
             core.websocket.send({'event':'list_states', 'path':'', 'value':self.list()}, clients=[event.client])
-
 
     def listen_state_config(self,event):
         if event.data['path'] in core.states:
@@ -122,24 +115,18 @@ class States(core.plugin.Plugin):
                 #core.websocket.send({'event':'state_config', 'path':state.path, 'value':state.config}, clients=[event.client])
                 #core.websocket.send({'event':'list_states', 'path':'', 'value':self.list()}, clients=[event.client])
 
-
     def listen_state_changed(self,event):
         #core.event.fire('send',{'event':'state', 'path':event.data['state'].path, 'value':event.data['state'].value, 'readusers':event.data['state'].config['readusers'], 'readgroups':event.data['state'].config['readgroups']},source=self)
-        core.websocket.send({'event':'state', 'path':event.data['state'].path, 'value':event.data['state'].value}, readusers=event.data['state'].config['readusers'], readgroups=event.data['state'].config['readgroups'])
+        # core.websocket.send({'event':'state', 'path':event.data['state'].path, 'value':event.data['state'].value}, readusers=event.data['state'].config['readusers'], readgroups=event.data['state'].config['readgroups'])
+        #
+        # if event.data['state'].path == 'settings/location/timezone':
+        #     util.time.set_timezone(event.data['value'])
+        pass
 
-        if event.data['state'].path == 'settings/location/timezone':
-            util.time.set_timezone(event.data['value'])
-
-
-
-
-
-    def listen_state(self,event):
-        
+    def listen_state(self, event):
         if 'path' in event.data:
-            if event.data['path'] in core.states:
-                state = core.states[event.data['path']]
-
+            if event.data['path'] in State.all_paths():
+                state = State.get(event.data['path'])
                 tokenpayload = jwt_decode(event.data['token'])
 
                 if 'value' in event.data:
@@ -154,7 +141,6 @@ class States(core.plugin.Plugin):
                                 break
 
                     if permitted:
-
                         value = event.data['value']
                         if 'type' in state.config and state.config['type'] == 'number':
                             value = float(value)

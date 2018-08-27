@@ -18,7 +18,7 @@
 ################################################################################
 
 
-from .. import common
+from homecon.tests import common
 
 import homecon.core
 

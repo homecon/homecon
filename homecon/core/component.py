@@ -43,7 +43,7 @@ class Component(state.BaseObject):
         self.ocp_variables = {}
 
         # update the type in the database
-        self.db_table.PUT(type=self.type, where='path=\'{}\''.format(self._path))
+        self.db_table.put(type=self.type, where='path=\'{}\''.format(self._path))
 
 
         # set the default config if the keys are not defined yet
@@ -260,7 +260,7 @@ class Components(object):
         """
         
         # get all components from the database
-        result = self._db_components.GET()
+        result = self._db_components.get()
         for db_entry in result:
             self.add(db_entry['path'],db_entry['type'],db_entry=db_entry)
 

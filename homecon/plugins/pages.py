@@ -51,19 +51,19 @@ class Pages(core.plugin.Plugin):
 
 
         # load data from the database
-        result = self._db_groups.GET()
+        result = self._db_groups.get()
         for group in result:
             self.add_group_local(group['path'],json.loads(group['config']),group['order'])
 
-        result = self._db_pages.GET()
+        result = self._db_pages.get()
         for page in result:
             self.add_page_local(page['path'],page['group'],json.loads(page['config']),page['order'])
 
-        result = self._db_sections.GET()
+        result = self._db_sections.get()
         for section in result:
             self.add_section_local(section['path'],section['page'],json.loads(section['config']),section['order'])
 
-        result = self._db_widgets.GET()
+        result = self._db_widgets.get()
         for widget in result:
             self.add_widget_local(widget['path'],widget['section'],widget['type'],json.loads(widget['config']),widget['order'])
 
@@ -127,7 +127,7 @@ class Pages(core.plugin.Plugin):
         if order is None:
             order = self._get_next_order(self._groups)
 
-        self._db_groups.POST(path=path,config=json.dumps(config),order=order)
+        self._db_groups.post(path=path, config=json.dumps(config), order=order)
         group = self.add_group_local(path,config,order)
 
         return group
@@ -140,7 +140,7 @@ class Pages(core.plugin.Plugin):
         for key in config:
             group['config'][key] = config[key]
 
-        self._db_groups.PUT(config=json.dumps(group['config']),where='path=\'{}\''.format(path))
+        self._db_groups.put(config=json.dumps(group['config']), where='path=\'{}\''.format(path))
 
         return group
 
@@ -149,7 +149,7 @@ class Pages(core.plugin.Plugin):
         """
     
         del self._groups[path]
-        self._db_groups.DELETE(path=path)
+        self._db_groups.delete(path=path)
 
         # cascade
         for page in self._pages.values():
@@ -184,7 +184,7 @@ class Pages(core.plugin.Plugin):
         if order is None:
             order = self._get_next_order(self._pages)
 
-        self._db_pages.POST(path=path,group=group,config=json.dumps(config),order=order)
+        self._db_pages.post(path=path, group=group, config=json.dumps(config), order=order)
         page = self.add_page_local(path,group,config,order)
         
         return page
@@ -197,7 +197,7 @@ class Pages(core.plugin.Plugin):
         for key in config:
             page['config'][key] = config[key]
 
-        self._db_pages.PUT(config=json.dumps(page['config']),where='path=\'{}\''.format(path))
+        self._db_pages.put(config=json.dumps(page['config']), where='path=\'{}\''.format(path))
 
         return page
 
@@ -206,7 +206,7 @@ class Pages(core.plugin.Plugin):
         """
     
         del self._pages[path]
-        self._db_pages.DELETE(path=path)
+        self._db_pages.delete(path=path)
 
         # cascade
         for section in self._sections.values():
@@ -235,7 +235,7 @@ class Pages(core.plugin.Plugin):
         if order is None:
             order = self._get_next_order(self._sections)
 
-        self._db_sections.POST(path=path,page=page,config=json.dumps(config),order=order)
+        self._db_sections.post(path=path, page=page, config=json.dumps(config), order=order)
         section = self.add_section_local(path,page,config,order)
         
         return section
@@ -248,7 +248,7 @@ class Pages(core.plugin.Plugin):
         for key in config:
             section['config'][key] = config[key]
 
-        self._db_sections.PUT(config=json.dumps(section['config']),where='path=\'{}\''.format(path))
+        self._db_sections.put(config=json.dumps(section['config']), where='path=\'{}\''.format(path))
 
         return section
 
@@ -257,7 +257,7 @@ class Pages(core.plugin.Plugin):
         """
     
         del self._sections[path]
-        self._db_sections.DELETE(path=path)
+        self._db_sections.delete(path=path)
 
         # cascade
         for widget in self._widgets.values():
@@ -287,7 +287,7 @@ class Pages(core.plugin.Plugin):
             order = self._get_next_order(self._widgets)
 
 
-        self._db_widgets.POST(path=path,section=section,type=widgettype,config=json.dumps(config),order=order)
+        self._db_widgets.post(path=path, section=section, type=widgettype, config=json.dumps(config), order=order)
         widget = self.add_widget_local(path,section,widgettype,config,order)
         
         return widget
@@ -300,7 +300,7 @@ class Pages(core.plugin.Plugin):
         for key in config:
             widget['config'][key] = config[key]
 
-        self._db_widgets.PUT(config=json.dumps(widget['config']),where='path=\'{}\''.format(path))
+        self._db_widgets.put(config=json.dumps(widget['config']), where='path=\'{}\''.format(path))
 
         return widget
 
@@ -309,7 +309,7 @@ class Pages(core.plugin.Plugin):
         """
     
         del self._widgets[path]
-        self._db_widgets.DELETE(path=path)
+        self._db_widgets.delete(path=path)
 
 
 
@@ -364,7 +364,7 @@ class Pages(core.plugin.Plugin):
 
         page = self._pages[path]
         page['config'] = config
-        self._db_pages.PUT(config=json.dumps(page['config']), where='path=\'{}\''.format(page['path']))
+        self._db_pages.put(config=json.dumps(page['config']), where='path=\'{}\''.format(page['path']))
 
         return page
 

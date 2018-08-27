@@ -2,7 +2,10 @@
 # -*- coding: utf-8 -*-
 
 import logging
-logger = logging.getLogger()
+import os
+
+
+logger = logging.getLogger(__name__)
 
 BACKEND = 'sqlite3'
 
@@ -12,27 +15,31 @@ else:
     import pymysql
 
 
+database_path = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..'))
+
+_database = None
+_measurements_database = None
 
 
-# add a debugdb loglevel just below debug
-DEBUGDB_LEVEL_NUM = 9
-logging.addLevelName(DEBUGDB_LEVEL_NUM, "DEBUGDB")
-def debugdb(self, message, *args, **kwargs):
-    # Yes, logger takes its '*args' as 'args'.
-    if self.isEnabledFor(DEBUGDB_LEVEL_NUM):
-        self._log(DEBUGDB_LEVEL_NUM, message, args, **kwargs) 
-
-logging.Logger.debugdb = debugdb
+def get_database():
+    global _database
+    if _database is None:
+        _database = Database(database=os.path.join(database_path, 'homecon.db'))
+    return _database
 
 
-
+def get_measurements_database():
+    global _measurements_database
+    if _measurements_database is None:
+        _measurements_database = Database(database=os.path.join(database_path, 'measurements.db'))
+    return _measurements_database
 
 
 class Database(object):
     """
     Class for interfacing a sqlite3 or mysql database
     """
-    def __init__(self,host='',user='',password='',database=''):
+    def __init__(self, host='', user='', password='', database=''):
     
         self.host = host
         self.user = user
@@ -43,7 +50,7 @@ class Database(object):
         if BACKEND == 'sqlite3':
             connection = sqlite3.connect(self.database)
         else:
-            connection = pymysql.connect(self.host,self.user,self.password,self.database)
+            connection = pymysql.connect(self.host, self.user, self.password, self.database)
         return connection
         
     def create_cursor(self):
@@ -51,7 +58,7 @@ class Database(object):
         connection = self.create_connection()
         cursor = connection.cursor()
         
-        return connection,cursor
+        return connection, cursor
         
     def create_dict_cursor(self):
         if BACKEND == 'sqlite3':
@@ -62,52 +69,54 @@ class Database(object):
             connection = self.create_connection()
             cursor = connection.cursor(pymysql.cursors.DictCursor)
         
-        return connection,cursor    
+        return connection, cursor
         
-    def execute_query(self,query,data=None):
-        connection,cursor = self.create_dict_cursor()
-        
+    def execute_query(self, query, data=None):
+        connection, cursor = self.create_dict_cursor()
         try:
-            if data == None:
+            if data is None:
                 cursor.execute(query)
             else:
                 if BACKEND == 'sqlite3':
-                    newdata = []
+                    new_data = []
                     for d in data:
                         if isinstance(d, str):
                             d = '\'' + d + '\''
-                        newdata.append(d) 
-                    cursor.execute(query%tuple(newdata))
+                        new_data.append(d)
+                    cursor.execute(query % tuple(new_data))
                 else:
-                    cursor.execute(query,data)
+                    cursor.execute(query, data)
                 
             connection.commit()
         except Exception as e:
             connection.rollback()
-            logger.error('Database query \'{}\' raised an exception exception {}'.format(query,e))
+            logger.error('Database query \'{}\' raised an exception exception {}'.format(query, e))
         
         return cursor
         
-    #def table_description(table):
-    #    connection = self.create_connection()
-    #    connection.row_factory = sqlite3.Row
-    #    cursor = connection.cursor()
-    #    cursor.execute('select * from {}'.format(table))
-    #    row = cursor.fetchone()
+    # def table_description(table):
+    #     connection = self.create_connection()
+    #     connection.row_factory = sqlite3.Row
+    #     cursor = connection.cursor()
+    #     cursor.execute('select * from {}'.format(table))
+    #     row = cursor.fetchone()
 
-    def _dict_factory(self,cursor, row):
+    @staticmethod
+    def _dict_factory(cursor, row):
         d = {}
         for idx, col in enumerate(cursor.description):
             d[col[0]] = row[idx]
         return d
 
+    def __repr__(self):
+        return '<{} {}>'.format(self.__class__.__name__, self.database)
 
 
 class Table(object):
     """
     Class to work with a database table
     """
-    def __init__(self,database,name,columns=[]):
+    def __init__(self, database, name, columns=None):
         """
         Initialize a Table instance and creates the database table if it does not exist
         """
@@ -115,56 +124,55 @@ class Table(object):
         self.database = database
         self.name = name
 
+        if columns is None:
+            columns = []
+
         # create the table if it does not exist
         if BACKEND == 'sqlite3':
             query = 'CREATE TABLE IF NOT EXISTS {} (id INTEGER PRIMARY KEY)'.format(self.name)
         else:
-            query = 'CREATE TABLE IF NOT EXISTS {} (id int(11) NOT NULL AUTO_INCREMENT, PRIMARY KEY (id))'.format(self.name)
-        self.database.execute_query( query )
+            query = 'CREATE TABLE IF NOT EXISTS {} (id int(11) NOT NULL AUTO_INCREMENT, PRIMARY KEY (id))'\
+                .format(self.name)
+        self.database.execute_query(query)
 
         # load all existing columns
         query = 'SELECT * FROM {}'.format(self.name)
-        cursor = self.database.execute_query( query )
+        cursor = self.database.execute_query(query)
 
-        if cursor == None:
+        if cursor is None:
             self.columns = []
         else:
             cursor.fetchall()
             self.columns = [col[0] for col in cursor.description]
-
 
         # add columns
         for column in columns:
             if not column['name'] in self.columns:
 
                 if BACKEND == 'sqlite3':
-                    query = 'ALTER TABLE `{}` ADD COLUMN `{}` {}'.format(self.name,column['name'],column['type'])
-                    cursor = self.database.execute_query( query )
-                    
+                    query = 'ALTER TABLE `{}` ADD COLUMN `{}` {}'.format(self.name, column['name'], column['type'])
+                    self.database.execute_query(query)
                 else:
+                    query = 'ALTER TABLE `{}` ADD `{}`'.format(self.name, column['name'])
+                    self.database.execute_query(query)
 
-                    query = 'ALTER TABLE `{}` ADD `{}`'.format(self.name,column['name'])
-                    cursor = self.database.execute_query( query )
-
-                    query = 'ALTER TABLE `{}` MODIFY `{}` {} {} {} '.format(self.name,column['name'],column['type'],column['null'],column['default'],column['unique'])
-                    cursor = self.database.execute_query( query )
-
+                    query = 'ALTER TABLE `{}` MODIFY `{}` {} {} {} '\
+                        .format(self.name, column['name'], column['type'], column['null'], column['default'],
+                                column['unique'])
+                    self.database.execute_query(query)
                 self.columns.append(column)
-
             else:
                 # edit the column
                 pass
-        
-        if not 'id' in self.columns:
+
+        if 'id' not in self.columns:
             self.columns.append('id')
 
-
-    def GET(self,columns=None,order=None,desc=False,limit=None,**kwargs):
+    def get(self, columns=None, order=None, desc=False, limit=None, **kwargs):
         """
         Gets data from the database
         """
-
-        if columns == None:
+        if columns is None:
             columns = '*'
         else:
             columns = '`' + '`,`'.join(columns) + '`'
@@ -175,7 +183,7 @@ class Table(object):
             where = ''
         else:
             where = []
-            for key,val in kwargs.items():
+            for key, val in kwargs.items():
                 if key[-4:] == '__ge':
                     where.append(key[:-4] + ' >= %s')
                     data.append(val)
@@ -185,35 +193,31 @@ class Table(object):
                 else:
                     where.append(key + ' = %s')
                     data.append(val)
-                    
             where = 'WHERE ' + ' AND '.join(where)
-            
         data = tuple(data)
         
-        query = 'SELECT {} FROM {} {}'.format(columns,self.name,where)
-        if not order is None:
-            query = query + ' ORDER BY '+order
+        query = 'SELECT {} FROM {} {}'.format(columns, self.name, where)
+        if order is not None:
+            query += ' ORDER BY '+order
             if desc:
-                query = query + ' DESC'
+                query += ' DESC'
 
-        if not limit is None:
-            query = query + ' LIMIT {}'.format(limit)
+        if limit is not None:
+            query += ' LIMIT {}'.format(limit)
 
-        logger.debugdb(query)
-        cursor = self.database.execute_query( query, data )
-        
-        if cursor == None:
+        logger.debug(query)
+        cursor = self.database.execute_query(query, data)
+
+        if cursor is None:
             return []
         else:
             return cursor.fetchall()
         
-        
-    def POST(self,**kwargs):
-    
+    def post(self, **kwargs):
         columns = []
         values = []
         data = []
-        for key,val in kwargs.items():
+        for key, val in kwargs.items():
             columns.append(key)
             values.append('%s')
             data.append(val)
@@ -222,30 +226,27 @@ class Table(object):
         values = ','.join(values)
         data = tuple(data)
         
-        query = 'INSERT INTO {} ({}) VALUES ({})'.format(self.name,columns,values)
+        query = 'INSERT INTO {} ({}) VALUES ({})'.format(self.name, columns, values)
 
-        logger.debugdb(query)
-        cursor = self.database.execute_query( query, data )
+        logger.debug(query)
+        self.database.execute_query(query, data)
         
-    def PUT(self,where='',**kwargs):
-    
-        columnsvalues = []
+    def put(self, where='', **kwargs):
+        columns_values = []
         data = []
-        for key,val in kwargs.items():
-            columnsvalues.append('`'+key+'` = %s')
-           
+        for key, val in kwargs.items():
+            columns_values.append('`'+key+'` = %s')
             data.append(val)
             
-        columnsvalues = ','.join(columnsvalues)
+        columns_values = ','.join(columns_values)
         data = tuple(data)
         
-        query = 'UPDATE {} SET {} WHERE {}'.format(self.name,columnsvalues,where)
+        query = 'UPDATE {} SET {} WHERE {}'.format(self.name, columns_values, where)
 
-        logger.debugdb(query)
-        cursor = self.database.execute_query( query, data )
+        logger.debug(query)
+        self.database.execute_query(query, data)
         
-    def DELETE(self,**kwargs):
-
+    def delete(self, **kwargs):
         # parse where statements in the kwargs
         data = []
         if len(kwargs) == 0:
@@ -262,39 +263,29 @@ class Table(object):
                 else:
                     where.append(key + ' = %s')
                     data.append(val)
-                    
             where = 'WHERE ' + ' AND '.join(where)
-
-            
         data = tuple(data)
+        query = 'DELETE FROM {} {}'.format(self.name, where)
+        logger.debug(query)
+        self.database.execute_query(query, data)
 
-        query = 'DELETE FROM {} {}'.format(self.name,where)
-
-        logger.debugdb(query)
-        cursor = self.database.execute_query( query,data )
-
-
-
-# create database objects
-db = None
-measurements_db = None
+    def __repr__(self):
+        return '<{} {} database={}>'.format(self.__class__.__name__, self.name, self.database.database)
 
 
 # Example usage
 if __name__ == '__main__':
 
     db = Database(database='test.db')
-    users = Table(db,'users',[
-        {'name':'username',   'type':'char(255)', 'null': '',  'default':'',  'unique':'UNIQUE'},
-        {'name':'password',   'type':'char(255)', 'null': '',  'default':'',  'unique':''},
-        {'name':'permission', 'type':'int',       'null': '',  'default':'',  'unique':''},
+    users = Table(db, 'users', [
+        {'name': 'username',   'type': 'char(255)', 'null': '',  'default': '',  'unique': 'UNIQUE'},
+        {'name': 'password',   'type': 'char(255)', 'null': '',  'default': '',  'unique': ''},
+        {'name': 'permission', 'type': 'int',       'null': '',  'default': '',  'unique': ''},
     ])
     
-    users.POST(username='user1',password='test',permission=1)
-    users.POST(username='user2',password='test',permission=1)
-    users.POST(username='user3',password='test',permission=1)
-    
-    usrs = users.GET(columns=['username','permission'])
-    for u in usrs:
+    users.post(username='user1', password='test', permission=1)
+    users.post(username='user2', password='test', permission=1)
+    users.post(username='user3', password='test', permission=1)
+
+    for u in users.get(columns=['username', 'permission']):
         print(u)
-     

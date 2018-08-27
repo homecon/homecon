@@ -108,7 +108,7 @@ class Measurements(core.plugin.Plugin):
         if 'datatype' in state.config and (state.config['datatype'] == 'number' or state.config['datatype'] == 'boolean'):
             value = float(value)
         print(value)
-        self._db_measurements.POST(time=time,path=state.path,value=value)
+        self._db_measurements.post(time=time, path=state.path, value=value)
 
         # FIXME add the value to this_weekaverage
 
@@ -135,7 +135,7 @@ class Measurements(core.plugin.Plugin):
         """
 
         if not path in self.measurements:
-            data = self._db_measurements.GET(path=path,time__ge=util.time.timestamp()-self.maxtimedelta)
+            data = self._db_measurements.get(path=path, time__ge=util.time.timestamp() - self.maxtimedelta)
             
             self.measurements[path] = []
             for d in data:

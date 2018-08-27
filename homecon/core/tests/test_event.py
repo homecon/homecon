@@ -17,30 +17,33 @@
 #    along with HomeCon.  If not, see <http://www.gnu.org/licenses/>.
 ################################################################################
 
+import pickle
 
-import asyncio
+from homecon.core.event import Event
 
-
-from .. import common
-
-import homecon.core
+from homecon.tests.common import TestCase
 
 
-class EventTests(common.TestCase):
+class TestEvent(TestCase):
 
-    def test_fire(self):
+    def test_pickle(self):
+        event = Event('test', {'A': 'B'}, None, target='A', client='B')
+        picklestring = pickle.dumps(event)
 
-        homecon.core.event.fire('myevent',{'key':'value'},source='thesource',client=None)
-
-        async def get_event():
-            event = await homecon.core.event.queue.get()
-            self.assertEqual(event.type,'myevent')
-            self.assertEqual(event.data,{'key':'value'})
-            self.assertEqual(event.source,'thesource')
-            self.assertEqual(event.client,None)
-
-        loop = asyncio.get_event_loop()
-        loop.run_until_complete(get_event())
-
+    #
+    # def test_fire(self):
+    #
+    #     homecon.core.event.fire('myevent',{'key':'value'},source='thesource',client=None)
+    #
+    #     async def get_event():
+    #         event = await homecon.core.event.queue.get()
+    #         self.assertEqual(event.type,'myevent')
+    #         self.assertEqual(event.data,{'key':'value'})
+    #         self.assertEqual(event.source,'thesource')
+    #         self.assertEqual(event.client,None)
+    #
+    #     loop = asyncio.get_event_loop()
+    #     loop.run_until_complete(get_event())
+    #
 
 

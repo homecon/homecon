@@ -7,7 +7,11 @@ import asyncio
 
 import asyncws
 
-from . import event
+from homecon.core.event import Event, queue
+
+
+logger = logging.getLogger(__name__)
+
 
 class Websocket(object):
     """
@@ -16,13 +20,11 @@ class Websocket(object):
     """
 
     def __init__(self):
-
-        self._loop = asyncio.get_event_loop()
+        self._queue = queue
         self.clients = []
         self.server = None
-
+        self._loop = asyncio.get_event_loop()
         clients_lock = asyncio.Lock()
-
 
         def connect_client(websocket):
             """
@@ -31,11 +33,9 @@ class Websocket(object):
 
             client = Client(websocket)
             with (yield from clients_lock):
-                
                 self.clients.append(client)
 
             address = client.address
-
             logging.debug('Incomming connection from {}'.format(address))
 
             try:
@@ -47,30 +47,23 @@ class Websocket(object):
                     # parse the message and fire an event if the data is in the correct format
                     try:
                         data = json.loads(message)
-                        self.log_data(address,data)
-                        
+                        self.log_data(address, data)
                         if 'event' in data:
-                            event.fire(data['event'],data,source=self,client=client)
-
+                            Event.fire(data['event'], data, source=self.__class__.__name__, client=str(client))
                         elif 'echo' in data:
                             yield from client.send(data)
-
                     except:
-                        logging.debug('A message was recieved but could not be handled')
-                    
-
+                        logging.debug('A message was received but could not be handled')
             finally:
                 with (yield from clients_lock):
                     self.clients.remove(client)
-
                 logging.debug('Disconnected {}'.format(address))
-
 
         # create a server and run it in the event loop
         servergenerator = asyncws.start_server(connect_client, host='0.0.0.0', port=9024, loop=self._loop)
-        self.server = self._loop.run_until_complete( servergenerator )
+        self.server = self._loop.run_until_complete(servergenerator)
 
-    def log_data(self,address,data):
+    def log_data(self, address, data):
         """
         removes sensitive data before logging
 
@@ -85,14 +78,13 @@ class Websocket(object):
         """
 
         newdata = dict(data)
-        for key in ['password','token']:
+        for key in ['password', 'token']:
             if key in newdata:
                 newdata[key] = '***'
 
-        logging.debug('Client on {} sent {}'.format(address,newdata))
+        logging.debug('Client on {} sent {}'.format(address, newdata))
 
-
-    def send(self,data, clients=None,readusers=None,readgroups=None):
+    def send(self, data, clients=None, readusers=None, readgroups=None):
         """
         Send data to clients
 
@@ -109,20 +101,18 @@ class Websocket(object):
 
         readgroups: list, optional
             List of group id's which are allowed to read the data
-    
         """
 
         if clients is None:
             clients = self.clients
 
-        if not hasattr(clients,'__len__'):
+        if not hasattr(clients, '__len__'):
             clients = [clients]
 
-
         for client in clients:
-            if self.check_readpermission(client,readusers=readusers,readgroups=readgroups) or data['event'] == 'request_token':
-                asyncio.ensure_future( client.send(data) )
-
+            if (self.check_readpermission(client, readusers=readusers, readgroups=readgroups)
+                or data['event'] == 'request_token'):
+                asyncio.ensure_future(client.send(data))
 
     def check_readpermission(self,client,readusers=None,readgroups=None):
         """
@@ -133,8 +123,6 @@ class Websocket(object):
 
         permitted = False
         if client.tokenpayload:
-
-
             if readusers is None and readgroups is None:
                 permitted = True
             else:
@@ -144,7 +132,6 @@ class Websocket(object):
                 if readgroups is None:
                     readgroups = []
 
-
                 if client.tokenpayload['userid'] in readusers:
                     permitted = True
                 else:
@@ -152,7 +139,6 @@ class Websocket(object):
                         if g in readgroups:
                             permitted = True
                             break
-
         return permitted
 
     def close(self):
@@ -160,7 +146,7 @@ class Websocket(object):
 
 
 class Client(object):
-    def __init__(self,websocket):
+    def __init__(self, websocket):
         self.websocket = websocket
         self.tokenpayload = False
 

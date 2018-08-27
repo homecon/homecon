@@ -5,7 +5,15 @@ import sys
 import os
 import inspect
 import traceback
+import logging
 
+
+# configure logging
+logger = logging.getLogger(__name__)
+logging.basicConfig(level=logging.DEBUG,
+                    format='%(asctime)s %(levelname)7.7s  %(processName)-12.12s  %(name)-28.28s %(message)s',
+                    stream=sys.stdout)
+logging.getLogger('homecon.core.database').setLevel(logging.INFO)
 
 # the current file directory
 basedir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
@@ -136,39 +144,39 @@ def main():
         ################################################################################
         # start the webserver in a different thread
         ################################################################################
-        from . import httpserver
+        from homecon.httpserver import HttpServerThread
+        httpserverthread = HttpServerThread(**app_kwargs)
 
-        httpserverthread = httpserver.HttpServerThread(**app_kwargs)
-
-        if not 'nohttp' in sys.argv:
+        if 'nohttp' not in sys.argv:
             httpserverthread.start()
 
         ################################################################################
         # start HomeCon
         ################################################################################
-        from . import homecon
+        from homecon.homecon import HomeCon
 
-        print('Starting HomeCon')
-        print('Press Ctrl + C to stop')
-        print('')
-
+        print('\nStarting HomeCon\nPress Ctrl + C to stop\n')
         try:
-            hc = homecon.HomeCon(**hc_kwargs)
+            hc = HomeCon(**hc_kwargs)
 
             if 'demo' in sys.argv:
-                from . import demo
+                from homecon import demo
                 
                 demo.prepare_database()
                 demo.emulatorthread.start()
                 demo.forecastthread.start()
                 demo.responsethread.start()
 
-            hc.main()
+            hc.start()
+        except KeyboardInterrupt:
+            print('\nStopping HomeCon\n')
+            httpserverthread.stop()
+            hc.stop()
 
         except:
-            httpserverthread.stop()
             print('Stopping HomeCon')
-            #hc.stop()
+            httpserverthread.stop()
+            hc.stop()
 
             exc_type, exc_value, exc_traceback = sys.exc_info()
             traceback.print_exception(exc_type, exc_value, exc_traceback, file=sys.stdout)

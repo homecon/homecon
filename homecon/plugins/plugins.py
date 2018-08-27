@@ -6,51 +6,121 @@ import asyncio
 import os
 import sys
 
-from .. import core
+from homecon.core.database import Table, get_database
+from homecon.core.plugin import Plugin
 
-class Plugins(core.plugin.Plugin):
+from homecon.plugins.states import States
+
+logger = logging.getLogger(__name__)
+
+
+_plugins_table = None
+
+
+def get_plugins_table():
+    global _plugins_table
+    if _plugins_table is None:
+        _plugins_table = Table(get_database(), 'plugins', [
+            {'name': 'name',    'type': 'char(255)', 'null': '', 'default': '', 'unique': 'UNIQUE'},
+            {'name': 'info',    'type': 'char(255)', 'null': '', 'default': '', 'unique': ''},
+            {'name': 'package', 'type': 'char(255)', 'null': '', 'default': '', 'unique': ''},
+            {'name': 'active',  'type': 'int',  'null': '',  'default': '0',  'unique': ''},
+        ])
+    return _plugins_table
+
+
+class Plugins(Plugin):
     """
     A class to manage plugins dynamically
     """
-    def initialize(self):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._plugin_folder = 'plugins'
+        self._core_plugins = {
+            'plugins': self,
+            'states': States(),
+        }
+        self._active_plugins = {}
 
-        self.pluginfolder = 'plugins'
+        # initialize plugins
+        db_entries = get_plugins_table().get()
+        for db_entry in db_entries:
+            if db_entry['active']:
+                plugin_class = self._import(db_entry['name'], db_entry['package'])
+                self._active_plugins[db_entry['name']] = plugin_class()
 
         logging.debug('Plugins plugin Initialized')
 
-
-    def get_optionalplugins_list(self):
+    def get_available_plugins_list(self):
         """
         Generate a list of all available optional plugins and those that are active
         
         """
-        pluginslist = []
-        for name in core.plugins.optionalplugins:
-            info = core.plugins.read_info(name)
+        db_entries = get_plugins_table().get()
+        plugins = []
+        for db_entry in db_entries:
+            plugins.append({'name': db_entry['name'], 'info': db_entry['info'], 'active': db_entry['active']})
+        return plugins
 
-            if name in core.plugins:
-                active = True
-            else:
-                active = False
-
-            pluginslist.append({'name':name,'info':info,'active':active})
-
-        return pluginslist
-
-
-    def get_activeplugins_list(self):
+    def get_active_plugins_list(self):
         """
         Generate a list of all active plugins, excluding core plugins
-        
         """
-        pluginslist = []
-        for name in core.plugins.optionalplugins:
+        return sorted([key for key in self._active_plugins.keys()])
 
-            if name in core.plugins:
-                pluginslist.append(name)
+    def activate(self, name):
+        """
+        Activate an available plugin by name
 
-        pluginslist = sorted(pluginslist)
-        return pluginslist
+        """
+        db_entries = get_plugins_table().get(name=name)
+        if len(db_entries) == 1:
+            db_entry = db_entries[0]
+            plugin_class = self._import(name, package=db_entry['package'])
+            if plugin_class is not None:
+                self._active_plugins[name] = plugin_class()
+                self._active_plugins[name].start()
+                get_plugins_table().put(active=True, where='id=\'{}\''.format(db_entry['id']))
+                logger.debug("plugin {} activated".format(name))
+
+    def deactivate(self, name):
+       pass
+
+    def install(self, url):
+        logging.debug('installing plugin from'.format(url))
+
+    def _import(self, name, package=None):
+        """
+        Imports a plugin module
+
+        this attempts to load the plugin with the correct format by name from
+        the plugins folder
+
+        Parameters
+        ----------
+        name: string
+            The module name of the plugin
+
+        package: string
+            Package where to find the plugin, defaults to the default _plugin_folder
+
+        returns
+        -------
+        pluginclass: class
+            The plugin class if defined in the module otherwise ``None``
+
+        """
+
+        if package is None or package == '':
+            plugin_module = __import__(name, fromlist=[name])
+        else:
+            plugin_module = __import__('{}.{}'.format(package, name), fromlist=[name])
+
+        plugin_class = None
+        plugin_class_name = name.capitalize()
+        if plugin_class_name in dir(plugin_module):
+            plugin_class = getattr(plugin_module, plugin_class_name)
+        return plugin_class
 
 
     def get_state_config_keys(self):
@@ -66,7 +136,6 @@ class Plugins(core.plugin.Plugin):
                 keyslist.append({'name':name, 'keys':keys})
 
         return keyslist
-
 
     def get_components(self):
         
@@ -87,38 +156,6 @@ class Plugins(core.plugin.Plugin):
         #        keyslist.append({'name':name, 'keys':keys})
 
         return keyslist
-
-
-
-    def activate(self,name):
-        """
-        Activate an available plugin by name
-
-        """
-
-        if name in core.plugins.availableplugins and not name in core.plugins:
-            core.plugins.activate(name)
-
-            return True
-        else:
-            return False
-
-    def deactivate(self,name):
-        if name in core.plugins and name in core.plugins.optionalplugins:
-
-            core.plugins.deactivate(name)
-
-            logging.debug('plugin {} deactivated'.format(name))
-            return True
-        else:
-            return False
-
-
-    def install(self,url):
-        logging.debug('installing plugin from'.format(url))
-        return core.plugins.install(url)
-
-
 
     def listen_list_optionalplugins(self,event):
         core.websocket.send({'event':'list_optionalplugins', 'path':'', 'value':self.get_optionalplugins_list()}, clients=[event.client])
@@ -147,3 +184,36 @@ class Plugins(core.plugin.Plugin):
             core.websocket.send({'event':'list_optionalplugins', 'path':'', 'value':self.get_optionalplugins_list()}, clients=[event.client])
             core.websocket.send({'event':'list_activeplugins', 'path':'', 'value':self.get_optionalplugins_list()}, clients=[event.client])
 
+
+    def __getitem__(self,path):
+        return None
+
+    def __iter__(self):
+        return iter([])
+
+    def __contains__(self,path):
+        return False
+
+    def keys(self):
+        plugins = {}
+        for key, val in self._core_plugins.values():
+            plugins[key] = val
+        for key, val in self._active_plugins.values():
+            plugins[key] = val
+        return plugins.keys()
+
+    def items(self):
+        plugins = {}
+        for key, val in self._core_plugins.items():
+            plugins[key] = val
+        for key, val in self._active_plugins.items():
+            plugins[key] = val
+        return plugins.items()
+
+    def values(self):
+        plugins = {}
+        for key, val in self._core_plugins.items():
+            plugins[key] = val
+        for key, val in self._active_plugins.items():
+            plugins[key] = val
+        return plugins.values()

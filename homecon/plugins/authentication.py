@@ -98,8 +98,8 @@ class Authentication(core.plugin.Plugin):
 
 
         # load the groups and users from the database
-        self.users = {user['id']: user for user in self._db_users.GET()}#columns=['id','username','permission']
-        self.groups = {group['id']: group for group in self._db_groups.GET()}#columns=['id','groupname','permission']
+        self.users = {user['id']: user for user in self._db_users.get()}#columns=['id','username','permission']
+        self.groups = {group['id']: group for group in self._db_groups.get()}#columns=['id','groupname','permission']
         
         self.usernames = {user['username']: user['id'] for user in self.users.values()}
         self.groupnames = {group['groupname']: group['id'] for group in self.groups.values()}
@@ -113,7 +113,7 @@ class Authentication(core.plugin.Plugin):
         for user in self.users:
             self.user_groups[user] = []
 
-        for gu in self._db_group_users.GET():
+        for gu in self._db_group_users.get():
             self.group_users[gu['group']].append(self.users[gu['user']])
             self.user_groups[gu['user']].append(self.groups[gu['group']])
             
@@ -151,8 +151,8 @@ class Authentication(core.plugin.Plugin):
 
         if not username in [user['username'] for user in self.users.values()]:
             passwordhash = self.encrypt_password(password)
-            self._db_users.POST(username=username,password=passwordhash,permission=permission)
-            user = self._db_users.GET(columns=['id','username','permission'],order='id',desc=True,limit=1)[0]
+            self._db_users.post(username=username, password=passwordhash, permission=permission)
+            user = self._db_users.get(columns=['id', 'username', 'permission'], order='id', desc=True, limit=1)[0]
 
             # add the user to the several lists
             self.users[user['id']] = user
@@ -185,8 +185,8 @@ class Authentication(core.plugin.Plugin):
         """
 
         if not groupname in [group['groupname'] for group in self.groups.values()]:
-            self._db_groups.POST(groupname=groupname,permission=permission)
-            group = self._db_groups.GET(columns=['id','groupname','permission'],order='id',desc=True,limit=1)[0]
+            self._db_groups.post(groupname=groupname, permission=permission)
+            group = self._db_groups.get(columns=['id', 'groupname', 'permission'], order='id', desc=True, limit=1)[0]
 
             # add the groups to the groupslist
             self.groups[group['id']] = group
@@ -217,7 +217,7 @@ class Authentication(core.plugin.Plugin):
         """
 
         if not groupid in self.user_groups[userid]:
-            self._db_group_users.POST(user=userid,group=groupid)
+            self._db_group_users.post(user=userid, group=groupid)
             self.group_users[groupid].append(self.users[userid])
             self.user_groups[userid].append(self.groups[groupid])
 
@@ -305,7 +305,7 @@ class Authentication(core.plugin.Plugin):
             iat = datetime.datetime.utcnow()
             exp = datetime.datetime.utcnow() + datetime.timedelta(seconds=self._token_exp)
 
-            users = self._db_users.GET(id=payload['userid'])
+            users = self._db_users.get(id=payload['userid'])
             if len(users)==1:
                 user = users[0]
                 payload = {'userid': user['id'], 'groupids': self.user_groups[user['id']], 'username':user['username'], 'permission':self.user_permission(user), 'exp':exp, 'iat':iat}
@@ -340,7 +340,7 @@ class Authentication(core.plugin.Plugin):
 
         """
         result = False
-        users = self._db_users.GET(columns=['id','username','password','permission'],username=username)
+        users = self._db_users.get(columns=['id', 'username', 'password', 'permission'], username=username)
 
 
         if len(users) == 1:
