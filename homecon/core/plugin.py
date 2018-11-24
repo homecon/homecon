@@ -2,12 +2,12 @@
 # -*- coding: utf-8 -*-
 
 import logging
-import asyncio
-import os
-import sys
-import uuid
-import pip
-import pyomo.environ as pyomo
+# import asyncio
+# import os
+# import sys
+# import uuid
+# import pip
+# import pyomo.environ as pyomo
 
 # from concurrent.futures import ThreadPoolExecutor
 
@@ -15,7 +15,7 @@ from multiprocessing import Process, Queue
 from queue import Empty
 
 from homecon.core.database import get_database, Table
-from homecon.core.event import Event, queue
+from homecon.core.event import Event
 # from . import event
 # from . import state
 # from . import component
@@ -44,7 +44,7 @@ def get_plugins_table():
     return _plugins_table
 
 
-class Plugin(object):
+class Plugin(Process):
     """
     A class for defining plugins with listener methods
 
@@ -63,67 +63,34 @@ class Plugin(object):
     """
 
     def __init__(self):
-        """
-        Initialize a plugin instance
-            
-        """
+        super().__init__()
         self._running = False
         self._queue = Queue()
         self.config_keys = []
         self.ocp_variables = {}
+        self.listeners = {}
 
-        self._get_listeners()
-        self._process = Process(target=self._run, args=(self._queue,), name=self.name)
-
-    def initialize(self):
-        pass
-
-    def start(self):
-        self._running = True
-        self._process.start()
+        # self._process = Process(target=self._run, args=(self._queue,), name=self.name)
 
     def stop(self):
-        self.listen(Event('stop_plugin', {}, source='stop', client=None))
+        self._running = False
+        self._queue.put(Event('stop_plugin', {}, source='stop'))
+
+    def join(self, **kwargs):
+        super().join(**kwargs)
         self._running = False
 
-    def join(self):
-        self._process.join()
-        self._running = False
-
-    def listen(self, event):
+    def run(self):
         """
-        Add an event to the plugin queue
-        """
-        self._queue.put(event)
-
-    def fire(self, event_type, data, source=None, **kwargs):
-        """
-        Add the event to the event queue
-
-        Parameters
-        ----------
-        event_type : str
-            the event type
-        data : dict
-            the data describing the event
-        source : str
-            the source of the event
-        client : Object
-        """
-
-        if source is None:
-            source = self.name
-        Event.fire(event_type, data, source, **kwargs)
-
-    def _run(self, queue):
-        """
-        Method will run in a subprocess and handles events
+        Runs the plugin process and listens for messages on the plugin queue.
+        Does not return until the self._running is False
         """
         self._running = True
         self.initialize()
+        self._get_listeners()
         while self._running:
             try:
-                event = queue.get()
+                event = self._queue.get(timeout=0.1)
                 logger.debug(event)
             except Empty:
                 pass
@@ -132,203 +99,239 @@ class Plugin(object):
             else:
                 self._listen(event)
 
+    def listen(self, event):
+        """
+        Add an event to the plugin queue
+        """
+        self._queue.put(event)
+
+    def initialize(self):
+        """
+        Base method runs when the plugin is instantiated.
+
+        redefine this method in a child class.
+        imports of special packages should be done inside this method.
+        """
+        pass
+
+    def listen_stop_plugin(self, event):
+        self._running = False
+
     def _listen(self, event):
         """
-        Base listener method called when an event is taken from the queue
+        Base listener method called when an event is taken from the queue.
 
         Parameters
         ----------
         event : Event
-            an Event instance
+            An Event instance.
 
         Notes
         -----
-        Source checking to avoid infinite loops needs to be done in the plugin
-        listener method
+        Source checking to avoid infinite loops needs to be done in the plugin listener method.
 
         """
 
         if event.type in self.listeners:
             self.listeners[event.type](event)
 
-    def initialize(self):
-        """
-        Base method runs when the plugin is instantiated
-        
-        redefine this method in a child class
-        """
-        pass
-
     def _get_listeners(self):
-        self.listeners = {}
+        """
+        Gets listener methods and adds them to the listeners dictionary.
+        """
         for method in dir(self):
             if method.startswith('listen_'):
                 event_type = '_'.join(method.split('_')[1:])
                 self.listeners[event_type] = getattr(self, method)
 
-    def listen_stop_plugin(self, event):
-        self._running = False
-
-    def register_component(self, componentclass):
-        self._components.register(componentclass)
-
     @property
     def name(self):
         return self.__class__.__name__
 
-    def components(self):
-        """
-        Redefinable method which should return a list of components defined by the plugin and enables the app to edit the component
-
-        Examples
-        --------
-        [{
-            'name': 'light',
-            'properties': ['power'],
-            'states': [
-                {
-                    'path': 'value',    # the final path of a state is prefixed with the component path ex. living/light1/value
-                    'defaultconfig': {         # values listed here will be defaults
-                        'label': 'light',
-                        'quantity': 'boolean',
-                        'unit' : ''
-                    },
-                    'fixedconfig': {         # values listed here will not be changeable
-                        'type': bool
-                    },
-                },
-            ]
-        },]
-
-        """
-
-        return []
-
-    def create_ocp_variables(self,model):
-        """
-        Base method to create ocp model variables
-
-        Called before the ocp constraints are created
-        """
-        pass
+    def __repr__(self):
+        return '<Plugin {}>'.format(self.name)
 
 
-    def create_ocp_constraints(self,model):
-        """
-        Base method to create ocp model constraints
-
-        Called before the ocp is solved
-        """
-        pass
 
 
-    def postprocess_ocp(self,model):
-        """
-        Base method to retrieve data from the ocp solution
+    # def register_component(self, componentclass):
+    #     self._components.register(componentclass)
+    #
 
-        Called after the ocp is solved
-        """
-        pass
+    #
+    # def fire(self, event_type, data, source=None, **kwargs):
+    #     """
+    #     Add the event to the event queue
+    #
+    #     Parameters
+    #     ----------
+    #     event_type : str
+    #         the event type
+    #     data : dict
+    #         the data describing the event
+    #     source : str
+    #         the source of the event
+    #     client : Object
+    #     """
+    #
+    #     if source is None:
+    #         source = self.name
+    #     Event.fire(event_type, data, source, **kwargs)
+    #
+    # def components(self):
+    #     """
+    #     Redefinable method which should return a list of components defined by the plugin and enables the app to edit the component
+    #
+    #     Examples
+    #     --------
+    #     [{
+    #         'name': 'light',
+    #         'properties': ['power'],
+    #         'states': [
+    #             {
+    #                 'path': 'value',    # the final path of a state is prefixed with the component path ex. living/light1/value
+    #                 'defaultconfig': {         # values listed here will be defaults
+    #                     'label': 'light',
+    #                     'quantity': 'boolean',
+    #                     'unit' : ''
+    #                 },
+    #                 'fixedconfig': {         # values listed here will not be changeable
+    #                     'type': bool
+    #                 },
+    #             },
+    #         ]
+    #     },]
+    #
+    #     """
+    #
+    #     return []
+    #
+    # def create_ocp_variables(self,model):
+    #     """
+    #     Base method to create ocp model variables
+    #
+    #     Called before the ocp constraints are created
+    #     """
+    #     pass
+    #
+    #
+    # def create_ocp_constraints(self,model):
+    #     """
+    #     Base method to create ocp model constraints
+    #
+    #     Called before the ocp is solved
+    #     """
+    #     pass
+    #
+    #
+    # def postprocess_ocp(self,model):
+    #     """
+    #     Base method to retrieve data from the ocp solution
+    #
+    #     Called after the ocp is solved
+    #     """
+    #     pass
+    #
+    #
+    # def add_ocp_Var(model,localname,*args,**kwargs):
+    #     """
+    #     Adds a variable to a pyomo model and adds it to the local variables dictionary
+    #
+    #     Parameters
+    #     ----------
+    #     model : pyomo.environ.ConcreteModel
+    #         The optimization model.
+    #
+    #     localname : str
+    #         A local name to reference the variable
+    #
+    #     *args :
+    #         positional parameters passed to pyomo.environ.Var
+    #
+    #     *args :
+    #         keyword parameters passed to pyomo.environ.Var
+    #
+    #     """
+    #
+    #     var = pyomo.Var(*args,**kwargs)
+    #     self.ocp_variables[localname] = var
+    #     setattr(model,'{}_{}'.format(self.__class__.__name__.lower(),localname),var)
+    #
+    #
+    # def add_ocp_Param(model,localname,*args,**kwargs):
+    #     """
+    #     Adds a parameter to a pyomo model and adds it to the local variables dictionary
+    #
+    #     Parameters
+    #     ----------
+    #     model : pyomo.environ.ConcreteModel
+    #         The optimization model.
+    #
+    #     localname : str
+    #         A local name to reference the variable
+    #
+    #     *args :
+    #         positional parameters passed to pyomo.environ.Param
+    #
+    #     *args :
+    #         keyword parameters passed to pyomo.environ.Param
+    #
+    #     """
+    #
+    #     var = pyomo.Param(*args,**kwargs)
+    #     self.ocp_variables[localname] = var
+    #     setattr(model,'{}_{}'.format(self.__class__.__name__.lower(),localname),var)
+    #
+    #
+    # def add_ocp_Constraint(model,localname,*args,**kwargs):
+    #     """
+    #     Adds a constraint to a pyomo model
+    #
+    #     Parameters
+    #     ----------
+    #     model : pyomo.environ.ConcreteModel
+    #         The optimization model.
+    #
+    #     localname : str
+    #         A local name to reference the constraint
+    #
+    #     *args :
+    #         positional parameters passed to pyomo.environ.Param
+    #
+    #     *args :
+    #         keyword parameters passed to pyomo.environ.Param
+    #
+    #     """
+    #
+    #     var = pyomo.Constr(*args,**kwargs)
+    #     setattr(model, 'constraint_{}_{}'.format(self.__class__.__name__.lower(), localname), var)
+    #
+    #
+    # def schedule_callback(self,callback,**kwargs):
+    #     """
+    #     Shedule a callback tu run at regular intervals
+    #     """
+    #     # FIXME, implement
+    #     pass
+    #
+    # def __getitem__(self,path):
+    #     return None
+    #
+    # def __iter__(self):
+    #     return iter([])
+    #
+    # def __contains__(self,path):
+    #     return False
+    #
+    # def keys(self):
+    #     return []
+    #
+    # def items(self):
+    #     return []
+    #
+    # def values(self):
+    #     return []
 
-
-    def add_ocp_Var(model,localname,*args,**kwargs):
-        """
-        Adds a variable to a pyomo model and adds it to the local variables dictionary
-        
-        Parameters
-        ----------
-        model : pyomo.environ.ConcreteModel
-            The optimization model.
-            
-        localname : str
-            A local name to reference the variable
-            
-        *args : 
-            positional parameters passed to pyomo.environ.Var
-            
-        *args : 
-            keyword parameters passed to pyomo.environ.Var
-            
-        """
-        
-        var = pyomo.Var(*args,**kwargs)
-        self.ocp_variables[localname] = var
-        setattr(model,'{}_{}'.format(self.__class__.__name__.lower(),localname),var)
-        
-
-    def add_ocp_Param(model,localname,*args,**kwargs):
-        """
-        Adds a parameter to a pyomo model and adds it to the local variables dictionary
-        
-        Parameters
-        ----------
-        model : pyomo.environ.ConcreteModel
-            The optimization model.
-            
-        localname : str
-            A local name to reference the variable
-            
-        *args : 
-            positional parameters passed to pyomo.environ.Param
-            
-        *args : 
-            keyword parameters passed to pyomo.environ.Param
-            
-        """
-        
-        var = pyomo.Param(*args,**kwargs)
-        self.ocp_variables[localname] = var
-        setattr(model,'{}_{}'.format(self.__class__.__name__.lower(),localname),var)
-        
-
-    def add_ocp_Constraint(model,localname,*args,**kwargs):
-        """
-        Adds a constraint to a pyomo model
-        
-        Parameters
-        ----------
-        model : pyomo.environ.ConcreteModel
-            The optimization model.
-            
-        localname : str
-            A local name to reference the constraint
-            
-        *args : 
-            positional parameters passed to pyomo.environ.Param
-            
-        *args : 
-            keyword parameters passed to pyomo.environ.Param
-            
-        """
-        
-        var = pyomo.Constr(*args,**kwargs)
-        setattr(model, 'constraint_{}_{}'.format(self.__class__.__name__.lower(), localname), var)
-
-
-    def schedule_callback(self,callback,**kwargs):
-        """
-        Shedule a callback tu run at regular intervals
-        """
-        # FIXME, implement
-        pass
-
-    def __getitem__(self,path):
-        return None
-
-    def __iter__(self):
-        return iter([])
-
-    def __contains__(self,path):
-        return False
-
-    def keys(self):
-        return []
-
-    def items(self):
-        return []
-
-    def values(self):
-        return []
 
 
 

@@ -2,9 +2,6 @@
 # -*- coding: utf-8 -*-
 
 import logging
-import asyncio
-import os
-import sys
 
 from homecon.core.database import Table, get_database
 from homecon.core.plugin import Plugin
@@ -33,8 +30,8 @@ class Plugins(Plugin):
     """
     A class to manage plugins dynamically
     """
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+    def __init__(self):
+        super().__init__()
         self._plugin_folder = 'plugins'
         self._core_plugins = {
             'plugins': self,
