@@ -7,6 +7,7 @@ from homecon.core.database import Table, get_database
 from homecon.core.plugin import Plugin
 
 from homecon.plugins.states import States
+from homecon.plugins.websocket import Websocket
 
 logger = logging.getLogger(__name__)
 
@@ -36,6 +37,7 @@ class Plugins(Plugin):
         self._core_plugins = {
             'plugins': self,
             'states': States(),
+            'websocket': Websocket(),
         }
         self._active_plugins = {}
 

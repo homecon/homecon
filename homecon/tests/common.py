@@ -89,13 +89,13 @@ class Client(object):
     A convienient wrapper for creating a websocket connection
     """
 
-    async def connect(self,address):
+    async def connect(self, address):
         """
         connect to a websocket server
         """
         self.websocket = await asyncws.connect(address)
 
-    async def send(self,message):
+    async def send(self, message):
         """
         recieve a websocket message in json format
         """
@@ -106,7 +106,7 @@ class Client(object):
         recieve a websocket message in json format
         """
         message = await self.websocket.recv()
-        return json.loads( message )
+        return json.loads(message)
 
     def close(self):
         self.websocket.close()

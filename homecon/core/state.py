@@ -74,6 +74,7 @@ class State(object):
             get_states_table().post(path=path, config=json.dumps(config), value=json.dumps(value))
             # get the state FIXME error checking
             state = cls.get(path=path)
+            logger.debug('added state')
             Event.fire('state_added', {'state': state}, 'State')
         return state
 
