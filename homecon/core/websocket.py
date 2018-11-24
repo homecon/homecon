@@ -7,7 +7,9 @@ import asyncio
 
 import asyncws
 
-from homecon.core.event import Event, queue
+from uuid import uuid4
+
+from homecon.core.event import Event
 
 
 logger = logging.getLogger(__name__)
@@ -20,8 +22,7 @@ class Websocket(object):
     """
 
     def __init__(self):
-        self._queue = queue
-        self.clients = []
+        self.clients = {}
         self.server = None
         self._loop = asyncio.get_event_loop()
         clients_lock = asyncio.Lock()
@@ -33,7 +34,7 @@ class Websocket(object):
 
             client = Client(websocket)
             with (yield from clients_lock):
-                self.clients.append(client)
+                self.clients[client.id] = client
 
             address = client.address
             logging.debug('Incomming connection from {}'.format(address))
@@ -43,25 +44,25 @@ class Websocket(object):
                     message = yield from websocket.recv()
                     if message is None:
                         break
-
                     # parse the message and fire an event if the data is in the correct format
                     try:
                         data = json.loads(message)
                         self.log_data(address, data)
                         if 'event' in data:
-                            Event.fire(data['event'], data, source=self.__class__.__name__, client=str(client))
+                            Event.fire(data['event'], data, source=self.__class__.__name__,
+                                       reply_to='Websocket/{}'.format(client.id))
                         elif 'echo' in data:
                             yield from client.send(data)
-                    except:
-                        logging.debug('A message was received but could not be handled')
+                    except Exception as e:
+                        logging.debug('A message was received but could not be handled, {}'.format(e))
             finally:
                 with (yield from clients_lock):
-                    self.clients.remove(client)
-                logging.debug('Disconnected {}'.format(address))
+                    del self.clients[client.id]
+                logger.debug('Disconnected {}'.format(address))
 
         # create a server and run it in the event loop
-        servergenerator = asyncws.start_server(connect_client, host='0.0.0.0', port=9024, loop=self._loop)
-        self.server = self._loop.run_until_complete(servergenerator)
+        server_generator = asyncws.start_server(connect_client, host='0.0.0.0', port=9024, loop=self._loop)
+        self.server = self._loop.run_until_complete(server_generator)
 
     def log_data(self, address, data):
         """
@@ -71,10 +72,8 @@ class Websocket(object):
         ----------
         address : string
             identifies the client
-
         data : dict
             a dictionary with the sent data
-
         """
 
         newdata = dict(data)
@@ -107,14 +106,14 @@ class Websocket(object):
             clients = self.clients
 
         if not hasattr(clients, '__len__'):
-            clients = [clients]
+            clients = {'temp': clients}
 
-        for client in clients:
+        for client in clients.items():
             if (self.check_readpermission(client, readusers=readusers, readgroups=readgroups)
-                or data['event'] == 'request_token'):
+                    or data['event'] == 'request_token'):
                 asyncio.ensure_future(client.send(data))
 
-    def check_readpermission(self,client,readusers=None,readgroups=None):
+    def check_readpermission(self, client, readusers=None, readgroups=None):
         """
         Check if a client has the permission to read based on the readusers and
         readgroups lists
@@ -149,17 +148,18 @@ class Client(object):
     def __init__(self, websocket):
         self.websocket = websocket
         self.tokenpayload = False
+        self.id = uuid4()
 
         address = websocket.writer.get_extra_info('peername')
-        self.address = '{}:{}'.format(address[0],address[1])
+        self.address = '{}:{}'.format(address[0], address[1])
 
     @asyncio.coroutine
-    def send(self,message):
+    def send(self, message):
 
         printmessage = message.__repr__()
         if len(printmessage) > 405:
             printmessage = printmessage[:200] + ' ... ' +printmessage[-200:]
-        logging.debug('send {} to {}'.format(printmessage,self))
+        logging.debug('send {} to {}'.format(printmessage, self))
 
         yield from self.websocket.send(json.dumps(message))
 
@@ -167,16 +167,14 @@ class Client(object):
         return self.address
 
 
-
 class DummyAdminClient(object):
     def __init__(self,websocket=None):
         self.websocket = websocket
         self.address = '1.1.1.1'
-        self.tokenpayload = {'userid':1, 'groupids':[1,2], 'username':'admin','permission':9}
+        self.tokenpayload = {'userid': 1, 'groupids': [1, 2], 'username': 'admin', 'permission': 9}
 
     def send(self,message):
         pass
 
 
 websocket = None
-

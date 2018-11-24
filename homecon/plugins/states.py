@@ -33,6 +33,9 @@ class States(Plugin):
     dependent expressions some regular expression syntax can be used.
     
     """
+    def __init__(self):
+        super().__init__()
+        self.triggers = {}
 
     def initialize(self):
         # add settings states
@@ -167,7 +170,7 @@ class States(Plugin):
                         logging.warning('User {} attempted to change the value of {} but is not permitted'.format(tokenpayload['userid'],state.path))
 
 
-    def listen_send_states_to(self,event):
+    def listen_send_states_to(self, event):
 
         for state in core.states.values():
             core.websocket.send({'event':'state', 'path':state.path, 'value':state.value}, clients=event.data['clients'], readusers=state.config['readusers'] ,readgroups=state.config['readgroups'])

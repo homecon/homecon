@@ -23,12 +23,12 @@ class Event(object):
     client : string
         ???
     """
-    def __init__(self, event_type, data, source, target=None, client=None):
+    def __init__(self, event_type, data, source, target=None, reply_to=None):
         self.type = event_type
         self.data = data
         self.source = source
         self.target = target
-        self.client = client
+        self.reply_to = reply_to
 
     @classmethod
     def fire(cls, *args, **kwargs):
@@ -45,5 +45,5 @@ class Event(object):
         if len(printdata) > 405:
             printdata = printdata[:200] + ' ... ' +printdata[-200:]
 
-        return '<Event: {}, data: {}, source: {}, client: {}>'.format(
-            self.type, printdata, self.source, self.client)
+        return '<Event: {}, data: {}, source: {}, reply_to: {}>'.format(
+            self.type, printdata, self.source, self.reply_to)

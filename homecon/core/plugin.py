@@ -65,19 +65,9 @@ class Plugin(object):
     def __init__(self):
         """
         Initialize a plugin instance
-        
-        Parameters
-        ---------
-        queue : event queue
-            the main homecon event queue
-        states : homecon.core.states.States
-            the main homecon states object
-        components : homecon.core.components.Components
-            the main homecon components object
             
         """
         self._running = False
-        self._loop = asyncio.get_event_loop()
         self._queue = Queue()
         self.config_keys = []
         self.ocp_variables = {}
