@@ -10,24 +10,24 @@ import numpy as np
 import threading
 from scipy.interpolate import interp1d
 
-from homecon.core.database import Table, get_database, get_measurements_database
+from homecon.core.database import get_database, close_database, get_measurements_database, Field
 from homecon.core.event import Event
 
 
 logger = logging.getLogger(__name__)
 
 
-_states_table = None
-
-
 def get_states_table():
-    global _states_table
-    if _states_table is None:
-        _states_table = Table(get_database(), 'states', [
-            {'name': 'path',   'type': 'char(255)',  'null': '',  'default': '',  'unique': 'UNIQUE'},
-            {'name': 'config', 'type': 'char(511)',  'null': '',  'default': '',  'unique': ''},
-            {'name': 'value',  'type': 'char(255)',  'null': '',  'default': '',  'unique': ''},
-        ])
+    db = get_database()
+    if 'states' in db:
+        _states_table = db.states
+    else:
+        _states_table = db.define_table(
+            'states',
+            Field('path', type='string', default='', unique=True),
+            Field('config', type='string', default='{}'),
+            Field('value', type='string'),
+        )
     return _states_table
 
 
@@ -41,25 +41,30 @@ class State(object):
 
     @classmethod
     def all_paths(cls):
-        db_entries = get_states_table().get()
-        return [db_entry['path'] for db_entry in db_entries]
+        paths = [e['path'] for e in get_database()(get_states_table()).select()]
+        close_database()
+        return paths
 
     @classmethod
     def all(cls):
-        db_entries = get_states_table().get()
-        return [cls(db_entry) for db_entry in db_entries]
+        states = [cls(e) for e in get_database()(get_states_table()).select()]
+        close_database()
+        return states
 
     @classmethod
     def get(cls, path=None, id=None):
         if id is not None:
-            db_entries = get_states_table().get(id=id)
+            db_entry = get_states_table()(id)
+            close_database()
         elif path is not None:
-            db_entries = get_states_table().get(path=path)
+            table = get_states_table()
+            db_entry = table(path=path)
+            close_database()
         else:
             logger.error("id or path must be supplied")
             return None
-        if len(db_entries) == 1:
-            return cls(db_entries[0])
+        if db_entry is not None:
+            return cls(db_entry)
         else:
             return None
 
@@ -68,22 +73,23 @@ class State(object):
         """
         Add a state to the database
         """
-        # post to the database
+        # check if it already exists
         state = cls.get(path=path)
         if state is None:
-            get_states_table().post(path=path, config=json.dumps(config), value=json.dumps(value))
+            id = get_states_table().insert(path=path, config=json.dumps(config or '{}'), value=json.dumps(value))
+            close_database()
             # get the state FIXME error checking
-            state = cls.get(path=path)
+            state = cls.get(id=id)
             logger.debug('added state')
             Event.fire('state_added', {'state': state}, 'State')
         return state
 
     def get_property(self, property):
         # FIXME implement some temporary caching
-        db_entries = get_states_table().get(columns=[property], id=self.id)
-        if len(db_entries) == 1:
-            value = db_entries[0][property]
-            return value
+        db_entry = get_states_table()(self.id)
+        close_database()
+        if db_entry is not None:
+            return db_entry[property]
         else:
             return None
 
@@ -106,7 +112,9 @@ class State(object):
     @value.setter
     def value(self, value):
         if not self._value == value:
-            get_states_table().put(value=json.dumps(value), where='id=\'{}\''.format(self.id))
+            entry = get_states_table()(id=self.id)
+            entry.update_record(value=json.dumps(value))
+            close_database()
             self._value = value
             Event.fire('state_changed', {'state': self}, 'State')
 

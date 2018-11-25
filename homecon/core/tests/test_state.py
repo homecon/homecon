@@ -22,14 +22,15 @@ import numpy as np
 import time
 
 from homecon.tests import common
+from homecon.core.database import get_database
 from homecon.core.state import State, get_states_table
 
 
 class TestState(common.TestCase):
     def test_add(self):
         s = State.add('mystate')
-        self.assertEqual('mystate', get_states_table().get()[0]['path'])
-        self.assertEqual('test_homecon.db', get_states_table().database.database)
+        self.assertEqual('mystate', get_database()(get_states_table()).select()[0]['path'])
+        self.assertTrue(get_states_table()._db._uri.endswith('test_homecon.db'))
         self.assertEqual('mystate', State.get(path='mystate').path)
         self.assertEqual('mystate', s.path)
 

@@ -28,7 +28,7 @@ import time
 from threading import Thread
 
 # from homecon.homecon import HomeCon
-from homecon.core.database import Database
+from pydal import DAL
 
 # from homecon.core import plugin
 from homecon.core import state
@@ -41,16 +41,18 @@ from homecon.core import state
 class TestCase(TestCase):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.plugin_get_database_patcher = patch('homecon.core.plugin.get_database',
-                                                 new=lambda: Database(database='test_homecon.db'))
-        self.state_get_database_patcher = patch('homecon.core.state.get_database',
-                                                new=lambda: Database(database='test_homecon.db'))
-        self.state_get_measurements_database_patcher = patch('homecon.core.state.get_measurements_database',
-                                                             new=lambda: Database(database='test_measurements.db'))
+        self.get_database_uri_patcher = patch('homecon.core.database.get_database_uri',
+                                              new=lambda: 'sqlite://test_homecon.db')
+
+        self.get_measurements_database_patcher = patch('homecon.core.database.get_measurements_database_uri',
+                                                       new=lambda: DAL('sqlite://test_measurements.db'))
 
     def clear_database(self):
         if os.path.exists('test_homecon.db'):
             os.remove('test_homecon.db')
+
+        if os.path.exists('858927de1f3f156895a3a318f7a0e126_states.table'):
+            os.remove('858927de1f3f156895a3a318f7a0e126_states.table')
 
         if os.path.exists('test_measurements.db'):
             os.remove('test_measurements.db')
@@ -63,18 +65,16 @@ class TestCase(TestCase):
         """
 
         self.clear_database()
-        self.plugin_get_database_patcher.start()
-        self.state_get_database_patcher.start()
-        self.state_get_measurements_database_patcher.start()
+        self.get_database_uri_patcher.start()
+        self.get_measurements_database_patcher.start()
 
     def tearDown(self):
         """
         Executed after every test
         """
         self.clear_database()
-        self.plugin_get_database_patcher.stop()
-        self.state_get_database_patcher.stop()
-        self.state_get_measurements_database_patcher.stop()
+        self.get_database_uri_patcher.stop()
+        self.get_measurements_database_patcher.stop()
 
     # def run_homecon(self, sleep=0.01):
     #     self.homecon_thread = Thread(target=self.homecon.start)

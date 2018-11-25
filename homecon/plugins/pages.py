@@ -5,10 +5,13 @@ import logging
 import json
 import uuid
 
-from .. import core
+
+from homecon.core.database import get_database, Field
+from homecon.core.plugin import Plugin
 from .authentication import jwt_decode
 
-class Pages(core.plugin.Plugin):
+
+class Pages(Plugin):
     """
     Notes
     -----
@@ -17,6 +20,22 @@ class Pages(core.plugin.Plugin):
     """
 
     def initialize(self):
+
+        db = get_database()
+        db.define_table(
+            'pages_groups',
+            Field('path', type='string', default='', unique=True),
+            Field('config', type='string', default=''),
+            Field('order', type='integer'),
+        )
+
+        db.pages_groups.insert(name='Chair')
+        query = db.thing.name.startswith('C')
+        rows = db(query).select()
+        print(rows[0].name)
+
+        db.commit()
+
 
         self._db_groups = core.database.Table(core.db,'pages_groups',[
             {'name':'path',        'type':'char(255)',  'null': '',  'default':'',  'unique':'UNIQUE'},
