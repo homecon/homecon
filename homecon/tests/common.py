@@ -51,8 +51,9 @@ class TestCase(TestCase):
         if os.path.exists('test_homecon.db'):
             os.remove('test_homecon.db')
 
-        if os.path.exists('858927de1f3f156895a3a318f7a0e126_states.table'):
-            os.remove('858927de1f3f156895a3a318f7a0e126_states.table')
+        for f in os.listdir():
+            if f.endswith('.table'):
+                os.remove(f)
 
         if os.path.exists('test_measurements.db'):
             os.remove('test_measurements.db')

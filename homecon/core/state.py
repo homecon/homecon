@@ -10,61 +10,49 @@ import numpy as np
 import threading
 from scipy.interpolate import interp1d
 
-from homecon.core.database import get_database, close_database, get_measurements_database, Field
+from homecon.core.database import get_database, close_database, get_measurements_database, Field, DatabaseObject
 from homecon.core.event import Event
 
 
 logger = logging.getLogger(__name__)
 
 
-def get_states_table():
-    db = get_database()
-    if 'states' in db:
-        _states_table = db.states
-    else:
-        _states_table = db.define_table(
-            'states',
-            Field('path', type='string', default='', unique=True),
-            Field('config', type='string', default='{}'),
-            Field('value', type='string'),
-        )
-    return _states_table
+class State(DatabaseObject):
 
+    def __init__(self, id=None, path=None, config=None, value=None):
+        super().__init__(id=id)
+        self._path = path
+        self._config = json.loads(config) or {}
+        self._value = json.loads(value)
 
-class State(object):
-
-    def __init__(self, db_entry):
-        self._id = db_entry['id']
-        self._path = db_entry['path']
-        self._config = db_entry['config']
-        self._value = db_entry['value']
-
-    @classmethod
-    def all_paths(cls):
-        paths = [e['path'] for e in get_database()(get_states_table()).select()]
-        close_database()
-        return paths
-
-    @classmethod
-    def all(cls):
-        states = [cls(e) for e in get_database()(get_states_table()).select()]
-        close_database()
-        return states
+    @staticmethod
+    def get_table():
+        db = get_database()
+        if 'states' in db:
+            table = db.states
+        else:
+            table = db.define_table(
+                'states',
+                Field('path', type='string', default='', unique=True),
+                Field('config', type='string', default='{}'),
+                Field('value', type='string'),
+            )
+        return table
 
     @classmethod
     def get(cls, path=None, id=None):
         if id is not None:
-            db_entry = get_states_table()(id)
+            db_entry = cls.get_table()(id)
             close_database()
         elif path is not None:
-            table = get_states_table()
+            table = cls.get_table()
             db_entry = table(path=path)
             close_database()
         else:
             logger.error("id or path must be supplied")
             return None
         if db_entry is not None:
-            return cls(db_entry)
+            return cls(**db_entry.as_dict())
         else:
             return None
 
@@ -74,45 +62,37 @@ class State(object):
         Add a state to the database
         """
         # check if it already exists
-        state = cls.get(path=path)
-        if state is None:
-            id = get_states_table().insert(path=path, config=json.dumps(config or '{}'), value=json.dumps(value))
+        entry = cls.get_table()(path=path)
+        if entry is None:
+            id = cls.get_table().insert(path=path, config=json.dumps(config or '{}'), value=json.dumps(value))
             close_database()
             # get the state FIXME error checking
-            state = cls.get(id=id)
+            obj = cls.get(id=id)
             logger.debug('added state')
-            Event.fire('state_added', {'state': state}, 'State')
-        return state
-
-    def get_property(self, property):
-        # FIXME implement some temporary caching
-        db_entry = get_states_table()(self.id)
-        close_database()
-        if db_entry is not None:
-            return db_entry[property]
+            Event.fire('state_added', {'state': obj}, 'State')
         else:
-            return None
-
-    @property
-    def id(self):
-        return self._id
+            obj = cls(**entry.as_dict())
+        return obj
 
     @property
     def path(self):
-        return self.get_property('path')
+        self._path = self.get_property('path')
+        return self._path
 
     @property
     def config(self):
-        return json.loads(self.get_property('config'))
+        self._config = json.loads(self.get_property('config'))
+        return self._config
 
     @property
     def value(self):
-        return json.loads(self.get_property('value'))
+        self._value = json.loads(self.get_property('value'))
+        return self._value
 
     @value.setter
     def value(self, value):
         if not self._value == value:
-            entry = get_states_table()(id=self.id)
+            entry = self.get_table()(id=self.id)
             entry.update_record(value=json.dumps(value))
             close_database()
             self._value = value

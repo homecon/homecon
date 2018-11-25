@@ -14,7 +14,7 @@ import logging
 from multiprocessing import Process, Queue
 from queue import Empty
 
-from homecon.core.database import get_database, Table
+from homecon.core.database import get_database, Field
 from homecon.core.event import Event
 # from . import event
 # from . import state
@@ -29,19 +29,19 @@ from homecon.core.event import Event
 logger = logging.getLogger(__name__)
 
 
-_plugins_table = None
-
-
 def get_plugins_table():
-    global _plugins_table
-    if _plugins_table is None:
-        _plugins_table = Table(get_database(), 'plugins', [
-            {'name': 'name',    'type': 'char(255)', 'null': '', 'default': '', 'unique': 'UNIQUE'},
-            {'name': 'package', 'type': 'char(255)', 'null': '', 'default': '', 'unique': ''},
-            {'name': 'core',    'type': 'int',  'null': '',  'default': '0',  'unique': ''},
-            {'name': 'active',  'type': 'int',  'null': '',  'default': '0',  'unique': ''},
-        ])
-    return _plugins_table
+    db = get_database()
+    if 'plugins' in db:
+        table = db.plugins
+    else:
+        table = db.define_table(
+            'plugins',
+            Field('name', type='string', default='', unique=True),
+            Field('package', type='string', default='', unique=True),
+            Field('core', type='string', default='{}'),
+            Field('active', type='string'),
+        )
+    return table
 
 
 class Plugin(Process):

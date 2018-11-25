@@ -5,10 +5,287 @@ import logging
 import json
 import uuid
 
-
-from homecon.core.database import get_database, Field
+from homecon.core.event import Event
+from homecon.core.database import get_database, close_database, Field, DatabaseObject
 from homecon.core.plugin import Plugin
 from .authentication import jwt_decode
+
+
+logger = logging.getLogger(__name__)
+
+
+class Group(DatabaseObject):
+    def __init__(self, id=None, path=None, config=None, order=None):
+        super().__init__(id=id)
+        self._path = path
+        self._config = config
+        self._order = order
+
+    @staticmethod
+    def get_table():
+        db = get_database()
+        if 'page_groups' in db:
+            table = db.page_groups
+        else:
+            table = db.define_table(
+                'page_groups',
+                Field('path', type='string', default='', unique=True),
+                Field('config', type='string', default='{}'),
+                Field('order', type='integer', default=0),
+            )
+        return table
+
+    @classmethod
+    def add(cls, path, config=None, order=None):
+        """
+        Add a group
+        """
+        # check if it already exists
+        entry = cls.get_table()(path=path)
+        if entry is None:
+            id = cls.get_table().insert(path=path, config=json.dumps(config or '{}'), order=order)
+            close_database()
+            # get the state FIXME error checking
+            obj = cls.get(id=id)
+            logger.debug('added group')
+            Event.fire('group_added', {'group': object}, 'Group')
+        else:
+            obj = cls(**entry.as_dict())
+        return obj
+
+    @property
+    def path(self):
+        self._path = self.get_property('path')
+        return self._path
+
+    @property
+    def full_path(self):
+        return self.path
+
+    @property
+    def config(self):
+        self._config = json.loads(self.get_property('config'))
+        return self._config
+
+    @property
+    def order(self):
+        self._order = self.get_property('order') or 0
+        return self._order
+
+    @property
+    def pages(self):
+        return sorted([page for page in Page.all() if page.group.id == self.id], key=lambda x: x.order)
+
+
+class Page(DatabaseObject):
+    def __init__(self, id=None, path=None, group=None, config=None, order=None):
+        super().__init__(id=id)
+        self._path = path
+        self._group = group
+        self._config = config
+        self._order = order
+
+    @staticmethod
+    def get_table():
+        db = get_database()
+        if 'pages' in db:
+            table = db.pages
+        else:
+            table = db.define_table(
+                'pages',
+                Field('path', type='string', default='', unique=True),
+                Field('group', type='integer'),
+                Field('config', type='string', default='{}'),
+                Field('order', type='integer', default=0),
+            )
+        return table
+
+    @classmethod
+    def add(cls, path, group, config=None, order=None):
+        """
+        Add a state to the database
+        """
+        # check if it already exists
+        entry = cls.get_table()(path=path, group=group.id)
+        if entry is None:
+            id = cls.get_table().insert(path=path, group=group.id, config=json.dumps(config or '{}'), order=order)
+            close_database()
+            # FIXME error checking
+            obj = cls.get(id=id)
+            logger.debug('added page')
+            Event.fire('page_added', {'page': obj}, 'Page')
+        else:
+            obj = cls(**entry.as_dict())
+        return obj
+
+    @property
+    def path(self):
+        self._path = self.get_property('path')
+        return self._path
+
+    @property
+    def full_path(self):
+        self._path = self.get_property('path')
+        return '{}/{}'.format(self.group.full_path, self.path)
+
+    @property
+    def group(self):
+        self._group = self.get_property('group')
+        return Group.get(self._group)
+
+    @property
+    def config(self):
+        self._config = json.loads(self.get_property('config'))
+        return self._config
+
+    @property
+    def order(self):
+        self._order = self.get_property('order') or 0
+        return self._order
+
+    @property
+    def sections(self):
+        return sorted([section for section in Section.all() if section.page.id == self.id], key=lambda x: x.order)
+
+
+class Section(DatabaseObject):
+    def __init__(self, id=None, path=None, page=None, config=None, order=None):
+        super().__init__(id=id)
+        self._path = path
+        self._page = page
+        self._config = config
+        self._order = order
+
+    @staticmethod
+    def get_table():
+        db = get_database()
+        if 'sections' in db:
+            table = db.sections
+        else:
+            table = db.define_table(
+                'sections',
+                Field('path', type='string', default=''),
+                Field('page', type='integer'),
+                Field('config', type='string', default='{}'),
+                Field('order', type='integer', default=0),
+            )
+        return table
+
+    @classmethod
+    def add(cls, path, page, config=None, order=None):
+        """
+        Add a state to the database
+        """
+        # check if it already exists
+        entry = cls.get_table()(path=path, page=page.id)
+        if entry is None:
+            id = cls.get_table().insert(path=path, page=page.id, config=json.dumps(config or '{}'), order=order)
+            close_database()
+            # FIXME error checking
+            obj = cls.get(id=id)
+            logger.debug('added section')
+            Event.fire('section_added', {'section': obj}, 'Section')
+        else:
+            obj = cls(**entry.as_dict())
+        return obj
+
+    @property
+    def path(self):
+        self._path = self.get_property('path')
+        return self._path
+
+    @property
+    def full_path(self):
+        self._path = self.get_property('path')
+        return '{}/{}'.format(self.page.full_path, self.path)
+
+    @property
+    def page(self):
+        self._page = self.get_property('page')
+        return Page.get(self._page)
+
+    @property
+    def config(self):
+        self._config = json.loads(self.get_property('config'))
+        return self._config
+
+    @property
+    def order(self):
+        self._order = self.get_property('order') or 0
+        return self._order
+
+    @property
+    def widgets(self):
+        return sorted([widget for widget in Widget.all() if widget.section.id == self.id], key=lambda x: x.order)
+
+
+class Widget(DatabaseObject):
+    def __init__(self, id=None, path=None, section=None, type=type, config=None, order=None):
+        super().__init__(id=id)
+        self._path = path
+        self._section = section
+        self._type = type
+        self._config = config
+        self._order = order
+
+    @staticmethod
+    def get_table():
+        db = get_database()
+        if 'widgets' in db:
+            table = db.widgets
+        else:
+            table = db.define_table(
+                'widgets',
+                Field('path', type='string', default='', unique=True),
+                Field('section', type='integer'),
+                Field('type', type='string'),
+                Field('config', type='string', default='{}'),
+                Field('order', type='integer', default=0),
+            )
+        return table
+
+    @classmethod
+    def add(cls, path, section, config=None, order=None):
+        """
+        Add a state to the database
+        """
+        # check if it already exists
+        entry = cls.get_table()(path=path, section=section.id)
+        if entry is None:
+            id = cls.get_table().insert(path=path, section=section.id, config=json.dumps(config or '{}'), order=order)
+            close_database()
+            # FIXME error checking
+            obj = cls.get(id=id)
+            logger.debug('added widget')
+            Event.fire('widget_added', {'widget': obj}, 'Widget')
+        else:
+            obj = cls(**entry.as_dict())
+        return obj
+
+    @property
+    def path(self):
+        self._path = self.get_property('path')
+        return self._path
+
+    @property
+    def full_path(self):
+        self._path = self.get_property('path')
+        return '{}/{}'.format(self.section.full_path, self.path)
+
+    @property
+    def section(self):
+        self._section = self.get_property('section')
+        return Section.get(self._section)
+
+    @property
+    def config(self):
+        self._config = json.loads(self.get_property('config'))
+        return self._config
+
+    @property
+    def order(self):
+        self._order = self.get_property('order') or 0
+        return self._order
 
 
 class Pages(Plugin):
@@ -21,46 +298,13 @@ class Pages(Plugin):
 
     def initialize(self):
 
-        db = get_database()
-        db.define_table(
-            'pages_groups',
-            Field('path', type='string', default='', unique=True),
-            Field('config', type='string', default=''),
-            Field('order', type='integer'),
-        )
-
-        db.pages_groups.insert(name='Chair')
-        query = db.thing.name.startswith('C')
-        rows = db(query).select()
-        print(rows[0].name)
-
-        db.commit()
+        if len(Group.all()) == 0:
+            Group.add('home', config={'title': 'Home'})
+            Group.add('central', config={'title': 'Central'})
+            Group.add('ground_floor', config={'title': 'Ground floor'})
+            Group.add('first_floor', config={'title': 'First floor'})
 
 
-        self._db_groups = core.database.Table(core.db,'pages_groups',[
-            {'name':'path',        'type':'char(255)',  'null': '',  'default':'',  'unique':'UNIQUE'},
-            {'name':'config',      'type':'char(255)',  'null': '',  'default':'',  'unique':''},
-            {'name':'order',       'type':'int(8)',     'null': '',  'default':'',  'unique':''},
-        ])
-        self._db_pages = core.database.Table(core.db,'pages_pages',[
-            {'name':'path',        'type':'char(255)',  'null': '',  'default':'',  'unique':'UNIQUE'},
-            {'name':'group',       'type':'char(255)',  'null': '',  'default':'',  'unique':''},
-            {'name':'config',      'type':'char(255)',  'null': '',  'default':'',  'unique':''},
-            {'name':'order',       'type':'int(8)',     'null': '',  'default':'',  'unique':''},
-        ])
-        self._db_sections = core.database.Table(core.db,'pages_sections',[
-            {'name':'path',        'type':'char(255)',  'null': '',  'default':'',  'unique':'UNIQUE'},
-            {'name':'page',        'type':'char(255)',  'null': '',  'default':'',  'unique':''},
-            {'name':'config',       'type':'char(255)', 'null': '',  'default':'',  'unique':''},
-            {'name':'order',       'type':'int(8)',     'null': '',  'default':'',  'unique':''},
-        ])
-        self._db_widgets = core.database.Table(core.db,'pages_widgets',[
-            {'name':'path',        'type':'char(255)',  'null': '',  'default':'',  'unique':'UNIQUE'},
-            {'name':'section',     'type':'char(255)',  'null': '',  'default':'',  'unique':''},
-            {'name':'type',        'type':'char(255)',  'null': '',  'default':'',  'unique':''},
-            {'name':'config',      'type':'char(255)',  'null': '',  'default':'',  'unique':''},
-            {'name':'order',       'type':'int(8)',     'null': '',  'default':'',  'unique':''},
-        ])
 
         # local references
         self._groups = {}

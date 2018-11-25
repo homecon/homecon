@@ -48,3 +48,47 @@ def close_measurements_database():
     if _measurements_database is not None:
         _measurements_database.close()
     _measurements_database = None
+
+
+class DatabaseObject(object):
+
+    def __init__(self, id=None):
+        self._id = id
+
+    @staticmethod
+    def get_table():
+        return None
+
+    @classmethod
+    def all_paths(cls):
+        paths = [db_entry['path'] for db_entry in get_database()(cls.get_table()).select()]
+        close_database()
+        return paths
+
+    @classmethod
+    def all(cls):
+        states = [cls(**db_entry.as_dict()) for db_entry in get_database()(cls.get_table()).select()]
+        close_database()
+        return states
+
+    @classmethod
+    def get(cls, id):
+        db_entry = cls.get_table()(id)
+        close_database()
+        if db_entry is not None:
+            return cls(**db_entry.as_dict())
+        else:
+            return None
+
+    def get_property(self, property):
+        # FIXME implement some temporary caching
+        db_entry = self.get_table()(self.id)
+        close_database()
+        if db_entry is not None:
+            return db_entry[property]
+        else:
+            return None
+
+    @property
+    def id(self):
+        return self._id
