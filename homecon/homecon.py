@@ -42,7 +42,7 @@ class HomeCon(object):
                 pass
             else:
                 for plugin in self.plugins.values():
-                    if event.target is None or event.target == plugin.name:
+                    if event.target is None or event.target.split('/')[0] == plugin.name:
                         plugin.listen(event)
 
     def start(self):

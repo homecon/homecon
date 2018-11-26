@@ -12,7 +12,7 @@ class TestObjects(common.TestCase):
         g = Group.add('group', config={'Title': 'Some group'})
         p = Page.add('page', g, config={'Title': 'Some page'})
         s = Section.add('section', p, config={'Title': 'Some section'})
-        w = Widget.add('widget', s, config={'Title': 'Some widget'})
+        w = Widget.add('widget', s, 'sometype', config={'Title': 'Some widget'})
         self.assertEqual(w.full_path, 'group/page/section/widget')
 
     def test_group_pages(self):
@@ -32,6 +32,6 @@ class TestObjects(common.TestCase):
         g = Group.add('group', config={'Title': 'Some group'})
         p = Page.add('page', g, config={'Title': 'Some page'})
         s = Section.add('section', p, config={'Title': 'Some section'})
-        w1 = Widget.add('widget1', s, config={})
-        w2 = Widget.add('widget2', s, config={})
+        w1 = Widget.add('widget1', s, 'sometype', config={})
+        w2 = Widget.add('widget2', s, 'sometype', config={})
         self.assertEqual(len(s.widgets), 2)

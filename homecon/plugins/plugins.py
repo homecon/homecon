@@ -3,28 +3,29 @@
 
 import logging
 
-from homecon.core.database import Table, get_database
+from homecon.core.database import get_database, Field
 from homecon.core.plugin import Plugin
 
 from homecon.plugins.states import States
 from homecon.plugins.websocket import Websocket
+from homecon.plugins.pages import Pages
 
 logger = logging.getLogger(__name__)
 
 
-_plugins_table = None
-
-
 def get_plugins_table():
-    global _plugins_table
-    if _plugins_table is None:
-        _plugins_table = Table(get_database(), 'plugins', [
-            {'name': 'name',    'type': 'char(255)', 'null': '', 'default': '', 'unique': 'UNIQUE'},
-            {'name': 'info',    'type': 'char(255)', 'null': '', 'default': '', 'unique': ''},
-            {'name': 'package', 'type': 'char(255)', 'null': '', 'default': '', 'unique': ''},
-            {'name': 'active',  'type': 'int',  'null': '',  'default': '0',  'unique': ''},
-        ])
-    return _plugins_table
+    db = get_database()
+    if 'plugins' in db:
+        table = db.plugins
+    else:
+        table = db.define_table(
+            'plugins',
+            Field('name', type='string', default='', unique=True),
+            Field('string', type='string', default=''),
+            Field('package', type='string'),
+            Field('active', type='boolean'),
+        )
+    return table
 
 
 class Plugins(Plugin):
@@ -38,11 +39,12 @@ class Plugins(Plugin):
             'plugins': self,
             'states': States(),
             'websocket': Websocket(),
+            'pages': Pages()
         }
         self._active_plugins = {}
 
         # initialize plugins
-        db_entries = get_plugins_table().get()
+        db_entries = get_database()(get_plugins_table()).select()
         for db_entry in db_entries:
             if db_entry['active']:
                 plugin_class = self._import(db_entry['name'], db_entry['package'])
@@ -56,7 +58,7 @@ class Plugins(Plugin):
         Generate a list of all available optional plugins and those that are active
         
         """
-        db_entries = get_plugins_table().get()
+        db_entries = get_database()(get_plugins_table()).select()
         plugins = []
         for db_entry in db_entries:
             plugins.append({'name': db_entry['name'], 'info': db_entry['info'], 'active': db_entry['active']})

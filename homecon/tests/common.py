@@ -24,6 +24,7 @@ import sqlite3
 import json
 import asyncws
 import time
+from shutil import rmtree
 
 from threading import Thread
 
@@ -36,29 +37,20 @@ from homecon.core import state
 # create test databases
 # database.db = database.Database(database='test_homecon.db')
 # database.measurements_db = database.Database(database='test_measurements.db')
+from homecon.core.database import base_path
+
+
+test_database_path = os.path.join(base_path, 'db_test')
 
 
 class TestCase(TestCase):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.get_database_uri_patcher = patch('homecon.core.database.get_database_uri',
-                                              new=lambda: 'sqlite://test_homecon.db')
-
-        self.get_measurements_database_patcher = patch('homecon.core.database.get_measurements_database_uri',
-                                                       new=lambda: DAL('sqlite://test_measurements.db'))
+        self.database_path_patcher = patch('homecon.core.database.database_path', new=test_database_path)
 
     def clear_database(self):
-        if os.path.exists('test_homecon.db'):
-            os.remove('test_homecon.db')
-
-        for f in os.listdir():
-            if f.endswith('.table'):
-                os.remove(f)
-
-        if os.path.exists('test_measurements.db'):
-            os.remove('test_measurements.db')
-
-        state._states_table = None
+        if os.path.exists(test_database_path):
+            rmtree(test_database_path)
 
     def setUp(self):
         """
@@ -66,16 +58,14 @@ class TestCase(TestCase):
         """
 
         self.clear_database()
-        self.get_database_uri_patcher.start()
-        self.get_measurements_database_patcher.start()
+        self.database_path_patcher.start()
 
     def tearDown(self):
         """
         Executed after every test
         """
         self.clear_database()
-        self.get_database_uri_patcher.stop()
-        self.get_measurements_database_patcher.stop()
+        self.database_path_patcher.stop()
 
     # def run_homecon(self, sleep=0.01):
     #     self.homecon_thread = Thread(target=self.homecon.start)

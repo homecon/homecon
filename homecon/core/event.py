@@ -27,7 +27,7 @@ class Event(object):
     reply_to : string
         ???
     """
-    def __init__(self, event_type, data, source, target=None, reply_to=None):
+    def __init__(self, event_type, data, source=None, target=None, reply_to=None):
         self.type = event_type
         self.data = data
         self.source = source

@@ -41,7 +41,7 @@ def get_plugins_table():
             Field('core', type='string', default='{}'),
             Field('active', type='string'),
         )
-    return table
+    return db, table
 
 
 class Plugin(Process):
@@ -91,7 +91,6 @@ class Plugin(Process):
         while self._running:
             try:
                 event = self._queue.get(timeout=0.1)
-                logger.debug(event)
             except Empty:
                 pass
             except KeyboardInterrupt:

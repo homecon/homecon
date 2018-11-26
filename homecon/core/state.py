@@ -10,7 +10,7 @@ import numpy as np
 import threading
 from scipy.interpolate import interp1d
 
-from homecon.core.database import get_database, close_database, get_measurements_database, Field, DatabaseObject
+from homecon.core.database import get_database, get_measurements_database, Field, DatabaseObject
 from homecon.core.event import Event
 
 
@@ -37,22 +37,23 @@ class State(DatabaseObject):
                 Field('config', type='string', default='{}'),
                 Field('value', type='string'),
             )
-        return table
+        return db, table
 
     @classmethod
     def get(cls, path=None, id=None):
         if id is not None:
-            db_entry = cls.get_table()(id)
-            close_database()
+            db, table = cls.get_table()
+            entry = table(id)
+            db.close()
         elif path is not None:
-            table = cls.get_table()
-            db_entry = table(path=path)
-            close_database()
+            db, table = cls.get_table()
+            entry = table(path=path)
+            db.close()
         else:
-            logger.error("id or path must be supplied")
-            return None
-        if db_entry is not None:
-            return cls(**db_entry.as_dict())
+            raise Exception('id or path must be supplied')
+
+        if entry is not None:
+            return cls(**entry.as_dict())
         else:
             return None
 
@@ -62,10 +63,11 @@ class State(DatabaseObject):
         Add a state to the database
         """
         # check if it already exists
-        entry = cls.get_table()(path=path)
+        db, table = cls.get_table()
+        entry = table(path=path)
         if entry is None:
-            id = cls.get_table().insert(path=path, config=json.dumps(config or '{}'), value=json.dumps(value))
-            close_database()
+            id = table.insert(path=path, config=json.dumps(config or '{}'), value=json.dumps(value))
+            db.close()
             # get the state FIXME error checking
             obj = cls.get(id=id)
             logger.debug('added state')
@@ -92,9 +94,10 @@ class State(DatabaseObject):
     @value.setter
     def value(self, value):
         if not self._value == value:
-            entry = self.get_table()(id=self.id)
+            db, table = self.get_table()
+            entry = table(id=self.id)
             entry.update_record(value=json.dumps(value))
-            close_database()
+            db.close()
             self._value = value
             Event.fire('state_changed', {'state': self}, 'State')
 
@@ -107,13 +110,14 @@ class State(DatabaseObject):
         if triggers is not None:
             try:
                 paths = eval(triggers.replace('`', '\''), {'State': State, 'np': np})
+
                 if isinstance(paths, list):
                     return paths
                 elif isinstance(paths, str):
                     return [paths]
 
-            except Exception as e:
-                logging.error('Triggers for state {} could not be parsed: {}'.format(self.path, e))
+            except:
+                logging.exception('Triggers for state {} could not be parsed'.format(self.path))
 
         return []
 
@@ -165,10 +169,9 @@ class State(DatabaseObject):
         """
         children = []
         path = self.path
-        for p in State.all_paths():
-            if path in p:
-                if len(path.split('/')) == len(p.split('/'))-1:
-                    children.append(State.get(path=p))
+        for s in State.all():
+            if '/'.join(s.path.split('/')[:-1]) == path:
+                children.append(s)
         return children
 
     def __call__(self):

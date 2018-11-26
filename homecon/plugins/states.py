@@ -53,9 +53,6 @@ class States(Plugin):
                                                          'private': True}, value='Europe/Brussels')
 
         logger.debug('States plugin Initialized')
-        import time
-        time.sleep(2)
-        State.get('settings/location/timezone').value = 'ok'
 
     def parse_triggers(self):
         for path in State.all_paths():

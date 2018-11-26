@@ -1,4 +1,2 @@
 log
-*.db
-*.db-journal
-*.table
+db

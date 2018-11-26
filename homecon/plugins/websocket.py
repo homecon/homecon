@@ -129,7 +129,6 @@ class Websocket(Plugin):
 
         if not hasattr(clients, '__len__'):
             clients = {'temp': clients}
-        print(clients)
         for client in clients.items():
             if (self.check_readpermission(client, readusers=readusers, readgroups=readgroups)
                     or data['event'] == 'request_token'):

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 ################################################################################
-#    Copyright 2016 Brecht Baeten
+#    Copyright 2018 Brecht Baeten
 #    This file is part of HomeCon.
 #
 #    HomeCon is free software: you can redistribute it and/or modify
@@ -29,8 +29,9 @@ from homecon.core.state import State
 class TestState(common.TestCase):
     def test_add(self):
         s = State.add('mystate')
-        self.assertEqual('mystate', get_database()(State.get_table()).select()[0]['path'])
-        self.assertTrue(State.get_table()._db._uri.endswith('test_homecon.db'))
+        db, table = State.get_table()
+        self.assertEqual('mystate', db(db.states).select()[0]['path'])
+        self.assertTrue(db._uri.endswith('test_homecon.db'))
         self.assertEqual('mystate', State.get(path='mystate').path)
         self.assertEqual('mystate', s.path)
 
@@ -42,6 +43,13 @@ class TestState(common.TestCase):
             v = s.value
         stop = time.time()
         self.assertLess(stop-start, 1)
+
+    def test_all(self):
+        State.add('mystate1')
+        State.add('mystate2')
+        states = State.all()
+        self.assertEqual(states[0].path, 'mystate1')
+        self.assertEqual(states[1].path, 'mystate2')
 
     def test_triggers(self):
         State.add('mystate', config={'someattr': True})
