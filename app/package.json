@@ -1,0 +1,45 @@
+{
+  "name": "polymer-starter-kit",
+  "version": "4.0.0",
+  "description": "A starting point for Polymer apps",
+  "author": "The Polymer Authors",
+  "license": "BSD-3-Clause",
+  "repository": "Polymer/polymer-starter-kit",
+  "scripts": {
+    "start": "polymer serve",
+    "build": "polymer build",
+    "lint": "polymer lint",
+    "test": "polymer test",
+    "test:integration": "polymer build # test that psk builds without error with the CLI"
+  },
+  "dependencies": {
+    "@hunsalz/web-socket": "github:hunsalz/web-socket",
+    "@polymer/app-layout": "^3.0.0-pre.15",
+    "@polymer/app-route": "^3.0.0-pre.15",
+    "@polymer/iron-collapse": "github:PolymerElements/iron-collapse",
+    "@polymer/iron-flex-layout": "^3.0.0-pre.15",
+    "@polymer/iron-form": "github:PolymerElements/iron-form",
+    "@polymer/iron-icons": "github:PolymerElements/iron-icons",
+    "@polymer/iron-iconset-svg": "^3.0.0-pre.15",
+    "@polymer/iron-localstorage": "^3.0.1",
+    "@polymer/iron-media-query": "^3.0.0-pre.15",
+    "@polymer/iron-meta": "github:PolymerElements/iron-meta",
+    "@polymer/iron-pages": "^3.0.0-pre.15",
+    "@polymer/iron-selector": "^3.0.0-pre.15",
+    "@polymer/lit-element": "github:Polymer/lit-element",
+    "@polymer/paper-button": "^3.0.1",
+    "@polymer/paper-dialog": "^3.0.1",
+    "@polymer/paper-dialog-scrollable": "github:PolymerElements/paper-dialog-scrollable",
+    "@polymer/paper-icon-button": "github:PolymerElements/paper-icon-button",
+    "@polymer/paper-input": "^3.0.1",
+    "@polymer/polymer": "^3.0.0",
+    "@webcomponents/webcomponentsjs": "^2.0.0"
+  },
+  "devDependencies": {
+    "polymer-cli": "^1.7.1",
+    "wct-browser-legacy": "^1.0.0"
+  },
+  "engines": {
+    "node": ">=8.0"
+  }
+}

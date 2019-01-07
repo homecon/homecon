@@ -132,7 +132,10 @@ class Plugin(Process):
         """
 
         if event.type in self.listeners:
-            self.listeners[event.type](event)
+            try:
+                self.listeners[event.type](event)
+            except:
+                logger.exception('error in event listener {}'.format(event.type))
 
     def _get_listeners(self):
         """

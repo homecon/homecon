@@ -19,8 +19,10 @@ class Logger(logging.Logger):
     Custom logger which blanks out passwords and tokens.
     """
 
-logger = Logger(__name__)
-# logger = logging.getLogger(__name__)
+# logger = Logger(__name__)
+
+
+logger = logging.getLogger(__name__)
 
 
 class Websocket(Plugin):
@@ -40,8 +42,6 @@ class Websocket(Plugin):
         """
         FIXME this is very ugly with an asyncio loop inside a thread
         """
-        logger.debug('Websocket plugin Initialized')
-
         clients_lock = asyncio.Lock()
 
         def connect_client(websocket):
@@ -65,10 +65,11 @@ class Websocket(Plugin):
                         data = json.loads(message)
                         self.log_data(address, data)
                         if 'event' in data:
-                            Event.fire(data['event'], data, source=self.__class__.__name__,
-                                       reply_to='Websocket/{}'.format(client.id))
-                        elif 'echo' in data:
-                            yield from client.send(data)
+                            if data['event'] == 'echo':
+                                yield from client.send(data)
+                            else:
+                                Event.fire(data['event'], data['data'], source=self.__class__.__name__,
+                                           reply_to='Websocket/{}'.format(client.id))
                     except Exception as e:
                         logging.debug('A message was received but could not be handled, {}'.format(e))
             finally:
@@ -85,6 +86,7 @@ class Websocket(Plugin):
 
         server_thread = Thread(target=run_server, args=(asyncio.get_event_loop(),))
         server_thread.start()
+        logger.debug('Websocket plugin initialized')
 
     def log_data(self, address, data):
         """
@@ -129,10 +131,10 @@ class Websocket(Plugin):
 
         if not hasattr(clients, '__len__'):
             clients = {'temp': clients}
-        for client in clients.items():
+        for client in clients.values():
             if (self.check_readpermission(client, readusers=readusers, readgroups=readgroups)
                     or data['event'] == 'request_token'):
-                asyncio.ensure_future(client.send(data))
+                asyncio.run_coroutine_threadsafe(client.send(data), loop=self._loop)
 
     def check_readpermission(self, client, readusers=None, readgroups=None):
         """
@@ -140,7 +142,8 @@ class Websocket(Plugin):
         readgroups lists
 
         """
-
+        return True
+        # FIXME
         permitted = False
         if client.tokenpayload:
             if readusers is None and readgroups is None:
@@ -162,16 +165,17 @@ class Websocket(Plugin):
         return permitted
 
     def listen_websocket_send(self, event):
-        self.send(event['data'])
+        self.send(event.data)
 
     def listen_websocket_reply(self, event):
-        pass
+        self.send(event.data)
 
     def listen_state_changed(self, event):
         self.send({
-            'event': 'state_changed',
+            'event': 'state_value',
             'data': {
                 'path': event.data['state'].path,
+                'id': event.data['state'].id,
                 'value': event.data['state'].value
             }
         })
@@ -193,7 +197,6 @@ class Client(object):
 
     @asyncio.coroutine
     def send(self, message):
-
         printmessage = message.__repr__()
         if len(printmessage) > 405:
             printmessage = printmessage[:200] + ' ... ' +printmessage[-200:]

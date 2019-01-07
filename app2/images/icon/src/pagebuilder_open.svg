@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="200"
+   height="200"
+   id="svg3009"
+   version="1.1"
+   inkscape:version="0.48.2 r9819"
+   sodipodi:docname="open.svg">
+  <defs
+     id="defs3011" />
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="1.979899"
+     inkscape:cx="67.455015"
+     inkscape:cy="124.47463"
+     inkscape:document-units="px"
+     inkscape:current-layer="layer1"
+     showgrid="true"
+     units="px"
+     inkscape:window-width="1280"
+     inkscape:window-height="962"
+     inkscape:window-x="-8"
+     inkscape:window-y="-8"
+     inkscape:window-maximized="1"
+     showguides="true"
+     inkscape:guide-bbox="true">
+    <inkscape:grid
+       type="xygrid"
+       id="grid3017"
+       empspacing="5"
+       visible="true"
+       enabled="true"
+       snapvisiblegridlinesonly="true"
+       units="px"
+       spacingx="1px"
+       spacingy="1px"
+       dotted="false" />
+  </sodipodi:namedview>
+  <metadata
+     id="metadata3014">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title />
+        <dc:creator>
+          <cc:Agent>
+            <dc:title>Brecht Baeten</dc:title>
+          </cc:Agent>
+        </dc:creator>
+        <dc:rights>
+          <cc:Agent>
+            <dc:title>Copyright Brecht Baeten</dc:title>
+          </cc:Agent>
+        </dc:rights>
+        <dc:description />
+        <cc:license
+           rdf:resource="http://www.gnu.org/copyleft/gpl.html" />
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="translate(0,-852.3622)">
+    <path
+       style="fill:none;stroke:#000000;stroke-width:4;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
+       d="m 25,982.3622 c 0,-30 0,-60 0,-90 0,-2.35702 2.642977,-5 5,-5 10,0 25,0 35,0 2.357023,0 5,2.64298 5,5 0,5 0,0 0,5 0,2.35702 2.642977,5 5,5 25,0 55,0 80,0 2.35702,0 5,2.64298 5,5 0,25 0,50 0,75 0,2.35702 -2.64298,5 -5,5 -40,0 -85,0 -125,0 -2.357023,0 -5,-2.64298 -5,-5 z"
+       id="path2994"
+       inkscape:connector-curvature="0"
+       sodipodi:nodetypes="sssssssssssss" />
+    <path
+       sodipodi:nodetypes="sssssssssssss"
+       inkscape:connector-curvature="0"
+       id="path3764"
+       d="M 26.491179,983.67799 C 32.660786,961.57273 38.830393,939.46746 45,917.3622 c 0.484731,-1.73676 3.671245,-3.68421 6.028268,-3.68421 10,0 25,0 35,0 2.357023,0 4.456463,1.94745 3.971732,3.68421 -1.028268,3.68421 0,0 -1.028268,3.68421 -0.484728,1.73675 1.614709,3.68421 3.971732,3.68421 24.999996,0 54.999996,0 79.999996,0 2.35702,0 4.45647,1.94746 3.97174,3.68422 -5.14135,18.42105 -10.28269,36.8421 -15.42402,55.26315 -0.48472,1.73671 -3.67125,3.68421 -6.02827,3.68421 -40,0 -84.999999,0 -124.999999,0 -2.357023,0 -4.456452,-1.9475 -3.971732,-3.68421 z"
+       style="fill:#000000;stroke:#000000;stroke-width:3.4335804;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
+       inkscape:transform-center-x="-11.703191"
+       inkscape:transform-center-y="-38.500682" />
+    <text
+       xml:space="preserve"
+       style="font-size:13px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Arial;-inkscape-font-specification:Arial"
+       x="100"
+       y="1032.3622"
+       id="text3766"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan3768"
+         x="100"
+         y="1032.3622"
+         style="font-size:50px;text-align:center;text-anchor:middle">Open</tspan></text>
+  </g>
+</svg>

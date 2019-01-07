@@ -39,6 +39,9 @@ class Event(object):
         event = cls(*args, **kwargs)
         queue.put(event)
 
+    def reply(self, *args, **kwargs):
+        Event.fire(*args, target=self.reply_to, **kwargs)
+
     def __repr__(self):
         newdata = dict(self.data)
         for key in ['password', 'token']:
@@ -49,5 +52,5 @@ class Event(object):
         if len(printdata) > 405:
             printdata = printdata[:200] + ' ... ' +printdata[-200:]
 
-        return '<Event: {}, data: {}, source: {}, reply_to: {}>'.format(
-            self.type, printdata, self.source, self.reply_to)
+        return '<Event: {}, data: {}, source: {}, target: {}, reply_to: {}>'.format(
+            self.type, printdata, self.source, self.target, self.reply_to)

@@ -51,7 +51,7 @@ class Plugins(Plugin):
                 self._active_plugins[db_entry['name']] = plugin_class()
 
     def initialize(self):
-        logger.debug('Plugins plugin Initialized')
+        logger.debug('Plugins plugin initialized')
 
     def get_available_plugins_list(self):
         """

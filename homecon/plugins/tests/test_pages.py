@@ -21,6 +21,12 @@ class TestObjects(common.TestCase):
         p2 = Page.add('page2', g, config={'Title': 'Page2'})
         self.assertEqual(len(g.pages), 2)
 
+    def test_page_from_full_path(self):
+        g = Group.add('group', config={'Title': 'Some group'})
+        p1 = Page.add('page1', g, config={'Title': 'Page1'})
+        p = Page.get(full_path='group/page1')
+        self.assertEqual(p.id, p1.id)
+
     def test_page_sections(self):
         g = Group.add('group', config={'Title': 'Some group'})
         p = Page.add('page', g, config={'Title': 'Some page'})

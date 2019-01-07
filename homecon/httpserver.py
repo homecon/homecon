@@ -11,7 +11,7 @@ from multiprocessing import Process
 logger = logging.getLogger(__name__)
 
 
-_document_root = os.path.join(sys.prefix, 'var', 'www', 'homecon')
+_document_root = os.path.join(sys.prefix, '..', 'app', 'build', 'es5-bundled')
 _http_server = None
 
 

@@ -99,7 +99,7 @@ class State(DatabaseObject):
             entry.update_record(value=json.dumps(value))
             db.close()
             self._value = value
-            Event.fire('state_changed', {'state': self}, 'State')
+            Event.fire('state_changed', {'state': self}, source='State')
 
     @property
     def triggers(self):

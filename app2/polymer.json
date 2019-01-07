@@ -1,0 +1,17 @@
+{
+    "entrypoint": "index.html",
+    "shell": "src/homecon-app.html",
+    "sources": [
+        "src/**/*",
+        "images/**/*.png",
+        "bower.json"
+    ],
+    "fragments": [
+        "src/view-editor.html",
+        "src/view-users.html",
+        "src/view-settings.html"
+    ],
+    "includeDependencies": [
+        "bower_components/webcomponentsjs/webcomponents-lite.min.js"
+    ]
+}

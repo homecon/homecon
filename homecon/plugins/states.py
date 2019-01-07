@@ -52,6 +52,9 @@ class States(Plugin):
                                                          'label': 'Time zone', 'description': 'HomeCon time zone',
                                                          'private': True}, value='Europe/Brussels')
 
+        State.add('ground_floor/kitchen/lights/light', config={'type': 'boolean', 'quantity': '', 'unit': '',
+                                                               'label': 'Kitchen light', 'description': ''})
+
         logger.debug('States plugin Initialized')
 
     def parse_triggers(self):
@@ -126,6 +129,29 @@ class States(Plugin):
         # if event.data['state'].path == 'settings/location/timezone':
         #     util.time.set_timezone(event.data['value'])
         pass
+
+    def listen_state_value(self, event):
+        if 'id' in event.data and 'value' not in event.data:
+            state = State.get(id=event.data['id'])
+            if state is not None:
+                event.reply('websocket_reply', {'event': 'state_value', 'data': {'id': event.data['id'],
+                                                                                  'value': state.value}})
+        elif 'path' in event.data and 'value' not in event.data:
+            state = State.get(path=event.data['path'])
+            if state is not None:
+                event.reply('websocket_reply', {'event': 'state_value',
+                                                'data': {'path': event.data['path'], 'value': state.value}})
+
+        elif 'id' in event.data and 'value' in event.data:
+            state = State.get(id=event.data['id'])
+            if state is not None:
+                state.value = event.data['value']
+
+        elif 'path' in event.data and 'value' in event.data:
+            state = State.get(full_path=event.data['path'])
+            if state is not None:
+                state.value = event.data['value']
+
 
     def listen_state(self, event):
         if 'path' in event.data:
