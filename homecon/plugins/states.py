@@ -6,6 +6,8 @@ import json
 
 from homecon.core.plugin import Plugin
 from homecon.core.state import State
+from homecon.core.database import get_database
+
 from .. import util
 from .authentication import jwt_decode
 
@@ -39,22 +41,31 @@ class States(Plugin):
 
     def initialize(self):
         # add settings states
-        State.add('settings/location/latitude',  config={'type': 'number', 'quantity': 'angle',  'unit': 'deg',
-                                                         'label': 'Latitude',  'description': 'HomeCon latitude',
-                                                         'private': True}, value=51.05)
-        State.add('settings/location/longitude', config={'type': 'number', 'quantity': 'angle',  'unit': 'deg',
-                                                         'label': 'Longitude', 'description': 'HomeCon longitude',
-                                                         'private': True}, value=5.5833)
-        State.add('settings/location/elevation', config={'type': 'number', 'quantity': 'height', 'unit': 'm',
-                                                         'label': 'Elevation', 'description': 'HomeCon elevation',
-                                                         'private': True}, value=74.0)
-        State.add('settings/location/timezone',  config={'type': 'string', 'quantity': '',       'unit': '',
-                                                         'label': 'Time zone', 'description': 'HomeCon time zone',
-                                                         'private': True}, value='Europe/Brussels')
+        State.add('settings')
+        State.add('location', parent='/settings')
+        State.add('latitude', parent='/settings/location',
+                  config={'type': 'number', 'quantity': 'angle',  'unit': 'deg',
+                          'label': 'Latitude',  'description': 'HomeCon latitude',
+                          'private': True}, value=51.05)
+        State.add('longitude', parent='/settings/location',
+                  config={'type': 'number', 'quantity': 'angle',  'unit': 'deg',
+                          'label': 'Longitude', 'description': 'HomeCon longitude',
+                          'private': True}, value=5.5833)
+        State.add('elevation', parent='/settings/location',
+                  config={'type': 'number', 'quantity': 'height', 'unit': 'm',
+                          'label': 'Elevation', 'description': 'HomeCon elevation',
+                          'private': True}, value=74.0)
+        State.add('timezone', parent='/settings/location',
+                  config={'type': 'string', 'quantity': '',       'unit': '',
+                          'label': 'Time zone', 'description': 'HomeCon time zone',
+                          'private': True}, value='Europe/Brussels')
 
-        State.add('ground_floor/kitchen/lights/light', config={'type': 'boolean', 'quantity': '', 'unit': '',
-                                                               'label': 'Kitchen light', 'description': ''})
-
+        State.add('ground_floor')
+        State.add('kitchen', parent='/ground_floor')
+        State.add('lights', parent='/ground_floor/kitchen')
+        State.add('light', parent='/ground_floor/kitchen/lights',
+                  config={'type': 'boolean', 'quantity': '', 'unit': '',
+                          'label': 'Kitchen light', 'description': ''})
         logger.debug('States plugin Initialized')
 
     def parse_triggers(self):
@@ -65,62 +76,62 @@ class States(Plugin):
                 if path in self._states and state not in self._states[path].trigger:
                     self._states[path].trigger.append(state)
 
-    def list(self):
-        """
-        Returns a list of states which can be edited
-        """
+    # def list(self):
+    #     """
+    #     Returns a list of states which can be edited
+    #     """
+    #
+    #     stateslist = []
+    #     for state in core.states.values():
+    #         if not 'private' in state.config or not state.config['private']:
+    #             stateslist.append({'path': state.path, 'config': state.config})
+    #
+    #     newlist = sorted(stateslist, key=lambda k: k['path'])
+    #
+    #     return newlist
 
-        stateslist = []
-        for state in core.states.values():
-            if not 'private' in state.config or not state.config['private']:
-                stateslist.append({'path': state.path, 'config': state.config})
-
-        newlist = sorted(stateslist, key=lambda k: k['path'])
-
-        return newlist
-
-    def listen_list_states(self, event):
-        if event.type == 'list_states':
-            core.websocket.send({'event': 'list_states', 'path': '', 'value': self.list()}, clients=[event.client])
-
-    def listen_add_state(self, event):
-        state = core.states.add(event.data['path'], config=event.data['config'])
-
-        if state:
-            core.event.fire('state_added', {'state': state})
-            core.websocket.send({'event': 'list_states', 'path': '', 'value': self.list()}, clients=[event.client])
-
-    def listen_edit_state(self,event):
-        if event.data['path'] in core.states:
-
-            state = core.states[event.data['path']]
-
-            config = dict(state.config)
-            for key,val in event.data['config'].items():
-                config[key] = val
-
-            state.config = config
-            core.states.parse_triggers()
-
-            core.websocket.send({'event':'list_states', 'path':'', 'value':self.list()}, clients=[event.client])
-
-    def listen_state_config(self,event):
-        if event.data['path'] in core.states:
-
-            state = core.states[event.data['path']]
-
-            if not 'value' in event.data:
-                core.websocket.send({'event':'state_config', 'path':state.path, 'value':state.config}, clients=[event.client])
-
-            else:
-                logger.warning('listen_state_config, edit state config :' + state.path)
-                #config = dict(state.config)
-                #for key,val in event.data['config'].items():
-                #    config[key] = val
-
-                #state.config = config
-                #core.websocket.send({'event':'state_config', 'path':state.path, 'value':state.config}, clients=[event.client])
-                #core.websocket.send({'event':'list_states', 'path':'', 'value':self.list()}, clients=[event.client])
+    # def listen_list_states(self, event):
+    #     if event.type == 'list_states':
+    #         core.websocket.send({'event': 'list_states', 'path': '', 'value': self.list()}, clients=[event.client])
+    #
+    # def listen_add_state(self, event):
+    #     state = core.states.add(event.data['path'], config=event.data['config'])
+    #
+    #     if state:
+    #         core.event.fire('state_added', {'state': state})
+    #         core.websocket.send({'event': 'list_states', 'path': '', 'value': self.list()}, clients=[event.client])
+    #
+    # def listen_edit_state(self,event):
+    #     if event.data['path'] in core.states:
+    #
+    #         state = core.states[event.data['path']]
+    #
+    #         config = dict(state.config)
+    #         for key,val in event.data['config'].items():
+    #             config[key] = val
+    #
+    #         state.config = config
+    #         core.states.parse_triggers()
+    #
+    #         core.websocket.send({'event':'list_states', 'path':'', 'value':self.list()}, clients=[event.client])
+    #
+    # def listen_state_config(self,event):
+    #     if event.data['path'] in core.states:
+    #
+    #         state = core.states[event.data['path']]
+    #
+    #         if not 'value' in event.data:
+    #             core.websocket.send({'event':'state_config', 'path':state.path, 'value':state.config}, clients=[event.client])
+    #
+    #         else:
+    #             logger.warning('listen_state_config, edit state config :' + state.path)
+    #             #config = dict(state.config)
+    #             #for key,val in event.data['config'].items():
+    #             #    config[key] = val
+    #
+    #             #state.config = config
+    #             #core.websocket.send({'event':'state_config', 'path':state.path, 'value':state.config}, clients=[event.client])
+    #             #core.websocket.send({'event':'list_states', 'path':'', 'value':self.list()}, clients=[event.client])
 
     def listen_state_changed(self,event):
         #core.event.fire('send',{'event':'state', 'path':event.data['state'].path, 'value':event.data['state'].value, 'readusers':event.data['state'].config['readusers'], 'readgroups':event.data['state'].config['readgroups']},source=self)
@@ -152,56 +163,53 @@ class States(Plugin):
             if state is not None:
                 state.value = event.data['value']
 
-
-    def listen_state(self, event):
-        if 'path' in event.data:
-            if event.data['path'] in State.all_paths():
-                state = State.get(event.data['path'])
-                tokenpayload = jwt_decode(event.data['token'])
-
-                if 'value' in event.data:
-                    # set
-                    permitted = False
-                    if tokenpayload and tokenpayload['userid'] in state.config['writeusers']:
-                        permitted = True
-                    else:
-                        for g in tokenpayload['groupids']:
-                            if g in state.config['writegroups']:
-                                permitted = True
-                                break
-
-                    if permitted:
-                        value = event.data['value']
-                        if 'type' in state.config and state.config['type'] == 'number':
-                            value = float(value)
-
-                        state.set(value,source=event.source)
-
-                    else:
-                        logging.warning('User {} on client {} attempted to change the value of {} but is not permitted'.format(tokenpayload['userid'],event.client.address,state.path))
-
-                else:
-                    # get
-                    permitted = False
-                    if tokenpayload and tokenpayload['userid'] in state.config['readusers']:
-                        permitted = True
-                    elif tokenpayload:
-                        for g in tokenpayload['groupids']:
-                            if g in state.config['readgroups']:
-                                permitted = True
-                                break
-
-                    if permitted:
-                        core.websocket.send({'event':'state', 'path':state.path, 'value':state.value}, clients=[event.client], readusers=state.config['readusers'] ,readgroups=state.config['readgroups'])
-                    else:
-                        logging.warning('User {} attempted to change the value of {} but is not permitted'.format(tokenpayload['userid'],state.path))
-
-
-    def listen_send_states_to(self, event):
-
-        for state in core.states.values():
-            core.websocket.send({'event':'state', 'path':state.path, 'value':state.value}, clients=event.data['clients'], readusers=state.config['readusers'] ,readgroups=state.config['readgroups'])
-
-
-
-
+    #
+    # def listen_state(self, event):
+    #     if 'path' in event.data:
+    #         if event.data['path'] in State.all_paths():
+    #             state = State.get(event.data['path'])
+    #             tokenpayload = jwt_decode(event.data['token'])
+    #
+    #             if 'value' in event.data:
+    #                 # set
+    #                 permitted = False
+    #                 if tokenpayload and tokenpayload['userid'] in state.config['writeusers']:
+    #                     permitted = True
+    #                 else:
+    #                     for g in tokenpayload['groupids']:
+    #                         if g in state.config['writegroups']:
+    #                             permitted = True
+    #                             break
+    #
+    #                 if permitted:
+    #                     value = event.data['value']
+    #                     if 'type' in state.config and state.config['type'] == 'number':
+    #                         value = float(value)
+    #
+    #                     state.set(value,source=event.source)
+    #
+    #                 else:
+    #                     logging.warning('User {} on client {} attempted to change the value of {} but is not permitted'.format(tokenpayload['userid'],event.client.address,state.path))
+    #
+    #             else:
+    #                 # get
+    #                 permitted = False
+    #                 if tokenpayload and tokenpayload['userid'] in state.config['readusers']:
+    #                     permitted = True
+    #                 elif tokenpayload:
+    #                     for g in tokenpayload['groupids']:
+    #                         if g in state.config['readgroups']:
+    #                             permitted = True
+    #                             break
+    #
+    #                 if permitted:
+    #                     core.websocket.send({'event':'state', 'path':state.path, 'value':state.value}, clients=[event.client], readusers=state.config['readusers'] ,readgroups=state.config['readgroups'])
+    #                 else:
+    #                     logging.warning('User {} attempted to change the value of {} but is not permitted'.format(tokenpayload['userid'],state.path))
+    #
+    #
+    # def listen_send_states_to(self, event):
+    #
+    #     for state in core.states.values():
+    #         core.websocket.send({'event':'state', 'path':state.path, 'value':state.value}, clients=event.data['clients'], readusers=state.config['readusers'] ,readgroups=state.config['readgroups'])
+    #

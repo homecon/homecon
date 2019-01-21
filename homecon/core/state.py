@@ -19,9 +19,10 @@ logger = logging.getLogger(__name__)
 
 class State(DatabaseObject):
 
-    def __init__(self, id=None, path=None, config=None, value=None):
+    def __init__(self, id=None, path=None, parent=None, config=None, value=None):
         super().__init__(id=id)
         self._path = path
+        self._parent = parent
         self._config = json.loads(config) or {}
         self._value = json.loads(value)
 
@@ -33,24 +34,35 @@ class State(DatabaseObject):
         else:
             table = db.define_table(
                 'states',
-                Field('path', type='string', default='', unique=True),
+                Field('path', type='string', default=''),
+                Field('parent', type='integer'),
                 Field('config', type='string', default='{}'),
                 Field('value', type='string'),
             )
         return db, table
 
     @classmethod
-    def get(cls, path=None, id=None):
+    def get(cls, full_path=None, id=None):
         if id is not None:
             db, table = cls.get_table()
             entry = table(id)
             db.close()
-        elif path is not None:
+        elif full_path is not None:
+            entry = None
+            parts = full_path.split('/')
             db, table = cls.get_table()
-            entry = table(path=path)
+            query = (table.path == parts[-1])
+            entries = db(query).select(table.ALL)
             db.close()
+            parent_path = '/'.join(parts[:-1])
+            for e in entries:
+                s = cls(**e.as_dict())
+                if s.parent is None and parent_path == '':
+                    return s
+                if s.parent is not None and s.parent.full_path == parent_path:
+                    return s
         else:
-            raise Exception('id or path must be supplied')
+            raise Exception('id or full_path must be supplied')
 
         if entry is not None:
             return cls(**entry.as_dict())
@@ -58,15 +70,35 @@ class State(DatabaseObject):
             return None
 
     @classmethod
-    def add(cls, path, config=None, value=None):
+    def add(cls, path, parent=None, config=None, value=None):
         """
         Add a state to the database
         """
         # check if it already exists
         db, table = cls.get_table()
-        entry = table(path=path)
+
+        if parent is None:
+            entry = table(path=path)
+            parent_id = None
+        else:
+            if isinstance(parent, State):
+                parent_id = parent.id
+            elif isinstance(parent, str):
+                parent = cls.get(full_path=parent)
+                if parent is None:
+                    raise Exception('parent does not exist')
+                parent_id = parent.id
+            else:
+                parent = cls.get(id=parent)
+                parent_id = parent
+            entry = None
+            for c in parent.children:
+                if c.path == path:
+                    entry = True
+                    break
+
         if entry is None:
-            id = table.insert(path=path, config=json.dumps(config or '{}'), value=json.dumps(value))
+            id = table.insert(path=path, parent=parent_id, config=json.dumps(config or '{}'), value=json.dumps(value))
             db.close()
             # get the state FIXME error checking
             obj = cls.get(id=id)
@@ -77,9 +109,41 @@ class State(DatabaseObject):
         return obj
 
     @property
+    def parent(self):
+        """
+        returns the parent of the current state when the paths follow the slash
+        syntax according to :code`parent/child`
+
+        Example
+        -------
+        >>> p = State.add('parent')
+        >>> c = State.add('child', parent=p)
+        >>> c.parent
+        """
+        parent_id = self.get_property('parent')
+        if parent_id is not None:
+            self._parent = State.get(id=self.get_property('parent'))
+        else:
+            self._parent = None
+        return self._parent
+
+    @property
+    def children(self):
+        return[s for s in State.all() if s.parent is not None and s.parent.id == self.id]
+
+    @property
     def path(self):
         self._path = self.get_property('path')
         return self._path
+
+    @property
+    def full_path(self):
+
+        if self.parent is not None:
+            base_path = self.parent.full_path + '/'
+        else:
+            base_path = '/'
+        return base_path + self.path
 
     @property
     def config(self):
@@ -135,50 +199,14 @@ class State(DatabaseObject):
                 logging.error('Could not compute value for state {}: {}'.format(self.path, e))
         return None
 
-    @property
-    def parent(self):
-        """
-        returns the parent of the current state when the paths follow the slash
-        syntax according to :code`parent/child`
-
-        Example
-        -------
-        >>> p = State.add('parent')
-        >>> c = State.add('parent/child')
-        >>> c.return_parent()
-        """
-        path = self.path
-        if '/' in path:
-            parentpath = '/'.join(path.split('/')[:-1])
-            return State.get(path=parentpath)
-        return None
-
-    @property
-    def children(self):
-        """
-        returns a list of children of the current state when the paths follow
-        the slash syntax according to :code`parent/child`
-
-        Example
-        -------
-        >>> p = State.add('parent')
-        >>> c0 = State.add('parent/child0')
-        >>> c1 = State.add('parent/child1')
-        >>> cc = State.add('parent/child0/child')
-        >>> p.return_children()
-        """
-        children = []
-        path = self.path
-        for s in State.all():
-            if '/'.join(s.path.split('/')[:-1]) == path:
-                children.append(s)
-        return children
-
     def __call__(self):
         return self.value
 
     def __repr__(self):
         return '<State: {}, path: {}, value: {}>'.format(self.id, self._path, self._value)
+
+    def __eq__(self, other):
+        return self.__class__ == other.__class__ and self.id == other.id
 
 #
 #

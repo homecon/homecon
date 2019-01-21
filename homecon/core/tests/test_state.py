@@ -31,14 +31,48 @@ class TestState(common.TestCase):
         s = State.add('mystate')
         db, table = State.get_table()
         self.assertEqual('mystate', db(db.states).select()[0]['path'])
-        self.assertTrue(db._uri.endswith('test_homecon.db'))
-        self.assertEqual('mystate', State.get(path='mystate').path)
+        print(db._uri)
+        self.assertTrue(db._uri.endswith('db_test/homecon.db'))
+        self.assertEqual('mystate', State.get(full_path='/mystate').path)
         self.assertEqual('mystate', s.path)
+
+    def test_get(self):
+        s1a = State.add('parent1')
+        s1b = State.add('parent2')
+        s2a = State.add('substate1', parent=s1a)
+        s2b = State.add('substate1', parent=s1b)
+        s = State.get(full_path='/parent2/substate1')
+        self.assertEqual(s, s2b)
+        s = State.get(full_path='/parent1')
+        self.assertEqual(s, s1a)
+
+    def test_parent(self):
+        s1 = State.add('mystate')
+        s2 = State.add('substate', parent=s1)
+        s3 = State.add('substate2', parent='/mystate')
+        self.assertEqual('mystate', s2.parent.path)
+        self.assertEqual('mystate', s3.parent.path)
+
+    def test_full_path(self):
+        s1 = State.add('mystate')
+        s2 = State.add('substate', parent=s1)
+        self.assertEqual('/mystate', s1.full_path)
+        self.assertEqual('/mystate/substate', s2.full_path)
+
+    def test_children(self):
+        s1 = State.add('mystate')
+        s2a = State.add('substate_a', parent=s1)
+        s2b = State.add('substate_b', parent=s1)
+        State.add('mynewstate')
+        children = s1.children
+        self.assertEqual(len(children), 2)
+        self.assertIn(s2a, children)
+        self.assertIn(s2b, children)
 
     def test_read_write_speed(self):
         s = State.add('mystate')
         start = time.time()
-        for i in range(100):
+        for i in range(50):
             s.value = i
             v = s.value
         stop = time.time()
