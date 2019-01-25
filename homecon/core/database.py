@@ -79,27 +79,3 @@ class DatabaseObject(object):
     @property
     def id(self):
         return self._id
-
-
-class UniquePathDatabaseObject(DatabaseObject):
-    def __init__(self, id=None, path=None):
-        super().__init__(id=id)
-        self._path = path
-
-    @classmethod
-    def get(cls, path=None, id=None):
-        if id is not None:
-            db, table = cls.get_table()
-            entry = table(id)
-            db.close()
-        elif path is not None:
-            db, table = cls.get_table()
-            entry = table(path=path)
-            db.close()
-        else:
-            raise Exception('id or path must be supplied')
-
-        if entry is not None:
-            return cls(**entry.as_dict())
-        else:
-            return None

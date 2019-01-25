@@ -19,9 +19,9 @@ logger = logging.getLogger(__name__)
 
 class State(DatabaseObject):
 
-    def __init__(self, id=None, path=None, parent=None, config=None, value=None):
+    def __init__(self, id=None, name=None, parent=None, config=None, value=None):
         super().__init__(id=id)
-        self._path = path
+        self._name = name
         self._parent = parent
         self._config = json.loads(config) or {}
         self._value = json.loads(value)
@@ -34,7 +34,7 @@ class State(DatabaseObject):
         else:
             table = db.define_table(
                 'states',
-                Field('path', type='string', default=''),
+                Field('name', type='string', default=''),
                 Field('parent', type='integer'),
                 Field('config', type='string', default='{}'),
                 Field('value', type='string'),
@@ -42,16 +42,16 @@ class State(DatabaseObject):
         return db, table
 
     @classmethod
-    def get(cls, full_path=None, id=None):
+    def get(cls, path=None, id=None):
         if id is not None:
             db, table = cls.get_table()
             entry = table(id)
             db.close()
-        elif full_path is not None:
+        elif path is not None:
             entry = None
-            parts = full_path.split('/')
+            parts = path.split('/')
             db, table = cls.get_table()
-            query = (table.path == parts[-1])
+            query = (table.name == parts[-1])
             entries = db(query).select(table.ALL)
             db.close()
             parent_path = '/'.join(parts[:-1])
@@ -59,10 +59,10 @@ class State(DatabaseObject):
                 s = cls(**e.as_dict())
                 if s.parent is None and parent_path == '':
                     return s
-                if s.parent is not None and s.parent.full_path == parent_path:
+                if s.parent is not None and s.parent.path == parent_path:
                     return s
         else:
-            raise Exception('id or full_path must be supplied')
+            raise Exception('id or path must be supplied')
 
         if entry is not None:
             return cls(**entry.as_dict())
@@ -70,7 +70,7 @@ class State(DatabaseObject):
             return None
 
     @classmethod
-    def add(cls, path, parent=None, config=None, value=None):
+    def add(cls, name, parent=None, config=None, value=None):
         """
         Add a state to the database
         """
@@ -78,13 +78,13 @@ class State(DatabaseObject):
         db, table = cls.get_table()
 
         if parent is None:
-            entry = table(path=path)
+            entry = table(name=name)
             parent_id = None
         else:
             if isinstance(parent, State):
                 parent_id = parent.id
             elif isinstance(parent, str):
-                parent = cls.get(full_path=parent)
+                parent = cls.get(path=parent)
                 if parent is None:
                     raise Exception('parent does not exist')
                 parent_id = parent.id
@@ -93,12 +93,12 @@ class State(DatabaseObject):
                 parent_id = parent
             entry = None
             for c in parent.children:
-                if c.path == path:
+                if c.name == name:
                     entry = table(id=c.id)
                     break
 
         if entry is None:
-            id = table.insert(path=path, parent=parent_id, config=json.dumps(config or '{}'), value=json.dumps(value))
+            id = table.insert(name=name, parent=parent_id, config=json.dumps(config or '{}'), value=json.dumps(value))
             db.close()
             # get the state FIXME error checking
             obj = cls.get(id=id)
@@ -132,18 +132,16 @@ class State(DatabaseObject):
         return[s for s in State.all() if s.parent is not None and s.parent.id == self.id]
 
     @property
-    def path(self):
-        self._path = self.get_property('path')
-        return self._path
+    def name(self):
+        self._name = self.get_property('name')
+        return self._name
 
     @property
-    def full_path(self):
-
-        if self.parent is not None:
-            base_path = self.parent.full_path + '/'
+    def path(self):
+        if self.parent is None:
+            return '/{}'.format(self.name)
         else:
-            base_path = '/'
-        return base_path + self.path
+            return '{}/{}'.format(self.parent.path, self.name)
 
     @property
     def config(self):
@@ -203,7 +201,7 @@ class State(DatabaseObject):
         return self.value
 
     def __repr__(self):
-        return '<State: {}, path: {}, value: {}>'.format(self.id, self.full_path, self._value)
+        return '<State: {}, path: {}, value: {}>'.format(self.id, self.path, self._value)
 
     def __eq__(self, other):
         return self.__class__ == other.__class__ and self.id == other.id

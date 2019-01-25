@@ -159,7 +159,7 @@ class States(Plugin):
                 state.value = event.data['value']
 
         elif 'path' in event.data and 'value' in event.data:
-            state = State.get(full_path=event.data['path'])
+            state = State.get(path=event.data['path'])
             if state is not None:
                 state.value = event.data['value']
 

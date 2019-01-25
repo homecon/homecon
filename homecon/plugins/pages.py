@@ -17,9 +17,9 @@ logger = logging.getLogger(__name__)
 
 
 class Group(DatabaseObject):
-    def __init__(self, id=None, path=None, config=None, order=None):
+    def __init__(self, id=None, name=None, config=None, order=None):
         super().__init__(id=id)
-        self._path = path
+        self._name = name
         self._config = config
         self._order = order
 
@@ -31,22 +31,22 @@ class Group(DatabaseObject):
         else:
             table = db.define_table(
                 'page_groups',
-                Field('path', type='string', default='', unique=True),
+                Field('name', type='string', default='', unique=True),
                 Field('config', type='string', default='{}'),
                 Field('order', type='integer', default=0),
             )
         return db, table
 
     @classmethod
-    def add(cls, path, config=None, order=None):
+    def add(cls, name, config=None, order=None):
         """
         Add a group
         """
         # check if it already exists
         db, table = cls.get_table()
-        entry = table(path=path)
+        entry = table(name=name)
         if entry is None:
-            id = table.insert(path=path, config=json.dumps(config or '{}'), order=order)
+            id = table.insert(name=name, config=json.dumps(config or '{}'), order=order)
             db.close()
             # FIXME error checking
             obj = cls.get(id=id)
@@ -63,7 +63,7 @@ class Group(DatabaseObject):
             db_entry = table(id)
             db.close()
         elif path is not None:
-            db_entry = table(path=path)
+            db_entry = table(name=path)
             db.close()
         else:
             logger.error("id or path must be supplied")
@@ -74,13 +74,13 @@ class Group(DatabaseObject):
             return None
 
     @property
-    def path(self):
-        self._path = self.get_property('path')
-        return self._path
+    def name(self):
+        self._name = self.get_property('name')
+        return self._name
 
     @property
-    def full_path(self):
-        return self.path
+    def path(self):
+        return '/{}'.format(self.name)
 
     @property
     def config(self):
@@ -96,8 +96,8 @@ class Group(DatabaseObject):
     def pages(self):
         return sorted([page for page in Page.all() if page.group.id == self.id], key=lambda x: x.order)
 
-    def get_page(self, path):
-        pages = [page for page in Page.all() if page.group.id == self.id and page.path == path]
+    def get_page(self, name):
+        pages = [page for page in Page.all() if page.group.id == self.id and page.name == name]
         if len(pages) == 1:
             return pages[0]
         return None
@@ -105,16 +105,16 @@ class Group(DatabaseObject):
     def serialize(self):
         return {
             'id': self.id,
-            'path': self.full_path,
+            'path': self.path,
             'config': self.config,
             'pages': [page.id for page in self.pages]
         }
 
 
 class Page(DatabaseObject):
-    def __init__(self, id=None, path=None, group=None, config=None, order=None):
+    def __init__(self, id=None, name=None, group=None, config=None, order=None):
         super().__init__(id=id)
-        self._path = path
+        self._name = name
         self._group = group
         self._config = config
         self._order = order
@@ -127,7 +127,7 @@ class Page(DatabaseObject):
         else:
             table = db.define_table(
                 'pages',
-                Field('path', type='string', default=''),
+                Field('name', type='string', default=''),
                 Field('group', type='integer'),
                 Field('config', type='string', default='{}'),
                 Field('order', type='integer', default=0),
@@ -135,15 +135,15 @@ class Page(DatabaseObject):
         return db, table
 
     @classmethod
-    def add(cls, path, group, config=None, order=None):
+    def add(cls, name, group, config=None, order=None):
         """
         Add a state to the database
         """
         # check if it already exists
         db, table = cls.get_table()
-        entry = table(path=path, group=group.id)
+        entry = table(name=name, group=group.id)
         if entry is None:
-            id = table.insert(path=path, group=group.id, config=json.dumps(config or '{}'), order=order)
+            id = table.insert(name=name, group=group.id, config=json.dumps(config or '{}'), order=order)
             db.close()
             # FIXME error checking
             obj = cls.get(id=id)
@@ -154,15 +154,15 @@ class Page(DatabaseObject):
         return obj
 
     @classmethod
-    def get(cls, full_path=None, id=None):
+    def get(cls, path=None, id=None):
         db, table = cls.get_table()
         if id is not None:
             db_entry = table(id)
             db.close()
-        elif full_path is not None:
-            group_path, page_path = full_path.split('/')
-            group = Group.get(path=group_path)
-            db_entry = table(path=page_path, group=group.id)
+        elif path is not None:
+            parts = path.split('/')
+            group = Group.get(path='/'.join(parts[:-1]))
+            db_entry = table(name=parts[-1], group=group.id)
             db.close()
         else:
             logger.error("id or path must be supplied")
@@ -173,14 +173,13 @@ class Page(DatabaseObject):
             return None
 
     @property
-    def path(self):
-        self._path = self.get_property('path')
-        return self._path
+    def name(self):
+        self._name = self.get_property('name')
+        return self._name
 
     @property
-    def full_path(self):
-        self._path = self.get_property('path')
-        return '{}/{}'.format(self.group.full_path, self.path)
+    def path(self):
+        return '{}/{}'.format(self.group.path, self.name)
 
     @property
     def group(self):
@@ -201,8 +200,8 @@ class Page(DatabaseObject):
     def sections(self):
         return sorted([section for section in Section.all() if section.page.id == self.id], key=lambda x: x.order)
 
-    def get_section(self, path):
-        objs = [obj for obj in Page.all() if obj.page.id == self.id and obj.path == path]
+    def get_section(self, name):
+        objs = [obj for obj in Page.all() if obj.page.id == self.id and obj.name == name]
         if len(objs) == 1:
             return objs[0]
         return None
@@ -210,16 +209,16 @@ class Page(DatabaseObject):
     def serialize(self):
         return {
             'id': self.id,
-            'path': self.full_path,
+            'path': self.path,
             'config': self.config,
             'sections': [section.id for section in self.sections]
         }
 
 
 class Section(DatabaseObject):
-    def __init__(self, id=None, path=None, page=None, config=None, order=None):
+    def __init__(self, id=None, name=None, page=None, config=None, order=None):
         super().__init__(id=id)
-        self._path = path
+        self._name = name
         self._page = page
         self._config = config
         self._order = order
@@ -232,7 +231,7 @@ class Section(DatabaseObject):
         else:
             table = db.define_table(
                 'sections',
-                Field('path', type='string', default=''),
+                Field('name', type='string', default=''),
                 Field('page', type='integer'),
                 Field('config', type='string', default='{}'),
                 Field('order', type='integer', default=0),
@@ -240,15 +239,15 @@ class Section(DatabaseObject):
         return db, table
 
     @classmethod
-    def add(cls, path, page, config=None, order=None):
+    def add(cls, name, page, config=None, order=None):
         """
         Add a state to the database
         """
         # check if it already exists
         db, table = cls.get_table()
-        entry = table(path=path, page=page.id)
+        entry = table(name=name, page=page.id)
         if entry is None:
-            id = table.insert(path=path, page=page.id, config=json.dumps(config or '{}'), order=order)
+            id = table.insert(name=name, page=page.id, config=json.dumps(config or '{}'), order=order)
             db.close()
             # FIXME error checking
             obj = cls.get(id=id)
@@ -259,14 +258,13 @@ class Section(DatabaseObject):
         return obj
 
     @property
-    def path(self):
-        self._path = self.get_property('path')
-        return self._path
+    def name(self):
+        self._name = self.get_property('name')
+        return self._name
 
     @property
-    def full_path(self):
-        self._path = self.get_property('path')
-        return '{}/{}'.format(self.page.full_path, self.path)
+    def path(self):
+        return '{}/{}'.format(self.page.path, self.name)
 
     @property
     def page(self):
@@ -296,16 +294,16 @@ class Section(DatabaseObject):
     def serialize(self):
         return {
             'id': self.id,
-            'path': self.full_path,
+            'path': self.path,
             'config': self.config,
             'widgets': [widgets.id for widgets in self.widgets]
         }
 
 
 class Widget(DatabaseObject):
-    def __init__(self, id=None, path=None, section=None, type=type, config=None, order=None):
+    def __init__(self, id=None, name=None, section=None, type=type, config=None, order=None):
         super().__init__(id=id)
-        self._path = path
+        self._name = name
         self._section = section
         self._type = type
         self._config = config
@@ -319,7 +317,7 @@ class Widget(DatabaseObject):
         else:
             table = db.define_table(
                 'widgets',
-                Field('path', type='string', default=''),
+                Field('name', type='string', default=''),
                 Field('section', type='integer'),
                 Field('type', type='string'),
                 Field('config', type='string', default='{}'),
@@ -328,17 +326,17 @@ class Widget(DatabaseObject):
         return db, table
 
     @classmethod
-    def add(cls, path, section, type, config=None, order=None):
+    def add(cls, name, section, type, config=None, order=None):
         """
         Add a state to the database
         """
         # check if it already exists
-        if path is None:
-            path = uuid4()
+        if name is None:
+            name = uuid4()
         db, table = cls.get_table()
-        entry = table(path=path, section=section.id)
+        entry = table(name=name, section=section.id)
         if entry is None:
-            id = table.insert(path=path, section=section.id, type=type, config=json.dumps(config or '{}'), order=order)
+            id = table.insert(name=name, section=section.id, type=type, config=json.dumps(config or '{}'), order=order)
             db.close()
             # FIXME error checking
             obj = cls.get(id=id)
@@ -349,14 +347,13 @@ class Widget(DatabaseObject):
         return obj
 
     @property
-    def path(self):
-        self._path = self.get_property('path')
-        return self._path
+    def name(self):
+        self._name = self.get_property('name')
+        return self._name
 
     @property
-    def full_path(self):
-        self._path = self.get_property('path')
-        return '{}/{}'.format(self.section.full_path, self.path)
+    def path(self):
+        return '{}/{}'.format(self.section.path, self.name)
 
     @property
     def section(self):
@@ -381,7 +378,7 @@ class Widget(DatabaseObject):
     def serialize(self):
         return {
             'id': self.id,
-            'path': self.full_path,
+            'path': self.path,
             'type': self.type,
             'config': self.config,
         }
@@ -438,7 +435,7 @@ class Pages(Plugin):
                 menu.append({
                     'path': group.path,
                     'config': group.config,
-                    'pages': [{'id': page.id, 'path': page.full_path, 'config': page.config} for page in group.pages]
+                    'pages': [{'id': page.id, 'path': page.path, 'config': page.config} for page in group.pages]
                 })
         menu = sorted(menu, key=lambda x: self._groups[x['path']]['order'])
         return menu
@@ -469,7 +466,7 @@ class Pages(Plugin):
             page = Page.get(id=event.data['id']).serialize()
             event.reply('websocket_reply', {'event': 'pages_page', 'data': {'id': event.data['id'], 'value': page}})
         elif 'path' in event.data and 'value' not in event.data:
-            page = Page.get(full_path=event.data['path']).serialize()
+            page = Page.get(path=event.data['path']).serialize()
             event.reply('websocket_reply', {'event': 'pages_page',
                                             'data': {'path': event.data['path'], 'value': page}})
 
