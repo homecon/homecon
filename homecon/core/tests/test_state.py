@@ -36,6 +36,11 @@ class TestState(common.TestCase):
         self.assertEqual('mystate', State.get(full_path='/mystate').path)
         self.assertEqual('mystate', s.path)
 
+    def test_re_add(self):
+        s0 = State.add('mystate')
+        s1 = State.add('mystate')
+        self.assertEqual(s0, s1)
+
     def test_get(self):
         s1a = State.add('parent1')
         s1b = State.add('parent2')

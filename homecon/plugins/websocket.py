@@ -174,7 +174,7 @@ class Websocket(Plugin):
         self.send({
             'event': 'state_value',
             'data': {
-                'path': event.data['state'].path,
+                'path': event.data['state'].full_path,
                 'id': event.data['state'].id,
                 'value': event.data['state'].value
             }

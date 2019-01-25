@@ -94,7 +94,7 @@ class State(DatabaseObject):
             entry = None
             for c in parent.children:
                 if c.path == path:
-                    entry = True
+                    entry = table(id=c.id)
                     break
 
         if entry is None:
@@ -203,7 +203,7 @@ class State(DatabaseObject):
         return self.value
 
     def __repr__(self):
-        return '<State: {}, path: {}, value: {}>'.format(self.id, self._path, self._value)
+        return '<State: {}, path: {}, value: {}>'.format(self.id, self.full_path, self._value)
 
     def __eq__(self, other):
         return self.__class__ == other.__class__ and self.id == other.id
