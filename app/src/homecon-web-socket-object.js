@@ -68,11 +68,11 @@ class HomeconWebSocketObject extends PolymerElement {
   ready(){
     this.observe = true;
     window.addEventListener('homecon-web-socket-message', (e) => this._handleMessage(e))
-
     if(this.auto || this.sendOnAuthenticated){
       window.addEventListener('homecon-authenticated',  (e) => this._handleAuthenticated(e));
+      //window.addEventListener('homecon-connected',  (e) => this._handleAuthenticated(e));  fixme
       // send without value key to start monitoring
-      if(window.homeconAuthentication.authenticated && typeof this.path != 'undefined'){
+      if(window.homeconWebSocket.connected && window.homeconAuthentication.authenticated && typeof this.key != 'undefined'){
         this.send();
       }
     }
@@ -80,7 +80,7 @@ class HomeconWebSocketObject extends PolymerElement {
 
   send(data){
     var senddata = {'event': this.event, 'data': {}}
-    if(typeof this.key != undefined && this.key != ''){
+    if(typeof this.key != undefined && this.key !== ''){
       senddata['data'][this.keyKey] = this.key
     }
     if(typeof data != undefined){
@@ -90,8 +90,9 @@ class HomeconWebSocketObject extends PolymerElement {
   }
 
   _handleMessage(e){
+    console.log(this.event, this.key, this.keyKey, e)
     // check if the message matches the template
-    if(e.detail['event']==this.event && (typeof this.key==undefined  || this.key=='' || e.detail['data'][this.keyKey]==this.key)){
+    if(e.detail['event']===this.event && (typeof this.key==='undefined'  || this.key==='' || e.detail['data'][this.keyKey]===this.key)){
       // avoid looping forever
       this.observe = false;
       // extract data from the message

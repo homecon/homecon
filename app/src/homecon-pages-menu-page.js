@@ -66,7 +66,7 @@ class HomeconPagesMenuPage extends PolymerElement {
       <homecon-web-socket-object event="pages_page" key="{{key}}" data="{{page}}" auto>
       </homecon-web-socket-object>
 
-      <a class="item horizontal layout center" href="/pages/[[page.path]]">
+      <a class="item horizontal layout center" href="/pages[[page.path]]">
         <img class="icon" src="[[_parseIcon(page.config.icon)]]">
         <h1 class="title">{{page.config.title}}</h1>
       </a>

@@ -17,6 +17,7 @@ import '@polymer/paper-icon-button/paper-icon-button.js';
 import './homecon-web-socket.js';
 import './homecon-authentication.js';
 import './homecon-pages-menu.js';
+import './homecon-menu-item.js';
 
 // Gesture events like tap and track generated from touch will not be
 // preventable, allowing for better scrolling performance.
@@ -174,6 +175,7 @@ class HomeconApp extends PolymerElement {
 
         <!-- Menu -->
         <paper-dialog id="menu" class$="menu" horizontal-align="right" vertical-allign="top">
+          <homecon-menu-item title="States" icon="edit_settings" href="/states"></homecon-menu-item>
           <homecon-menu-item title="Settings" icon="edit_settings" href="/settings"></homecon-menu-item>
           <homecon-menu-item title="Users" icon="homecon_users" href="/users"></homecon-menu-item>
           <homecon-menu-item title="Editor" icon="pagebuilder_pagebuilder" href="/editor"></homecon-menu-item>
@@ -201,6 +203,7 @@ class HomeconApp extends PolymerElement {
         <iron-pages selected="[[page]]" attr-for-selected="name">
           <view-login name="login"></view-login>
           <view-pages name="pages" route="[[subroute]]"></view-pages>
+          <view-states id="states" name="states"></view-states>
           <view-settings id="settings" name="settings"></view-settings>
           <view-editor name="editor" pages-path="{{pagesPath}}"></view-editor>
           <view-users name="users"></view-users>
@@ -238,7 +241,7 @@ class HomeconApp extends PolymerElement {
      // Show 'view1' in that case. And if the page doesn't exist, show 'view404'.
     if (!page) {
       this.page = 'login';
-    } else if (['pages'].indexOf(page) !== -1) {
+    } else if (['pages', 'states'].indexOf(page) !== -1) {
       this.page = page;
     } else {
       this.page = 'view404';
@@ -258,8 +261,8 @@ class HomeconApp extends PolymerElement {
       case 'pages':
         import('./view-pages.js');
         break;
-      case 'view2':
-        import('./my-view2.js');
+      case 'states':
+        import('./view-states.js');
         break;
       case 'view3':
         import('./my-view3.js');
