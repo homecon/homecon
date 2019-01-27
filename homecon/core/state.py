@@ -19,11 +19,18 @@ logger = logging.getLogger(__name__)
 
 class State(DatabaseObject):
 
-    def __init__(self, id=None, name=None, parent=None, config=None, value=None):
+    def __init__(self, id=None, name=None, parent=None,
+                 type=None, quantity=None, unit=None, label=None, description=None,
+                 config=None, value=None):
         super().__init__(id=id)
         self._name = name
         self._parent = parent
-        self._config = json.loads(config) or {}
+        self._type = type
+        self._quantity = quantity
+        self._unit = unit
+        self._label = label
+        self._description = description
+        self._config = config or {}
         self._value = json.loads(value)
 
     @staticmethod
@@ -36,6 +43,11 @@ class State(DatabaseObject):
                 'states',
                 Field('name', type='string', default=''),
                 Field('parent', type='integer'),
+                Field('type', type='string'),
+                Field('quantity', type='string'),
+                Field('unit', type='string'),
+                Field('label', type='string'),
+                Field('description', type='string'),
                 Field('config', type='string', default='{}'),
                 Field('value', type='string'),
             )
@@ -70,7 +82,8 @@ class State(DatabaseObject):
             return None
 
     @classmethod
-    def add(cls, name, parent=None, config=None, value=None):
+    def add(cls, name, parent=None, type=None, quantity=None, unit=None, label=None, description=None,
+                 config=None, value=None):
         """
         Add a state to the database
         """
@@ -90,7 +103,7 @@ class State(DatabaseObject):
                 parent_id = parent.id
             else:
                 parent = cls.get(id=parent)
-                parent_id = parent
+                parent_id = parent.id
             entry = None
             for c in parent.children:
                 if c.name == name:
@@ -98,7 +111,8 @@ class State(DatabaseObject):
                     break
 
         if entry is None:
-            id = table.insert(name=name, parent=parent_id, config=json.dumps(config or '{}'), value=json.dumps(value))
+            id = table.insert(name=name, parent=parent_id, type=type, quantity=quantity, unit=unit, label=label,
+                              description=description, config=json.dumps(config or '{}'), value=json.dumps(value))
             db.close()
             # get the state FIXME error checking
             obj = cls.get(id=id)
@@ -129,7 +143,7 @@ class State(DatabaseObject):
 
     @property
     def children(self):
-        return[s for s in State.all() if s.parent is not None and s.parent.id == self.id]
+        return [s for s in State.all() if s.parent is not None and s.parent.id == self.id]
 
     @property
     def name(self):
@@ -142,6 +156,31 @@ class State(DatabaseObject):
             return '/{}'.format(self.name)
         else:
             return '{}/{}'.format(self.parent.path, self.name)
+
+    @property
+    def type(self):
+        self._type = self.get_property('type')
+        return self._type
+
+    @property
+    def quantity(self):
+        self._quantity = self.get_property('quantity')
+        return self._quantity
+
+    @property
+    def unit(self):
+        self._unit = self.get_property('unit')
+        return self._unit
+
+    @property
+    def label(self):
+        self._label = self.get_property('label')
+        return self._label
+
+    @property
+    def description(self):
+        self._description = self.get_property('description')
+        return self._description
 
     @property
     def config(self):
@@ -196,6 +235,21 @@ class State(DatabaseObject):
             except Exception as e:
                 logging.error('Could not compute value for state {}: {}'.format(self.path, e))
         return None
+
+    def serialize(self):
+        return {
+            'id': self.id,
+            'path': self.path,
+            'parent': self.parent.id if self.parent is not None else None,
+            'name': self.name,
+            'type': self.type,
+            'quantity': self.quantity,
+            'unit': self.unit,
+            'label': self.label,
+            'description': self.description,
+            'config': self.config,
+            'value': self.value
+        }
 
     def __call__(self):
         return self.value

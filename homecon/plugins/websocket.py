@@ -53,7 +53,7 @@ class Websocket(Plugin):
                 self.clients[client.id] = client
 
             address = client.address
-            logging.debug('Incomming connection from {}'.format(address))
+            logger.debug('Incomming connection from {}'.format(address))
 
             try:
                 while True:
@@ -71,7 +71,7 @@ class Websocket(Plugin):
                                 Event.fire(data['event'], data['data'], source=self.__class__.__name__,
                                            reply_to='Websocket/{}'.format(client.id))
                     except Exception as e:
-                        logging.debug('A message was received but could not be handled, {}'.format(e))
+                        logger.debug('A message was received but could not be handled, {}'.format(e))
             finally:
                 with (yield from clients_lock):
                     del self.clients[client.id]
@@ -105,7 +105,7 @@ class Websocket(Plugin):
             if key in newdata:
                 newdata[key] = '***'
 
-        logging.debug('Client on {} sent {}'.format(address, newdata))
+        logger.debug('Client on {} sent {}'.format(address, newdata))
 
     def send(self, data, clients=None, readusers=None, readgroups=None):
         """
@@ -200,7 +200,7 @@ class Client(object):
         printmessage = message.__repr__()
         if len(printmessage) > 405:
             printmessage = printmessage[:200] + ' ... ' +printmessage[-200:]
-        logging.debug('send {} to {}'.format(printmessage, self))
+        logger.debug('send {} to {}'.format(printmessage, self))
 
         yield from self.websocket.send(json.dumps(message))
 

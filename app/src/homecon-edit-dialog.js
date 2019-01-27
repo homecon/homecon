@@ -13,20 +13,18 @@ import './homecon-pages-menu-group.js';
 class HomeconEditDialog extends PolymerElement {
   static get template() {
     return html`
-      <style include="shared-styles iron-flex iron-flex-alignment style-scrollbar">
+      <style include="shared-styles iron-flex iron-flex-alignment">
         :host{
         }
       </style>
 
-      <paper-dialog id="dialog" entry-animation="scale-up-animation" exit-animation="fade-out-animation" dynamic-align>
+      <paper-dialog id="dialog" dynamic-align>
         <paper-dialog-scrollable>
-          <form id="form" is="iron-form" on-iron-form-submit="save" action="/">
-            <content></content>
-            <div class="horizontal layout">
-              <paper-button raised on-tap="formSubmit">save</paper-button>
-              <paper-button raised on-tap="close">cancel</paper-button>
-            </div>
-          </form>
+          <slot></slot>
+          <div class="horizontal layout">
+            <paper-button raised on-tap="save">save</paper-button>
+            <paper-button raised on-tap="close">cancel</paper-button>
+          </div>
         </paper-dialog-scrollable>
       </paper-dialog>
     `;
@@ -51,6 +49,7 @@ class HomeconEditDialog extends PolymerElement {
 
   save() {
     this.dispatchEvent(new CustomEvent('save', this.data));
+    this.$.dialog.close();
   }
 
   center(){

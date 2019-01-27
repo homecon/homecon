@@ -423,7 +423,7 @@ class Pages(Plugin):
             # s3 = Section.add('shading', p2, config={'type': 'collapsible', 'title': 'Shading'})
             # Widget.add('w0', s3, 'shading')
 
-        logging.debug('Pages plugin initialized')
+        logger.debug('Pages plugin initialized')
 
     def get_menu(self):
         """
@@ -453,7 +453,7 @@ class Pages(Plugin):
     def listen_pages_group_ids(self, event):
         # FIXME check user authentication
         groups = [group.id for group in sorted([group for group in Group.all()], key=lambda x: x.order)
-                  if group.path != 'home']
+                  if group.path != '/home']
         event.reply('websocket_reply', {'event': 'pages_group_ids', 'data': {'id': '', 'value': groups}})
 
     def listen_pages_group(self, event):

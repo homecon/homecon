@@ -76,6 +76,16 @@ class DatabaseObject(object):
         else:
             return None
 
+    def get_row(self):
+        db, table = self.get_table()
+        entry = table(self.id)
+        return db, entry
+
+    def update(self, **kwargs):
+        db, entry = self.get_row()
+        entry.update_record(**kwargs)
+        db.close()
+
     @property
     def id(self):
         return self._id

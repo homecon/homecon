@@ -50,7 +50,6 @@ class HomeconWebSocketObject extends PolymerElement {
         value: 'id'
       },
       data: {
-        type: Object,
         notify: true,
         observer: '_dataChanged'
       },
@@ -90,7 +89,6 @@ class HomeconWebSocketObject extends PolymerElement {
   }
 
   _handleMessage(e){
-    console.log(this.event, this.key, this.keyKey, e)
     // check if the message matches the template
     if(e.detail['event']===this.event && (typeof this.key==='undefined'  || this.key==='' || e.detail['data'][this.keyKey]===this.key)){
       // avoid looping forever

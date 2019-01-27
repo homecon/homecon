@@ -30,11 +30,18 @@ class TestState(common.TestCase):
     def test_add(self):
         s = State.add('mystate')
         db, table = State.get_table()
-        self.assertEqual('mystate', db(db.states).select()[0]['path'])
+        self.assertEqual('mystate', db(db.states).select()[0]['name'])
         print(db._uri)
         self.assertTrue(db._uri.endswith('db_test/homecon.db'))
-        self.assertEqual('mystate', State.get(full_path='/mystate').path)
-        self.assertEqual('mystate', s.path)
+        self.assertEqual('mystate', State.get(path='/mystate').name)
+        self.assertEqual('/mystate', s.path)
+
+    def test_add_parent_id(self):
+        s0 = State.add('mystate')
+        kwargs = {'name': 'living', 'parent': 1, 'type': '', 'quantity': '', 'unit': '', 'label': '', 'description': '',
+                  'config': {}}
+        name =kwargs.pop('name')
+        s1 = State.add(name, **kwargs)
 
     def test_re_add(self):
         s0 = State.add('mystate')
@@ -46,23 +53,28 @@ class TestState(common.TestCase):
         s1b = State.add('parent2')
         s2a = State.add('substate1', parent=s1a)
         s2b = State.add('substate1', parent=s1b)
-        s = State.get(full_path='/parent2/substate1')
+        s = State.get(path='/parent2/substate1')
         self.assertEqual(s, s2b)
-        s = State.get(full_path='/parent1')
+        s = State.get(path='/parent1')
         self.assertEqual(s, s1a)
+
+    def test_update(self):
+        s = State.add('mystate')
+        s.update(name='test')
+        self.assertEqual(s.name, 'test')
 
     def test_parent(self):
         s1 = State.add('mystate')
         s2 = State.add('substate', parent=s1)
         s3 = State.add('substate2', parent='/mystate')
-        self.assertEqual('mystate', s2.parent.path)
-        self.assertEqual('mystate', s3.parent.path)
+        self.assertEqual('mystate', s2.parent.name)
+        self.assertEqual('mystate', s3.parent.name)
 
     def test_full_path(self):
         s1 = State.add('mystate')
         s2 = State.add('substate', parent=s1)
-        self.assertEqual('/mystate', s1.full_path)
-        self.assertEqual('/mystate/substate', s2.full_path)
+        self.assertEqual('/mystate', s1.path)
+        self.assertEqual('/mystate/substate', s2.path)
 
     def test_children(self):
         s1 = State.add('mystate')
@@ -87,8 +99,8 @@ class TestState(common.TestCase):
         State.add('mystate1')
         State.add('mystate2')
         states = State.all()
-        self.assertEqual(states[0].path, 'mystate1')
-        self.assertEqual(states[1].path, 'mystate2')
+        self.assertEqual(states[0].path, '/mystate1')
+        self.assertEqual(states[1].path, '/mystate2')
 
     def test_triggers(self):
         State.add('mystate', config={'someattr': True})
@@ -97,7 +109,7 @@ class TestState(common.TestCase):
             'triggers': '[state.path for state in State.all()'
                         ' if (`someattr` in state.config and state.config[`someattr`])]',
             'computed': '5*State.get(`mystate`).value + State.get(`myotherstate`).value'})
-        self.assertEqual(State.get('mycomputedstate').triggers, ['mystate', 'myotherstate'])
+        self.assertEqual(State.get('mycomputedstate').triggers, ['/mystate', '/myotherstate'])
         self.assertEqual(State.get('mystate').triggers, [])
         self.assertEqual(State.get('myotherstate').triggers, [])
 

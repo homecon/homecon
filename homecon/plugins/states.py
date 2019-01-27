@@ -4,6 +4,7 @@
 import logging
 import json
 
+from homecon.core.event import Event
 from homecon.core.plugin import Plugin
 from homecon.core.state import State
 from homecon.core.database import get_database
@@ -41,31 +42,27 @@ class States(Plugin):
 
     def initialize(self):
         # add settings states
-        State.add('settings')
-        State.add('location', parent='/settings')
-        State.add('latitude', parent='/settings/location',
-                  config={'type': 'number', 'quantity': 'angle',  'unit': 'deg',
-                          'label': 'Latitude',  'description': 'HomeCon latitude',
-                          'private': True}, value=51.05)
+        State.add('settings', type=None)
+        State.add('location', type=None, parent='/settings')
+        State.add('latitude',  parent='/settings/location',
+                  type='number', quantity='angle', unit='deg',
+                  label='Latitude', description='HomeCon latitude', value=51.05)
         State.add('longitude', parent='/settings/location',
-                  config={'type': 'number', 'quantity': 'angle',  'unit': 'deg',
-                          'label': 'Longitude', 'description': 'HomeCon longitude',
-                          'private': True}, value=5.5833)
+                  type='number', quantity='angle', unit='deg',
+                  label='Longitude', description='HomeCon longitude', value=5.58)
         State.add('elevation', parent='/settings/location',
-                  config={'type': 'number', 'quantity': 'height', 'unit': 'm',
-                          'label': 'Elevation', 'description': 'HomeCon elevation',
-                          'private': True}, value=74.0)
+                  type='number', quantity='height', unit='m',
+                  label='Elevation', description='HomeCon elevation', value=74.0)
         State.add('timezone', parent='/settings/location',
-                  config={'type': 'string', 'quantity': '',       'unit': '',
-                          'label': 'Time zone', 'description': 'HomeCon time zone',
-                          'private': True}, value='Europe/Brussels')
+                  type='string', quantity='', unit='',
+                  label='Time zone', description='HomeCon time zone', value='Europe/Brussels')
 
-        State.add('ground_floor')
-        State.add('kitchen', parent='/ground_floor')
-        State.add('lights', parent='/ground_floor/kitchen')
+        State.add('ground_floor', type=None)
+        State.add('kitchen', parent='/ground_floor', type=None)
+        State.add('lights', parent='/ground_floor/kitchen', type=None)
         State.add('light', parent='/ground_floor/kitchen/lights',
-                  config={'type': 'boolean', 'quantity': '', 'unit': '',
-                          'label': 'Kitchen light', 'description': ''})
+                  type='boolean', quantity='', unit='',
+                  label='Kitchen light', description='')
         logger.debug('States plugin Initialized')
 
     def parse_triggers(self):
@@ -162,6 +159,46 @@ class States(Plugin):
             state = State.get(path=event.data['path'])
             if state is not None:
                 state.value = event.data['value']
+
+    def listen_state_children(self, event):
+        if 'id' in event.data:
+            if event.data['id'] is None or int(event.data['id']) == 0:
+                states = [s.serialize() for s in State.all() if s.parent is None]
+            else:
+                parent = State.get(id=int(event.data['id']))
+                if parent is not None:
+                    states = [s.serialize() for s in parent.children]
+                else:
+                    raise Exception('parent does not exist')
+            event.reply('websocket_reply', {'event': 'state_children',
+                                            'data': {'id': event.data['id'],
+                                                     'value': states}})
+
+    def listen_state_list(self, event):
+            states = [s.serialize() for s in State.all()]
+            event.reply('websocket_reply', {'event': 'state_list',
+                                            'data': {'value': states}})
+
+    def listen_state_add(self, event):
+        kwargs = dict(event.data)
+        name = kwargs.pop('name')
+        State.add(name, **kwargs)
+        states = [s.serialize() for s in State.all()]
+        Event.fire('websocket_send', {'event': 'state_list', 'data': {'value': states}})
+
+    def listen_state_update(self, event):
+        if 'id' in event.data:
+            kwargs = dict(event.data)
+            id = kwargs.pop('id')
+            state = State.get(id=id)
+            if state is not None:
+                state.update(**kwargs)
+                states = [s.serialize() for s in State.all()]
+                Event.fire('websocket_send', {'event': 'state_list', 'data': {'value': states}})
+            else:
+                logger.error('cannot update state, unknown id: {}'.format(id))
+        else:
+            logger.error('cannot update state, no id supplied')
 
     #
     # def listen_state(self, event):
