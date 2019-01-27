@@ -170,13 +170,32 @@ class Websocket(Plugin):
     def listen_websocket_reply(self, event):
         self.send(event.data)
 
-    def listen_state_changed(self, event):
+    def listen_state_value_changed(self, event):
         self.send({
             'event': 'state_value',
             'data': {
                 'path': event.data['state'].path,
                 'id': event.data['state'].id,
                 'value': event.data['state'].value
+            }
+        })
+
+    def listen_state_list_changed(self, event):
+        self.send({
+            'event': 'state_list',
+            'data': {
+                'id': '',
+                'value': [s.serialize() for s in event.data['state_list']]
+            }
+        })
+
+    def listen_state_changed(self, event):
+        self.send({
+            'event': 'state',
+            'data': {
+                'path': event.data['state'].path,
+                'id': event.data['state'].id,
+                'value': event.data['state'].serialize()
             }
         })
 

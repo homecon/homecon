@@ -130,13 +130,11 @@ class States(Plugin):
     #             #core.websocket.send({'event':'state_config', 'path':state.path, 'value':state.config}, clients=[event.client])
     #             #core.websocket.send({'event':'list_states', 'path':'', 'value':self.list()}, clients=[event.client])
 
-    def listen_state_changed(self,event):
-        #core.event.fire('send',{'event':'state', 'path':event.data['state'].path, 'value':event.data['state'].value, 'readusers':event.data['state'].config['readusers'], 'readgroups':event.data['state'].config['readgroups']},source=self)
-        # core.websocket.send({'event':'state', 'path':event.data['state'].path, 'value':event.data['state'].value}, readusers=event.data['state'].config['readusers'], readgroups=event.data['state'].config['readgroups'])
-        #
-        # if event.data['state'].path == 'settings/location/timezone':
-        #     util.time.set_timezone(event.data['value'])
-        pass
+    def listen_state(self, event):
+        if 'id' in event.data:
+            state = State.get(id=event.data['id'])
+            event.reply('websocket_reply', {'event': 'state', 'data': {'id': event.data['id'],
+                                                                       'value': state.serialize()}})
 
     def listen_state_value(self, event):
         if 'id' in event.data and 'value' not in event.data:
@@ -160,45 +158,47 @@ class States(Plugin):
             if state is not None:
                 state.value = event.data['value']
 
-    def listen_state_children(self, event):
-        if 'id' in event.data:
-            if event.data['id'] is None or int(event.data['id']) == 0:
-                states = [s.serialize() for s in State.all() if s.parent is None]
-            else:
-                parent = State.get(id=int(event.data['id']))
-                if parent is not None:
-                    states = [s.serialize() for s in parent.children]
-                else:
-                    raise Exception('parent does not exist')
-            event.reply('websocket_reply', {'event': 'state_children',
-                                            'data': {'id': event.data['id'],
-                                                     'value': states}})
+    # def listen_state_children(self, event):
+    #     if 'id' in event.data:
+    #         if event.data['id'] is None or int(event.data['id']) == 0:
+    #             states = [s.serialize() for s in State.all() if s.parent is None]
+    #         else:
+    #             parent = State.get(id=int(event.data['id']))
+    #             if parent is not None:
+    #                 states = [s.serialize() for s in parent.children]
+    #             else:
+    #                 raise Exception('parent does not exist')
+    #         event.reply('websocket_reply', {'event': 'state_children',
+    #                                         'data': {'id': event.data['id'],
+    #                                                  'value': states}})
 
-    def listen_state_list(self, event):
-            states = [s.serialize() for s in State.all()]
-            event.reply('websocket_reply', {'event': 'state_list',
-                                            'data': {'value': states}})
+    def listen_state_list(self, event: Event):
+        print(event.type, event.source, event.target)
+        states = [s.serialize() for s in State.all()]
+        event.reply('websocket_reply', {'event': 'state_list', 'data': {'id': '',
+                                                                        'value': states}})
 
     def listen_state_add(self, event):
         kwargs = dict(event.data)
         name = kwargs.pop('name')
         State.add(name, **kwargs)
-        states = [s.serialize() for s in State.all()]
-        Event.fire('websocket_send', {'event': 'state_list', 'data': {'value': states}})
+        Event.fire('state_list_changed', data={'state_list': State.all()})
 
     def listen_state_update(self, event):
+        state = None
         if 'id' in event.data:
             kwargs = dict(event.data)
             id = kwargs.pop('id')
             state = State.get(id=id)
-            if state is not None:
-                state.update(**kwargs)
-                states = [s.serialize() for s in State.all()]
-                Event.fire('websocket_send', {'event': 'state_list', 'data': {'value': states}})
-            else:
-                logger.error('cannot update state, unknown id: {}'.format(id))
         else:
             logger.error('cannot update state, no id supplied')
+
+        if state is not None:
+            state.update(**kwargs)
+            Event.fire('state_changed', {'id': state.id, 'path': state.path, 'state': state})
+        else:
+            logger.error('cannot update state, state not found')
+
 
     #
     # def listen_state(self, event):

@@ -52,9 +52,16 @@ class DatabaseObject(object):
     @classmethod
     def all(cls):
         db, table = cls.get_table()
-        states = [cls(**db_entry.as_dict()) for db_entry in db(table).select()]
+        entries = [cls(**db_entry.as_dict()) for db_entry in db(table).select()]
         db.close()
-        return states
+        return entries
+
+    @classmethod
+    def all_ids(cls):
+        db, table = cls.get_table()
+        ids = [db_entry.id for db_entry in db(table).select()]
+        db.close()
+        return ids
 
     @classmethod
     def get(cls, id):

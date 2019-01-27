@@ -87,6 +87,67 @@ class HomeconStatesList extends PolymerElement {
 
 window.customElements.define('homecon-states-list', HomeconStatesList);
 
+
+class HomeconStateListState extends PolymerElement {
+  static get template() {
+    return html`
+      <style include="shared-styles iron-flex iron-flex-alignment">
+        :host{
+          display: block;
+        }
+        div.state{
+          font-weight: 500;
+          margin-top: 10px;
+        }
+        div.state:hover .controls{
+          display: inline;
+        }
+        .controls {
+          display: none;
+          margin-left: 16px;
+        }
+        .controls paper-icon-button{
+          padding: 0px;
+          height: 22px;
+          width: 22px;
+          margin-left: 10px;
+        }
+      </style>
+
+      <homecon-web-socket-object event="state" key="{{key}}" data="{{state}}" auto>
+      </homecon-web-socket-object>
+
+      <div class="state">
+        <span>{{state.path}}</span>
+        <span class="controls">
+          <paper-icon-button icon="editor:mode-edit" noink="true" on-tap="openEditDialog"></paper-icon-button>
+          <paper-icon-button icon="icons:add" noink="true" on-tap="openAddDialog"></paper-icon-button>
+        </paper-icon-button></span>
+      </div>
+    `;
+  }
+
+  static get properties() {
+    return {
+      key: {
+        type: Number,
+      },
+    };
+  }
+
+  openEditDialog(e){
+    this.dispatchEvent(new CustomEvent('open-edit-dialog', {'detail': {'state': this.state}}));
+  }
+
+  openAddDialog(e){
+    this.dispatchEvent(new CustomEvent('open-add-dialog', {'detail': {'parent': this.key}}));
+  }
+
+}
+
+window.customElements.define('homecon-states-list-state', HomeconStateListState);
+
+
 class ViewStates extends PolymerElement {
   static get template() {
     return html`
@@ -123,13 +184,17 @@ class ViewStates extends PolymerElement {
         <div id="content" class="raised">
 
           <template is="dom-repeat" items="{{states}}" as="state" sort="_sort">
-            <div class="state">
+            <homecon-states-list-state key="{{state.id}}" on-open-edit-dialog="openEditDialog" on-open-add-dialog="openAddDialog">
+            </homecon-states-list-state>
+
+            <!--<div class="state">
               <span>{{state.path}}</span>
               <span class="controls">
                 <paper-icon-button icon="editor:mode-edit" noink="true" on-tap="openEditDialog"></paper-icon-button>
                 <paper-icon-button icon="icons:add" noink="true" on-tap="openAddDialog"></paper-icon-button>
               </paper-icon-button></span>
-            </div>
+
+            </div>-->
           </template>
 
         </div>
@@ -143,13 +208,13 @@ class ViewStates extends PolymerElement {
   }
 
   openEditDialog(e){
-    this.$.editState.oldState = e.model.__data.state;
+    this.$.editState.oldState = e.detail.state;
     this.$.editStateDialog.open();
   }
 
   openAddDialog(e){
     this.$.editState.oldState = null;
-    this.$.editState.newParent = e.model.__data.state.id
+    this.$.editState.newParent = e.detail.parent
     this.$.editStateDialog.open();
   }
 
