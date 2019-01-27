@@ -170,6 +170,9 @@ class Websocket(Plugin):
     def listen_websocket_reply(self, event):
         self.send(event.data)
 
+    def listen_reply(self, event):
+        self.send(event.data)
+
     def listen_state_value_changed(self, event):
         self.send({
             'event': 'state_value',

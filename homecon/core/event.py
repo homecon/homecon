@@ -39,8 +39,10 @@ class Event(object):
         event = cls(*args, **kwargs)
         queue.put(event)
 
-    def reply(self, *args, **kwargs):
-        Event.fire(*args, target=self.reply_to, **kwargs)
+    def reply(self, data, **kwargs):
+        # Event.fire(*args, target=self.reply_to, **kwargs)
+        full_data = {'event': self.type, 'data': data}
+        Event.fire('reply', full_data, target=self.reply_to, **kwargs)
 
     def __repr__(self):
         newdata = dict(self.data)

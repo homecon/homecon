@@ -133,20 +133,17 @@ class States(Plugin):
     def listen_state(self, event):
         if 'id' in event.data:
             state = State.get(id=event.data['id'])
-            event.reply('websocket_reply', {'event': 'state', 'data': {'id': event.data['id'],
-                                                                       'value': state.serialize()}})
+            event.reply({'id': event.data['id'], 'value': state.serialize()})
 
     def listen_state_value(self, event):
         if 'id' in event.data and 'value' not in event.data:
             state = State.get(id=event.data['id'])
             if state is not None:
-                event.reply('websocket_reply', {'event': 'state_value', 'data': {'id': event.data['id'],
-                                                                                  'value': state.value}})
+                event.reply({'id': event.data['id'], 'value': state.value})
         elif 'path' in event.data and 'value' not in event.data:
             state = State.get(path=event.data['path'])
             if state is not None:
-                event.reply('websocket_reply', {'event': 'state_value',
-                                                'data': {'path': event.data['path'], 'value': state.value}})
+                event.reply({'path': event.data['path'], 'value': state.value})
 
         elif 'id' in event.data and 'value' in event.data:
             state = State.get(id=event.data['id'])
@@ -175,8 +172,7 @@ class States(Plugin):
     def listen_state_list(self, event: Event):
         print(event.type, event.source, event.target)
         states = [s.serialize() for s in State.all()]
-        event.reply('websocket_reply', {'event': 'state_list', 'data': {'id': '',
-                                                                        'value': states}})
+        event.reply({'id': '', 'value': states})
 
     def listen_state_add(self, event):
         kwargs = dict(event.data)

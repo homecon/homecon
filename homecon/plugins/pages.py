@@ -454,32 +454,31 @@ class Pages(Plugin):
         # FIXME check user authentication
         groups = [group.id for group in sorted([group for group in Group.all()], key=lambda x: x.order)
                   if group.path != '/home']
-        event.reply('websocket_reply', {'event': 'pages_group_ids', 'data': {'id': '', 'value': groups}})
+        # event.reply('websocket_reply', {'event': 'pages_group_ids', 'data': {'id': '', 'value': groups}})
+        event.reply({'id': '', 'value': groups})
 
     def listen_pages_group(self, event):
         if 'id' in event.data and 'value' not in event.data:
             group = Group.get(id=event.data['id']).serialize()
-            event.reply('websocket_reply', {'event': 'pages_group', 'data': {'id': event.data['id'], 'value': group}})
+            event.reply({'id': event.data['id'], 'value': group})
 
     def listen_pages_page(self, event):
         if 'id' in event.data and 'value' not in event.data:
             page = Page.get(id=event.data['id']).serialize()
-            event.reply('websocket_reply', {'event': 'pages_page', 'data': {'id': event.data['id'], 'value': page}})
+            event.reply({'id': event.data['id'], 'value': page})
         elif 'path' in event.data and 'value' not in event.data:
             page = Page.get(path=event.data['path']).serialize()
-            event.reply('websocket_reply', {'event': 'pages_page',
-                                            'data': {'path': event.data['path'], 'value': page}})
+            event.reply({'path': event.data['path'], 'value': page})
 
     def listen_pages_section(self, event):
         if 'id' in event.data and 'value' not in event.data:
             section = Section.get(id=event.data['id']).serialize()
-            event.reply('websocket_reply', {'event': 'pages_section', 'data': {'id': event.data['id'],
-                                                                               'value': section}})
+            event.reply({'id': event.data['id'], 'value': section})
 
     def listen_pages_widget(self, event):
         if 'id' in event.data and 'value' not in event.data:
             widget = Widget.get(id=event.data['id']).serialize()
-            event.reply('websocket_reply', {'event': 'pages_widget', 'data': {'id': event.data['id'], 'value': widget}})
+            event.reply({'id': event.data['id'], 'value': widget})
     #
     # def listen_pages_paths(self, event):
     #
