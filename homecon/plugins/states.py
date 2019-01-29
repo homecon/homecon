@@ -195,6 +195,13 @@ class States(Plugin):
         else:
             logger.error('cannot update state, state not found')
 
+    def listen_state_delete(self, event):
+        if 'id' in event.data:
+            kwargs = dict(event.data)
+            id = kwargs.pop('id')
+            state = State.get(id=id)
+            state.delete()
+            Event.fire('state_list_changed', data={'state_list': State.all()})
 
     #
     # def listen_state(self, event):

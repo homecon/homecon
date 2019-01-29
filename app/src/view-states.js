@@ -122,6 +122,7 @@ class HomeconStateListState extends PolymerElement {
         <span class="controls">
           <paper-icon-button icon="editor:mode-edit" noink="true" on-tap="openEditDialog"></paper-icon-button>
           <paper-icon-button icon="icons:add" noink="true" on-tap="openAddDialog"></paper-icon-button>
+          <paper-icon-button icon="icons:delete" noink="true" on-tap="openDeleteDialog"></paper-icon-button>
         </paper-icon-button></span>
       </div>
     `;
@@ -141,6 +142,10 @@ class HomeconStateListState extends PolymerElement {
 
   openAddDialog(e){
     this.dispatchEvent(new CustomEvent('open-add-dialog', {'detail': {'parent': this.key}}));
+  }
+
+  openDeleteDialog(e){
+    this.dispatchEvent(new CustomEvent('open-delete-dialog', {'detail': {'parent': this.state}}));
   }
 
 }
@@ -184,24 +189,23 @@ class ViewStates extends PolymerElement {
         <div id="content" class="raised">
 
           <template is="dom-repeat" items="{{states}}" as="state" sort="_sort">
-            <homecon-states-list-state key="{{state.id}}" on-open-edit-dialog="openEditDialog" on-open-add-dialog="openAddDialog">
+            <homecon-states-list-state key="{{state.id}}" on-open-edit-dialog="openEditDialog" on-open-add-dialog="openAddDialog" on-open-delete-dialog="openDeleteDialog">
             </homecon-states-list-state>
-
-            <!--<div class="state">
-              <span>{{state.path}}</span>
-              <span class="controls">
-                <paper-icon-button icon="editor:mode-edit" noink="true" on-tap="openEditDialog"></paper-icon-button>
-                <paper-icon-button icon="icons:add" noink="true" on-tap="openAddDialog"></paper-icon-button>
-              </paper-icon-button></span>
-
-            </div>-->
           </template>
 
         </div>
 
-        <homecon-edit-dialog id="editStateDialog" on-save="_saveState" on-cancel="closeEditDialog">
+        <homecon-edit-dialog id="editStateDialog" on-save="_saveState">
           <homecon-state-edit id="editState"></homecon-state-edit>
         </homecon-edit-dialog>
+
+        <homecon-dialog id="deleteStateDialog" on-save="_deleteState">
+          <div>Delete state {{deleteState.path}}</div>
+          <div slot="buttons">
+            <paper-button raised on-tap="_deleteState">delete</paper-button>
+            <paper-button raised on-tap="close">cancel</paper-button>
+          </div>
+        </homecon-dialog>
 
       </homecon-page>
     `;
@@ -218,13 +222,25 @@ class ViewStates extends PolymerElement {
     this.$.editStateDialog.open();
   }
 
+  openDeleteDialog(e){
+    this.deleteState = e.detail.parent
+    this.$.deleteStateDialog.open();
+  }
+
   _saveState(e){
-    this.$.editState.save()
+    this.$.editStateDialog.close();
+    this.$.editState.save();
+  }
+
+  _deleteState(e){
+    this.$.deleteStateDialog.close();
+    window.homeconWebSocket.send({'event': 'state_delete', 'data': this.deleteState})
   }
 
   _sort(a, b){
     return a-b
   }
+
 }
 
 window.customElements.define('view-states', ViewStates);

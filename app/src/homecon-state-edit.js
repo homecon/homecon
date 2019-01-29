@@ -18,7 +18,7 @@ class HomeconStateEdit extends PolymerElement {
         }
       </style>
 
-      <homecon-state-select label="Parent" value="{{newParent}}"></homecon-state-select>
+      <homecon-state-select id="stateSelect" label="Parent" value="{{newParent}}"></homecon-state-select>
       <paper-input label="Name" value="{{newName}}"></paper-input>
       <paper-input label="Type" value="{{newType}}"></paper-input>
       <paper-input label="Quantity" value="{{newQuantity}}"></paper-input>

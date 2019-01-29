@@ -2,14 +2,14 @@ import { PolymerElement, html } from '@polymer/polymer/polymer-element.js';
 
 import '@polymer/iron-flex-layout/iron-flex-layout-classes.js';
 import '@polymer/iron-form/iron-form.js';
-import '@polymer/paper-button/paper-button.js';
 import '@polymer/paper-dialog/paper-dialog.js';
 import '@polymer/paper-dialog-scrollable/paper-dialog-scrollable.js';
 
 import './shared-styles.js';
-import './homecon-dialog.js';
+import './homecon-web-socket-object.js';
+import './homecon-pages-menu-group.js';
 
-class HomeconEditDialog extends PolymerElement {
+class HomeconDialog extends PolymerElement {
   static get template() {
     return html`
       <style include="shared-styles iron-flex iron-flex-alignment">
@@ -17,13 +17,14 @@ class HomeconEditDialog extends PolymerElement {
         }
       </style>
 
-      <homecon-dialog id="dialog">
+      <paper-dialog id="dialog" dynamic-align>
+        <paper-dialog-scrollable>
           <slot></slot>
-          <div slot="buttons">
-            <paper-button raised on-tap="save">save</paper-button>
-            <paper-button raised on-tap="close">cancel</paper-button>
+          <div class="horizontal layout">
+            <slot name="buttons"></slot>
           </div>
-      </homecon-dialog>
+        </paper-dialog-scrollable>
+      </paper-dialog>
     `;
   }
 
@@ -37,16 +38,7 @@ class HomeconEditDialog extends PolymerElement {
   }
 
   close() {
-    this.$.dialog.close();
-  }
-
-  formSubmit() {
-    this.$.form.submit();
-  }
-
-  save() {
-    this.dispatchEvent(new CustomEvent('save', this.data));
-    this.$.dialog.close();
+     this.$.dialog.close();
   }
 
   center(){
@@ -55,4 +47,4 @@ class HomeconEditDialog extends PolymerElement {
 
 }
 
-window.customElements.define('homecon-edit-dialog', HomeconEditDialog);
+window.customElements.define('homecon-dialog', HomeconDialog);

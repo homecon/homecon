@@ -85,7 +85,7 @@ class State(DatabaseObject):
     def add(cls, name, parent=None, type=None, quantity=None, unit=None, label=None, description=None,
                  config=None, value=None):
         """
-        Add a state to the database
+        Add a state to the database.
         """
         # check if it already exists
         db, table = cls.get_table()
@@ -116,11 +116,20 @@ class State(DatabaseObject):
             db.close()
             # get the state FIXME error checking
             obj = cls.get(id=id)
-            logger.debug('added state')
+            logger.debug('added state {}'.format(obj))
             Event.fire('state_added', {'state': obj}, 'State')
         else:
             obj = cls(**entry.as_dict())
         return obj
+
+    def delete(self):
+        """
+        Delete a state from the database.
+        """
+        db, row = self.get_row()
+        row.delete_record()
+        db.close()
+        logger.debug('deleted state')
 
     @property
     def parent(self):

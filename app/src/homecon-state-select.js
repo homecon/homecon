@@ -18,7 +18,7 @@ class HomeconStateSelect extends PolymerElement {
       <homecon-web-socket-object event="state_list" key="" data="{{states}}" auto>
       </homecon-web-socket-object>
 
-      <paper-dropdown-menu label="{{label}}" no-animations>
+      <paper-dropdown-menu label="{{label}}" on-opened-changed="_getStates" no-animations>
         <paper-listbox slot="dropdown-content" selected="{{value}}">
         <paper-item key="0">/</paper-item>
           <template is="dom-repeat" items="{{states}}" as="state">
@@ -41,6 +41,7 @@ class HomeconStateSelect extends PolymerElement {
       },
     };
   }
+
 }
 
 window.customElements.define('homecon-state-select', HomeconStateSelect);
