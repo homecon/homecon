@@ -65,8 +65,8 @@ class States(Plugin):
                   label='Kitchen light', description='')
         logger.debug('States plugin Initialized')
 
-    def read_csv(self, file):
-        State.from_csv(file)
+    def from_json(self, string):
+        State.from_json(string)
 
     def parse_triggers(self):
         for path in State.all_paths():

@@ -29,7 +29,7 @@ class HomeconPagesPage extends PolymerElement {
       <homecon-web-socket-sender id="websocket">
       </homecon-web-socket-sender>
 
-      <homecon-web-socket-object event="pages_page" key-key="path" key="{{path}}" data="{{page}}" auto>
+      <homecon-web-socket-object event="pages_page" key-key="path" key="/{{path}}" data="{{page}}" auto>
       </homecon-web-socket-object>
 
       <homecon-page>

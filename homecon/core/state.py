@@ -83,21 +83,6 @@ class State(DatabaseObject):
             return None
 
     @classmethod
-    def from_csv(cls, file):
-        """
-        Reads a csv file and adds states from it.
-        The csv file must have headers name, parent, type, quantity, unit, label, description, config, value.
-        The config and/or value are json strings.
-        """
-        with open(file) as csvfile:
-            reader = csv.DictReader(csvfile, delimiter=',')
-            for row in reader:
-                name = row.pop('name')
-                config = json.loads(config.pop('config'))
-                value = json.loads(config.pop('value'))
-                cls.add(name, config=config, value=value, **row)
-
-    @classmethod
     def add(cls, name, parent=None, type=None, quantity=None, unit=None, label=None, description=None,
                  config=None, value=None):
         """
@@ -137,6 +122,16 @@ class State(DatabaseObject):
         else:
             obj = cls(**entry.as_dict())
         return obj
+
+    @classmethod
+    def from_json(cls, string):
+        """
+        Reads a json file and adds states from it.
+        """
+        states = json.loads(string)
+        for state in states:
+            name = state.pop('name')
+            cls.add(name, **state)
 
     def delete(self):
         """
@@ -282,8 +277,6 @@ class State(DatabaseObject):
     def __repr__(self):
         return '<State: {}, path: {}, value: {}>'.format(self.id, self.path, self._value)
 
-    def __eq__(self, other):
-        return self.__class__ == other.__class__ and self.id == other.id
 
 #
 #

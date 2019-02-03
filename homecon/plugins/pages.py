@@ -58,27 +58,14 @@ class Group(DatabaseObject):
         return obj
 
     @classmethod
-    def from_csv(cls, file):
-        """
-        Reads a csv file and adds groups from it.
-        The csv file must have headers name, config, order.
-        The config is a json string.
-        """
-        with open(file) as csvfile:
-            reader = csv.DictReader(csvfile, delimiter=',')
-            for row in reader:
-                name = row.pop('name')
-                config = json.loads(config.pop('config'))
-                cls.add(name, config=config, **row)
-
-    @classmethod
     def get(cls, path=None, id=None):
         db, table = cls.get_table()
         if id is not None:
             db_entry = table(id)
             db.close()
         elif path is not None:
-            db_entry = table(name=path)
+            parts = path.split('/')
+            db_entry = table(name=parts[-1])
             db.close()
         else:
             logger.error("id or path must be supplied")
@@ -177,21 +164,6 @@ class Page(DatabaseObject):
         else:
             obj = cls(**entry.as_dict())
         return obj
-
-    @classmethod
-    def from_csv(cls, file):
-        """
-        Reads a csv file and adds groups from it.
-        The csv file must have headers name, group, config, order.
-        The config is a json string.
-        """
-        with open(file) as csvfile:
-            reader = csv.DictReader(csvfile, delimiter=',')
-            for row in reader:
-                name = row.pop('name')
-                group = row.pop('group')
-                config = json.loads(config.pop('config'))
-                cls.add(name, group, config=config, **row)
 
     @classmethod
     def get(cls, path=None, id=None):
@@ -297,21 +269,6 @@ class Section(DatabaseObject):
             obj = cls(**entry.as_dict())
         return obj
 
-    @classmethod
-    def from_csv(cls, file):
-        """
-        Reads a csv file and adds groups from it.
-        The csv file must have headers name, page, config, order.
-        The config is a json string.
-        """
-        with open(file) as csvfile:
-            reader = csv.DictReader(csvfile, delimiter=',')
-            for row in reader:
-                name = row.pop('name')
-                page = row.pop('page')
-                config = json.loads(config.pop('config'))
-                cls.add(name, page, config=config, **row)
-
     @property
     def name(self):
         self._name = self.get_property('name')
@@ -401,21 +358,6 @@ class Widget(DatabaseObject):
             obj = cls(**entry.as_dict())
         return obj
 
-    @classmethod
-    def from_csv(cls, file):
-        """
-        Reads a csv file and adds groups from it.
-        The csv file must have headers name, section, config, order.
-        The config is a json string.
-        """
-        with open(file) as csvfile:
-            reader = csv.DictReader(csvfile, delimiter=',')
-            for row in reader:
-                name = row.pop('name')
-                section = row.pop('section')
-                config = json.loads(config.pop('config'))
-                cls.add(name, section, config=config, **row)
-
     @property
     def name(self):
         self._name = self.get_property('name')
@@ -495,11 +437,27 @@ class Pages(Plugin):
 
         logger.debug('Pages plugin initialized')
 
-    def read_csv(self, groups_file, pages_file, sections_file, widgets_file):
-        Group.from_csv(groups_file)
-        Page.from_csv(pages_file)
-        Section.from_csv(sections_file)
-        Widget.from_csv(widgets_file)
+    def from_json(self, string):
+        """
+        Reads a json file and adds states from it.
+        """
+        groups = json.loads(string)
+
+        for group in groups:
+            name = group.pop('name')
+            pages = group.pop('pages', [])
+            g = Group.add(name, **group)
+            for page in pages:
+                name = page.pop('name')
+                sections = page.pop('sections', [])
+                p = Page.add(name, g, **page)
+                for section in sections:
+                    name = section.pop('name', uuid4())
+                    widgets = section.pop('widgets', [])
+                    s = Section.add(name, p, **section)
+                    for widget in widgets:
+                        name = section.pop('name', uuid4())
+                        Widget.add(name, s, **widget)
 
     def get_menu(self):
         """
