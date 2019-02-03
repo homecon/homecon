@@ -4,6 +4,7 @@
 import logging
 import json
 import uuid
+import csv
 
 from uuid import uuid4
 
@@ -55,6 +56,20 @@ class Group(DatabaseObject):
         else:
             obj = cls(**entry.as_dict())
         return obj
+
+    @classmethod
+    def from_csv(cls, file):
+        """
+        Reads a csv file and adds groups from it.
+        The csv file must have headers name, config, order.
+        The config is a json string.
+        """
+        with open(file) as csvfile:
+            reader = csv.DictReader(csvfile, delimiter=',')
+            for row in reader:
+                name = row.pop('name')
+                config = json.loads(config.pop('config'))
+                cls.add(name, config=config, **row)
 
     @classmethod
     def get(cls, path=None, id=None):
@@ -141,6 +156,16 @@ class Page(DatabaseObject):
         """
         # check if it already exists
         db, table = cls.get_table()
+
+        if isinstance(group, str):
+            group = Group.get(path=group)
+        elif isinstance(group, int):
+            group = Group.get(id=group)
+        elif isinstance(group, Group):
+            pass
+        else:
+            raise Exception('invalid group specifier {}, provide a group, path or id'.format(group))
+
         entry = table(name=name, group=group.id)
         if entry is None:
             id = table.insert(name=name, group=group.id, config=json.dumps(config or '{}'), order=order)
@@ -152,6 +177,21 @@ class Page(DatabaseObject):
         else:
             obj = cls(**entry.as_dict())
         return obj
+
+    @classmethod
+    def from_csv(cls, file):
+        """
+        Reads a csv file and adds groups from it.
+        The csv file must have headers name, group, config, order.
+        The config is a json string.
+        """
+        with open(file) as csvfile:
+            reader = csv.DictReader(csvfile, delimiter=',')
+            for row in reader:
+                name = row.pop('name')
+                group = row.pop('group')
+                config = json.loads(config.pop('config'))
+                cls.add(name, group, config=config, **row)
 
     @classmethod
     def get(cls, path=None, id=None):
@@ -257,6 +297,21 @@ class Section(DatabaseObject):
             obj = cls(**entry.as_dict())
         return obj
 
+    @classmethod
+    def from_csv(cls, file):
+        """
+        Reads a csv file and adds groups from it.
+        The csv file must have headers name, page, config, order.
+        The config is a json string.
+        """
+        with open(file) as csvfile:
+            reader = csv.DictReader(csvfile, delimiter=',')
+            for row in reader:
+                name = row.pop('name')
+                page = row.pop('page')
+                config = json.loads(config.pop('config'))
+                cls.add(name, page, config=config, **row)
+
     @property
     def name(self):
         self._name = self.get_property('name')
@@ -346,6 +401,21 @@ class Widget(DatabaseObject):
             obj = cls(**entry.as_dict())
         return obj
 
+    @classmethod
+    def from_csv(cls, file):
+        """
+        Reads a csv file and adds groups from it.
+        The csv file must have headers name, section, config, order.
+        The config is a json string.
+        """
+        with open(file) as csvfile:
+            reader = csv.DictReader(csvfile, delimiter=',')
+            for row in reader:
+                name = row.pop('name')
+                section = row.pop('section')
+                config = json.loads(config.pop('config'))
+                cls.add(name, section, config=config, **row)
+
     @property
     def name(self):
         self._name = self.get_property('name')
@@ -424,6 +494,12 @@ class Pages(Plugin):
             # Widget.add('w0', s3, 'shading')
 
         logger.debug('Pages plugin initialized')
+
+    def read_csv(self, groups_file, pages_file, sections_file, widgets_file):
+        Group.from_csv(groups_file)
+        Page.from_csv(pages_file)
+        Section.from_csv(sections_file)
+        Widget.from_csv(widgets_file)
 
     def get_menu(self):
         """

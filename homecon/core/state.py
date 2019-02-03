@@ -9,6 +9,7 @@ import math
 import numpy as np
 import threading
 from scipy.interpolate import interp1d
+import csv
 
 from homecon.core.database import get_database, get_measurements_database, Field, DatabaseObject
 from homecon.core.event import Event
@@ -80,6 +81,21 @@ class State(DatabaseObject):
             return cls(**entry.as_dict())
         else:
             return None
+
+    @classmethod
+    def from_csv(cls, file):
+        """
+        Reads a csv file and adds states from it.
+        The csv file must have headers name, parent, type, quantity, unit, label, description, config, value.
+        The config and/or value are json strings.
+        """
+        with open(file) as csvfile:
+            reader = csv.DictReader(csvfile, delimiter=',')
+            for row in reader:
+                name = row.pop('name')
+                config = json.loads(config.pop('config'))
+                value = json.loads(config.pop('value'))
+                cls.add(name, config=config, value=value, **row)
 
     @classmethod
     def add(cls, name, parent=None, type=None, quantity=None, unit=None, label=None, description=None,
