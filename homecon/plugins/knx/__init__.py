@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 import logging
+import time
 
 from knxpy.knxd import KNXD
 from knxpy.util import encode_dpt, decode_dpt, default_callback
@@ -48,7 +49,9 @@ class Knx(Plugin):
         self.connection.connect()
         self.connection.listen(self.callback)
 
+        time.sleep(1)
         for key in self.ga_read_mapping.keys():
+            logger.debug('reading {}'.format(key))
             self.connection.group_read(key)
 
     def callback(self, data):
