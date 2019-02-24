@@ -168,7 +168,7 @@ class HomeconApp extends PolymerElement {
       <app-header fixed shadow class$="[[loginClass]]">
         <app-toolbar>
           <paper-icon-button class="drawer-toggle" icon="icons:menu" on-tap="_toggleDrawer"></paper-icon-button>
-          <div class="title"><a class="horizontal layout center home" href="/pages/home/home"><img src="/images/manifest/128.png">Homecon</a></div>
+          <div class="title"><a class="horizontal layout center home" href="/pages/home/home"><img src="/images/manifest/icon-144x144.png">Homecon</a></div>
           <div class="flex"></div>
           <paper-icon-button class="menu-toggle" icon="icons:more-vert" on-tap="_toggleMenu"></paper-icon-button>
         </app-toolbar>
