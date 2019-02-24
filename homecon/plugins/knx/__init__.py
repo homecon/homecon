@@ -20,7 +20,7 @@ class Knx(Plugin):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.state_cache = {}
+        self.ga_read_mapping = {}
         self.connection = None
 
     def initialize(self):
@@ -33,10 +33,10 @@ class Knx(Plugin):
                   type='number', quantity='', unit='',
                   label='', description='knxd port', value=6720)
 
-        # build the state_cache
+        # build the ga_read_mapping
         for state in State.all():
             if 'knx_ga_read' in state.config:
-                self.state_cache[state.config['knx_ga_read']] = state
+                self.ga_read_mapping[state.config['knx_ga_read']] = state.id
 
         self.connect()
         logger.debug('KNX plugin Initialized')
@@ -48,7 +48,7 @@ class Knx(Plugin):
         self.connection.connect()
         self.connection.listen(self.callback)
 
-        for key in self.state_cache.keys():
+        for key in self.ga_read_mapping.keys():
             self.connection.group_read(key)
 
     def callback(self, data):
@@ -57,8 +57,9 @@ class Knx(Plugin):
             logger.debug('received message {}'.format(message))
             try:
                 # find a state with the dst address
-                state = self.state_cache.get(message.dst)
-                if state is not None:
+                state_id = self.ga_read_mapping.get(message.dst)
+                if state_id is not None:
+                    state = State.get(id=state_id)
                     logger.debug('found state {} corresponding to message {}'.format(state, message))
                     dpt = state.config.get('knx_dpt', self.DEFAULT_DPT)
                     state.set_value(decode_dpt(message.val, dpt), source=self.name)
@@ -83,7 +84,7 @@ class Knx(Plugin):
     def listen_state_added(self, event):
         state = event.data['state']
         if 'knx_ga_read' in state.config:
-            self.state_cache[state.config['knx_ga_read']] = state
+            self.ga_read_mapping[state.config['knx_ga_read']] = state.id
 
     def get_states_ga_write(self, ga=None):
         """

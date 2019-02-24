@@ -286,7 +286,7 @@ class State(DatabaseObject):
         return self.value
 
     def __repr__(self):
-        return '<State: {}, path: {}, value: {}>'.format(self.id, self.path, self._value)
+        return '<State: {}, name: {}, value: {}>'.format(self.id, self.name, self._value)
 
 
 #
