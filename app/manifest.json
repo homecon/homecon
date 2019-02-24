@@ -1,7 +1,7 @@
 {
-  "name": "My App",
-  "short_name": "My App",
-  "description": "My App description",
+  "name": "HomeCon",
+  "short_name": "HomeCon",
+  "description": "Control your home",
   "icons": [
     {
       "src": "images/manifest/icon-192x192.png",
