@@ -62,7 +62,8 @@ class States(Plugin):
         State.add('lights', parent='/ground_floor/kitchen', type=None)
         State.add('light', parent='/ground_floor/kitchen/lights',
                   type='boolean', quantity='', unit='',
-                  label='Kitchen light', description='')
+                  label='Kitchen light', description='',
+                  config={'knx_ga_read': '1/1/31', 'knx_ga_write': '1/1/31', 'knx_dpt': '1'})
         logger.debug('States plugin Initialized')
 
     def from_json(self, string):

@@ -1,91 +1,89 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-
 import logging
-import asyncio
-import knxpy
 
-from ... import core
+from knxpy.knxd import KNXD
+from knxpy.util import encode_dpt, decode_dpt, default_callback
+
+from homecon.core.plugin import Plugin
+from homecon.core.state import State
+
+logger = logging.getLogger(__name__)
 
 
-class Knx(core.plugin.Plugin):
+class Knx(Plugin):
     """
-    Communicate with an EIB-KNX home automation system through an ethernet interface with knxd
+    Communicate with an EIB-KNX home automation system through knxd
 
     """
+    DEFAULT_DPT = '1'
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.state_cache = {}
+        self.connection = None
 
     def initialize(self):
-        core.states.add(
-            'knx/settings/interface/ip', value='192.168.1.1',
-            config={'type': 'string', 'quantity': '', 'unit': '', 'label': '', 'description': '', 'private': True})
-        core.states.add(
-            'knx/settings/interface/port', value='3671',
-            config={'type': 'string', 'quantity': '', 'unit': '', 'label': '', 'description': '', 'private': True})
+        State.add('settings', type=None)
+        State.add('knxd', type=None, parent='/settings')
+        State.add('address', parent='/settings/knxd',
+                  type='string', quantity='', unit='',
+                  label='', description='knxd address', value='localhost')
+        State.add('port', parent='/settings/knxd',
+                  type='number', quantity='', unit='',
+                  label='', description='knxd port', value=6720)
 
-        self.connection = None
-        self.connected = False
+        # build the state_cache
+        for state in State.all():
+            if 'knx_ga_read' in state.config:
+                self.state_cache[state.config['knx_ga_read']] = state
 
-        # connect
         self.connect()
-        #
-        # self._loop.create_task(self.schedule_check_connection())
-
-        logging.debug('KNX plugin Initialized')
-    
-    # async def schedule_check_connection(self):
-    #     while self.active:
-    #         reconnect = True
-    #         try:
-    #             if not self.tunnel is None:
-    #
-    #                 print( dir(self.tunnel.data_server) )
-    #                 #self.tunnel.data_server.close()
-    #
-    #                 #reconnect = False
-    #         except Exception as e:
-    #             logging.error(e)
-    #
-    #         if reconnect:
-    #             await self._connect()
-    #
-    #         # sleep until the next call
-    #         await asyncio.sleep(5*60)
+        logger.debug('KNX plugin Initialized')
 
     def connect(self):
-        self._loop.create_task(self._connect())
+        if self.connection is not None:
+            self.connection.close()
+        self.connection = KNXD(State.get('/settings/knxd/address').value, int(State.get('/settings/knxd/port').value))
+        self.connection.connect()
+        self.connection.listen(self.callback)
 
-    async def _connect(self):
+        for key in self.state_cache.keys():
+            self.connection.group_read(key)
 
-        def callback(data):
-            message = knxpy.asyncknxd.default_callback(data)
-            states = self.get_states_ga_read(ga=knxpy.util.decode_ga(message.dst))
-            for state in states:
-                knx_dpt = None
-                if 'knx_dpt' in state.config:
-                    try:
-                        knx_dpt = state.config['knx_dpt']
-                        data = knxpy.util.decode_dpt(message.val, str(knx_dpt))
-
-                        state.set(data, source=self)
-                    except Exception as e:
-                        logging.error('Could not parse knx message for state {}: {}'.format(state.path, e))
-
-        self.connected = False
-        self.connection = None
-
-        if not core.states['knx/settings/interface/ip'].value is None and not core.states['knx/settings/interface/port'].value is None:
-            ip = core.states['knx/settings/interface/ip'].value
-            port = int(core.states['knx/settings/interface/port'].value)
+    def callback(self, data):
+        message = default_callback(data)
+        if message is not None:
+            logger.debug('received message {}'.format(message))
             try:
-                self.connection = knxpy.asyncknxd.KNXD(ip='localhost', port=6720, callback=callback)
-                await self.connection.connect()
-
-                self.connected = True
-                logging.debug('Connected to a KNX interface at {}'.format(ip))
-
-                # FIXME request all knx state values
+                # find a state with the dst address
+                state = self.state_cache.get(message.dst)
+                if state is not None:
+                    logger.debug('found state {} corresponding to message {}'.format(state, message))
+                    dpt = state.config.get('knx_dpt', self.DEFAULT_DPT)
+                    state.set_value(decode_dpt(message.val, dpt), source=self.name)
+                else:
+                    logger.debug('no state corresponding to ga {}'.format(message.dst))
             except:
-                logging.error('Could not connect with the KNX ip interface on {}:{}'.format(ip,port))
+                logger.exception('error while parsing message {}'.format(message))
+
+    def listen_state_value_changed(self, event):
+        state = event.data['state']
+        if state.path == 'settings/knxd/address' or state.path == 'settings/knxd/port':
+            self.connect()
+
+        elif 'knx_ga_write' in state.config and 'knx_dpt' in state.config:
+            if not event.source == self.name:
+                logger.debug('{} changed, writing {} to knx group address: {}'
+                             .format(state, state.value, state.config['knx_ga_write']))
+                self.connection.group_write(
+                    str(state.config['knx_ga_write']), state.value, str(state.config['knx_dpt'])
+                )
+
+    def listen_state_added(self, event):
+        state = event.data['state']
+        if 'knx_ga_read' in state.config:
+            self.state_cache[state.config['knx_ga_read']] = state
 
     def get_states_ga_write(self, ga=None):
         """
@@ -138,16 +136,3 @@ class Knx(core.plugin.Plugin):
                     states.append(state)
 
         return states
-
-    def listen_state_changed(self, event):
-        state = event.data['state']
-
-        if state.path == 'knx/settings/interface/ip' or state.path == 'knx/settings/interface/port':
-            self.connect()
-
-        elif self.connected and 'knx_ga_write' in state.config and 'knx_dpt' in state.config:
-            if not event.source == self:
-                self.connection.group_write(
-                    str(state.config['knx_ga_write']), state.value, str(state.config['knx_dpt'])
-                )
-                logging.debug('{} changed, written {} to knx group address: {}'.format(state.path, state.value, state.config['knx_ga_write']))

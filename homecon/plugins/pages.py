@@ -430,7 +430,7 @@ class Pages(Plugin):
             Widget.add('w3', s1, 'weather-block', config={'daily': True, 'timeoffset': 72})
 
             s2 = Section.add('lights', p2, config={'type': 'raised', 'title': 'Lights'})
-            Widget.add('w0', s2, 'switch', config={'icon': 'light_light', 'state': 5})
+            Widget.add('w0', s2, 'switch', config={'icon': 'light_light', 'state': 14})
 
             # s3 = Section.add('shading', p2, config={'type': 'collapsible', 'title': 'Shading'})
             # Widget.add('w0', s3, 'shading')

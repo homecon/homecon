@@ -9,6 +9,7 @@ from homecon.core.plugin import Plugin
 from homecon.plugins.states import States
 from homecon.plugins.websocket import Websocket
 from homecon.plugins.pages import Pages
+from homecon.plugins.knx import Knx
 
 logger = logging.getLogger(__name__)
 
@@ -39,7 +40,8 @@ class Plugins(Plugin):
             'plugins': self,
             'states': States(),
             'websocket': Websocket(),
-            'pages': Pages()
+            'pages': Pages(),
+            'knx': Knx()
         }
         self._active_plugins = {}
 
@@ -185,7 +187,6 @@ class Plugins(Plugin):
         if self.install(event.data['url']):
             core.websocket.send({'event':'list_optionalplugins', 'path':'', 'value':self.get_optionalplugins_list()}, clients=[event.client])
             core.websocket.send({'event':'list_activeplugins', 'path':'', 'value':self.get_optionalplugins_list()}, clients=[event.client])
-
 
     def __getitem__(self,path):
         return None

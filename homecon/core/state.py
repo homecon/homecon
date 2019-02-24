@@ -207,6 +207,14 @@ class State(DatabaseObject):
         self._config = json.loads(self.get_property('config'))
         return self._config
 
+    @config.setter
+    def config(self, config):
+        db, table = self.get_table()
+        entry = table(id=self.id)
+        entry.update_record(config=json.dumps(config))
+        db.close()
+        self._config = config
+
     @property
     def value(self):
         self._value = json.loads(self.get_property('value'))
@@ -214,13 +222,16 @@ class State(DatabaseObject):
 
     @value.setter
     def value(self, value):
-        if not self._value == value:
+        self.set_value(value)
+
+    def set_value(self, value, source='State'):
+        if not self.value == value:
             db, table = self.get_table()
             entry = table(id=self.id)
             entry.update_record(value=json.dumps(value))
             db.close()
             self._value = value
-            Event.fire('state_value_changed', {'state': self}, source='State')
+            Event.fire('state_value_changed', {'state': self}, source=source)
 
     @property
     def triggers(self):

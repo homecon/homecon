@@ -90,7 +90,7 @@ class Plugin(Process):
         self._get_listeners()
         while self._running:
             try:
-                event = self._queue.get(timeout=0.1)
+                event = self._queue.get(timeout=0.01)
             except Empty:
                 pass
             except KeyboardInterrupt:
@@ -130,10 +130,10 @@ class Plugin(Process):
         Source checking to avoid infinite loops needs to be done in the plugin listener method.
 
         """
-
-        if event.type in self.listeners:
+        listener = self.listeners.get(event.type, None)
+        if listener is not None:
             try:
-                self.listeners[event.type](event)
+                listener(event)
             except:
                 logger.exception('error in event listener {}'.format(event.type))
 
