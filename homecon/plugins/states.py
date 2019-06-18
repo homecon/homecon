@@ -205,6 +205,7 @@ class States(Plugin):
             id = kwargs.pop('id')
             state = State.get(id=id)
             state.delete()
+            Event.fire('state_deleted', {'id': state.id, 'path': state.path})
             Event.fire('state_list_changed', data={'state_list': State.all()})
 
     #

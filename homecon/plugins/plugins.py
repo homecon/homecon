@@ -9,7 +9,9 @@ from homecon.core.plugin import Plugin
 from homecon.plugins.states import States
 from homecon.plugins.websocket import Websocket
 from homecon.plugins.pages import Pages
+from homecon.plugins.scheduler import Scheduler
 from homecon.plugins.knx import Knx
+
 
 logger = logging.getLogger(__name__)
 
@@ -41,6 +43,7 @@ class Plugins(Plugin):
             'states': States(),
             'websocket': Websocket(),
             'pages': Pages(),
+            'scheduler': Scheduler(),
             'knx': Knx()
         }
         self._active_plugins = {}
@@ -131,8 +134,8 @@ class Plugins(Plugin):
 
         keyslist = []
 
-        keyslist.append({'name':'states', 'keys':['type','quantity','unit','label','description']})
-        keyslist.append({'name':'permissions', 'keys':['readusers','writeusers','readgroups','writegroups']})
+        keyslist.append({'name': 'states', 'keys': ['type', 'quantity', 'unit', 'label', 'description']})
+        keyslist.append({'name': 'permissions', 'keys': ['readusers', 'writeusers', 'readgroups', 'writegroups']})
         
         for name,plugin in core.plugins.items():
             keys = plugin.config_keys

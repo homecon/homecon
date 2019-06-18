@@ -1,10 +1,14 @@
 import { PolymerElement, html } from '@polymer/polymer/polymer-element.js';
 
+import '@polymer/iron-meta/iron-meta.js';
+
 import '@polymer/paper-dropdown-menu/paper-dropdown-menu.js';
 import '@polymer/paper-item/paper-item.js';
 import '@polymer/paper-listbox/paper-listbox.js';
 
 import './homecon-web-socket-object.js';
+import './homecon-states.js';
+
 
 class HomeconStateSelect extends PolymerElement {
   static get template() {
@@ -15,10 +19,9 @@ class HomeconStateSelect extends PolymerElement {
         }
       </style>
 
-      <homecon-web-socket-object event="state_list" key="" data="{{states}}" auto>
-      </homecon-web-socket-object>
+      <homecon-states states="{{states}}"></homecon-states>
 
-      <paper-dropdown-menu label="{{label}}" on-opened-changed="_getStates" no-animations>
+      <paper-dropdown-menu label="{{label}}" no-animations>
         <paper-listbox slot="dropdown-content" selected="{{value}}">
         <paper-item key="0">/</paper-item>
           <template is="dom-repeat" items="{{states}}" as="state">
@@ -38,6 +41,9 @@ class HomeconStateSelect extends PolymerElement {
       value: {
         type: 'Number',
         notify: true
+      },
+      states: {
+        type: 'List',
       },
     };
   }

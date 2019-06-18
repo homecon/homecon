@@ -15,6 +15,7 @@ import '@polymer/iron-icons/iron-icons.js';
 import '@polymer/iron-meta/iron-meta.js';
 import '@polymer/paper-icon-button/paper-icon-button.js';
 import './homecon-web-socket.js';
+import './homecon-states.js';
 import './homecon-authentication.js';
 import './homecon-pages-menu.js';
 import './homecon-menu-item.js';
@@ -161,6 +162,7 @@ class HomeconApp extends PolymerElement {
 
       <homecon-authentication></homecon-authentication>
       <homecon-web-socket connected="{{connected}}"></homecon-web-socket>
+      <homecon-states-master></homecon-states-master>
 
       <iron-meta key="edit" value="{{edit}}"></iron-meta>
 

@@ -66,7 +66,7 @@ class HomeconStateEdit extends PolymerElement {
   _oldStateChanged(e) {
     if(typeof this.oldState == 'undefined' || this.oldState == null){
       this.newName = 'my_new_state';
-      this.newParent = null;
+      this.newParent = 0;
       this.newType = '';
       this.newQuantity = '';
       this.newUnit = '';
@@ -77,7 +77,12 @@ class HomeconStateEdit extends PolymerElement {
     else{
       console.log(this.oldState);
       this.newName = this.oldState.name;
-      this.newParent = this.oldState.parent;
+      if(this.oldState.parent == null) {
+        this.newParent = 0;
+      }
+      else{
+        this.newParent = this.oldState.parent;
+      }
       this.newType = this.oldState.type;
       this.newQuantity = this.oldState.quantity;
       this.newUnit = this.oldState.unit;

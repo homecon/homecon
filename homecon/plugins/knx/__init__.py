@@ -73,6 +73,7 @@ class Knx(Plugin):
 
     def listen_state_value_changed(self, event):
         state = event.data['state']
+        logger.debug(state)
         if state.path == 'settings/knxd/address' or state.path == 'settings/knxd/port':
             self.connect()
 

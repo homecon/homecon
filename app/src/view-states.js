@@ -117,8 +117,9 @@ class HomeconStateListState extends PolymerElement {
       <homecon-web-socket-object event="state" key="{{key}}" data="{{state}}" auto>
       </homecon-web-socket-object>
 
-      <div class="state">
-        <span>{{state.path}}</span>
+      <div class="state horizontal layout">
+        <span class="flex">{{state.path}}</span>
+
         <span class="controls">
           <paper-icon-button icon="editor:mode-edit" noink="true" on-tap="openEditDialog"></paper-icon-button>
           <paper-icon-button icon="icons:add" noink="true" on-tap="openAddDialog"></paper-icon-button>
