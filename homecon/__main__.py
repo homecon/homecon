@@ -7,6 +7,7 @@ import inspect
 import traceback
 import logging
 
+from argparse import ArgumentParser
 from logging.handlers import TimedRotatingFileHandler
 
 
@@ -17,7 +18,12 @@ logger = logging.getLogger(__name__)
 base_path = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
 
 
-def main():
+def main(printlog=False, loglevel='INFO', dbloglevel='INFO', httploglevel='INFO',
+         demo=False, appsrc=False, appport=None, serve_app=True,
+         configure=False, create_folders=True,
+         set_static_ip=True, ip=None,
+         run_init_script=True, init_script_name='homecon',
+         install_ipopt=True, install_knxd=True):
     """
     Main entry point
     """
@@ -32,76 +38,52 @@ def main():
         file_handler.set_name('homecon.file_handler')
         logging.root.handlers.append(file_handler)
 
-    if '--printlog' in sys.argv:
+    if printlog:
         if 'homecon.console_handler' not in [lh.name for lh in logger.handlers]:
             console_handler = logging.StreamHandler()
             console_handler.setFormatter(logFormatter)
             console_handler.set_name('homecon.console_handler')
             logging.root.handlers.append(console_handler)
 
-    for arg in sys.argv:
-        level = 'INFO'
-        if arg.startswith('--loglevel='):
-            level = arg[11:]
-            break
-    logging.root.setLevel(getattr(logging, level))
+    logging.root.setLevel(getattr(logging, loglevel))
+    logging.getLogger('homecon.core.database').setLevel(getattr(logging, dbloglevel))
+    logging.getLogger('homecon.httpserver').setLevel(getattr(logging, httploglevel))
 
-    for arg in sys.argv:
-        level = 'INFO'
-        if arg.startswith('--dbloglevel='):
-            level = arg[13:]
-            break
-    logging.getLogger('homecon.core.database').setLevel(getattr(logging, level))
-
-    for arg in sys.argv:
-        level = 'INFO'
-        if arg.startswith('--httploglevel='):
-            level = arg[13:]
-            break
-    logging.getLogger('homecon.httpserver').setLevel(getattr(logging, level))
-
-    if 'configure' in sys.argv:
+    if configure:
         ################################################################################
         # Install non python dependencies
         ################################################################################
         from . import configure
 
-        if not '--nofolders' in sys.argv:
+        if create_folders:
             print('### Creating the Homecon folders')
             configure.create_data_folders()
 
         # set a static ip address
-        if not '--nostaticip' in sys.argv:
+        if set_static_ip:
 
             setip = False
-            for arg in sys.argv:
-                if arg.startswith( '--ip='):
-                    ip = arg[5:]
-                    print('### Setting static ip address')
-                    configure.set_static_ip(ip)
-                    break
+
+            if ip is not None:
+                print('### Setting static ip address')
+                configure.set_static_ip(ip)
+                setip = True
 
             if not setip:
                 # use dialogs
                 setip = input('Do you want to set a static ip address (yes): ')
-                if setip in ['','yes','y']:
+                if setip in ['', 'yes', 'y']:
                     print('### Setting static ip address')
                     configure.set_static_ip()
 
-                elif setip in ['no','n']:
+                elif setip in ['no', 'n']:
                     pass
                 else:
                     raise Exception('{} is not a valid answer, yes/y/no/n'.format(setip))
 
         # create an initscript
-        if not '--noinitscript' in sys.argv:
-            scriptname='homecon'
-            for arg in sys.argv:
-                if arg.startswith('--initscriptname='):
-                    scriptname = arg[17:]
-                    break
-
-            configure.set_init_script(scriptname=scriptname)
+        if run_init_script:
+            configure.set_init_script(scriptname=init_script_name)
 
         # patch pyutilib
         # if not '--nopatchpyutilib' in sys.argv:
@@ -120,12 +102,12 @@ def main():
         #        configure.install_bonmin()
 
         # install ipopt
-        if not '--noipopt' in sys.argv:
+        if install_ipopt:
             if not configure.solver_available('ipopt'):
                 print('### Installing IPOPT')
                 configure.install_ipopt()
 
-        # install glpk
+        # install cbc
         # if not '--noglpk' in sys.argv:
         #     if not configure.solver_available('glpk'):
         #         print('### Installing GLPK')
@@ -133,7 +115,7 @@ def main():
         #         configure.install_glpk()
 
         # install knxd
-        if not '--noknxd' in sys.argv:
+        if install_knxd:
             print('### Installing knxd')
             configure.install_knxd()
 
@@ -141,48 +123,43 @@ def main():
         ################################################################################
         # Run HomeCon
         ################################################################################
-        hc_kwargs = {}
         app_kwargs = {}
 
-        if 'debug' in sys.argv:
-            hc_kwargs['loglevel'] = 'debug'
-            hc_kwargs['printlog'] = True
+        if demo:
+            from homecon.core.database import set_database, get_database, \
+                set_measurements_database, get_measurements_database
+            # from homecon.demo import prepare_database, emulatorthread, forecastthread, responsethread
 
-        if 'debugdb' in sys.argv:
-            hc_kwargs['loglevel'] = 'debugdb'
-            hc_kwargs['printlog'] = True
-
-        if 'daemon' in sys.argv:
-            hc_kwargs['printlog'] = False
-
-        if 'demo' in sys.argv:
-            hc_kwargs['demo'] = True
+            set_database('demo_homecon')
+            set_measurements_database('demo_measurements')
 
             # clear the demo database
-            try:
-                os.remove(os.path.join(sys.prefix, 'lib/homecon/demo_homecon.db'))
-            except:
-                pass
-            try:
-                os.remove(os.path.join(sys.prefix, 'lib/homecon/demo_homecon_measurements.db'))
-            except:
-                pass
+            db = get_database()
+            for table in db.tables:
+                table.drop()
+            db.commit()
+            db.close()
 
-        for arg in sys.argv:
-            if arg.startswith('--port='):
-                app_kwargs['port'] = int(arg[7:])
-                break
+            db = get_measurements_database()
+            for table in db.tables:
+                table.drop()
+            db.commit()
+            db.close()
 
-        if 'appsrc' in sys.argv:
+            # prepare_database()
+            # emulatorthread.start()
+            # forecastthread.start()
+            # responsethread.start()
+
+        if appport is not None:
+            app_kwargs['port'] = appport
+
+        if appsrc:
             app_kwargs['document_root'] = os.path.abspath(os.path.join(base_path, '..', 'app'))
 
-        ################################################################################
-        # start the webserver in a different thread
-        ################################################################################
-        from homecon.httpserver import HttpServer
-        http_server = HttpServer(**app_kwargs)
-
-        if 'nohttp' not in sys.argv:
+        if serve_app:
+            from homecon.httpserver import HttpServer
+            http_server = HttpServer(**app_kwargs)
             http_server.start()
 
         ################################################################################
@@ -192,17 +169,9 @@ def main():
 
         print('\nStarting HomeCon\nPress Ctrl + C to stop\n')
         try:
-            hc = HomeCon(**hc_kwargs)
-
-            if 'demo' in sys.argv:
-                from homecon import demo
-                
-                demo.prepare_database()
-                demo.emulatorthread.start()
-                demo.forecastthread.start()
-                demo.responsethread.start()
-
+            hc = HomeCon()
             hc.start()
+
         except KeyboardInterrupt:
             print('\nStopping HomeCon\n')
             hc.stop()
@@ -217,6 +186,28 @@ def main():
             traceback.print_exception(exc_type, exc_value, exc_traceback, file=sys.stdout)
             print('\n'*3)
 
+
 if __name__ == '__main__':
-    main()
+
+    parser = ArgumentParser(description='Generate all energy market records')
+    parser.add_argument('-l', '--loglevel', type=str, choices=['INFO', 'DEBUG'], default='INFO')
+    parser.add_argument('--dbloglevel', type=str, choices=['INFO', 'DEBUG'], default='INFO')
+    parser.add_argument('--httploglevel', type=str, choices=['INFO', 'DEBUG'], default='INFO')
+    parser.add_argument('--demo', action='store_true')
+    parser.add_argument('--printlog', action='store_true')
+    parser.add_argument('--noapp', dest='serve_app', action='store_false')
+    parser.add_argument('--appsrc', action='store_true')
+    parser.add_argument('--appport', type=str, default=None)
+    parser.add_argument('--configure', action='store_true')
+    parser.add_argument('--nofolders', dest='create_folders', action='store_false')
+    parser.add_argument('--nostaticip', dest='set_static_ip', action='store_false')
+    parser.add_argument('--ip', type=str, default=None)
+    parser.add_argument('--noinitscript', dest='run_init_script', action='store_false')
+    parser.add_argument('--initscriptname', dest='init_script_name', type=str, default='homecon')
+    parser.add_argument('--noipopt', dest='install_ipopt', action='store_false')
+    parser.add_argument('--noknxd', dest='install_knxd', action='store_false')
+
+    kwargs = vars(parser.parse_args())
+
+    main(**kwargs)
 
