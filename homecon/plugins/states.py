@@ -57,13 +57,6 @@ class States(Plugin):
                   type='string', quantity='', unit='',
                   label='Time zone', description='HomeCon time zone', value='Europe/Brussels')
 
-        State.add('ground_floor', type=None)
-        State.add('kitchen', parent='/ground_floor', type=None)
-        State.add('lights', parent='/ground_floor/kitchen', type=None)
-        State.add('light', parent='/ground_floor/kitchen/lights',
-                  type='boolean', quantity='', unit='',
-                  label='Kitchen light', description='',
-                  config={'knx_ga_read': '1/1/31', 'knx_ga_write': '1/1/31', 'knx_dpt': '1'})
         logger.debug('States plugin Initialized')
 
     def from_json(self, string):

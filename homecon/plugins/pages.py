@@ -104,6 +104,9 @@ class Group(DatabaseObject):
             return pages[0]
         return None
 
+    def add_page(self, name, config=None, order=None):
+        return Page.add(name, self, config=config, order=order)
+
     def serialize(self):
         return {
             'id': self.id,
@@ -218,6 +221,9 @@ class Page(DatabaseObject):
             return objs[0]
         return None
 
+    def add_section(self, name, config=None, order=None):
+        return Section.add(name, self, config=config, order=order)
+
     def serialize(self):
         return {
             'id': self.id,
@@ -269,6 +275,25 @@ class Section(DatabaseObject):
             obj = cls(**entry.as_dict())
         return obj
 
+    @classmethod
+    def get(cls, path=None, id=None):
+        db, table = cls.get_table()
+        if id is not None:
+            db_entry = table(id)
+            db.close()
+        elif path is not None:
+            parts = path.split('/')
+            page = Page.get(path='/'.join(parts[:-1]))
+            db_entry = table(name=parts[-1], page=page.id)
+            db.close()
+        else:
+            logger.error("id or path must be supplied")
+            return None
+        if db_entry is not None:
+            return cls(**db_entry.as_dict())
+        else:
+            return None
+
     @property
     def name(self):
         self._name = self.get_property('name')
@@ -302,6 +327,9 @@ class Section(DatabaseObject):
         if len(objs) == 1:
             return objs[0]
         return None
+
+    def add_widget(self, name, type, config=None, order=None):
+        return Widget.add(name, self, type, config=config, order=order)
 
     def serialize(self):
         return {
@@ -358,6 +386,25 @@ class Widget(DatabaseObject):
             obj = cls(**entry.as_dict())
         return obj
 
+    @classmethod
+    def get(cls, path=None, id=None):
+        db, table = cls.get_table()
+        if id is not None:
+            db_entry = table(id)
+            db.close()
+        elif path is not None:
+            parts = path.split('/')
+            section = Section.get(path='/'.join(parts[:-1]))
+            db_entry = table(name=parts[-1], section=section.id)
+            db.close()
+        else:
+            logger.error("id or path must be supplied")
+            return None
+        if db_entry is not None:
+            return cls(**db_entry.as_dict())
+        else:
+            return None
+
     @property
     def name(self):
         self._name = self.get_property('name')
@@ -394,6 +441,50 @@ class Widget(DatabaseObject):
             'type': self.type,
             'config': self.config,
         }
+
+
+def add_pages_from_dict(groups):
+    """
+    Reads a list of groups and adds states from it.
+    """
+
+    for group in groups:
+        name = group.pop('name')
+        pages = group.pop('pages', [])
+        g = Group.add(name, **group)
+        for page in pages:
+            name = page.pop('name')
+            sections = page.pop('sections', [])
+            p = Page.add(name, g, **page)
+            for section in sections:
+                name = section.pop('name', uuid4())
+                widgets = section.pop('widgets', [])
+                s = Section.add(name, p, **section)
+                for widget in widgets:
+                    name = section.pop('name', uuid4())
+                    Widget.add(name, s, **widget)
+
+
+def clear_pages():
+    db, table = Widget.get_table()
+    table.drop()
+    db.commit()
+    db.close()
+
+    db, table = Section.get_table()
+    table.drop()
+    db.commit()
+    db.close()
+
+    db, table = Page.get_table()
+    table.drop()
+    db.commit()
+    db.close()
+
+    db, table = Group.get_table()
+    table.drop()
+    db.commit()
+    db.close()
 
 
 class Pages(Plugin):
@@ -436,28 +527,6 @@ class Pages(Plugin):
             # Widget.add('w0', s3, 'shading')
 
         logger.debug('Pages plugin initialized')
-
-    def from_json(self, string):
-        """
-        Reads a json file and adds states from it.
-        """
-        groups = json.loads(string)
-
-        for group in groups:
-            name = group.pop('name')
-            pages = group.pop('pages', [])
-            g = Group.add(name, **group)
-            for page in pages:
-                name = page.pop('name')
-                sections = page.pop('sections', [])
-                p = Page.add(name, g, **page)
-                for section in sections:
-                    name = section.pop('name', uuid4())
-                    widgets = section.pop('widgets', [])
-                    s = Section.add(name, p, **section)
-                    for widget in widgets:
-                        name = section.pop('name', uuid4())
-                        Widget.add(name, s, **widget)
 
     def get_menu(self):
         """
@@ -649,3 +718,5 @@ class Pages(Plugin):
 
     def _title_to_path(self, title):
         return title.lower().replace(' ', '')
+
+

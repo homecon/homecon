@@ -3,7 +3,6 @@
 
 import sys
 import os
-import inspect
 import traceback
 import logging
 
@@ -15,7 +14,7 @@ logger = logging.getLogger(__name__)
 
 
 # the current file directory
-base_path = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
+base_path = os.path.dirname(os.path.abspath(__file__))
 
 
 def main(printlog=False, loglevel='INFO', dbloglevel='INFO', httploglevel='INFO',
@@ -25,7 +24,7 @@ def main(printlog=False, loglevel='INFO', dbloglevel='INFO', httploglevel='INFO'
          run_init_script=True, init_script_name='homecon',
          install_ipopt=True, install_knxd=True):
     """
-    Main entry point
+    Main entry point.
     """
 
     # configure logging
@@ -126,25 +125,9 @@ def main(printlog=False, loglevel='INFO', dbloglevel='INFO', httploglevel='INFO'
         app_kwargs = {}
 
         if demo:
-            from homecon.core.database import set_database, get_database, \
-                set_measurements_database, get_measurements_database
-            # from homecon.demo import prepare_database, emulatorthread, forecastthread, responsethread
+            from homecon.demo import initialize
+            initialize()
 
-            set_database('demo_homecon')
-            set_measurements_database('demo_measurements')
-
-            # clear the demo database
-            db = get_database()
-            for table in db.tables:
-                table.drop()
-            db.commit()
-            db.close()
-
-            db = get_measurements_database()
-            for table in db.tables:
-                table.drop()
-            db.commit()
-            db.close()
 
             # prepare_database()
             # emulatorthread.start()

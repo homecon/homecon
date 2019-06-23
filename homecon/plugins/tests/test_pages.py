@@ -1,7 +1,7 @@
 import json
 
 from homecon.tests import common
-from homecon.plugins.pages import Group, Page, Section, Widget, Pages
+from homecon.plugins.pages import Group, Page, Section, Widget, Pages, add_pages_from_dict
 
 
 class TestObjects(common.TestCase):
@@ -48,12 +48,21 @@ class TestObjects(common.TestCase):
         w2 = Widget.add('widget2', s, 'sometype', config={})
         self.assertEqual(len(s.widgets), 2)
 
+    def test_get_section_from_path(self):
+        g = Group.add('group', config={'Title': 'Some group'})
+        p = Page.add('page', g, config={'Title': 'Some page'})
+        s = Section.add('section', p, config={'Title': 'Some section'})
+        w1 = Widget.add('widget1', s, 'sometype', config={})
+        w2 = Widget.add('widget2', s, 'sometype', config={})
+
+        w2b = Widget.get(path='/group/page/section/widget2')
+        self.assertEqual(w2, w2b)
+
 
 class TestPlugin(common.TestCase):
 
     def test_from_json(self):
-        p = Pages()
-        string = json.dumps([{
+        dct = [{
             'name': 'group1',
             'pages': [{
                 'name': 'page1',
@@ -69,7 +78,7 @@ class TestPlugin(common.TestCase):
                     }]
                 }]
             }]
-        }], indent=4)
-        p.from_json(string)
+        }]
+        add_pages_from_dict(dct)
         page = Page.get(path='/group1/page1')
         self.assertEqual(page.sections[0].widgets[0].type, 'button')

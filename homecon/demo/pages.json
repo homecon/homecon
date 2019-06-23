@@ -1,0 +1,109 @@
+[{
+  "name": "home",
+  "config": {
+    "title":  "Home"
+  },
+  "pages": [{
+    "name": "home",
+    "config": {
+      "title": "Home", 
+      "icon": "blank"
+    },
+    "sections": [{
+      "name": "time",
+      "config": {
+        "type": "underlined"
+      },
+      "widgets": [{
+        "type": "clock"
+      }, {
+        "type": "date"
+      }]
+    }, {
+      "name": "weather",
+      "config": {
+        "type": "underlined"
+      },
+      "widgets": [{
+        "type": "weather-block",
+        "config": {
+          "daily": true,
+          "timeoffset": 0
+        }
+      }, {
+        "type": "weather-block",
+        "config": {
+          "daily": true,
+          "timeoffset": 24
+        }
+      }, {
+        "type": "weather-block",
+        "config": {
+          "daily": true,
+          "timeoffset": 48
+        }
+      }, {
+        "type": "weather-block",
+        "config": {
+          "daily": true,
+          "timeoffset": 72
+        }
+      }]
+    }]
+  }]
+}, {
+  "name": "central",
+  "config": {
+    "title":  "Central"
+  },
+  "pages": [{
+    "name": "heating",
+    "config": {
+      "title": "Heating", 
+      "icon": "sani_heating"
+    }
+  }]
+}, {
+  "name": "ground_floor",
+  "config": {
+    "title":  "Ground floor"
+  },
+  "pages": [{
+    "name": "kitchen",
+    "config": {
+      "title": "Kitchen", 
+      "icon": "scene_dinner"
+    },
+    "sections": [{
+      "name": "lights",
+      "config": {
+        "type": "raised",
+        "title": "Lights"
+      }
+    }, {
+      "name": "shading",
+      "config": {
+        "type": "raised",
+        "title": "Shading"
+      }
+    }]
+  }]
+}, {
+  "name": "first_floor",
+  "config": {
+    "title":  "First floor"
+  },
+  "pages": [{
+    "name": "bathroom",
+    "config": {
+      "title": "Bathroom", 
+      "icon": "scene_bath"
+    }
+  }, {
+    "name": "master_bedroom",
+    "config": {
+      "title": "Master Bedroom", 
+      "icon": "scene_sleeping"
+    }
+  }]
+}]
