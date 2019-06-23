@@ -4,6 +4,7 @@
 import logging
 import os
 import json
+from shutil import rmtree
 # import sys
 
 # import datetime
@@ -21,7 +22,7 @@ from uuid import uuid4
 # buildingdata = None
 
 
-from homecon.core.database import set_database, get_database, set_measurements_database, get_measurements_database
+from homecon.core.database import database_path, set_database_uri, set_measurements_database_uri
 from homecon.core.state import State
 from homecon.plugins.pages import add_pages_from_dict, Section
 
@@ -38,22 +39,17 @@ def initialize():
 
 def set_databases():
     logger.info('creating the demo database')
-    # initialize the database
-    set_database('demo_homecon')
-    set_measurements_database('demo_measurements')
 
     # clear the demo database
-    db = get_database()
-    for table in db.tables:
-        table.drop()
-    db.commit()
-    db.close()
+    try:
+        rmtree(os.path.join(database_path, 'demo'))
+    except:
+        pass
 
-    db = get_measurements_database()
-    for table in db.tables:
-        table.drop()
-    db.commit()
-    db.close()
+    # initialize the database
+    os.makedirs(os.path.join(database_path, 'demo'))
+    set_database_uri('sqlite://{}'.format(os.path.join(database_path, 'demo', 'homecon.db')))
+    set_measurements_database_uri('sqlite://{}'.format(os.path.join(database_path, 'demo', 'homecon_measurements.db')))
 
 
 def create_states():
@@ -102,8 +98,6 @@ def create_pages():
                  config={'state': State.get(path='/ground_floor/kitchen/windows/south/shading').id})
 
 
-
-#
 #
 # def prepare_database():
 #     """

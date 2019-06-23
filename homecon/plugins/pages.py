@@ -339,6 +339,9 @@ class Section(DatabaseObject):
             'widgets': [widgets.id for widgets in self.widgets]
         }
 
+    def __repr__(self):
+        return '<{} id={} path={}>'.format(self.__class__.__name__, self.id, self.path)
+
 
 class Widget(DatabaseObject):
     def __init__(self, id=None, name=None, section=None, type=type, config=None, order=None):
@@ -441,6 +444,9 @@ class Widget(DatabaseObject):
             'type': self.type,
             'config': self.config,
         }
+
+    def __repr__(self):
+        return '<{} id={} path={}>'.format(self.__class__.__name__, self.id, self.path)
 
 
 def add_pages_from_dict(groups):

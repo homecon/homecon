@@ -91,7 +91,6 @@ class State(DatabaseObject):
         """
         # check if it already exists
         db, table = cls.get_table()
-
         if parent is None:
             entry = table(name=name)
             parent_id = None

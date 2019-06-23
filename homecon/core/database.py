@@ -11,34 +11,34 @@ logger = logging.getLogger(__name__)
 
 base_path = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..'))
 database_path = os.path.join(base_path, 'db')
-database_name = 'homecon'
-measurements_database_name = 'measurements'
+
+if not os.path.exists(database_path):
+    os.mkdir(database_path)
+
+database_uri = 'sqlite://{}'.format(os.path.join(database_path, 'homecon.db'))
+measurements_database_uri = 'sqlite://{}'.format(os.path.join(database_path, 'homecon_measurements.db'))
 
 
-def set_database(name):
-    global database_name
-    database_name = name
+def set_database_uri(uri):
+    global database_uri
+    database_uri = uri
 
 
 def get_database_uri():
-    if not os.path.exists(database_path):
-        os.mkdir(database_path)
-    return 'sqlite://{}'.format(os.path.join(database_path, '{}.db'.format(database_name)))
+    return database_uri
 
 
 def get_database():
     return DAL(get_database_uri())
 
 
-def set_measurements_database(name):
-    global measurements_database_name
-    measurements_database_name = name
+def set_measurements_database_uri(uri):
+    global measurements_database_uri
+    measurements_database_uri = uri
 
 
 def get_measurements_database_uri():
-    if not os.path.exists(database_path):
-        os.mkdir(database_path)
-    return 'sqlite://{}'.format(os.path.join(database_path, '{}.db'.format(measurements_database_name)))
+    return measurements_database_uri
 
 
 def get_measurements_database():

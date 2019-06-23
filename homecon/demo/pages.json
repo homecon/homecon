@@ -91,7 +91,7 @@
     "name": "living",
     "config": {
       "title": "Living Room",
-      "icon": "scene_living_room"
+      "icon": "scene_livingroom"
     },
     "sections": [{
       "name": "lights",

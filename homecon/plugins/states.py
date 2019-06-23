@@ -39,12 +39,10 @@ class States(Plugin):
     def __init__(self):
         super().__init__()
         self.triggers = {}
-
-    def initialize(self):
         # add settings states
         State.add('settings', type=None)
         State.add('location', type=None, parent='/settings')
-        State.add('latitude',  parent='/settings/location',
+        State.add('latitude', parent='/settings/location',
                   type='number', quantity='angle', unit='deg',
                   label='Latitude', description='HomeCon latitude', value=51.05)
         State.add('longitude', parent='/settings/location',
@@ -57,6 +55,7 @@ class States(Plugin):
                   type='string', quantity='', unit='',
                   label='Time zone', description='HomeCon time zone', value='Europe/Brussels')
 
+    def initialize(self):
         logger.debug('States plugin Initialized')
 
     def from_json(self, string):
