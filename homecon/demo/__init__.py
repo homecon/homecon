@@ -58,20 +58,30 @@ def set_databases():
 
 def create_states():
     logger.info('creating demo states')
-    State.add('ground_floor', type=None)
-    State.add('kitchen', parent='/ground_floor', type=None)
-    State.add('lights', parent='/ground_floor/kitchen', type=None)
+    State.add('ground_floor')
+    State.add('kitchen', parent='/ground_floor')
+    State.add('lights', parent='/ground_floor/kitchen')
     State.add('light', parent='/ground_floor/kitchen/lights',
               type='boolean', quantity='', unit='',
               label='Kitchen light', description='',
               config={'knx_ga_read': '1/1/31', 'knx_ga_write': '1/1/31', 'knx_dpt': '1'})
-    State.add('windows', parent='/ground_floor/kitchen', type=None)
-    State.add('south', parent='/ground_floor/kitchen/windows', type=None)
-    State.add('shading', parent='/ground_floor/kitchen/windows/south', type=None)
+    State.add('windows', parent='/ground_floor/kitchen')
+    State.add('south', parent='/ground_floor/kitchen/windows')
+    State.add('shading', parent='/ground_floor/kitchen/windows/south')
     State.add('position', parent='/ground_floor/kitchen/windows/south/shading',
               type='float', quantity='', unit='',
               label='Position', description='',
               config={'knx_ga_read': '1/1/31', 'knx_ga_write': '1/1/31', 'knx_dpt': '1'})
+
+    State.add('action')
+    State.add('dummy', parent='/action', type='action', value=[
+        {'state': State.get('/ground_floor/kitchen/lights/light').id, 'value': 1},
+        {'state': State.get('/ground_floor/kitchen/lights/light').id, 'value': 0, 'delay': 5}
+    ])
+
+    State.add('scheduler')
+    State.add('dummy', parent='/scheduler', type='schedule',
+              value={'trigger': {'minute': '*'}, 'action': State.get('/action/dummy').id})
 
 
 def create_pages():
@@ -81,6 +91,7 @@ def create_pages():
         pages = json.load(f)
     add_pages_from_dict(pages)
 
+    # add widgets
     s = Section.get(path='/ground_floor/kitchen/lights')
     s.add_widget(uuid4(), 'switch',
                  config={'icon': 'light_light',
