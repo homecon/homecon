@@ -37,6 +37,7 @@
     "@polymer/paper-input": "^3.0.1",
     "@polymer/paper-item": "github:PolymerElements/paper-item",
     "@polymer/paper-listbox": "github:PolymerElements/paper-listbox",
+    "@polymer/paper-slider": "github:PolymerElements/paper-slider",
     "@polymer/polymer": "^3.0.0",
     "@webcomponents/webcomponentsjs": "^2.0.0",
     "web-animations-js": "^2.3.1"

@@ -37,7 +37,7 @@ class HomeconApp extends PolymerElement {
           --toolbar-background-color: #000000;
           --dialog-background-color: #060606;
           --primary-background-color: #080808;
-          --secondary-background-color: #0d0d0d;
+          --secondary-background-color: #121212;
           --tertiary-background-color: #0f0f0f;
 
           --primary-text-color: #ffffff;

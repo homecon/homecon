@@ -62,7 +62,6 @@ import './homecon-web-socket-object.js';
     }
 
     statesChanged(change) {
-      console.log(change)
       for(var i = 0; i < this.subscribers.length; i++) {
         this.subscribers[i].states = this.states
         this.subscribers[i].notifyPath('states');

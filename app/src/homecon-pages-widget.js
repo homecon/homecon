@@ -8,6 +8,7 @@ import '@polymer/paper-icon-button/paper-icon-button.js';
 import './shared-styles.js';
 import './homecon-edit-dialog.js';
 import './widgets/widget-switch.js';
+import './widgets/widget-shading.js';
 
 class HomeconPagesWidget extends PolymerElement {
   static get template() {

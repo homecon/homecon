@@ -8,6 +8,9 @@ class HomeconPageHeader extends PolymerElement {
         :host{
           color: var(--primary-text-color);
         }
+        .header{
+          margin-bottom: 25px;
+        }
         .icon{
           height: 60px;
         }
@@ -18,7 +21,7 @@ class HomeconPageHeader extends PolymerElement {
         }
       </style>
 
-      <div class="horizontal layout">
+      <div class="horizontal layout header">
         <img class="icon" src="[[_parseIcon(icon)]]">
         <h1 class="title flex">[[title]]</h1>
         <template is="dom-if" if="[[_hasWidget(widget)]]">

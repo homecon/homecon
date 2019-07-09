@@ -23,7 +23,7 @@ class BaseStatusLight extends PolymerElement {
         }
       </style>
 
-      <template is="dom-if" if="{{_usePath(path)}}">
+      <template is="dom-if" if="{{_useKey(key)}}">
         <homecon-web-socket-object id="websocketObject" event="state" key="{{key}}" data="{{value}}" send-on-authenticated></homecon-web-socket-object>
       </template>
 

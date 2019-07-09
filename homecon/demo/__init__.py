@@ -67,7 +67,13 @@ def create_states():
     State.add('position', parent='/ground_floor/kitchen/windows/south/shading',
               type='float', quantity='', unit='',
               label='Position', description='',
-              config={'knx_ga_read': '1/1/31', 'knx_ga_write': '1/1/31', 'knx_dpt': '1'})
+              config={'knx_ga_read': '2/4/61', 'knx_ga_write': '2/3/61', 'knx_dpt': '5'})
+    State.add('west', parent='/ground_floor/kitchen/windows')
+    State.add('shading', parent='/ground_floor/kitchen/windows/west')
+    State.add('position', parent='/ground_floor/kitchen/windows/west/shading',
+              type='float', quantity='', unit='',
+              label='Position', description='',
+              config={'knx_ga_read': '2/4/62', 'knx_ga_write': '2/3/62', 'knx_dpt': '5'})
 
     State.add('action')
     State.add('dummy', parent='/action', type='action', value=[
@@ -91,12 +97,25 @@ def create_pages():
     s = Section.get(path='/ground_floor/kitchen/lights')
     s.add_widget(uuid4(), 'switch',
                  config={'icon': 'light_light',
+                         'label': 'Light',
+                         'state': State.get(path='/ground_floor/kitchen/lights/light').id})
+    s.add_widget(uuid4(), 'switch',
+                 config={'icon': 'light_light',
+                         'label': 'Light',
+                         'state': State.get(path='/ground_floor/kitchen/lights/light').id})
+    s.add_widget(uuid4(), 'switch',
+                 config={'icon': 'light_light',
+                         'label': 'Light',
                          'state': State.get(path='/ground_floor/kitchen/lights/light').id})
 
     s = Section.get(path='/ground_floor/kitchen/shading')
     s.add_widget(uuid4(), 'shading',
-                 config={'state': State.get(path='/ground_floor/kitchen/windows/south/shading').id})
+                 config={'label': 'South window',
+                         'state': State.get(path='/ground_floor/kitchen/windows/south/shading/position').id})
 
+    s.add_widget(uuid4(), 'shading',
+                 config={'label': 'West window',
+                         'state': State.get(path='/ground_floor/kitchen/windows/west/shading/position').id})
 
 #
 # def prepare_database():
