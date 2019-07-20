@@ -37,20 +37,21 @@ from homecon.core import state
 # create test databases
 # database.db = database.Database(database='test_homecon.db')
 # database.measurements_db = database.Database(database='test_measurements.db')
-from homecon.core.database import base_path
-
-
-test_database_path = os.path.join(base_path, 'db_test')
+from homecon.core.database import database_path
 
 
 class TestCase(TestCase):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.database_path_patcher = patch('homecon.core.database.database_path', new=test_database_path)
+        self.database_path_patcher = patch(
+            'homecon.core.database.get_database_uri',
+            new=lambda: 'sqlite://{}'.format(os.path.join(database_path, 'test', 'homecon.db')))
 
     def clear_database(self):
-        if os.path.exists(test_database_path):
-            rmtree(test_database_path)
+        try:
+            rmtree(os.path.join(database_path, 'test'))
+        except:
+            pass
 
     def setUp(self):
         """
@@ -58,14 +59,15 @@ class TestCase(TestCase):
         """
 
         self.clear_database()
+        os.makedirs(os.path.join(database_path, 'test'))
         self.database_path_patcher.start()
 
     def tearDown(self):
         """
         Executed after every test
         """
-        self.clear_database()
         self.database_path_patcher.stop()
+        self.clear_database()
 
     # def run_homecon(self, sleep=0.01):
     #     self.homecon_thread = Thread(target=self.homecon.start)

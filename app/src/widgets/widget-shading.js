@@ -124,11 +124,11 @@ class WidgetShading extends PolymerElement {
   }
 
   open_shading(){
-    window.homeconWebSocket.send({'event': 'state_value', 'data': {'id': this.config.state, 'value': 0}})
+    window.homeconWebSocket.send({'event': 'state_value', 'data': {'id': this.config.state, 'value': this.config.positionOpen}})
   }
 
   close_shading(){
-    window.homeconWebSocket.send({'event': 'state_value', 'data': {'id': this.config.state, 'value': 1}})
+    window.homeconWebSocket.send({'event': 'state_value', 'data': {'id': this.config.state, 'value': this.config.positionClosed}})
   }
 
   _parseIcon(icon){

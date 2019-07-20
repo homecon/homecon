@@ -111,11 +111,13 @@ def create_pages():
     s = Section.get(path='/ground_floor/kitchen/shading')
     s.add_widget(uuid4(), 'shading',
                  config={'label': 'South window',
-                         'state': State.get(path='/ground_floor/kitchen/windows/south/shading/position').id})
+                         'state': State.get(path='/ground_floor/kitchen/windows/south/shading/position').id,
+                         'positionOpen': 0, 'positionClosed': 255})
 
     s.add_widget(uuid4(), 'shading',
                  config={'label': 'West window',
-                         'state': State.get(path='/ground_floor/kitchen/windows/west/shading/position').id})
+                         'state': State.get(path='/ground_floor/kitchen/windows/west/shading/position').id,
+                         'positionOpen': 0, 'positionClosed': 255})
 
 #
 # def prepare_database():

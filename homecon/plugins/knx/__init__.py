@@ -4,7 +4,7 @@ import logging
 import time
 
 from knxpy.knxd import KNXD
-from knxpy.util import encode_dpt, decode_dpt, default_callback
+from knxpy.util import encode_dpt, decode_dpt, decode_telegram
 
 from homecon.core.plugin import Plugin
 from homecon.core.state import State
@@ -54,8 +54,7 @@ class Knx(Plugin):
             logger.debug('reading {}'.format(key))
             self.connection.group_read(key)
 
-    def callback(self, data):
-        message = default_callback(data)
+    def callback(self, message):
         if message is not None:
             logger.debug('received message {}'.format(message))
             try:
@@ -73,7 +72,7 @@ class Knx(Plugin):
 
     def listen_state_value_changed(self, event):
         state = event.data['state']
-        logger.debug(state)
+
         if state.path == 'settings/knxd/address' or state.path == 'settings/knxd/port':
             self.connect()
 

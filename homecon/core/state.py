@@ -85,7 +85,7 @@ class State(DatabaseObject):
 
     @classmethod
     def add(cls, name, parent=None, type=None, quantity=None, unit=None, label=None, description=None,
-                 config=None, value=None):
+            config=None, value=None):
         """
         Add a state to the database.
         """
