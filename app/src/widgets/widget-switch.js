@@ -38,12 +38,12 @@ class WidgetSwitch extends PolymerElement {
           color: var(--button-text-color);
         }
       </style>
-        <homecon-web-socket-object event="state_value" key="[[config.state]]" data="{{value}}" auto>
+        <homecon-web-socket-object event="state_value" key="[[state]]" data="{{value}}" auto>
         </homecon-web-socket-object>
 
         <paper-button noink class="button horizontal layout start-justified" on-tap="call">
-          <base-status-light class="icon" value="{{value}}" value-threshold="[[_valueThreshold(config.valueOn, config.valueOff)]]" icon="[[config.icon]]" color-on="[[config.colorOn]]" color-off="[[config.colorOff]]"></base-status-light>
-          <div class="label">[[config.label]]</div>
+          <base-status-light class="icon" value="{{value}}" value-threshold="[[_valueThreshold(valueOn, valueOff)]]" icon="[[icon]]" color-on="[[colorOn]]" color-off="[[colorOff]]"></base-status-light>
+          <div class="label">[[label]]</div>
         </paper-button>
 
 
@@ -68,16 +68,39 @@ class WidgetSwitch extends PolymerElement {
 
   static get properties() {
     return {
-      config: {
-        type: 'Object',
-        value: {'label': 'new switch', 'state': '', 'valueOn': 1, 'valueOff': 0, 'colorOn': 'f79a1f', 'colorOff': 'ffffff', 'icon': 'light_light'},
+      label: {
+        type: String,
+        value: 'new switch',
+      },
+      state: {
+        type: Number,
+      },
+      valueOn: {
+        type: Number,
+        value: 1
+      },
+      valueOff: {
+        type: Number,
+        value: 0
+      },
+      colorOn: {
+        type: String,
+        value: 'f79a1f'
+      },
+      colorOff: {
+        type: String,
+        value: 'ffffff'
+      },
+      icon: {
+        type: String,
+        value: 'light_light'
       },
       edit: {
-        type: 'Boolean',
+        type: Boolean,
         value: false
       },
       classes: {
-        type: 'String',
+        type: String,
         value: 'halfwidth',
       },
     };
@@ -88,11 +111,12 @@ class WidgetSwitch extends PolymerElement {
   }
 
   call(){
-    if(this.value < this._valueThreshold(this.config.valueOn, this.config.valueOff)) {
-      window.homeconWebSocket.send({'event': 'state_value', 'data': {'id': this.config.state, 'value': this.config.valueOn}})
+    console.log(this.state, this.value, {'event': 'state_value', 'data': {'id': this.state, 'value': this.valueOn}})
+    if(this.value < this._valueThreshold(this.valueOn, this.valueOff)) {
+      window.homeconWebSocket.send({'event': 'state_value', 'data': {'id': this.state, 'value': this.valueOn}})
     }
     else {
-      window.homeconWebSocket.send({'event': 'state_value', 'data': {'id': this.config.state, 'value': this.config.valueOff}})
+      window.homeconWebSocket.send({'event': 'state_value', 'data': {'id': this.state, 'value': this.valueOff}})
     }
   }
 

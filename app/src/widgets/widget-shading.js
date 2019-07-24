@@ -57,18 +57,18 @@ class WidgetShading extends PolymerElement {
       <div class="horizontal layout">
         <div>
           <paper-button noink class="button horizontal layout start-justified" on-tap="open_shading">
-            <img class="icon" src="[[_parseIcon(config.iconOpen)]]">
+            <img class="icon" src="[[_parseIcon(iconOpen)]]">
           </paper-button>
         </div>
         <div class="flex">
           <div class="vertical layout center-justified">
-            <div class="label">{{config.label}}</div>
-            <base-slider key="{{config.state}}" min="{{config.positionOpen}}" max="{{config.positionClosed}}"></base-slider>
+            <div class="label">{{label}}</div>
+            <base-slider key="{{state}}" min="{{positionOpen}}" max="{{positionClosed}}"></base-slider>
           </div>
         </div>
         <div>
           <paper-button noink class="button horizontal layout start-justified" on-tap="close_shading">
-            <img class="icon" src="[[_parseIcon(config.iconClosed)]]">
+            <img class="icon" src="[[_parseIcon(iconClosed)]]">
           </paper-button>
         </div>
       </div>
@@ -108,27 +108,46 @@ class WidgetShading extends PolymerElement {
 
   static get properties() {
     return {
-      config: {
-        type: 'Object',
-        value: {'label': 'new switch', 'state': '', 'positionOpen': 0, 'positionClosed': 1, 'iconClosed': 'fts_shutter_100', 'iconOpen': 'fts_shutter_10'},
+      label: {
+        type: String,
+        value: 'new shading'
+      },
+      state: {
+        type: Number,
+      },
+      positionOpen: {
+        type: Number,
+        value: 0
+      },
+      positionClosed: {
+        type: Number,
+        value: 1
+      },
+      iconOpen: {
+        type: String,
+        value: 'fts_shutter_10'
+      },
+      iconClosed: {
+        type: String,
+        value: 'fts_shutter_100'
       },
       edit: {
-        type: 'Boolean',
+        type: Boolean,
         value: false
       },
       classes: {
-        type: 'String',
+        type: String,
         value: 'fullwidth',
       },
     };
   }
 
   open_shading(){
-    window.homeconWebSocket.send({'event': 'state_value', 'data': {'id': this.config.state, 'value': this.config.positionOpen}})
+    window.homeconWebSocket.send({'event': 'state_value', 'data': {'id': this.state, 'value': this.positionOpen}})
   }
 
   close_shading(){
-    window.homeconWebSocket.send({'event': 'state_value', 'data': {'id': this.config.state, 'value': this.config.positionClosed}})
+    window.homeconWebSocket.send({'event': 'state_value', 'data': {'id': this.state, 'value': this.positionClosed}})
   }
 
   _parseIcon(icon){

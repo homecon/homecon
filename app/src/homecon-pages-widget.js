@@ -7,6 +7,7 @@ import '@polymer/paper-icon-button/paper-icon-button.js';
 
 import './shared-styles.js';
 import './homecon-edit-dialog.js';
+import './homecon-web-socket-object.js';
 import './widgets/widget-switch.js';
 import './widgets/widget-shading.js';
 
@@ -44,7 +45,7 @@ class HomeconPagesWidget extends PolymerElement {
         type: 'Boolean',
         value: false,
         observer: 'editChanged'
-      },
+      }
     };
   }
 
@@ -55,23 +56,27 @@ class HomeconPagesWidget extends PolymerElement {
   }
 
   updateWidget(type){
+    console.log('update widget', type, JSON.stringify(this.widget.config))
     var container = this.$.container;
-
     // import the widget
     //this.importHref( this.resolveUrl(type+'.html'), null, null, true );
-    console.log(this)
 
+    // create the widget and set properties
     var widget = document.createElement('widget-'+type);
-    if(typeof this.widget.config['initialized'] == 'undefined'){
-      widget.config['initialized'] = true;
-      for(var attrname in this.widget.config){
-        widget.config[attrname] = this.widget.config[attrname];
-      }
-      this.$.websocketWidget.send({'config': widget.config});
+
+    for(var attrname in this.widget.config){
+        widget[attrname] = this.widget.config[attrname];
     }
-    else{
-      widget.config = this.widget.config;
-    }
+
+//    if(typeof this.widget.config['initialized'] == 'undefined'){
+//    console.log(widget.config)
+//
+//      console.log(JSON.stringify(widget.config), widget.config)
+////      this.$.websocketWidget.send({'config': widget.config});
+//    }
+//    else{
+//      widget.config = this.widget.config;
+//    }
     this.set('widgetinstance', widget);
 
     // set the host class based on the widget type

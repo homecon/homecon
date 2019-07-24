@@ -40,6 +40,7 @@
     "@polymer/paper-slider": "github:PolymerElements/paper-slider",
     "@polymer/polymer": "^3.0.0",
     "@webcomponents/webcomponentsjs": "^2.0.0",
+    "lit-element": "github:Polymer/lit-element",
     "web-animations-js": "^2.3.1"
   },
   "devDependencies": {

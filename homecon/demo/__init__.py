@@ -61,6 +61,10 @@ def create_states():
               type='boolean', quantity='', unit='',
               label='Kitchen light', description='',
               config={'knx_ga_read': '1/1/31', 'knx_ga_write': '1/1/31', 'knx_dpt': '1'})
+    State.add('spotlight', parent='/ground_floor/kitchen/lights',
+              type='boolean', quantity='', unit='',
+              label='Kitchen spotlights', description='',
+              config={'knx_ga_read': '1/1/62', 'knx_ga_write': '1/1/62', 'knx_dpt': '1'})
     State.add('windows', parent='/ground_floor/kitchen')
     State.add('south', parent='/ground_floor/kitchen/windows')
     State.add('shading', parent='/ground_floor/kitchen/windows/south')
@@ -105,8 +109,8 @@ def create_pages():
                          'state': State.get(path='/ground_floor/kitchen/lights/light').id})
     s.add_widget(uuid4(), 'switch',
                  config={'icon': 'light_light',
-                         'label': 'Light',
-                         'state': State.get(path='/ground_floor/kitchen/lights/light').id})
+                         'label': 'Spots',
+                         'state': State.get(path='/ground_floor/kitchen/lights/spotlight').id})
 
     s = Section.get(path='/ground_floor/kitchen/shading')
     s.add_widget(uuid4(), 'shading',
