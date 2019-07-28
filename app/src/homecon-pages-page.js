@@ -64,7 +64,7 @@ class HomeconPagesPage extends PolymerElement {
   ready() {
     super.ready();
     this.loaded = false;
-    this.edit = false
+    this.edit = window.homecon.app_edit || false
     window.addEventListener('app-edit',  (e) => {this.edit = e.detail.edit});
   }
 

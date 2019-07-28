@@ -98,8 +98,8 @@ class HomeconPagesMenuGroup extends PolymerElement {
   ready() {
     super.ready();
     this.addEventListener('menu-change-state',  (e) => this._menuChangeState(e));
-    this.edit = false
-    this.addEventListener('app-edit',  (e) => {this.edit = e.detail.edit});
+    this.edit = window.app_edit || false
+    window.addEventListener('app-edit',  (e) => {this.edit = e.detail.edit});
   }
 
   addPage(e) {

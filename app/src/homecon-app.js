@@ -28,6 +28,9 @@ setPassiveTouchGestures(true);
 // in `index.html`.
 setRootPath(HomeconAppGlobals.rootPath);
 
+// create the homecon namespace
+window.homecon = new Object()
+
 class HomeconApp extends PolymerElement {
   static get template() {
     return html`
@@ -164,8 +167,6 @@ class HomeconApp extends PolymerElement {
       <homecon-web-socket connected="{{connected}}"></homecon-web-socket>
       <homecon-states-master></homecon-states-master>
 
-      <iron-meta key="edit" value="{{edit}}"></iron-meta>
-
       <!-- Header -->
       <app-header fixed shadow class$="[[loginClass]]">
         <app-toolbar>
@@ -207,7 +208,7 @@ class HomeconApp extends PolymerElement {
           <view-pages name="pages" route="[[subroute]]"></view-pages>
           <view-states id="states" name="states"></view-states>
           <view-settings id="settings" name="settings"></view-settings>
-          <view-editor name="editor" pages-path="{{pagesPath}}"></view-editor>
+          <view-editor name="editor"></view-editor>
           <view-users name="users"></view-users>
         </iron-pages>
       </div>
@@ -243,7 +244,7 @@ class HomeconApp extends PolymerElement {
      // Show 'view1' in that case. And if the page doesn't exist, show 'view404'.
     if (!page) {
       this.page = 'login';
-    } else if (['pages', 'states', 'settings'].indexOf(page) !== -1) {
+    } else if (['pages', 'states', 'settings', 'editor'].indexOf(page) !== -1) {
       this.page = page;
     } else {
       this.page = 'view404';
@@ -268,6 +269,9 @@ class HomeconApp extends PolymerElement {
         break;
       case 'settings':
         import('./view-settings.js');
+        break;
+      case 'editor':
+        import('./view-editor.js');
         break;
       case 'view404':
         import('./my-view404.js');

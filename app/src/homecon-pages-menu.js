@@ -46,8 +46,8 @@ class HomeconPagesMenu extends PolymerElement {
 
   ready() {
     super.ready();
-    this.edit = false
-    this.addEventListener('app-edit',  (e) => {this.edit = e.detail.edit});
+    this.edit = window.homecon.app_edit || false
+    window.addEventListener('app-edit',  (e) => {this.edit = e.detail.edit});
   }
 
   changeState(e) {

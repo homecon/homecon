@@ -38,6 +38,7 @@
     "@polymer/paper-item": "github:PolymerElements/paper-item",
     "@polymer/paper-listbox": "github:PolymerElements/paper-listbox",
     "@polymer/paper-slider": "github:PolymerElements/paper-slider",
+    "@polymer/paper-toggle-button": "github:PolymerElements/paper-toggle-button",
     "@polymer/polymer": "^3.0.0",
     "@webcomponents/webcomponentsjs": "^2.0.0",
     "lit-element": "github:Polymer/lit-element",

@@ -94,8 +94,8 @@ class HomeconPagesMenuPage extends PolymerElement {
 
   ready() {
     super.ready();
-    this.edit = false
-    this.addEventListener('app-edit',  (e) => {this.edit = e.detail.edit});
+    this.edit = window.app_edit || false
+    window.addEventListener('app-edit',  (e) => {this.edit = e.detail.edit});
   }
 
   openEditDialog(){
