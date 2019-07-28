@@ -129,67 +129,75 @@ class Plugins(Plugin):
             plugin_class = getattr(plugin_module, plugin_class_name)
         return plugin_class
 
+    def listen_plugins_settings(self, event):
+        sections = []
+        for key, plugin in self.items():
+            section = plugin.settings_sections
+            if section is not None:
+                sections += section
 
-    def get_state_config_keys(self):
+        event.reply({'plugin': event.data['plugin'], 'value': sections})
 
-        keyslist = []
-
-        keyslist.append({'name': 'states', 'keys': ['type', 'quantity', 'unit', 'label', 'description']})
-        keyslist.append({'name': 'permissions', 'keys': ['readusers', 'writeusers', 'readgroups', 'writegroups']})
-        
-        for name,plugin in core.plugins.items():
-            keys = plugin.config_keys
-            if len(config)>0: 
-                keyslist.append({'name':name, 'keys':keys})
-
-        return keyslist
-
-    def get_components(self):
-        
-        keyslist = []
-
-        keyslist.append({'name':'building', 'components':[
-            {
-                'name': 'relay',
-                'states': [
-                    'value',
-                ]
-            },
-        ]})
-        
-        #for name,plugin in self._plugins.items():
-        #    keys = plugin.components()
-        #    if len(config)>0: 
-        #        keyslist.append({'name':name, 'keys':keys})
-
-        return keyslist
-
-    def listen_list_optionalplugins(self,event):
-        core.websocket.send({'event':'list_optionalplugins', 'path':'', 'value':self.get_optionalplugins_list()}, clients=[event.client])
-
-    def listen_list_activeplugins(self,event):
-        core.websocket.send({'event':'list_activeplugins', 'path':'', 'value':self.get_activeplugins_list()}, clients=[event.client])
-
-    def listen_list_state_config_keys(self,event):
-        core.websocket.send({'event':'list_state_config_keys', 'path':'', 'value':self.get_state_config_keys()}, clients=[event.client])
-
-    def listen_activate_plugin(self,event):
-        self.activate(event.data['plugin'])
-        core.websocket.send({'event':'list_optionalplugins', 'path':'', 'value':self.get_optionalplugins_list()}, clients=[event.client]) # FIXME should all clients be notified of plugin changes?
-        core.websocket.send({'event':'list_activeplugins', 'path':'', 'value':self.get_activeplugins_list()}, clients=[event.client])
-        core.event.fire('component_types',{},client=event.client)
-
-    def listen_deactivate_plugin(self,event):
-        self.deactivate(event.data['plugin'])
-        core.websocket.send({'event':'list_optionalplugins', 'path':'', 'value':self.get_optionalplugins_list()}, clients=[event.client])
-        core.websocket.send({'event':'list_activeplugins', 'path':'', 'value':self.get_activeplugins_list()}, clients=[event.client])
-        #FIXME components defined in a plugin should be unregisterd and component instances deleted from the active list
-        core.event.fire('component_types',{},client=event.client)
-
-    def listen_install_plugin(self,event):
-        if self.install(event.data['url']):
-            core.websocket.send({'event':'list_optionalplugins', 'path':'', 'value':self.get_optionalplugins_list()}, clients=[event.client])
-            core.websocket.send({'event':'list_activeplugins', 'path':'', 'value':self.get_optionalplugins_list()}, clients=[event.client])
+    # def get_state_config_keys(self):
+    #
+    #     keyslist = []
+    #
+    #     keyslist.append({'name': 'states', 'keys': ['type', 'quantity', 'unit', 'label', 'description']})
+    #     keyslist.append({'name': 'permissions', 'keys': ['readusers', 'writeusers', 'readgroups', 'writegroups']})
+    #
+    #     for name,plugin in core.plugins.items():
+    #         keys = plugin.config_keys
+    #         if len(config)>0:
+    #             keyslist.append({'name':name, 'keys':keys})
+    #
+    #     return keyslist
+    #
+    # def get_components(self):
+    #
+    #     keyslist = []
+    #
+    #     keyslist.append({'name':'building', 'components':[
+    #         {
+    #             'name': 'relay',
+    #             'states': [
+    #                 'value',
+    #             ]
+    #         },
+    #     ]})
+    #
+    #     #for name,plugin in self._plugins.items():
+    #     #    keys = plugin.components()
+    #     #    if len(config)>0:
+    #     #        keyslist.append({'name':name, 'keys':keys})
+    #
+    #     return keyslist
+    #
+    # def listen_list_optionalplugins(self,event):
+    #     core.websocket.send({'event':'list_optionalplugins', 'path':'', 'value':self.get_optionalplugins_list()}, clients=[event.client])
+    #
+    # def listen_list_activeplugins(self,event):
+    #     core.websocket.send({'event':'list_activeplugins', 'path':'', 'value':self.get_activeplugins_list()}, clients=[event.client])
+    #
+    # def listen_list_state_config_keys(self,event):
+    #     core.websocket.send({'event':'list_state_config_keys', 'path':'', 'value':self.get_state_config_keys()}, clients=[event.client])
+    #
+    # def listen_activate_plugin(self,event):
+    #     self.activate(event.data['plugin'])
+    #     core.websocket.send({'event':'list_optionalplugins', 'path':'', 'value':self.get_optionalplugins_list()}, clients=[event.client]) # FIXME should all clients be notified of plugin changes?
+    #     core.websocket.send({'event':'list_activeplugins', 'path':'', 'value':self.get_activeplugins_list()}, clients=[event.client])
+    #     core.event.fire('component_types',{},client=event.client)
+    #
+    # def listen_deactivate_plugin(self,event):
+    #     self.deactivate(event.data['plugin'])
+    #     core.websocket.send({'event':'list_optionalplugins', 'path':'', 'value':self.get_optionalplugins_list()}, clients=[event.client])
+    #     core.websocket.send({'event':'list_activeplugins', 'path':'', 'value':self.get_activeplugins_list()}, clients=[event.client])
+    #     #FIXME components defined in a plugin should be unregisterd and component instances deleted from the active list
+    #     core.event.fire('component_types',{},client=event.client)
+    #
+    # def listen_install_plugin(self,event):
+    #     if self.install(event.data['url']):
+    #         core.websocket.send({'event':'list_optionalplugins', 'path':'', 'value':self.get_optionalplugins_list()}, clients=[event.client])
+    #         core.websocket.send({'event':'list_activeplugins', 'path':'', 'value':self.get_optionalplugins_list()}, clients=[event.client])
 
     def __getitem__(self,path):
         return None

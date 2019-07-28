@@ -150,6 +150,10 @@ class Plugin(Process):
     def name(self):
         return self.__class__.__name__
 
+    @property
+    def settings_sections(self):
+        return None
+
     def __repr__(self):
         return '<Plugin {}>'.format(self.name)
 

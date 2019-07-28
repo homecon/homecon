@@ -243,7 +243,7 @@ class HomeconApp extends PolymerElement {
      // Show 'view1' in that case. And if the page doesn't exist, show 'view404'.
     if (!page) {
       this.page = 'login';
-    } else if (['pages', 'states'].indexOf(page) !== -1) {
+    } else if (['pages', 'states', 'settings'].indexOf(page) !== -1) {
       this.page = page;
     } else {
       this.page = 'view404';
@@ -266,8 +266,8 @@ class HomeconApp extends PolymerElement {
       case 'states':
         import('./view-states.js');
         break;
-      case 'view3':
-        import('./my-view3.js');
+      case 'settings':
+        import('./view-settings.js');
         break;
       case 'view404':
         import('./my-view404.js');

@@ -41,7 +41,6 @@ class HomeconPagesSection extends PolymerElement {
         }
       </style>
 
-      <homecon-web-socket-sender id="websocket"></homecon-web-socket-sender>
       <homecon-web-socket-object event="pages_section" key="{{key}}" data="{{section}}" auto>
       </homecon-web-socket-object>
 

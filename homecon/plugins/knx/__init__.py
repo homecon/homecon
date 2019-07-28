@@ -23,6 +23,8 @@ class Knx(Plugin):
         super().__init__(*args, **kwargs)
         self.ga_read_mapping = {}
         self.connection = None
+        self.address_state = None
+        self.port_state = None
 
     def initialize(self):
         State.add('settings', type=None)
@@ -88,3 +90,27 @@ class Knx(Plugin):
         state = event.data['state']
         if 'knx_ga_read' in state.config:
             self.ga_read_mapping[state.config['knx_ga_read']] = state.id
+
+    @property
+    def settings_sections(self):
+        sections = [{
+            'config': {
+                'title': 'knxd'
+            },
+            'widgets': [{
+                'type': 'value-input',
+                'config': {
+                    'state': State.get(path='/settings/knxd/address').id,
+                    'label': 'Address',
+                }
+            }, {
+                'type': 'value-input',
+                'config': {
+                    'state': State.get(path='/settings/knxd/port').id,
+                    'label': 'Port',
+                }
+            }
+
+            ]
+        }]
+        return sections
