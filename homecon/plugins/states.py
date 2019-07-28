@@ -200,6 +200,41 @@ class States(Plugin):
             Event.fire('state_deleted', {'state': state})
             Event.fire('state_list_changed', data={'state_list': State.all()})
 
+    @property
+    def settings_sections(self):
+        sections = [{
+            'config': {
+                'title': 'Location'
+            },
+            'widgets': [{
+                'type': 'value-input',
+                'config': {
+                    'state': State.get(path='/settings/location/timezone').id,
+                    'label': 'Timezone',
+                }
+            }, {
+                'type': 'value-input',
+                'config': {
+                    'state': State.get(path='/settings/location/longitude').id,
+                    'label': 'Longitude',
+                }
+            }, {
+                'type': 'value-input',
+                'config': {
+                    'state': State.get(path='/settings/location/latitude').id,
+                    'label': 'Latitude',
+                }
+            }, {
+                'type': 'value-input',
+                'config': {
+                    'state': State.get(path='/settings/location/elevation').id,
+                    'label': 'Elevation',
+                }
+            }]
+        }]
+        return sections
+
+
     #
     # def listen_state(self, event):
     #     if 'path' in event.data:
