@@ -126,5 +126,4 @@ class HomeconWebSocket extends PolymerElement {
 
 }
 
-
 window.customElements.define('homecon-web-socket', HomeconWebSocket);

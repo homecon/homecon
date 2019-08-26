@@ -20,11 +20,24 @@ class HomeconPagesWidget extends PolymerElement {
           display: inline-block;
           position: relative;
         }
+        .fullwidth{
+          width: 100%;
+        }
+        .halfwidth{
+          width: 49%;
+          min-width: 190px;
+        }
+        .quarterwidth{
+          width: 24%;
+        }
+        .center{
+          text-align: center;
+        }
       </style>
 
       <homecon-web-socket-object id="websocketWidget" event="pages_widget" key="{{key}}" data="{{widget}}" auto></homecon-web-socket-object>
 
-      <homecon-widget widget="{{widget}}" edit="{{edit}}"></homecon-widget>
+      <homecon-widget widget="{{widget}}" edit="{{edit}}" on-class-changed="_classChanged"></homecon-widget>
     `;
   }
 
@@ -51,6 +64,10 @@ class HomeconPagesWidget extends PolymerElement {
     this.loaded = false;
     this.edit = window.homecon.app_edit || false
     window.addEventListener('app-edit',  (e) => {this.edit = e.detail.edit});
+  }
+
+  _classChanged(e){
+    this.class = e.detail.class;
   }
 
   editWidget(e, d){

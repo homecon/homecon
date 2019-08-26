@@ -56,6 +56,7 @@ def create_states():
     logger.info('creating demo states')
     State.add('ground_floor')
     State.add('kitchen', parent='/ground_floor')
+    State.add('some_value', parent='/ground_floor/kitchen', type='int')
     State.add('lights', parent='/ground_floor/kitchen')
     State.add('light', parent='/ground_floor/kitchen/lights',
               type='boolean', quantity='', unit='',
@@ -81,8 +82,8 @@ def create_states():
 
     State.add('action')
     State.add('dummy', parent='/action', type='action', value=[
-        {'state': State.get('/ground_floor/kitchen/lights/light').id, 'value': 1},
-        {'state': State.get('/ground_floor/kitchen/lights/light').id, 'value': 0, 'delay': 5}
+        {'state': State.get('/ground_floor/kitchen/some_value').id, 'value': 10},
+        {'state': State.get('/ground_floor/kitchen/some_value').id, 'value': 0, 'delay': 5}
     ])
 
     State.add('scheduler')

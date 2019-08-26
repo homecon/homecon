@@ -70,6 +70,7 @@ class HomeconWidget extends PolymerElement {
     // set the host class based on the widget type
     if('classes' in widget){
       this.class = widget.classes;
+      this.dispatchEvent(new CustomEvent('class-changed', {'detail': {'class': this.class}}));
     }
 
     // add the widget to the dom
