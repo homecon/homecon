@@ -79,16 +79,15 @@ def create_states():
               type='float', quantity='', unit='',
               label='Position', description='',
               config={'knx_ga_read': '2/4/62', 'knx_ga_write': '2/3/62', 'knx_dpt': '5'})
-    State.add('action')
-    State.add('dummy', parent='/action', type='action', value=[
+
+    State.add('myalarms')
+    State.add('Dummy', parent='/myalarms', type='action', value=[
         {'state': State.get('/ground_floor/kitchen/some_value').id, 'value': 10},
         {'state': State.get('/ground_floor/kitchen/some_value').id, 'value': 0, 'delay': 5}
     ])
-
-    State.add('scheduler')
-    State.add('dummy', parent='/scheduler', type='schedule',
+    State.add('1', parent='/myalarms', type='schedule',
               value={'trigger': {'day_of_week': '0,1,2,3,6', 'hour': '20', 'minute': '0'},
-                     'action': State.get('/action/dummy').id})
+                     'action': State.get('/myalarms/Dummy').id})
 
 
 def create_pages():
@@ -127,7 +126,7 @@ def create_pages():
     s = Section.get(path='/ground_floor/kitchen/shading')
     s.add_widget(uuid4(), 'alarm',
                  config={'label': 'My alarm',
-                         'state': State.get(path='/scheduler').id})
+                         'state': State.get(path='/myalarms').id})
 #
 # def prepare_database():
 #     """

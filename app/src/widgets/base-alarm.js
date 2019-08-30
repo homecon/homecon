@@ -73,9 +73,9 @@ class BaseAlarm extends PolymerElement {
             </div>
           </div>
           <paper-dropdown-menu label="Action">
-           <paper-listbox slot="dropdown-content" selected="{{alarm.action}}">
+            <paper-listbox slot="dropdown-content" selected="{{alarm.action}}" attr-for-selected="value" on-selected-changed="_actionChanged">
               <template is="dom-repeat" items="{{actions}}" as="action">
-                <paper-item value="{{action}}">{{action}}</paper-item>
+                <paper-item value="{{action.id}}">{{action.name}}</paper-item>
               </template>
             </paper-listbox>
           </paper-dropdown-menu>
@@ -193,8 +193,10 @@ class BaseAlarm extends PolymerElement {
     window.homeconWebSocket.send({'event': 'state_value', 'data': {'id': this.key, 'value': alarm}})
   }
 
-  _actionChanged(event,data){
-    this.$.websocketObject.send();
+  _actionChanged(event, data){
+    var alarm = JSON.parse(JSON.stringify(this.alarm))
+    alarm.action = data.value
+    window.homeconWebSocket.send({'event': 'state_value', 'data': {'id': this.key, 'value': alarm}})
   }
 
 }

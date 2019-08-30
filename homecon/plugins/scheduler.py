@@ -112,7 +112,13 @@ class Scheduler(Plugin):
                                                                if s.type == self.SCHEDULE_STATE_TYPE]})
 
     def listen_list_actions(self, event):
-        pass
+        if 'id' in event.data:
+            state = State.get(id=event.data['id'])
+            if state is not None:
+                actions = [{'id': s.id, 'name': s.name} for s in state.children if s.type == self.ACTION_STATE_TYPE]
+            else:
+                actions = []
+            event.reply({'id': event.data['id'], 'value': actions})
 
     def listen_add_alarm(self, event):
         pass

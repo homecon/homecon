@@ -40,7 +40,7 @@ class WidgetAlarm extends PolymerElement {
       </style>
 
       <homecon-web-socket-object event="list_schedules" key="[[state]]" data="{{alarms}}" auto></homecon-web-socket-object>
-      <homecon-web-socket-object event="list_actions" key="" data="{{actions}}" auto></homecon-web-socket-object>
+      <homecon-web-socket-object event="list_actions" key="[[state]]" data="{{actions}}" auto></homecon-web-socket-object>
 
       <template is="dom-repeat" items="{{alarms}}" as="key">
         <div class="alarm vertical layout">
