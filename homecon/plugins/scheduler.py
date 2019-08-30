@@ -104,6 +104,19 @@ class Scheduler(Plugin):
             except:
                 logger.exception('job not found: {}'.format(self.get_job_id(state)))
 
+    def listen_list_schedules(self, event):
+        if 'id' in event.data:
+            state = State.get(id=event.data['id'])
+            if state is not None:
+                event.reply({'id': event.data['id'], 'value': [s.id for s in state.children
+                                                               if s.type == self.SCHEDULE_STATE_TYPE]})
+
+    def listen_list_actions(self, event):
+        pass
+
+    def listen_add_alarm(self, event):
+        pass
+
     def listen_stop_plugin(self, event):
         super().listen_stop_plugin(event)
         self.scheduler.shutdown(wait=False)

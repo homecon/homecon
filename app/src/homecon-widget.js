@@ -11,6 +11,7 @@ import './homecon-web-socket-object.js';
 import './widgets/widget-switch.js';
 import './widgets/widget-shading.js';
 import './widgets/widget-value-input.js';
+import './widgets/widget-alarm.js';
 
 
 class HomeconWidget extends PolymerElement {
