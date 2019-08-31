@@ -54,7 +54,7 @@ class HomeconWidget extends PolymerElement {
   }
 
   updateWidget(type){
-    console.log('update widget', type, JSON.stringify(this.widget.config))
+    // console.log('update widget', type, JSON.stringify(this.widget.config))
     var container = this.$.container;
     // import the widget
     //this.importHref( this.resolveUrl(type+'.html'), null, null, true );
