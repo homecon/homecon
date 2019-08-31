@@ -3,12 +3,14 @@
 
 import logging
 import time
+from uuid import uuid4
 from threading import Thread
 
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.executors.pool import ThreadPoolExecutor
 from apscheduler.triggers.cron import CronTrigger
 
+from homecon.core.event import Event
 from homecon.core.state import State
 from homecon.core.plugin import Plugin
 
@@ -62,54 +64,85 @@ class Scheduler(Plugin):
             logger.exception('trigger and action must be included in the state value')
             return
 
-        def func():
-            logger.debug('executing scheduler {}'.format(state))
-            action = State.get(id=state.value['action'])
-            assert action.type == self.ACTION_STATE_TYPE
+        if state.value['action'] is not None:
+            def func():
+                logger.debug('executing scheduler {}'.format(state))
+                action = State.get(id=state.value['action'])
+                assert action.type == self.ACTION_STATE_TYPE
 
-            for v in action.value:
-                d = v.get('delay', 0)
-                if d > 0:
-                    def e():
+                for v in action.value:
+                    d = v.get('delay', 0)
+                    if d > 0:
+                        def e():
+                            s = State.get(id=v['state'])
+                            time.sleep(d)
+                            logger.debug('setting {} to {} from schedule {}'.format(s, v['value'], state))
+                            s.set_value(v['value'], source='Scheduler')
+
+                        Thread(target=e).start()
+                    else:
                         s = State.get(id=v['state'])
-                        time.sleep(d)
                         logger.debug('setting {} to {} from schedule {}'.format(s, v['value'], state))
                         s.set_value(v['value'], source='Scheduler')
 
-                    Thread(target=e).start()
-                else:
-                    s = State.get(id=v['state'])
-                    logger.debug('setting {} to {} from schedule {}'.format(s, v['value'], state))
-                    s.set_value(v['value'], source='Scheduler')
-
-        job = self.scheduler.get_job(self.get_job_id(state))
-        if job is None:
-            logger.debug('adding scheduler job for {}'.format(state))
-            self.scheduler.add_job(func, trigger='cron', **state.value['trigger'], timezone=self.timezone,
-                                   id=self.get_job_id(state))
+            job = self.scheduler.get_job(self.get_job_id(state))
+            if job is None:
+                logger.debug('adding scheduler job for {}'.format(state))
+                self.scheduler.add_job(func, trigger='cron', **state.value['trigger'], timezone=self.timezone,
+                                       id=self.get_job_id(state))
+            else:
+                logger.debug('updating scheduler job for {}'.format(state))
+                job.modify(func=func)
+                job.reschedule(CronTrigger(**state.value['trigger']))
         else:
-            logger.debug('updating scheduler job for {}'.format(state))
-            job.modify(func=func, trigger=CronTrigger(**state.value['trigger']))
+            job = self.scheduler.get_job(self.get_job_id(state))
+            if job is not None:
+                self.scheduler.remove_job(self.get_job_id(state))
+
+    def delete_job(self, state):
+        if state.type == self.SCHEDULE_STATE_TYPE:
+            parent = state.parent
+            job_id = self.get_job_id(state)
+            job = self.scheduler.get_job(job_id)
+            if job is not None:
+                self.scheduler.remove_job(job_id)
+            self.broadcast_list_schedules(parent)
+        else:
+            logger.warning('state {} is not a schedule'.format(state))
+
+    def broadcast_list_schedules(self, state):
+        logger.debug(state)
+        if state is not None:
+            Event.fire('websocket_send', {
+                'event': 'list_schedules',
+                'data': {
+                    'id': state.id,
+                    'value': [s.id for s in state.children if s.type == self.SCHEDULE_STATE_TYPE]
+                }
+            })
 
     def listen_state_value_changed(self, event):
         state = event.data['state']
         if state.type == self.SCHEDULE_STATE_TYPE:
             self.update_job(state)
 
+    def listen_state_added(self, event):
+        state = event.data['state']
+        if state.type == self.SCHEDULE_STATE_TYPE:
+            self.update_job(state)
+            parent = state.parent
+            self.broadcast_list_schedules(parent)
+
     def listen_state_deleted(self, event):
         state = event.data['state']
         if state.type == self.SCHEDULE_STATE_TYPE:
-            try:
-                self.scheduler.remove_job(self.get_job_id(state))
-            except:
-                logger.exception('job not found: {}'.format(self.get_job_id(state)))
+            self.delete_job(state)
 
     def listen_list_schedules(self, event):
         if 'id' in event.data:
             state = State.get(id=event.data['id'])
-            if state is not None:
-                event.reply({'id': event.data['id'], 'value': [s.id for s in state.children
-                                                               if s.type == self.SCHEDULE_STATE_TYPE]})
+            event.reply({'id': event.data['id'],
+                         'value': [s.id for s in state.children if s.type == self.SCHEDULE_STATE_TYPE]})
 
     def listen_list_actions(self, event):
         if 'id' in event.data:
@@ -120,8 +153,21 @@ class Scheduler(Plugin):
                 actions = []
             event.reply({'id': event.data['id'], 'value': actions})
 
-    def listen_add_alarm(self, event):
-        pass
+    def listen_add_schedule(self, event):
+        if 'id' in event.data:
+            state = State.get(id=event.data['id'])
+            if state is not None:
+                default_schedule_value = {
+                    'trigger': {'hour': '0', 'minute': '0', 'day_of_week': '0,1,2,3,4'},
+                    'action': None
+                }
+                State.add(name=str(uuid4()), parent=state, type=self.SCHEDULE_STATE_TYPE, value=default_schedule_value)
+
+    def listen_delete_schedule(self, event):
+        if 'id' in event.data:
+            # state = State.get(id=event.data['id'])
+            # self.delete_job(state)
+            Event.fire('state_delete', event.data, source=event.source)
 
     def listen_stop_plugin(self, event):
         super().listen_stop_plugin(event)

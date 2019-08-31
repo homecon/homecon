@@ -43,7 +43,12 @@ class BaseAlarm extends PolymerElement {
         paper-button{
           text-transform: none;
         }
-
+        .delete{
+          position: absolute;
+          top: 10px;
+          right: 20px;
+          color: var(--button-text-color);
+        }
         </style>
 
         <homecon-web-socket-object id="websocketObject" event="state_value" key="{{key}}" data="{{alarm}}" auto></homecon-web-socket-object>
@@ -79,6 +84,9 @@ class BaseAlarm extends PolymerElement {
               </template>
             </paper-listbox>
           </paper-dropdown-menu>
+          <div class="delete">
+            <paper-icon-button icon="icons:delete" noink="true" on-tap="deleteAlarm"></paper-icon-button>
+          </div>
         </div>
 
         <paper-dialog id="timepickerDialog">
@@ -197,6 +205,10 @@ class BaseAlarm extends PolymerElement {
     var alarm = JSON.parse(JSON.stringify(this.alarm))
     alarm.action = data.value
     window.homeconWebSocket.send({'event': 'state_value', 'data': {'id': this.key, 'value': alarm}})
+  }
+
+  deleteAlarm(event){
+    window.homeconWebSocket.send({'event': 'delete_schedule', 'data': {'id': this.key}})
   }
 
 }

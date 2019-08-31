@@ -193,9 +193,7 @@ class States(Plugin):
 
     def listen_state_delete(self, event):
         if 'id' in event.data:
-            kwargs = dict(event.data)
-            id = kwargs.pop('id')
-            state = State.get(id=id)
+            state = State.get(id=event.data['id'])
             state.delete()
             Event.fire('state_deleted', {'state': state})
             Event.fire('state_list_changed', data={'state_list': State.all()})

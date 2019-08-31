@@ -154,12 +154,16 @@ class State(DatabaseObject):
         >>> c = State.add('child', parent=p)
         >>> c.parent
         """
-        parent_id = self.get_property('parent')
-        if parent_id is not None:
-            self._parent = State.get(id=self.get_property('parent'))
+        # parent_id = self.get_property('parent')
+        # if parent_id is not None:
+        #     self._parent = State.get(id=self.get_property('parent'))
+        # else:
+        #     self._parent = None
+        # return self._parent
+        if self._parent is None:
+            return None
         else:
-            self._parent = None
-        return self._parent
+            return State.get(id=self._parent)
 
     @property
     def children(self):
@@ -179,7 +183,7 @@ class State(DatabaseObject):
 
     @property
     def type(self):
-        self._type = self.get_property('type')
+        # self._type = self.get_property('type')
         return self._type
 
     @property

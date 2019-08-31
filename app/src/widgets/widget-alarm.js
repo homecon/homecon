@@ -22,12 +22,7 @@ class WidgetAlarm extends PolymerElement {
         .alarm{
           position: relative;
         }
-        .delete{
-          position: absolute;
-          top: 10px;
-          right: 20px;
-          color: var(--button-text-color);
-        }
+
         paper-button{
           text-transform: none;
         }
@@ -45,9 +40,6 @@ class WidgetAlarm extends PolymerElement {
       <template is="dom-repeat" items="{{alarms}}" as="key">
         <div class="alarm vertical layout">
           <base-alarm key="{{key}}" actions="{{actions}}"></base-alarm>
-          <div class="delete">
-            <paper-icon-button icon="icons:delete" noink="true" on-tap="deleteAlarm"></paper-icon-button>
-          </div>
         </div>
       </template>
 
@@ -104,12 +96,13 @@ class WidgetAlarm extends PolymerElement {
   }
 
   addAlarm(e){
-    this.$.websocket.send({'event':'add_schedule', 'config': {'filter': this.config['filter']}, 'value': {'hour':0, 'minute':0}});
+    window.homeconWebSocket.send({'event': 'add_schedule', 'data': {'id': this.state}})
   }
 
   deleteAlarm(e){
     path = e.model.__data__.path;
-    this.$.websocket.send({'event':'delete_schedule','path':path});
+//    window.homeconWebSocket.send({'event': 'delete_schedule', 'data': {'id': this.config['filter']}})
+//    this.$.websocket.send({'event':'delete_schedule','path':path});
   }
 
 }
