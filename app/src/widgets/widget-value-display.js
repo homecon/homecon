@@ -8,19 +8,15 @@ import '@polymer/paper-input/paper-input.js';
 
 import '../shared-styles.js';
 import '../homecon-edit-dialog.js';
+import './base-value-display.js';
 
-class WidgetValueInput extends PolymerElement {
+class WidgetValueDisplay extends PolymerElement {
   static get template() {
     return html`
       <style include="shared-styles iron-flex iron-flex-alignment">
         :host{
           display: inline-block;
           position: relative;
-        }
-        .label{
-          font-size: 16px;
-          font-weight: 700;
-          margin-right: 10px;
         }
         .edit{
           position: absolute;
@@ -29,18 +25,8 @@ class WidgetValueInput extends PolymerElement {
           color: var(--button-text-color);
         }
       </style>
-        <homecon-web-socket-object event="state_value" key="[[state]]" data="{{value}}" auto>
-        </homecon-web-socket-object>
 
-
-        <div class="horizontal layout" on-tap="editValueDialog">
-          <div class="label">{{label}}:</div>
-          <div class="value flex">{{value}}</div>
-        <div>
-
-        <homecon-edit-dialog id="editValueDialog" on-save="call">
-          <paper-input label={{label}} value="{{newValue}}"></paper-input>
-        </homecon-edit-dialog>
+        <base-value-display state="{{state}}" prefix="{{prefix}}" suffix="{{suffix}}"></base-value-display>
 
         <div class="edit" hidden="{{!edit}}">
           <paper-icon-button icon="editor:mode-edit" noink="true" on-tap="openEditDialog"></paper-icon-button>
@@ -48,8 +34,9 @@ class WidgetValueInput extends PolymerElement {
 
         <homecon-edit-dialog id="editDialog" on-save="save">
           <template is="dom-if" if="{{edit}}">
-            <paper-input label="Label:" value="{{newLabel}}"></paper-input>
-            <homecon-state-select></homecon-state-select>
+            <paper-input label="prefix:" value="{{newPrefix}}"></paper-input>
+            <paper-input label="suffix:" value="{{newSuffix}}"></paper-input>
+            <homecon-state-select value="{{newState}}"></homecon-state-select>
             <paper-button on-tap="delete">Delete</paper-button>
           </template>
         </homecon-edit-dialog>
@@ -58,9 +45,13 @@ class WidgetValueInput extends PolymerElement {
 
   static get properties() {
     return {
-      label: {
+      prefix: {
         type: String,
-        value: 'new switch',
+        value: '',
+      },
+      suffix: {
+        type: String,
+        value: '',
       },
       state: {
         type: Number,
@@ -76,15 +67,13 @@ class WidgetValueInput extends PolymerElement {
     };
   }
 
-  editValueDialog(valueOn, valueOff){
-    this.newValue = this.value
-    this.$.editValueDialog.open()
-  }
-
-  call(){
-    window.homeconWebSocket.send({'event': 'state_value', 'data': {'id': this.state, 'value': this.newValue}})
+  openEditDialog(e){
+    this.newPrefix = this.prefix
+    this.newSuffix = this.suffix
+    this.newState = this.state
+    this.$.openEditDialog.open()
   }
 
 }
 
-window.customElements.define('widget-value-input', WidgetValueInput);
+window.customElements.define('widget-value-display', WidgetValueDisplay);

@@ -72,7 +72,14 @@
     "name": "kitchen",
     "config": {
       "title": "Kitchen", 
-      "icon": "scene_dinner"
+      "icon": "scene_dinner",
+      "widget": {
+        "type": "value-display",
+        "config": {
+          "state": 3,
+          "suffix": "°C"
+        }
+      }
     },
     "sections": [{
       "name": "lights",

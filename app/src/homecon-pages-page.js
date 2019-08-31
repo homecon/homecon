@@ -34,7 +34,7 @@ class HomeconPagesPage extends PolymerElement {
 
       <homecon-page>
         <template is="dom-if" if="[[_filterHome(page)]]">
-          <homecon-page-header title="[[page.config.title]]" icon="[[page.config.icon]]"></homecon-page-header>
+          <homecon-page-header title="[[page.config.title]]" icon="[[page.config.icon]]" widget="[[page.config.widget]]"></homecon-page-header>
         </template>
 
         <template is="dom-repeat" id="sections" items="{{page.sections}}" as="sectionId">

@@ -1,5 +1,6 @@
 import { PolymerElement, html } from '@polymer/polymer/polymer-element.js';
 import '@polymer/iron-flex-layout/iron-flex-layout-classes.js';
+import './homecon-widget.js';
 
 class HomeconPageHeader extends PolymerElement {
   static get template() {
@@ -19,6 +20,10 @@ class HomeconPageHeader extends PolymerElement {
           font-size: 2em;
           font-weight: 700;
         }
+        .widget{
+          margin-top: 15px;
+          margin-right: 15px;
+        }
       </style>
 
       <div class="horizontal layout header">
@@ -26,7 +31,7 @@ class HomeconPageHeader extends PolymerElement {
         <h1 class="title flex">[[title]]</h1>
         <template is="dom-if" if="[[_hasWidget(widget)]]">
           <div class="widget">
-            20°C
+            <homecon-widget widget="{{widget}}" edit="{{edit}}"></homecon-widget>
           </div>
         </template>
       </div>

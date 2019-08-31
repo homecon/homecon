@@ -18,6 +18,7 @@ class WidgetAlarm extends PolymerElement {
         :host{
           display: block;
           position: relative;
+          margin-top: 10px;
         }
         .alarm{
           position: relative;
