@@ -80,7 +80,7 @@ class HomeconPagesPage extends PolymerElement {
   }
 
   _filterHome(item){
-      return item.path != 'home/home';
+      return item.path != '/home/home';
   }
 
   _hiddenclass(edit) {

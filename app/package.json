@@ -13,6 +13,7 @@
     "test:integration": "polymer build # test that psk builds without error with the CLI"
   },
   "dependencies": {
+    "@collaborne/lit-flexbox-literals": "^0.2.2",
     "@hunsalz/web-socket": "github:hunsalz/web-socket",
     "@lrnwebcomponents/json-editor": "^2.0.3",
     "@polymer/app-layout": "^3.0.0-pre.15",

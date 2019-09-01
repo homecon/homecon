@@ -12,6 +12,8 @@ import './widgets/widget-switch.js';
 import './widgets/widget-shading.js';
 import './widgets/widget-value-input.js';
 import './widgets/widget-alarm.js';
+import './widgets/widget-clock.js';
+import './widgets/widget-date.js';
 
 
 class HomeconWidget extends PolymerElement {
@@ -54,6 +56,7 @@ class HomeconWidget extends PolymerElement {
   }
 
   updateWidget(type){
+
     // console.log('update widget', type, JSON.stringify(this.widget.config))
     var container = this.$.container;
     // import the widget
@@ -67,7 +70,6 @@ class HomeconWidget extends PolymerElement {
     }
 
     this.set('widgetinstance', widget);
-
     // set the host class based on the widget type
     if('classes' in widget){
       this.class = widget.classes;
