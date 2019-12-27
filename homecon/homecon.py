@@ -27,7 +27,6 @@ class HomeCon(object):
 
         # start plugins
         self.plugins = Plugins()
-
         logger.info('HomeCon object Initialized')
 
     def listen(self):
