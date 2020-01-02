@@ -3,7 +3,7 @@
 import logging
 import time
 
-from knxpy.knxd_sh import KNXD
+from knxpy.knxd import KNXD
 from knxpy.util import decode_dpt
 
 from homecon.core.plugin import Plugin

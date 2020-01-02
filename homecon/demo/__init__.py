@@ -56,7 +56,7 @@ def create_states():
     logger.info('creating demo states')
     State.add('ground_floor')
     State.add('kitchen', parent='/ground_floor')
-    State.add('some_value', parent='/ground_floor/kitchen', type='int')
+    State.add('some_value', parent='/ground_floor/kitchen', type='int', value=20)
     State.add('lights', parent='/ground_floor/kitchen')
     State.add('light', parent='/ground_floor/kitchen/lights',
               type='boolean', quantity='', unit='',
@@ -66,6 +66,14 @@ def create_states():
               type='boolean', quantity='', unit='',
               label='Kitchen spotlights', description='',
               config={'knx_ga_read': '1/1/62', 'knx_ga_write': '1/1/62', 'knx_dpt': '1'})
+
+    State.add('living', parent='/ground_floor')
+    State.add('lights', parent='/ground_floor/living')
+    State.add('light', parent='/ground_floor/living/lights',
+              type='boolean', quantity='', unit='',
+              label='Living room light', description='',
+              config={'knx_ga_read': '1/1/41', 'knx_ga_write': '1/1/41', 'knx_dpt': '1'})
+
     State.add('windows', parent='/ground_floor/kitchen')
     State.add('south', parent='/ground_floor/kitchen/windows')
     State.add('shading', parent='/ground_floor/kitchen/windows/south')
@@ -127,7 +135,20 @@ def create_pages():
     s.add_widget(uuid4(), 'alarm',
                  config={'label': 'My alarm',
                          'state': State.get(path='/myalarms').id})
-#
+
+    s = Section.get(path='/ground_floor/living/lights')
+    s.add_widget(uuid4(), 'switch',
+                 config={'icon': 'light_light',
+                         'label': 'Light',
+                         'state': State.get(path='/ground_floor/living/lights/light').id})
+
+    s = Section.get(path='/ground_floor/living/shading')
+    s.add_widget(uuid4(), 'shading',
+                 config={'label': 'South window',
+                         'state': State.get(path='/ground_floor/kitchen/windows/south/shading/position').id,
+                         'positionOpen': 0, 'positionClosed': 255})
+
+
 # def prepare_database():
 #     """
 #     Add entries to the database as if HomeCon was already running for 2 weeks

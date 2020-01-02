@@ -50,7 +50,7 @@ class HomeconAuthentication extends PolymerElement {
     // Send a message to HomeCon
     if(this.token != ''){
       console.log('login');
-      window.homeconWebSocket.send({'event':'authenticate','token':this.token});
+      window.homeconWebSocket.send({'event':'authenticate', 'token':this.token});
     }
   }
 

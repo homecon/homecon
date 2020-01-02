@@ -53,7 +53,7 @@ class HomeconPageHeader extends PolymerElement {
   }
 
   _hasWidget(widget){
-    return !(widget=={})
+    return !(widget=={} || typeof widget == 'undefined')
   }
 
   _parseIcon(icon){

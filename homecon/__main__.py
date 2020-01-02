@@ -158,12 +158,14 @@ def main(printlog=False, loglevel='INFO', dbloglevel='INFO', httploglevel='INFO'
         except KeyboardInterrupt:
             print('\nStopping HomeCon\n')
             hc.stop()
-            http_server.stop()
+            if serve_app:
+                http_server.stop()
 
         except:
             print('Stopping HomeCon')
             hc.stop()
-            http_server.stop()
+            if serve_app:
+                http_server.stop()
 
             exc_type, exc_value, exc_traceback = sys.exc_info()
             traceback.print_exception(exc_type, exc_value, exc_traceback, file=sys.stdout)

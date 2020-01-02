@@ -243,7 +243,12 @@ class HomeconApp extends PolymerElement {
      // If no page was found in the route data, page will be an empty string.
      // Show 'view1' in that case. And if the page doesn't exist, show 'view404'.
     if (!page) {
-      this.page = 'login';
+      if(window.homeconAuthentication.authenticated){
+        this.page = 'pages';
+      }
+      else{
+        this.page = 'login';
+      }
     } else if (['pages', 'states', 'settings', 'editor'].indexOf(page) !== -1) {
       this.page = page;
     } else {

@@ -44,6 +44,8 @@ class HttpRequestHandler(BaseHTTPRequestHandler):
             '.png': 'image/png',
             '.text': 'text/plain',
             '.txt': 'text/plain',
+            '.ico': 'image/ico',
+            '.json': 'text/javascript',
         }
 
         # If it is a known extension, set the correct content type
