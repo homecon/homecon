@@ -111,7 +111,6 @@ class WidgetSwitch extends PolymerElement {
   }
 
   call(){
-    console.log(this.state, this.value, {'event': 'state_value', 'data': {'id': this.state, 'value': this.valueOn}})
     if(this.value < this._valueThreshold(this.valueOn, this.valueOff)) {
       window.homeconWebSocket.send({'event': 'state_value', 'data': {'id': this.state, 'value': this.valueOn}})
     }

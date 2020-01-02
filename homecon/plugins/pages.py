@@ -637,7 +637,7 @@ class Pages(Plugin):
     def listen_pages_export(self, event):
         # FIXME check permissions
         d = serialize(Group.all())
-        event.reply({'value': d})
+        event.reply({'id': event.data['id'], 'value': d})
 
     def listen_pages_import(self, event):
         # FIXME check permissions

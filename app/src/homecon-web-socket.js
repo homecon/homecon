@@ -79,6 +79,7 @@ class HomeconWebSocket extends PolymerElement {
     }
     // attach the component to the window
     window.homeconWebSocket = this;
+    window.homecon.WebSocket = this;
   }
 
   send(data) {
