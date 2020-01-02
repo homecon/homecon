@@ -24,7 +24,7 @@ from uuid import uuid4
 
 from homecon.core.database import database_path, set_database_uri, set_measurements_database_uri
 from homecon.core.state import State
-from homecon.plugins.pages import add_pages_from_dict, Section
+from homecon.plugins.pages import deserialize, Section
 
 
 logger = logging.getLogger(__name__)
@@ -103,50 +103,7 @@ def create_pages():
     base_path = os.path.dirname(os.path.abspath(__file__))
     with open(os.path.join(base_path, 'pages.json'), 'r') as f:
         pages = json.load(f)
-    add_pages_from_dict(pages)
-
-    # add widgets
-    s = Section.get(path='/ground_floor/kitchen/lights')
-    s.add_widget(uuid4(), 'switch',
-                 config={'icon': 'light_light',
-                         'label': 'Light',
-                         'state': State.get(path='/ground_floor/kitchen/lights/light').id})
-    s.add_widget(uuid4(), 'switch',
-                 config={'icon': 'light_light',
-                         'label': 'Light',
-                         'state': State.get(path='/ground_floor/kitchen/lights/light').id})
-    s.add_widget(uuid4(), 'switch',
-                 config={'icon': 'light_light',
-                         'label': 'Spots',
-                         'state': State.get(path='/ground_floor/kitchen/lights/spotlight').id})
-
-    s = Section.get(path='/ground_floor/kitchen/shading')
-    s.add_widget(uuid4(), 'shading',
-                 config={'label': 'South window',
-                         'state': State.get(path='/ground_floor/kitchen/windows/south/shading/position').id,
-                         'positionOpen': 0, 'positionClosed': 255})
-
-    s.add_widget(uuid4(), 'shading',
-                 config={'label': 'West window',
-                         'state': State.get(path='/ground_floor/kitchen/windows/west/shading/position').id,
-                         'positionOpen': 0, 'positionClosed': 255})
-
-    s = Section.get(path='/ground_floor/kitchen/shading')
-    s.add_widget(uuid4(), 'alarm',
-                 config={'label': 'My alarm',
-                         'state': State.get(path='/myalarms').id})
-
-    s = Section.get(path='/ground_floor/living/lights')
-    s.add_widget(uuid4(), 'switch',
-                 config={'icon': 'light_light',
-                         'label': 'Light',
-                         'state': State.get(path='/ground_floor/living/lights/light').id})
-
-    s = Section.get(path='/ground_floor/living/shading')
-    s.add_widget(uuid4(), 'shading',
-                 config={'label': 'South window',
-                         'state': State.get(path='/ground_floor/kitchen/windows/south/shading/position').id,
-                         'positionOpen': 0, 'positionClosed': 255})
+    deserialize(pages)
 
 
 # def prepare_database():

@@ -1,7 +1,8 @@
 import json
 
 from homecon.tests import common
-from homecon.plugins.pages import Group, Page, Section, Widget, Pages, add_pages_from_dict
+from homecon.core.state import State
+from homecon.plugins.pages import Group, Page, Section, Widget, Pages, deserialize, serialize
 
 
 class TestObjects(common.TestCase):
@@ -60,25 +61,41 @@ class TestObjects(common.TestCase):
 
 
 class TestPlugin(common.TestCase):
-
-    def test_from_json(self):
-        dct = [{
-            'name': 'group1',
-            'pages': [{
-                'name': 'page1',
-                'sections': [{
+    dct = [{
+        'name': 'group1',
+        'pages': [{
+            'name': 'page1',
+            'sections': [{
+                'config': {
+                    'title': 'test'
+                },
+                'widgets': [{
+                    'type': 'button',
                     'config': {
-                        'title': 'test'
-                    },
-                    'widgets': [{
-                        'type': 'button',
-                        'config': {
-                            'state': 1
-                        }
-                    }]
+                        'state': 1
+                    }
+                }, {
+                    'type': 'button',
+                    'config': {
+                        'state': '/parent/child'
+                    }
                 }]
             }]
         }]
-        add_pages_from_dict(dct)
+    }]
+
+    def test_deserialize(self):
+        State.add('parent')
+        State.add('child', parent='parent')
+        deserialize(self.dct)
         page = Page.get(path='/group1/page1')
-        self.assertEqual(page.sections[0].widgets[0].type, 'button')
+        assert page.sections[0].widgets[0].type == 'button'
+        assert page.sections[0].widgets[0].config['state'] == 1
+        assert page.sections[0].widgets[1].config['state'] == 2
+
+    def test_serialize(self):
+        State.add('parent')
+        State.add('child', parent='parent')
+        deserialize(self.dct)
+        dct = serialize(Group.all())
+        print(dct)

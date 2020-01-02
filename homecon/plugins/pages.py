@@ -9,6 +9,7 @@ import csv
 from uuid import uuid4
 
 from homecon.core.event import Event
+from homecon.core.state import State
 from homecon.core.database import get_database, Field, DatabaseObject
 from homecon.core.plugin import Plugin
 from .authentication import jwt_decode
@@ -449,26 +450,70 @@ class Widget(DatabaseObject):
         return '<{} id={} path={}>'.format(self.__class__.__name__, self.id, self.path)
 
 
-def add_pages_from_dict(groups):
+def config_state_paths_to_ids(config):
+    """
+    Checks for state paths in a dict and converts them to the correct state id.
+    """
+    if config is not None:
+        for key, val in config.items():
+            if isinstance(val, str) and val.startswith('/'):
+                try:
+                    state = State.get(val)
+                except:
+                    pass
+                else:
+                    if state is not None:
+                        config[key] = state.id
+
+
+def deserialize(groups):
     """
     Reads a list of groups and adds states from it.
     """
 
     for group in groups:
+        group.pop('id', None)
         name = group.pop('name')
         pages = group.pop('pages', [])
+        config_state_paths_to_ids(group.get('config', {}).get('widget', {}).get('config'))
         g = Group.add(name, **group)
         for page in pages:
+            page.pop('id', None)
             name = page.pop('name')
             sections = page.pop('sections', [])
+            config_state_paths_to_ids(page.get('config', {}).get('widget', {}).get('config'))
             p = Page.add(name, g, **page)
             for section in sections:
+                section.pop('id', None)
                 name = section.pop('name', uuid4())
                 widgets = section.pop('widgets', [])
+                config_state_paths_to_ids(section.get('config', {}).get('widget', {}).get('config'))
                 s = Section.add(name, p, **section)
                 for widget in widgets:
-                    name = section.pop('name', uuid4())
+                    widget.pop('id', None)
+                    name = widget.pop('name', uuid4())
+                    config_state_paths_to_ids(widget.get('config'))
                     Widget.add(name, s, **widget)
+
+
+def serialize(groups):
+    d = []
+    for group in groups:
+        g = group.serialize()
+        g['pages'] = []
+        for page in group.pages:
+            p = page.serialize()
+            p['sections'] = []
+            for section in page.sections:
+                s = section.serialize()
+                s['widgets'] = []
+                for widget in section.widgets:
+                    w = widget.serialize()
+                    s['widgets'].append(w)
+                p['sections'].append(s)
+            g['pages'].append(p)
+        d.append(g)
+    return d
 
 
 def clear_pages():
@@ -588,6 +633,18 @@ class Pages(Plugin):
         if 'id' in event.data and 'value' not in event.data:
             widget = Widget.get(id=event.data['id']).serialize()
             event.reply({'id': event.data['id'], 'value': widget})
+
+    def listen_pages_export(self, event):
+        # FIXME check permissions
+        d = serialize(Group.all())
+        event.reply({'value': d})
+
+    def listen_pages_import(self, event):
+        # FIXME check permissions
+        if 'value' in event.data:
+            clear_pages()
+            deserialize(event.data['value'])
+
     #
     # def listen_pages_paths(self, event):
     #

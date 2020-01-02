@@ -44,6 +44,14 @@ def get_plugins_table():
     return db, table
 
 
+def listener(method):
+    """
+    Decorator to signal listening methods.
+    """
+    # FIXME implement this
+    return method
+
+
 class Plugin(Process):
     """
     A class for defining plugins with listener methods

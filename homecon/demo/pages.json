@@ -76,7 +76,7 @@
       "widget": {
         "type": "value-display",
         "config": {
-          "state": 3,
+          "state": "/ground_floor/kitchen/some_value",
           "suffix": "°C"
         }
       }
@@ -86,13 +86,56 @@
       "config": {
         "type": "raised",
         "title": "Lights"
-      }
+      },
+      "widgets": [{
+        "type": "switch",
+        "config": {
+          "icon": "light_light",
+          "label": "Light",
+          "state": "/ground_floor/kitchen/lights/light"
+        }
+      }, {
+        "type": "switch",
+        "config": {
+          "icon": "light_light",
+          "label": "Light",
+          "state": "/ground_floor/kitchen/lights/light"
+        }
+      }, {
+        "type": "switch",
+        "config": {
+          "icon": "light_light",
+          "label": "Light",
+          "state": "/ground_floor/kitchen/lights/spot_light"
+        }
+      }]
     }, {
       "name": "shading",
       "config": {
         "type": "raised",
         "title": "Shading"
-      }
+      },
+      "widgets": [{
+        "type": "shading",
+        "config": {
+          "label": "South window",
+          "state": "/ground_floor/kitchen/windows/south/shading/position",
+          "positionOpen": 0, "positionClosed": 255
+        }
+      }, {
+        "type": "shading",
+        "config": {
+          "label": "West window",
+          "state": "/ground_floor/kitchen/windows/west/shading/position",
+          "positionOpen": 0, "positionClosed": 255
+        }
+      },{
+        "type": "alarm",
+        "config": {
+          "label": "My alarm",
+          "state": "/myalarms"
+        }
+      }]
     }]
   }, {
     "name": "living",
@@ -105,13 +148,29 @@
       "config": {
         "type": "raised",
         "title": "Lights"
-      }
+      },
+      "widgets": [{
+        "type": "switch",
+        "config": {
+          "icon": "light_light",
+          "label": "Light",
+          "state": "/ground_floor/living/lights/light"
+        }
+      }]
     }, {
       "name": "shading",
       "config": {
         "type": "raised",
         "title": "Shading"
-      }
+      },
+      "widgets": [{
+        "type": "shading",
+        "config": {
+          "label": "South window",
+          "state": "/ground_floor/kitchen/windows/south/shading/position",
+          "positionOpen": 0, "positionClosed": 255
+        }
+      }]
     }]
   }]
 }, {
