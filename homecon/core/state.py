@@ -123,6 +123,9 @@ class State(DatabaseObject):
             obj = cls(**entry.as_dict())
         return obj
 
+    def update(self, config=None, **kwargs):
+        super().update(config=json.dumps(config or {}), **kwargs)
+
     @classmethod
     def from_json(cls, string):
         """

@@ -25,7 +25,7 @@ class HomeconStateEdit extends PolymerElement {
       <paper-input label="Unit" value="{{newUnit}}"></paper-input>
       <paper-input label="Label" value="{{newLabel}}"></paper-input>
       <paper-input label="Description" value="{{newDescription}}"></paper-input>
-      <json-editor label="Config" value="{{newConfig}}"></json-editor>
+      <json-editor label="Config" value="{{newConfig}}" current-data="{{currentConfig}}"></json-editor>
     `;
   }
 
@@ -43,7 +43,7 @@ class HomeconStateEdit extends PolymerElement {
     if(parent==0){
       parent = null
     }
-
+    console.log(this.currentConfig)
     var state = {
       'name': this.newName,
       'parent': parent,
@@ -52,7 +52,7 @@ class HomeconStateEdit extends PolymerElement {
       'unit': this.newUnit,
       'label': this.newLabel,
       'description': this.newDescription,
-      'config': JSON.parse(this.newConfig),
+      'config': this.currentConfig,
     };
     if(typeof this.oldState == 'undefined' || this.oldState == null){
       window.homeconWebSocket.send({'event': 'state_add', 'data': state})
