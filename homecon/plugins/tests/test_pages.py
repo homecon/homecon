@@ -98,4 +98,8 @@ class TestPlugin(common.TestCase):
         State.add('child', parent='parent')
         deserialize(self.dct)
         dct = serialize(Group.all())
-        print(dct)
+
+        assert dct[0]['name'] == self.dct[0]['name']
+        assert dct[0]['pages'][0]['name'] == self.dct[0]['pages'][0]['name']
+        assert dct[0]['pages'][0]['sections'][0]['widgets'][0]['config']['state'] == '/parent'
+        assert dct[0]['pages'][0]['sections'][0]['widgets'][1]['config']['state'] == '/parent/child'

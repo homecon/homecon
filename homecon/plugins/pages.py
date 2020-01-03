@@ -3,10 +3,9 @@
 
 import logging
 import json
-import uuid
-import csv
 
 from uuid import uuid4
+from copy import deepcopy
 
 from homecon.core.event import Event
 from homecon.core.state import State
@@ -48,7 +47,7 @@ class Group(DatabaseObject):
         db, table = cls.get_table()
         entry = table(name=name)
         if entry is None:
-            id = table.insert(name=name, config=json.dumps(config or '{}'), order=order)
+            id = table.insert(name=name, config=json.dumps(config or {}), order=order)
             db.close()
             # FIXME error checking
             obj = cls.get(id=id)
@@ -159,7 +158,7 @@ class Page(DatabaseObject):
 
         entry = table(name=name, group=group.id)
         if entry is None:
-            id = table.insert(name=name, group=group.id, config=json.dumps(config or '{}'), order=order)
+            id = table.insert(name=name, group=group.id, config=json.dumps(config or {}), order=order)
             db.close()
             # FIXME error checking
             obj = cls.get(id=id)
@@ -266,7 +265,7 @@ class Section(DatabaseObject):
         db, table = cls.get_table()
         entry = table(name=name, page=page.id)
         if entry is None:
-            id = table.insert(name=name, page=page.id, config=json.dumps(config or '{}'), order=order)
+            id = table.insert(name=name, page=page.id, config=json.dumps(config or {}), order=order)
             db.close()
             # FIXME error checking
             obj = cls.get(id=id)
@@ -345,7 +344,7 @@ class Section(DatabaseObject):
 
 
 class Widget(DatabaseObject):
-    def __init__(self, id=None, name=None, section=None, type=type, config=None, order=None):
+    def __init__(self, id=None, name=None, section=None, type=None, config=None, order=None):
         super().__init__(id=id)
         self._name = name
         self._section = section
@@ -380,7 +379,7 @@ class Widget(DatabaseObject):
         db, table = cls.get_table()
         entry = table(name=name, section=section.id)
         if entry is None:
-            id = table.insert(name=name, section=section.id, type=type, config=json.dumps(config or '{}'), order=order)
+            id = table.insert(name=name, section=section.id, type=type, config=json.dumps(config or {}), order=order)
             db.close()
             # FIXME error checking
             obj = cls.get(id=id)
@@ -466,20 +465,36 @@ def config_state_paths_to_ids(config):
                         config[key] = state.id
 
 
+def config_state_ids_to_paths(config):
+    """
+    Checks for state ids in a dict and converts them to the correct state path.
+    """
+    if config is not None:
+        for key, val in config.items():
+            if 'state' in key and isinstance(val, int):
+                try:
+                    state = State.get(id=val)
+                except:
+                    pass
+                else:
+                    if state is not None:
+                        config[key] = state.path
+
+
 def deserialize(groups):
     """
     Reads a list of groups and adds states from it.
     """
-
+    groups = deepcopy(groups)
     for group in groups:
         group.pop('id', None)
-        name = group.pop('name')
+        name = group.pop('name', uuid4())
         pages = group.pop('pages', [])
         config_state_paths_to_ids(group.get('config', {}).get('widget', {}).get('config'))
         g = Group.add(name, **group)
         for page in pages:
             page.pop('id', None)
-            name = page.pop('name')
+            name = page.pop('name', uuid4())
             sections = page.pop('sections', [])
             config_state_paths_to_ids(page.get('config', {}).get('widget', {}).get('config'))
             p = Page.add(name, g, **page)
@@ -492,23 +507,43 @@ def deserialize(groups):
                 for widget in widgets:
                     widget.pop('id', None)
                     name = widget.pop('name', uuid4())
+                    type = widget.pop('type', None)
                     config_state_paths_to_ids(widget.get('config'))
-                    Widget.add(name, s, **widget)
+                    Widget.add(name, s, type, **widget)
 
 
 def serialize(groups):
     d = []
     for group in groups:
-        g = group.serialize()
-        g['pages'] = []
+        g = {
+            'id': group.id,
+            'name': group.name,
+            'config': group.config,
+            'pages': []
+        }
         for page in group.pages:
-            p = page.serialize()
-            p['sections'] = []
+            p = {
+                'id': page.id,
+                'name': page.name,
+                'config': page.config,
+                'sections': []
+            }
             for section in page.sections:
-                s = section.serialize()
-                s['widgets'] = []
+                s = {
+                    'id': section.id,
+                    'name': section.name,
+                    'config': section.config,
+                    'widgets': []
+                }
                 for widget in section.widgets:
-                    w = widget.serialize()
+                    config = deepcopy(widget.config)
+                    config_state_ids_to_paths(config)
+                    w = {
+                        'id': widget.id,
+                        'name': widget.name,
+                        'type': widget.type,
+                        'config': config,
+                    }
                     s['widgets'].append(w)
                 p['sections'].append(s)
             g['pages'].append(p)
