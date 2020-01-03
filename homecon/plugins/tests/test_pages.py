@@ -1,5 +1,3 @@
-import json
-
 from homecon.tests import common
 from homecon.core.state import State
 from homecon.plugins.pages import Group, Page, Section, Widget, Pages, deserialize, serialize
