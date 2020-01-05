@@ -56,9 +56,9 @@ class WidgetShading extends PolymerElement {
 
       <div class="horizontal layout">
         <div>
-          <paper-button noink class="button horizontal layout start-justified" on-tap="open_shading">
+          <div class="clickable horizontal layout start-justified center" on-tap="open_shading">
             <img class="icon" src="[[_parseIcon(iconOpen)]]">
-          </paper-button>
+          </div>
         </div>
         <div class="flex">
           <div class="vertical layout center-justified">
@@ -67,9 +67,9 @@ class WidgetShading extends PolymerElement {
           </div>
         </div>
         <div>
-          <paper-button noink class="button horizontal layout start-justified" on-tap="close_shading">
+          <div class="clickable horizontal layout start-justified center" on-tap="close_shading">
             <img class="icon" src="[[_parseIcon(iconClosed)]]">
-          </paper-button>
+          </div>
         </div>
       </div>
 

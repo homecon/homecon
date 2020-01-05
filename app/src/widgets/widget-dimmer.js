@@ -48,10 +48,8 @@ class WidgetDimmer extends PolymerElement {
       <homecon-web-socket-object id="websocketObject" event="state_value" key="{{state}}" data="{{value}}" send-on-authenticated></homecon-web-socket-object>
 
       <div class="horizontal layout">
-        <div>
-          <paper-button noink class="button" on-tap="call">
-            <base-status-light class="icon" value="{{value}}"></base-status-light>
-          </paper-button>
+        <div class="clickable horizontal layout start-justified center" on-tap="call">
+          <base-status-light class="icon" value="{{value}}"></base-status-light>
         </div>
         <div class="flex">
           <div class="vertical layout center-justified">

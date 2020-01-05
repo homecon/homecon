@@ -35,8 +35,18 @@ $_documentContainer.innerHTML = `<dom-module id="shared-styles">
         line-height: 64px;
       }
 
+      .clickable {
+        cursor: pointer;
+      }
+
       .hidden{
         display: none !important;
+      }
+
+      .raised{
+        background-color: var(--secondary-background-color);
+        box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.14), 0 1px 5px 0 rgba(0, 0, 0, 0.12), 0 3px 1px -2px rgba(0, 0, 0, 0.2);
+        border-radius: 5px;
       }
 
       h1 {
@@ -49,10 +59,8 @@ $_documentContainer.innerHTML = `<dom-module id="shared-styles">
         background-color: var(--dialog-background-color);
       }
 
-      .raised{
-        background-color: var(--secondary-background-color);
-        box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.14), 0 1px 5px 0 rgba(0, 0, 0, 0.12), 0 3px 1px -2px rgba(0, 0, 0, 0.2);
-        border-radius: 5px;
+      paper-button {
+        background-color: #222222;
       }
 
     </style>

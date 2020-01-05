@@ -18,12 +18,6 @@ class WidgetSwitch extends PolymerElement {
           display: inline-block;
           position: relative;
         }
-        .button {
-          text-transform: none;
-          min-width: 250px;
-          padding: 0px;
-          margin: 0px;
-        }
         .icon{
           width: 60px;
           height: 60px;
@@ -42,10 +36,10 @@ class WidgetSwitch extends PolymerElement {
         <homecon-web-socket-object event="state_value" key="[[state]]" data="{{value}}" auto>
         </homecon-web-socket-object>
 
-        <paper-button noink class="button horizontal layout start-justified" on-tap="call">
+        <div class="clickable horizontal layout start-justified center" on-tap="call">
           <base-status-light class="icon" value="{{value}}" value-threshold="[[_valueThreshold(valueOn, valueOff)]]" icon="[[icon]]" color-on="[[colorOn]]" color-off="[[colorOff]]"></base-status-light>
           <div class="label">[[label]]</div>
-        </paper-button>
+        </div>
 
 
         <div class="edit" hidden="{{!edit}}">

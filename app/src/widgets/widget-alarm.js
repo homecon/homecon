@@ -17,7 +17,7 @@ import './base-action.js';
 class WidgetAlarm extends PolymerElement {
   static get template() {
     return html`
-      <style include="iron-flex iron-flex iron-flex-alignment">
+      <style include="shared-styles iron-flex iron-flex iron-flex-alignment">
         :host{
           display: block;
           position: relative;
