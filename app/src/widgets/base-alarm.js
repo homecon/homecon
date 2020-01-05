@@ -51,7 +51,7 @@ class BaseAlarm extends PolymerElement {
         }
         </style>
 
-        <homecon-web-socket-object id="websocketObject" event="state_value" key="{{key}}" data="{{alarm}}" auto></homecon-web-socket-object>
+        <homecon-web-socket-object id="websocketObject" event="state_value" key="{{state.id}}" data="{{alarm}}" auto></homecon-web-socket-object>
 
         <div class="alarm vertical layout">
           <div class="horizontal layout wrap">
@@ -80,7 +80,7 @@ class BaseAlarm extends PolymerElement {
           <paper-dropdown-menu label="Action">
             <paper-listbox slot="dropdown-content" selected="{{alarm.action}}" attr-for-selected="value" on-selected-changed="_actionChanged">
               <template is="dom-repeat" items="{{actions}}" as="action">
-                <paper-item value="{{action.id}}">{{action.name}}</paper-item>
+                <paper-item value="{{action.id}}">{{action.label}}</paper-item>
               </template>
             </paper-listbox>
           </paper-dropdown-menu>
@@ -102,8 +102,8 @@ class BaseAlarm extends PolymerElement {
 
   static get properties() {
     return {
-      key: {
-        type: 'String',
+      state: {
+        type: 'Object',
       },
       actions: {
         type: 'Array',
@@ -122,7 +122,7 @@ class BaseAlarm extends PolymerElement {
     var alarm = JSON.parse(JSON.stringify(this.alarm))
     alarm.trigger.hour = this.newHour
     alarm.trigger.minute = this.newMinute
-    window.homeconWebSocket.send({'event': 'state_value', 'data': {'id': this.key, 'value': alarm}})
+    window.homeconWebSocket.send({'event': 'state_value', 'data': {'id': this.state.id, 'value': alarm}})
   }
 
   cancelTime(){
@@ -210,7 +210,6 @@ class BaseAlarm extends PolymerElement {
   deleteAlarm(event){
     window.homeconWebSocket.send({'event': 'delete_schedule', 'data': {'id': this.key}})
   }
-
 }
 
 window.customElements.define('base-alarm', BaseAlarm);

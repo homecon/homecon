@@ -89,13 +89,13 @@ def create_states():
               config={'knx_ga_read': '2/4/62', 'knx_ga_write': '2/3/62', 'knx_dpt': '5'})
 
     State.add('myalarms')
-    State.add('Dummy', parent='/myalarms', type='action', value=[
+    State.add('dummy', parent='/myalarms', type='action', value=[
         {'state': State.get('/ground_floor/kitchen/some_value').id, 'value': 10},
         {'state': State.get('/ground_floor/kitchen/some_value').id, 'value': 0, 'delay': 5}
-    ])
+    ], label='Dummy')
     State.add('1', parent='/myalarms', type='schedule',
               value={'trigger': {'day_of_week': '0,1,2,3,6', 'hour': '20', 'minute': '0'},
-                     'action': State.get('/myalarms/Dummy').id})
+                     'action': State.get('/myalarms/dummy').id})
 
 
 def create_pages():

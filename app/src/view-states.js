@@ -46,13 +46,8 @@ class HomeconStatesList extends PolymerElement {
       </homecon-web-socket-object>
 
       <template is="dom-repeat" items="{{states}}" as="state">
-        <div class="state">
-          <span>/{{state.name}}</span>
-          <span class="controls">
-            <paper-icon-button icon="editor:mode-edit" noink="true" on-tap="openEditDialog"></paper-icon-button>
-            <paper-icon-button icon="icons:add" noink="true" on-tap="openAddDialog"></paper-icon-button>
-          </paper-icon-button></span>
-        </div>
+        <homecon-states-list-state key="{{state.id}}" on-open-edit-dialog="openEditDialog" on-open-add-dialog="openAddDialog" on-open-delete-dialog="openDeleteDialog">
+            </homecon-states-list-state>
         <homecon-states-list key="{{state.id}}"></homecon-states-list>
       </template>
 
@@ -124,7 +119,7 @@ class HomeconStateListState extends PolymerElement {
           <paper-icon-button icon="editor:mode-edit" noink="true" on-tap="openEditDialog"></paper-icon-button>
           <paper-icon-button icon="icons:add" noink="true" on-tap="openAddDialog"></paper-icon-button>
           <paper-icon-button icon="icons:delete" noink="true" on-tap="openDeleteDialog"></paper-icon-button>
-        </paper-icon-button></span>
+        </span>
       </div>
     `;
   }

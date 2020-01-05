@@ -113,7 +113,7 @@ class State(DatabaseObject):
 
         if entry is None:
             id = table.insert(name=name, parent=parent_id, type=type, quantity=quantity, unit=unit, label=label,
-                              description=description, config=json.dumps(config or '{}'), value=json.dumps(value))
+                              description=description, config=json.dumps(config or {}), value=json.dumps(value))
             db.close()
             # get the state FIXME error checking
             obj = cls.get(id=id)

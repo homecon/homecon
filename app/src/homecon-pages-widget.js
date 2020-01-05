@@ -14,6 +14,8 @@ import './widgets/widget-shading.js';
 import './widgets/widget-alarm.js';
 import './widgets/widget-value-display.js';
 import './widgets/widget-value-input.js';
+import './widgets/widget-weather-block.js';
+
 
 class HomeconPagesWidget extends PolymerElement {
   static get template() {

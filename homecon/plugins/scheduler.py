@@ -117,7 +117,18 @@ class Scheduler(Plugin):
                 'event': 'list_schedules',
                 'data': {
                     'id': state.id,
-                    'value': [s.id for s in state.children if s.type == self.SCHEDULE_STATE_TYPE]
+                    'value': [s.serialize() for s in state.children if s.type == self.SCHEDULE_STATE_TYPE]
+                }
+            })
+
+    def broadcast_list_actions(self, state):
+        logger.debug(state)
+        if state is not None:
+            Event.fire('websocket_send', {
+                'event': 'list_actions',
+                'data': {
+                    'id': state.id,
+                    'value': [s.serialize() for s in state.children if s.type == self.ACTION_STATE_TYPE]
                 }
             })
 
@@ -142,16 +153,7 @@ class Scheduler(Plugin):
         if 'id' in event.data:
             state = State.get(id=event.data['id'])
             event.reply({'id': event.data['id'],
-                         'value': [s.id for s in state.children if s.type == self.SCHEDULE_STATE_TYPE]})
-
-    def listen_list_actions(self, event):
-        if 'id' in event.data:
-            state = State.get(id=event.data['id'])
-            if state is not None:
-                actions = [{'id': s.id, 'name': s.name} for s in state.children if s.type == self.ACTION_STATE_TYPE]
-            else:
-                actions = []
-            event.reply({'id': event.data['id'], 'value': actions})
+                         'value': [s.serialize() for s in state.children if s.type == self.SCHEDULE_STATE_TYPE]})
 
     def listen_add_schedule(self, event):
         if 'id' in event.data:
@@ -165,8 +167,40 @@ class Scheduler(Plugin):
 
     def listen_delete_schedule(self, event):
         if 'id' in event.data:
+            # FIXME use the State api here instead of an event as events might require permissions
             # state = State.get(id=event.data['id'])
             # self.delete_job(state)
+            Event.fire('state_delete', event.data, source=event.source)
+
+    def listen_list_actions(self, event):
+        if 'id' in event.data:
+            state = State.get(id=event.data['id'])
+            if state is not None:
+                actions = [s.serialize() for s in state.children if s.type == self.ACTION_STATE_TYPE]
+            else:
+                actions = []
+            event.reply({'id': event.data['id'], 'value': actions})
+
+    def listen_add_action(self, event):
+        if 'id' in event.data:
+            state = State.get(id=event.data['id'])
+            if state is not None:
+                State.add(name=event.data.get('name', str(uuid4())), parent=state, type=self.ACTION_STATE_TYPE,
+                          value=event.data.get('value') or [], label=event.data.get('label') or 'New action')
+                self.broadcast_list_actions(state)
+
+    def listen_update_action(self, event):
+        if 'id' in event.data:
+            state = State.get(id=event.data['id'])
+            if state is not None:
+                state.set_value(event.data['value'])
+                if 'label' in event.data:
+                    state.update(label=event.data['label'])
+                    self.broadcast_list_actions(state.parent)
+
+    def listen_delete_action(self, event):
+        if 'id' in event.data:
+            # FIXME use the State api here instead of an event as events might require permissions
             Event.fire('state_delete', event.data, source=event.source)
 
     def listen_stop_plugin(self, event):
