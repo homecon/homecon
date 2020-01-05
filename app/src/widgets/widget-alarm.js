@@ -59,7 +59,7 @@ class WidgetAlarm extends PolymerElement {
         </div>
       </template>
 
-      <paper-button class="button" on-tap="addAlarm" raised="true"> Add Alarm</paper-button>
+      <paper-button class="button" on-tap="addAlarm" raised="true">Add Alarm</paper-button>
 
       <div class="horizontal layout toggle">
         <div class="flex"></div>
@@ -73,7 +73,7 @@ class WidgetAlarm extends PolymerElement {
             <base-action state="{{action}}"></base-action>
           </div>
         </template>
-        <paper-button class="button" on-tap="addActionDialog" raised="true"> Add Action</paper-button>
+        <paper-button class="button" on-tap="addActionDialog" raised="true">Add Action</paper-button>
       </iron-collapse>
 
       <homecon-edit-dialog id="addActionDialog" on-save="addAction">

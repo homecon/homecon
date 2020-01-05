@@ -46,8 +46,7 @@ class HomeconStatesList extends PolymerElement {
       </homecon-web-socket-object>
 
       <template is="dom-repeat" items="{{states}}" as="state">
-        <homecon-states-list-state key="{{state.id}}" on-open-edit-dialog="openEditDialog" on-open-add-dialog="openAddDialog" on-open-delete-dialog="openDeleteDialog">
-            </homecon-states-list-state>
+        <homecon-states-list-state key="{{state.id}}" on-open-edit-dialog="openEditDialog" on-open-add-dialog="openAddDialog" on-open-delete-dialog="openDeleteDialog"></homecon-states-list-state>
         <homecon-states-list key="{{state.id}}"></homecon-states-list>
       </template>
 
@@ -188,6 +187,7 @@ class ViewStates extends PolymerElement {
             <homecon-states-list-state key="{{state.id}}" on-open-edit-dialog="openEditDialog" on-open-add-dialog="openAddDialog" on-open-delete-dialog="openDeleteDialog">
             </homecon-states-list-state>
           </template>
+          <paper-button class="button" on-tap="openAddDialog" raised="true">Add State</paper-button>
 
         </div>
 
@@ -214,7 +214,13 @@ class ViewStates extends PolymerElement {
 
   openAddDialog(e){
     this.$.editState.oldState = null;
-    this.$.editState.newParent = e.detail.parent
+    console.log(e)
+    if(e.detail.parent == null){
+      this.$.editState.newParent = 0
+    }
+    else{
+      this.$.editState.newParent = e.detail.parent
+    }
     this.$.editStateDialog.open();
   }
 
