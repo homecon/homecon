@@ -3,7 +3,6 @@ import '@polymer/iron-flex-layout/iron-flex-layout-classes.js';
 import '@polymer/paper-input/paper-input.js';
 import '@lrnwebcomponents/json-editor/json-editor.js';
 
-import '../shared-styles.js';
 import '../homecon-edit-dialog.js';
 
 class BaseAction extends LitElement {
@@ -45,13 +44,20 @@ class BaseAction extends LitElement {
     return css`
       :host{
         display: block;
+        width: 100%;
       }
       div.action{
+        width: 100%;
         font-weight: 500;
         margin-top: 10px;
+        display: flex;
+        flex-direction: row;
       }
       div.action:hover .controls{
         display: inline;
+      }
+      .label{
+        flex-grow: 1;
       }
       .controls {
         display: none;
@@ -68,11 +74,11 @@ class BaseAction extends LitElement {
   render() {
     return html`
       <div class="action">
-        <span>${this.state.label}</span>
-        <span class="controls">
+        <div class="label">${this.state.label}</div>
+        <div class="controls">
           <paper-icon-button icon="editor:mode-edit" noink="true" @tap="${this.openEditDialog}"></paper-icon-button>
           <paper-icon-button icon="icons:delete" noink="true" @tap="${this.openDeleteDialog}"></paper-icon-button>
-        </span>
+        </div>
       </div>
 
       <homecon-edit-dialog id="editActionDialog" @save="${this._saveAction}">
