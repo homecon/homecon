@@ -66,6 +66,9 @@ def create_states():
               type='boolean', quantity='', unit='',
               label='Kitchen spotlights', description='',
               config={'knx_ga_read': '1/1/62', 'knx_ga_write': '1/1/62', 'knx_dpt': '1'})
+    State.add('dimmer', parent='/ground_floor/kitchen/lights',
+              type='float', quantity='', unit='',
+              label='Kitchen dimmer', description='')
 
     State.add('living', parent='/ground_floor')
     State.add('lights', parent='/ground_floor/living')

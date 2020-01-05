@@ -22,6 +22,7 @@ class WidgetSwitch extends PolymerElement {
           text-transform: none;
           min-width: 250px;
           padding: 0px;
+          margin: 0px;
         }
         .icon{
           width: 60px;

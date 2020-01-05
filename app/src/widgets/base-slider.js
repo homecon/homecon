@@ -49,6 +49,9 @@ class BaseSlider extends PolymerElement {
         type: 'Number',
         notify: true,
       },
+      sliderValue: {
+        type: 'Number',
+      },
       valueMin: {
         type: Number,
         value: 0,

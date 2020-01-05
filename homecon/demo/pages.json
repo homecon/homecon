@@ -105,8 +105,15 @@
         "type": "switch",
         "config": {
           "icon": "light_light",
-          "label": "Light",
-          "state": "/ground_floor/kitchen/lights/spot_light"
+          "label": "Spotlights",
+          "state": "/ground_floor/kitchen/lights/spotlight"
+        }
+      }, {
+        "type": "dimmer",
+        "config": {
+          "icon": "light_light",
+          "label": "Dimmer",
+          "state": "/ground_floor/kitchen/lights/dimmer"
         }
       }]
     }, {
