@@ -99,6 +99,12 @@ def create_states():
     State.add('1', parent='/myalarms', type='schedule',
               value={'trigger': {'day_of_week': '0,1,2,3,6', 'hour': '20', 'minute': '0'},
                      'action': State.get('/myalarms/dummy').id})
+    State.add('central')
+    State.add('ventilation', parent='/central')
+    State.add('speed', parent='/central/ventilation',
+              type='int', quantity='', unit='',
+              label='Ventilation speed', description='',
+              config={'knx_ga_read': None, 'knx_ga_write': '4/0/4', 'knx_dpt': '6'})
 
 
 def create_pages():

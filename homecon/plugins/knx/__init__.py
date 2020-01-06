@@ -19,8 +19,8 @@ class Knx(Plugin):
     """
     DEFAULT_DPT = '1'
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+    def __init__(self):
+        super().__init__()
         self.ga_read_mapping = {}
         self.connection = None
         self.address_state = None
@@ -38,8 +38,9 @@ class Knx(Plugin):
 
         # build the ga_read_mapping
         for state in State.all():
-            if 'knx_ga_read' in state.config:
-                self.ga_read_mapping[state.config['knx_ga_read']] = state.id
+            knx_ga_read = state.config.get('knx_ga_read')
+            if knx_ga_read is not None:
+                self.ga_read_mapping[knx_ga_read] = state.id
 
         self.connect()
         logger.debug('KNX plugin Initialized')

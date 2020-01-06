@@ -9,11 +9,15 @@ import './shared-styles.js';
 import './homecon-edit-dialog.js';
 import './homecon-web-socket-object.js';
 import './widgets/widget-switch.js';
+import './widgets/widget-dimmer.js';
 import './widgets/widget-shading.js';
 import './widgets/widget-value-input.js';
+import './widgets/widget-value-display.js';
 import './widgets/widget-alarm.js';
 import './widgets/widget-clock.js';
 import './widgets/widget-date.js';
+import './widgets/widget-ventilation.js';
+import './widgets/widget-weather-block.js';
 
 
 class HomeconWidget extends PolymerElement {

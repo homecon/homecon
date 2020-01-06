@@ -5,6 +5,41 @@ import '@polymer/paper-input/paper-input.js';
 import '@polymer/paper-button/paper-button.js';
 import '@hunsalz/web-socket/web-socket.js';
 
+
+const addStateListener = function(obj, id=true, valueKey='value', stateKey='state'){
+  if(id){
+    window.addEventListener('homecon-web-socket-message', function(e, d){
+      if(e.detail.event == 'state_value' && typeof obj[stateKey] != 'undefined' && (e.detail.data.path == obj[stateKey] || e.detail.data.id == obj[stateKey])){
+        var oldVal = obj[valueKey]
+        obj[valueKey] = e.detail.data.value
+        obj.requestUpdate(valueKey, oldVal);
+      }
+    });
+  }
+  else{
+    window.addEventListener('homecon-web-socket-message', function(e, d){
+      if(e.detail.event == 'state_value' && typeof obj[stateKey] != 'undefined' && (e.detail.data.path == obj[stateKey].path || e.detail.data.id == obj[stateKey].id)){
+        var oldVal = obj[valueKey]
+        obj[valueKey] = e.detail.data.value
+        obj.requestUpdate(valueKey, oldVal);
+      }
+    });
+  }
+}
+
+const stateReadHasChanged = function(newVal, oldVal) {
+  if(newVal != oldVal && newVal != null){
+    if(typeof newVal == 'number'){
+      window.homecon.WebSocket.send({'event': 'state_value', 'data': {'id': newVal}})
+    }
+    else{
+      window.homecon.WebSocket.send({'event': 'state_value', 'data': {'id': newVal.id}})
+    }
+  }
+  return false
+}
+
+
 class HomeconWebSocket extends PolymerElement {
 
   static get template() {
@@ -128,3 +163,5 @@ class HomeconWebSocket extends PolymerElement {
 }
 
 window.customElements.define('homecon-web-socket', HomeconWebSocket);
+
+export {addStateListener, stateReadHasChanged}

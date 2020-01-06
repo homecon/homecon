@@ -57,11 +57,26 @@
     "title":  "Central"
   },
   "pages": [{
-    "name": "heating",
+    "name": "hvac",
     "config": {
-      "title": "Heating", 
+      "title": "HVAC",
       "icon": "sani_heating"
-    }
+    },
+    "sections": [{
+      "name": "ventilation",
+      "config": {
+        "type": "raised",
+        "title": "Ventilation"
+      },
+      "widgets": [{
+        "type": "ventilation-speed",
+        "config": {
+          "label": "Speed",
+          "state": "/central/ventilation/speed",
+          "values": [19, 20, 21, 22]
+        }
+      }]
+    }]
   }]
 }, {
   "name": "ground_floor",
