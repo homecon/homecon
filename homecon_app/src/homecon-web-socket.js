@@ -60,11 +60,11 @@ class HomeconWebSocket extends PolymerElement {
         }
       </style>
 
-      <iron-localstorage name="homecon-websocket-settings" value="{{settings}}" @iron-localstorage-load-empty="_initializeDefaultSettings"></iron-localstorage>
+      <iron-localstorage name="homecon-websocket-address" value="{{address}}" on-iron-localstorage-load-empty="_initializeDefaultSettings"></iron-localstorage>
 
       <web-socket id="webSocket"
         auto
-        url="{{settings.address}}"
+        url="{{address}}"
         on-state-changed="_stateChanged"
         on-last-response-changed="_handleResponse"
         on-last-error-changed="_handleError">
@@ -74,7 +74,7 @@ class HomeconWebSocket extends PolymerElement {
         <h1>Websocket settings</h1>
 
         <p>Could not connect to homecon. Please review the connection settings</p>
-        <paper-input label="Address:" value="{{settings.address}}"></paper-input>
+        <paper-input label="Address:" value="{{address}}"></paper-input>
 
         <paper-button dialog-dismiss>Close</paper-button>
       </paper-dialog>
@@ -87,8 +87,8 @@ class HomeconWebSocket extends PolymerElement {
 
   static get properties() {
     return {
-      settings: {
-        type: Object,
+      address: {
+        type: String,
         notify: true
       },
       connected: {
@@ -148,7 +148,7 @@ class HomeconWebSocket extends PolymerElement {
   }
 
   _initializeDefaultSettings() {
-    this.settings = {'address':'ws://xxx:9024'};
+    this.address = 'ws://0.0.0.0:9024';
   }
 
 

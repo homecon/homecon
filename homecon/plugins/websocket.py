@@ -30,7 +30,7 @@ class Websocket(Plugin):
     Class to control the HomeCon websocket
 
     """
-    def __init__(self, host='0.0.0.0', port=9024):
+    def __init__(self, host='0.0.0.0', port=9099):
         super().__init__()
         self.clients = {}
         self.host = host
@@ -39,9 +39,8 @@ class Websocket(Plugin):
         self._loop = asyncio.get_event_loop()
 
     def initialize(self):
-        """
-        FIXME this is very ugly with an asyncio loop inside a thread
-        """
+        # FIXME this is very ugly with an asyncio loop inside a thread
+        logger.info(f'starting websocket at ws://{self.host}:{self.port}')
         clients_lock = asyncio.Lock()
 
         def connect_client(websocket):

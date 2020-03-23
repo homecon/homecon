@@ -3,13 +3,13 @@
 
 from setuptools import setup, find_packages
 import os
-import sys
 
 
 # retrieve the version
 try:
     versionfile = os.path.join('homecon', '__version__.py')
     f = open(versionfile, 'r')
+    f.readline()
     content = f.readline()
     splitcontent = content.split('\'')
     version = splitcontent[1]
@@ -29,15 +29,22 @@ setup(
     author='Brecht Baeten',
     author_email='brecht.baeten@gmail.com',
     packages=find_packages(),
-    data_files=[(
-        os.path.join('www', 'homecon', '/'.join(d.split('/')[3:])),
-        [os.path.join(d, f) for f in files]
-    ) for d, folders, files in os.walk('app/build/unbundled')]+[(
-        os.path.join('var', 'tmp', 'homecon'),
-        [os.path.join('util', 'network_template'), os.path.join('util', 'init_template')])],
-    install_requires=['pytz', 'ephem', 'passlib', 'PyJWT', 'asyncws', 'aiohttp', 'numpy', 'pyomo', 'knxpy'],
-    classifiers=['Programming Language :: Python :: 3.5'],
+    # data_files=[(
+    #     os.path.join('var', 'tmp', *d.split('/')),
+    #     [os.path.join(d, f) for f in files]
+    # ) for d, folders, files in os.walk('app/build/es5-bundled')]+[(
+    #     os.path.join('var', 'tmp', 'homecon'),
+    #     [os.path.join('util', 'network_template'), os.path.join('util', 'init_template')])],
+    package_data={'homecon': ['demo/*.json'],
+                  'homecon_app': ['build/es5-bundled/*.*',
+                                  'build/es5-bundled/**/*.*',
+                                  'build/es5-bundled/**/**/*.*',
+                                  'build/es5-bundled/**/**/**/*.*']},
+    install_requires=['pytz', 'ephem', 'passlib', 'PyJWT', 'asyncws', 'aiohttp', 'numpy', 'pyomo', 'knxpy', 'pydal',
+                      'scipy', 'apscheduler'],
+    classifiers=['Programming Language :: Python :: 3.6'],
     entry_points={'console_scripts': [
         'homecon=homecon.__main__:main',
+        'homecon-app=homecon_app.__main__:main',
     ]},
 )

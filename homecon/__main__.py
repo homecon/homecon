@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-
 import sys
 import os
 import traceback
@@ -141,7 +140,7 @@ def main(printlog=False, loglevel='INFO', dbloglevel='INFO', httploglevel='INFO'
             app_kwargs['document_root'] = os.path.abspath(os.path.join(base_path, '..', 'app'))
 
         if serve_app:
-            from homecon.httpserver import HttpServer
+            from homecon_app.server import HttpServer
             http_server = HttpServer(**app_kwargs)
             http_server.start()
 

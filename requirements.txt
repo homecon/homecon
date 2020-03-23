@@ -1,0 +1,13 @@
+aiohttp
+apscheduler
+asyncws
+ephem
+passlib
+PyJWT
+numpy
+pyomo
+pytz
+knxpy
+pydal
+scipy
+

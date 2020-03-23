@@ -3,7 +3,6 @@
 
 import logging
 import os
-import sys
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from multiprocessing import Process
 
@@ -11,7 +10,9 @@ from multiprocessing import Process
 logger = logging.getLogger(__name__)
 
 
-_document_root = os.path.join(sys.prefix, '..', 'app', 'build', 'es5-bundled')
+_document_root = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'build', 'es5-bundled')
+_address = '0.0.0.0'
+_port = 12300
 _http_server = None
 
 
@@ -64,7 +65,7 @@ class HttpRequestHandler(BaseHTTPRequestHandler):
 
 
 class HttpServer(object):
-    def __init__(self, address='0.0.0.0', port=12300, document_root=_document_root):
+    def __init__(self, address=_address, port=_port, document_root=_document_root):
         """
 
         Parameters
@@ -92,7 +93,7 @@ class HttpServer(object):
         _document_root = self.document_root
         try:
             self.http_server = HTTPServer((self.address, self.port), HttpRequestHandler)
-            logger.info('Running the HomeCon http server at {}:{}'.format(self.address, self.port))
+            logger.info('Running the HomeCon app http server at {}:{}'.format(self.address, self.port))
             self.http_server.serve_forever()
         except KeyboardInterrupt:
             self.http_server.shutdown()
