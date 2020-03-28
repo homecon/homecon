@@ -20,9 +20,9 @@ class HomeCon(object):
         """
         logger.info('Creating HomeCon object')
 
-        # create the main event queue
+        # create properties
+        self.running = False
         self._queue = queue
-        self._running = False
         self.__version__ = __version__
 
         # start plugins
@@ -33,7 +33,7 @@ class HomeCon(object):
         """
         Listen for events in all plugins
         """
-        while self._running:
+        while self.running:
             try:
                 event = self._queue.get(timeout=1)
                 logger.debug(event)
@@ -46,6 +46,7 @@ class HomeCon(object):
 
     def start(self):
         # start all plugins
+        self.running = True
         logger.info('Starting HomeCon')
         logger.debug('Starting plugins')
         for plugin in self.plugins.values():
@@ -54,7 +55,6 @@ class HomeCon(object):
         time.sleep(1)
         # Start the event loop
         logger.debug('Starting the event loop')
-        self._running = True
         self.listen()
 
     def stop(self):
@@ -65,5 +65,5 @@ class HomeCon(object):
             plugin.stop()
             plugin.join()
 
-        self._running = False
+        self.running = False
         logger.info('HomeCon stopped')

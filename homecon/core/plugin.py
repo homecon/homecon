@@ -91,7 +91,7 @@ class Plugin(Process):
     def run(self):
         """
         Runs the plugin process and listens for messages on the plugin queue.
-        Does not return until the self._running is False
+        Does not return until the self.running is False
         """
         self._running = True
         self.initialize()

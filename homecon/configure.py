@@ -69,10 +69,10 @@ def set_init_script(scriptname='homecon'):
             content = f.read()
 
             with open(os.path.join(sys.prefix, 'var', 'tmp', 'homecon', scriptname), 'w') as fw:
-                fw.write(content.format(bin=os.path.join(sys.prefix, 'bin')))
+                fw.write(content.format(env=os.path.join(sys.prefix)))
 
-        subprocess.call(['sudo', 'mv', os.path.join(sys.prefix, 'var', 'tmp', 'homecon',scriptname),
-                         os.path.join('/etc/init.d',scriptname)])
+        subprocess.call(['sudo', 'mv', os.path.join(sys.prefix, 'var', 'tmp', 'homecon', scriptname),
+                         os.path.join('/etc/init.d', scriptname)])
         subprocess.call(['sudo', 'chmod', '755', os.path.join('/etc/init.d', scriptname)])
         subprocess.call(['sudo', 'chown', 'root:root', os.path.join('/etc/init.d', scriptname)])
         subprocess.call(['sudo', 'update-rc.d', scriptname, 'defaults'])
@@ -189,6 +189,7 @@ def install_glpk():
     subprocess.call(['sudo', 'ldconfig', '{}'.format('/usr/local/bin')])
 
     os.chdir(currentdir)
+
 
 def install_ipopt():
     """

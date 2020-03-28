@@ -13,9 +13,8 @@
 
 DESC="HomeCon server"
 NAME=homecon
-DIR={bin}
-DAEMON=$NAME
-DAEMON_ARGS="debug"
+DAEMON={env}/bin/python
+DAEMON_ARGS="-m homecon --loglevel=DEBUG --printlog"
 PIDFILE=/var/run/$NAME.pid
 SCRIPTNAME=/etc/init.d/$NAME
 
@@ -28,8 +27,7 @@ SCRIPTNAME=/etc/init.d/$NAME
 do_start()
 {{
   echo "Starting HomeCon"
-  . $DIR/activate
-  start-stop-daemon --start --background --make-pidfile --pidfile $PIDFILE --name $NAME --startas $DAEMON $DAEMON_ARGS
+  start-stop-daemon --start --background --make-pidfile --pidfile $PIDFILE --exec $DAEMON -- $DAEMON_ARGS
   case $? in
     0)
       echo "HomeCon started as daemon"
@@ -40,7 +38,7 @@ do_start()
 
 do_stop() {{
   echo "Stopping HomeCon"
-  start-stop-daemon --stop --signal 1 --quiet --pidfile $PIDFILE --name $NAME
+  start-stop-daemon --stop --signal 2 --quiet --remove-pidfile --pidfile $PIDFILE --exec $DAEMON
   case $? in
     0)
       echo "HomeCon stopped"

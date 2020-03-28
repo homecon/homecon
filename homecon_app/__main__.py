@@ -6,7 +6,7 @@ import logging
 from logging.handlers import TimedRotatingFileHandler
 
 from argparse import ArgumentParser
-from app.server import HttpServer, _document_root, _address, _port
+from homecon_app.server import HttpServer, _document_root, _address, _port
 
 
 logger = logging.getLogger(__name__)

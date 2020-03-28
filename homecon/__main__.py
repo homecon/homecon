@@ -6,6 +6,7 @@ import traceback
 import logging
 
 from argparse import ArgumentParser
+from signal import signal, SIGTERM, SIGINT
 from logging.handlers import TimedRotatingFileHandler
 
 
@@ -149,22 +150,30 @@ def main(printlog=False, loglevel='INFO', dbloglevel='INFO', httploglevel='INFO'
         ################################################################################
         from homecon.homecon import HomeCon
 
+        hc = HomeCon()
+
+        def stop(signum, frame):
+            if not hc.running:
+                sys.exit(1)
+            else:
+                hc.stop()
+                if serve_app:
+                    http_server.stop()
+
+        signal(SIGTERM, stop)
+        signal(SIGINT, stop)
+
         print('\nStarting HomeCon\nPress Ctrl + C to stop\n')
         try:
-            hc = HomeCon()
             hc.start()
 
         except KeyboardInterrupt:
             print('\nStopping HomeCon\n')
-            hc.stop()
-            if serve_app:
-                http_server.stop()
+            stop()
 
         except:
             print('Stopping HomeCon')
-            hc.stop()
-            if serve_app:
-                http_server.stop()
+            stop()
 
             exc_type, exc_value, exc_traceback = sys.exc_info()
             traceback.print_exception(exc_type, exc_value, exc_traceback, file=sys.stdout)
@@ -173,7 +182,7 @@ def main(printlog=False, loglevel='INFO', dbloglevel='INFO', httploglevel='INFO'
 
 if __name__ == '__main__':
 
-    parser = ArgumentParser(description='Generate all energy market records')
+    parser = ArgumentParser(description='Homecon')
     parser.add_argument('-l', '--loglevel', type=str, choices=['INFO', 'DEBUG'], default='INFO')
     parser.add_argument('--dbloglevel', type=str, choices=['INFO', 'DEBUG'], default='INFO')
     parser.add_argument('--httploglevel', type=str, choices=['INFO', 'DEBUG'], default='INFO')

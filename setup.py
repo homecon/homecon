@@ -29,12 +29,10 @@ setup(
     author='Brecht Baeten',
     author_email='brecht.baeten@gmail.com',
     packages=find_packages(),
-    # data_files=[(
-    #     os.path.join('var', 'tmp', *d.split('/')),
-    #     [os.path.join(d, f) for f in files]
-    # ) for d, folders, files in os.walk('app/build/es5-bundled')]+[(
-    #     os.path.join('var', 'tmp', 'homecon'),
-    #     [os.path.join('util', 'network_template'), os.path.join('util', 'init_template')])],
+    data_files=[(
+        os.path.join('var', 'tmp', 'homecon'),
+        [os.path.join('util', 'network_template'), os.path.join('util', 'init_template')]
+    )],
     package_data={'homecon': ['demo/*.json'],
                   'homecon_app': ['build/es5-bundled/*.*',
                                   'build/es5-bundled/**/*.*',
