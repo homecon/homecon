@@ -5,7 +5,6 @@ import logging
 import os
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from multiprocessing import Process
-from threading import Thread
 
 
 logger = logging.getLogger(__name__)
@@ -97,12 +96,13 @@ class HttpServer(object):
             logger.info('Running the HomeCon app http server at {}:{}'.format(self.address, self.port))
             self.http_server.serve_forever()
         except:
+            logger.exception('exception in http server')
             self.http_server.shutdown()
             self.http_server.socket.close()
 
     def start(self):
-        # self.process = Process(target=self._run, name='HTTPServer')
-        self.process = Thread(target=self._run, name='HTTPServer')
+        self.process = Process(target=self._run, name='HTTPServer')
+        # self.process = Thread(target=self._run, name='HTTPServer')
         self.process.start()
 
     def stop(self):

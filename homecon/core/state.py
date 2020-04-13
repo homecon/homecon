@@ -3,6 +3,7 @@
 
 import logging
 import json
+import re
 import copy
 import inspect
 import math
@@ -82,6 +83,12 @@ class State(DatabaseObject):
             return cls(**entry.as_dict())
         else:
             return None
+
+    @classmethod
+    def find(cls, expr):
+        """find states which paths match the re"""
+        pattern = re.compile(expr)
+        return [s for s in cls.all() if pattern.match(s.path) is not None]
 
     @classmethod
     def add(cls, name, parent=None, type=None, quantity=None, unit=None, label=None, description=None,

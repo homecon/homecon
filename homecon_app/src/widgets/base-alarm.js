@@ -198,17 +198,17 @@ class BaseAlarm extends PolymerElement {
     }
     var str_trigger_day_of_week = JSON.stringify(trigger_day_of_week)
     alarm.trigger.day_of_week = str_trigger_day_of_week.substring(1, str_trigger_day_of_week.length - 1);
-    window.homeconWebSocket.send({'event': 'state_value', 'data': {'id': this.key, 'value': alarm}})
+    window.homeconWebSocket.send({'event': 'state_value', 'data': {'id': this.state.id, 'value': alarm}})
   }
 
   _actionChanged(event, data){
     var alarm = JSON.parse(JSON.stringify(this.alarm))
     alarm.action = data.value
-    window.homeconWebSocket.send({'event': 'state_value', 'data': {'id': this.key, 'value': alarm}})
+    window.homeconWebSocket.send({'event': 'state_value', 'data': {'id': this.state.id, 'value': alarm}})
   }
 
   deleteAlarm(event){
-    window.homeconWebSocket.send({'event': 'delete_schedule', 'data': {'id': this.key}})
+    window.homeconWebSocket.send({'event': 'delete_schedule', 'data': {'id': this.state.id}})
   }
 }
 

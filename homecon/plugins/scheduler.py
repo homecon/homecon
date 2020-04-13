@@ -72,18 +72,21 @@ class Scheduler(Plugin):
 
                 for v in action.value:
                     d = v.get('delay', 0)
-                    if d > 0:
-                        def e():
-                            s = State.get(id=v['state'])
-                            time.sleep(d)
+
+                    def func(d=0):
+                        if isinstance(v['state'], int):
+                            states = [State.get(id=v['state'])]
+                        else:
+                            states = State.find(v['state'])
+                        time.sleep(d)
+                        for s in states:
                             logger.debug('setting {} to {} from schedule {}'.format(s, v['value'], state))
                             s.set_value(v['value'], source='Scheduler')
 
-                        Thread(target=e).start()
+                    if d > 0:
+                        Thread(target=func, kwargs={'d': d}).start()
                     else:
-                        s = State.get(id=v['state'])
-                        logger.debug('setting {} to {} from schedule {}'.format(s, v['value'], state))
-                        s.set_value(v['value'], source='Scheduler')
+                        func()
 
             job = self.scheduler.get_job(self.get_job_id(state))
             if job is None:

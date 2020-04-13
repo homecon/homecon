@@ -124,6 +124,12 @@ class TestState(common.TestCase):
         State.get('myotherstate').value = 5
         self.assertEqual(State.get('mycomputedstate').computed, 50 + np.exp(5))
 
+    def test_find(self):
+        State.add('parent/child1/state')
+        State.add('parent/child2/state')
+        State.add('parent/aha/state')
+        states = State.find('.*/child.*/state')
+        print(states)
 
     # def test_trigger(self):
     #     State.add('mystate', config={'someattr': True})
