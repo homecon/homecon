@@ -92,6 +92,18 @@ class Knx(Plugin):
         if 'knx_ga_read' in state.config:
             self.ga_read_mapping[state.config['knx_ga_read']] = state.id
 
+    def listen_state_changed(self, event):
+        state = event.data['state']
+        if 'knx_ga_read' in state.config:
+            self.ga_read_mapping[state.config['knx_ga_read']] = state.id
+        else:
+            del_keys = []
+            for key, val in self.ga_read_mapping.items():
+                if val == state.id:
+                    del_keys.append(key)
+            for key in del_keys:
+                del self.ga_read_mapping[key]
+
     @property
     def settings_sections(self):
         sections = [{

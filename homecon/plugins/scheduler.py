@@ -36,8 +36,9 @@ class Scheduler(Plugin):
             'default': ThreadPoolExecutor(20),
         }
         job_defaults = {
-            'coalesce': False,
-            'max_instances': 3
+            'coalesce': True,
+            'max_instances': 3,
+            'misfire_grace_time': 3600
         }
         self.scheduler = BackgroundScheduler(executors=executors, job_defaults=job_defaults)
 
