@@ -39,7 +39,8 @@ class ViewPages extends PolymerElement {
 
   static get observers() {
     return [
-      '_routePageChanged(routeData)'
+      '_routePageChanged(routeData)',
+      '_groupsChanged(groups)',
     ];
   }
 
@@ -59,7 +60,14 @@ class ViewPages extends PolymerElement {
     //this._loadPage()
   }
 
+  _groupsChanged(groups){
+    if(typeof this.groups != 'undefined'){
+      this.pageData = this._getPage(this.groups, this.group, this.page)
+    }
+  }
+
   _getPage(groups, group, page){
+    // FIXME this
     if(typeof group != 'undefined' && typeof page != 'undefined'){
       for(var i=0; i<groups.length; i++){
         if(groups[i].name == group){

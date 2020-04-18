@@ -513,7 +513,7 @@ def deserialize(groups):
                     Widget.add(name, s, type, **widget)
 
 
-def serialize(groups):
+def serialize(groups, convert_state_ids_to_paths=False):
     d = []
     for group in groups:
         g = {
@@ -538,7 +538,8 @@ def serialize(groups):
                 }
                 for widget in section.widgets:
                     config = deepcopy(widget.config)
-                    config_state_ids_to_paths(config)
+                    if convert_state_ids_to_paths:
+                        config_state_ids_to_paths(config)
                     w = {
                         'id': widget.id,
                         'name': widget.name,
@@ -684,7 +685,7 @@ class Pages(Plugin):
 
     def listen_pages_export(self, event):
         # FIXME check permissions
-        d = serialize(Group.all())
+        d = serialize(Group.all(), convert_state_ids_to_paths=True)
         event.reply({'id': event.data['id'], 'value': d})
 
     def listen_pages_import(self, event):

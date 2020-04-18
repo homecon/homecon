@@ -270,7 +270,7 @@ class HomeconApp extends PolymerElement {
   _pageChanged(page) {
     switch (page) {
       case 'login':
-        import('./my-view1.js');
+        import('./view-pages.js');
         break;
       case 'pages':
         import('./view-pages.js');
