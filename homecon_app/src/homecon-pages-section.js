@@ -41,13 +41,10 @@ class HomeconPagesSection extends PolymerElement {
         }
       </style>
 
-      <homecon-web-socket-object event="pages_section" key="{{key}}" data="{{section}}" auto>
-      </homecon-web-socket-object>
-
       <homecon-page-section type="{{section.config.type}}" title="{{section.config.title}}">
 
-        <template is="dom-repeat" id="widgets" items="{{section.widgets}}" as="widgetId">
-          <homecon-pages-widget key="{{widgetId}}"></homecon-pages-widget>
+        <template is="dom-repeat" id="widgets" items="{{section.widgets}}" as="widget">
+          <homecon-pages-widget widget="{{widget}}"></homecon-pages-widget>
         </template>
 
         <div class$="vertical layout [[_hiddenClass(edit)]]">
@@ -87,9 +84,7 @@ class HomeconPagesSection extends PolymerElement {
 
   static get properties() {
     return {
-      key: {
-        type: Number,
-      },
+      section: Object,
     };
   }
 

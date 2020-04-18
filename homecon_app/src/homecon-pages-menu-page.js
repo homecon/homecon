@@ -63,9 +63,6 @@ class HomeconPagesMenuPage extends PolymerElement {
       <homecon-web-socket-sender id="websocket">
       </homecon-web-socket-sender>
 
-      <homecon-web-socket-object event="pages_page" key="{{key}}" data="{{page}}" auto>
-      </homecon-web-socket-object>
-
       <a class="item horizontal layout center" href="/pages[[page.path]]">
         <img class="icon" src="[[_parseIcon(page.config.icon)]]">
         <h1 class="title">{{page.config.title}}</h1>
@@ -86,8 +83,8 @@ class HomeconPagesMenuPage extends PolymerElement {
 
   static get properties() {
     return {
-      key: {
-        type: String,
+      page: {
+        type: Object,
       },
     };
   }
@@ -106,11 +103,11 @@ class HomeconPagesMenuPage extends PolymerElement {
 
   save(){
     this.$.editDialog.close();
-    this.$.websocket.send({'event':'pages_page','path':this.path,'value':{'config':{'title':this.newTitle,'icon':this.newIcon}}})
+    this.$.websocket.send({'event': 'pages_page','path': this.path, 'value': {'config': {'title': this.newTitle, 'icon': this.newIcon}}})
   }
 
   delete(){
-    this.$.websocket.send({'event':'pages_page','path':this.path,'value':null})
+    this.$.websocket.send({'event': 'pages_page', 'path': this.path, 'value': null})
   }
 
   _parseIcon(icon){

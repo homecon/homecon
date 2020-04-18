@@ -3,6 +3,7 @@
 
 import logging
 import json
+import time
 
 from uuid import uuid4
 from copy import deepcopy
@@ -580,9 +581,11 @@ class Pages(Plugin):
     A homecon app is structured using groups, pages, sections and widgets
 
     """
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.last_update_timestamp = time.time()
 
     def initialize(self):
-
         # set defaults
         if len(Group.all()) == 0 and len(Page.all()) == 0 and len(Section.all()) == 0 and len(Widget.all()) == 0:
             g0 = Group.add('home', config={'title': 'Home'})
@@ -669,6 +672,16 @@ class Pages(Plugin):
             widget = Widget.get(id=event.data['id']).serialize()
             event.reply({'id': event.data['id'], 'value': widget})
 
+    def listen_pages_timestamp(self, event):
+        # FIXME check permissions
+        logger.info(event.data)
+        event.reply({'id': event.data['id'], 'value': self.last_update_timestamp})
+
+    def listen_pages_pages(self, event):
+        # FIXME check permissions
+        d = serialize(Group.all())
+        event.reply({'id': event.data['id'], 'value': {'timestamp': self.last_update_timestamp, 'groups': d}})
+
     def listen_pages_export(self, event):
         # FIXME check permissions
         d = serialize(Group.all())
@@ -679,6 +692,7 @@ class Pages(Plugin):
         if 'value' in event.data:
             clear_pages()
             deserialize(event.data['value'])
+            self.last_update_timestamp = time.time()
 
     #
     # def listen_pages_paths(self, event):

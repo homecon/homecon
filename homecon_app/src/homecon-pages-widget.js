@@ -34,8 +34,6 @@ class HomeconPagesWidget extends PolymerElement {
         }
       </style>
 
-      <homecon-web-socket-object id="websocketWidget" event="pages_widget" key="{{key}}" data="{{widget}}" auto></homecon-web-socket-object>
-
       <homecon-widget widget="{{widget}}" edit="{{edit}}" on-class-changed="_classChanged"></homecon-widget>
     `;
   }
@@ -44,9 +42,6 @@ class HomeconPagesWidget extends PolymerElement {
     return {
       class: {
         reflectToAttribute: true,
-      },
-      key: {
-        type: 'String',
       },
       widget: {
         type: 'Object',

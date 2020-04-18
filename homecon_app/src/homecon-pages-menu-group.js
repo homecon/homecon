@@ -55,9 +55,6 @@ class HomeconPagesMenuGroup extends PolymerElement {
       <homecon-web-socket-sender id="websocket">
       </homecon-web-socket-sender>
 
-      <homecon-web-socket-object event="pages_group" key="{{key}}" data="{{group}}" auto>
-      </homecon-web-socket-object>
-
       <a class="header" on-tap="changeState">
         {{group.config.title}}
       </a>
@@ -67,8 +64,8 @@ class HomeconPagesMenuGroup extends PolymerElement {
       </div>
 
       <iron-collapse opened="{{opened}}">
-        <template is="dom-repeat" id="groups" items="{{group.pages}}" as="page_id">
-          <homecon-pages-menu-page key="{{page_id}}" on-delete="deletePage">
+        <template is="dom-repeat" id="groups" items="{{group.pages}}" as="page">
+          <homecon-pages-menu-page page="[[page]]" on-delete="deletePage">
           </homecon-pages-menu-page>
         </template>
 
@@ -86,8 +83,8 @@ class HomeconPagesMenuGroup extends PolymerElement {
 
   static get properties() {
     return {
-      key: {
-        type: String,
+      group: {
+        type: Object,
       },
       opened: {
         type: Boolean,

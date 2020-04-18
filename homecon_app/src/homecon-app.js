@@ -167,6 +167,11 @@ class HomeconApp extends PolymerElement {
       <homecon-web-socket connected="{{connected}}"></homecon-web-socket>
       <homecon-states-master></homecon-states-master>
 
+      <!-- loading pages -->
+      <homecon-web-socket-object event="pages_timestamp" key="pages_timestamp" data="{{pages_timestamp}}" auto on-change="_pagesTimestampChanged"></homecon-web-socket-object>
+      <homecon-web-socket-object id="pages" event="pages_pages" key="pages_pages" on-change="_pagesChanged"></homecon-web-socket-object>
+      <iron-localstorage name="homecon-pages" value="{{pages}}"></iron-localstorage>
+
       <!-- Header -->
       <app-header fixed shadow class$="[[loginClass]]">
         <app-toolbar>
@@ -191,13 +196,13 @@ class HomeconApp extends PolymerElement {
       <app-drawer id="drawer" class$="drawer [[loginClass]]">
         <div class="drawer-content">
           <!-- Pages menu -->
-          <homecon-pages-menu groups="[[menuGroups]]"></homecon-pages-menu>
+          <homecon-pages-menu groups="[[pages.groups]]"></homecon-pages-menu>
         </div>
       </app-drawer>
 
       <div class$="drawer-content persistent [[loginClass]]">
         <!-- Pages menu -->
-        <homecon-pages-menu groups="[[menuGroups]]"></homecon-pages-menu>
+        <homecon-pages-menu groups="[[pages.groups]]"></homecon-pages-menu>
       </div>
 
 
@@ -205,7 +210,7 @@ class HomeconApp extends PolymerElement {
       <div class$="main-content [[loginClass]]">
         <iron-pages selected="[[page]]" attr-for-selected="name">
           <view-login name="login"></view-login>
-          <view-pages name="pages" route="[[subroute]]"></view-pages>
+          <view-pages name="pages" groups="{{pages.groups}}" route="[[subroute]]"></view-pages>
           <view-states id="states" name="states"></view-states>
           <view-settings id="settings" name="settings"></view-settings>
           <view-editor name="editor"></view-editor>
@@ -223,7 +228,8 @@ class HomeconApp extends PolymerElement {
         observer: '_pageChanged'
       },
       routeData: Object,
-      subroute: Object
+      subroute: Object,
+      pages: Object
     };
   }
 
@@ -299,6 +305,32 @@ class HomeconApp extends PolymerElement {
   _toggleMenu(){
     this.$.menu.toggle();
   }
+
+  loadPages(){
+    console.log('loading pages')
+    this.$.pages.send()
+  }
+
+  _pagesTimestampChanged(e){
+    if(typeof this.pages == 'undefined' || this.pages == null ||
+       typeof this.pages.timestamp == 'undefined' || this.pages.timestamp < e.detail.data) {
+      this.loadPages()
+    }
+  }
+
+  _pagesChanged(e){
+    // add paths to groups and pages
+    console.log(e.detail.data)
+    var pages = e.detail.data
+    for(var i=0; i<pages.groups.length; i++){
+      for(var j=0; j<pages.groups[i].pages.length; j++){
+        pages.groups[i].pages[j].path = '/' + pages.groups[i].name + '/' + pages.groups[i].pages[j].name
+      }
+    }
+    this.pages = pages ;
+    console.log('reloaded pages')
+  }
+
 
 }
 

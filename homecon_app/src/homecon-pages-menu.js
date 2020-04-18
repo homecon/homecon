@@ -25,12 +25,11 @@ class HomeconPagesMenu extends PolymerElement {
       <homecon-web-socket-sender id="websocket">
       </homecon-web-socket-sender>
 
-      <homecon-web-socket-object id="pageGroups" event="pages_group_ids" key="" data="{{group_ids}}" auto>
-      </homecon-web-socket-object>
-
-      <template is="dom-repeat" id="groups" items="{{group_ids}}" as="group_id">
-        <homecon-pages-menu-group key="{{group_id}}" on-delete="deleteGroup" on-change-state="changeState">
-        </homecon-pages-menu-group>
+      <template is="dom-repeat" id="groups" items="{{groups}}" as="group">
+        <template is="dom-if" if="{{_isNotHome(group)}}">
+          <homecon-pages-menu-group group="{{group}}" on-delete="deleteGroup" on-change-state="changeState">
+          </homecon-pages-menu-group>
+        </template>
       </template>
 
       <div class$="vertical layout [[_hiddenclass(edit)]]">
@@ -42,6 +41,12 @@ class HomeconPagesMenu extends PolymerElement {
           &nbsp;
       </div>
     `;
+  }
+
+  static get properties() {
+    return {
+      groups: Object,
+    };
   }
 
   ready() {
@@ -73,6 +78,10 @@ class HomeconPagesMenu extends PolymerElement {
     else{
       return 'hidden';
     }
+  }
+
+  _isNotHome(group){
+    return group.name != 'home';
   }
 
 }

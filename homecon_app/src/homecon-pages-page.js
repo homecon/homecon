@@ -29,16 +29,13 @@ class HomeconPagesPage extends PolymerElement {
       <homecon-web-socket-sender id="websocket">
       </homecon-web-socket-sender>
 
-      <homecon-web-socket-object event="pages_page" key-key="path" key="/{{path}}" data="{{page}}" auto>
-      </homecon-web-socket-object>
-
       <homecon-page>
         <template is="dom-if" if="[[_filterHome(page)]]">
           <homecon-page-header title="[[page.config.title]]" icon="[[page.config.icon]]" widget="[[page.config.widget]]"></homecon-page-header>
         </template>
 
-        <template is="dom-repeat" id="sections" items="{{page.sections}}" as="sectionId">
-          <homecon-pages-section key="[[sectionId]]" on-delete="deletePageSection"></homecon-pages-section>
+        <template is="dom-repeat" id="sections" items="{{page.sections}}" as="section">
+          <homecon-pages-section section="{{section}}" on-delete="deletePageSection"></homecon-pages-section>
         </template>
 
 
@@ -55,9 +52,7 @@ class HomeconPagesPage extends PolymerElement {
 
   static get properties() {
     return {
-      path: {
-        type: String,
-      },
+      page: Object,
     };
   }
 
@@ -80,7 +75,9 @@ class HomeconPagesPage extends PolymerElement {
   }
 
   _filterHome(item){
+    if(typeof item != 'undefined'){
       return item.path != '/home/home';
+    }
   }
 
   _hiddenclass(edit) {

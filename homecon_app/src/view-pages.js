@@ -13,7 +13,7 @@ class ViewPages extends PolymerElement {
 
       <app-route route="{{route}}" pattern="/:group/:page" data="{{routeData}}" tail="{{subroute}}"></app-route>
 
-      <homecon-pages-page path="{{path}}" edit="{{edit}}"></homecon-page>
+      <homecon-pages-page edit="{{edit}}" page="[[pageData]]"></homecon-page>
     `;
   }
 
@@ -23,6 +23,7 @@ class ViewPages extends PolymerElement {
         type: String,
         reflectToAttribute: true,
       },
+      groups: Object,
       group: {
         type: String,
         reflectToAttribute: true,
@@ -53,8 +54,25 @@ class ViewPages extends PolymerElement {
     }
     this.path = this.group+'/'+this.page;
 
+    this.pageData = this._getPage(this.groups, this.group, this.page)
     // load pages through the websocket only when necessary
     //this._loadPage()
+  }
+
+  _getPage(groups, group, page){
+    if(typeof group != 'undefined' && typeof page != 'undefined'){
+      for(var i=0; i<groups.length; i++){
+        if(groups[i].name == group){
+          for(var j=0; j<groups[i].pages.length; j++){
+            if(groups[i].pages[j].name == page){
+              return groups[i].pages[j]
+            }
+          }
+          break;
+        }
+      }
+    }
+    console.log('page not found', group, page, groups)
   }
 
 }
