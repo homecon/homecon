@@ -38,7 +38,7 @@ setup(
                                   'build/es5-bundled/**/*.*',
                                   'build/es5-bundled/**/**/*.*',
                                   'build/es5-bundled/**/**/**/*.*']},
-    install_requires=['pytz', 'ephem', 'passlib', 'PyJWT', 'asyncws', 'aiohttp', 'numpy', 'pyomo', 'knxpy', 'pydal',
+    install_requires=['pytz', 'ephem', 'passlib', 'PyJWT', 'asyncws', 'aiohttp', 'numpy', 'pyomo', 'knxpy', 'pydal', 'websockets',
                       'scipy', 'apscheduler'],
     classifiers=['Programming Language :: Python :: 3.6'],
     entry_points={'console_scripts': [

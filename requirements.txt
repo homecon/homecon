@@ -10,4 +10,4 @@ pytz
 knxpy
 pydal
 scipy
-
+websockets

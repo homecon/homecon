@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-import time
 import logging
 import json
 import asyncio
@@ -8,7 +7,7 @@ from threading import Thread
 
 from uuid import uuid4
 
-import asyncws
+import websockets
 
 from homecon.core.plugin import Plugin
 from homecon.core.event import Event
@@ -43,12 +42,12 @@ class Websocket(Plugin):
         logger.info(f'starting websocket at ws://{self.host}:{self.port}')
         clients_lock = asyncio.Lock()
 
-        def connect_client(websocket):
+        async def connect_client(websocket, path):
             """
             connect a client and listen for messages
             """
             client = Client(websocket)
-            with (yield from clients_lock):
+            with (await clients_lock):
                 self.clients[client.id] = client
 
             address = client.address
@@ -56,7 +55,8 @@ class Websocket(Plugin):
 
             try:
                 while True:
-                    message = yield from websocket.recv()
+                    message = await websocket.recv()
+                    logger.debug(f'Recieved message, {message}')
                     if message is None:
                         break
                     # parse the message and fire an event if the data is in the correct format
@@ -65,21 +65,23 @@ class Websocket(Plugin):
                         self.log_data(address, data)
                         if 'event' in data:
                             if data['event'] == 'echo':
-                                yield from client.send(data)
+                                await client.send(data)
                             else:
                                 Event.fire(data['event'], data['data'], source=self.__class__.__name__,
                                            reply_to='Websocket/{}'.format(client.id))
+                        else:
+                            logger.debug(f'A message was received but contained no event, {data}')
                     except Exception as e:
-                        logger.debug('A message was received but could not be handled, {}'.format(e))
+                        logger.exception('A message was received but could not be handled')
             finally:
-                with (yield from clients_lock):
+                with (await clients_lock):
                     del self.clients[client.id]
                 logger.debug('Disconnected {}'.format(address))
 
         def run_server(loop):
             # create a server and run it in the event loop
             asyncio.set_event_loop(loop)
-            server_generator = asyncws.start_server(connect_client, host=self.host, port=self.port, loop=self._loop)
+            server_generator = websockets.serve(connect_client, host=self.host, port=self.port, loop=self._loop)
             self.server = self._loop.run_until_complete(server_generator)
             loop.run_forever()
 
@@ -213,8 +215,13 @@ class Client(object):
         self.tokenpayload = False
         self.id = uuid4()
 
-        address = websocket.writer.get_extra_info('peername')
-        self.address = '{}:{}'.format(address[0], address[1])
+    @property
+    def address(self):
+        address = self.websocket.remote_address
+        if address is not None:
+            return '{}:{}'.format(address[0], address[1])
+        else:
+            return '/'
 
     @asyncio.coroutine
     def send(self, message):
