@@ -1,54 +1,74 @@
+from unittest import TestCase
 
-import sys
-import logging
-import time
-
-from threading import Thread
-
-from homecon.tests.common import TestCase
-from homecon.homecon import HomeCon
-from homecon.core.state import State
+from homecon.homecon import HomeCon, IExecutor
+from homecon.core.event import EventManager
+from homecon.core.plugins.plugin import BasePlugin, IPluginManager
+from homecon.core.states.state import State, MemoryStateManager
 
 
-logging.basicConfig(level=logging.DEBUG,
-                    format='%(asctime)s %(levelname)7.7s  %(processName)-12.12s  %(name)-28.28s %(message)s',
-                    stream=sys.stdout)
-logging.getLogger('homecon.core.database').setLevel(logging.INFO)
+class SyncExecutor(IExecutor):
+    def submit(self, fn, *args, **kwargs):
+        fn(*args, **kwargs)
 
 
-class TestHomeCon(TestCase):
+class PluginManager(IPluginManager):
+    def __init__(self, plugins: dict):
+        self._plugins = plugins
 
-    def test_running_homecon(self):
-        hc = HomeCon()
-        homecon_thread = Thread(target=hc.start)
-        homecon_thread.start()
-        time.sleep(1)
+    def start(self):
+        pass
 
-        s = State.add('mystate', value=5)
-        s.value = 10
-        time.sleep(2)
-        hc.stop()
-        homecon_thread.join()
-        self.assertEqual(s.value, 10)
+    def __getitem__(self, key: str):
+        return self._plugins[key]
 
-    def test_restarting_homecon(self):
-        hc = HomeCon()
-        homecon_thread = Thread(target=hc.start)
-        homecon_thread.start()
-        time.sleep(1)
+    def __iter__(self):
+        return self._plugins.__iter__()
 
-        s = State.add('mystate', value=5)
-        s.value = 10
-        time.sleep(1)
+    def __contains__(self, key: str):
+        return self._plugins.__contains__(key)
 
-        hc.stop()
-        homecon_thread.join()
+    def keys(self):
+        return self._plugins.keys()
 
-        hc = HomeCon()
-        homecon_thread = Thread(target=hc.start)
-        homecon_thread.start()
-        time.sleep(1)
-        hc.stop()
-        homecon_thread.join()
-        s = State.get('mystate')
-        self.assertEqual(s.value, 10)
+    def items(self):
+        return self._plugins.items()
+
+    def values(self):
+        return self._plugins.values()
+
+
+class MockPlugin(BasePlugin):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.handled_events = []
+
+    def initialize(self):
+        pass
+
+    def listen_state_value_changed(self, event):
+        self.handled_events.append(event)
+        if event.data['state'].id == 0:
+            state = self._state_manager.get(id=1)
+            state.value = 1
+
+
+class TestHomecon(TestCase):
+    def test_homecon(self):
+        event_manager = EventManager()
+        state_manager = MemoryStateManager(event_manager)
+        mock_plugin = MockPlugin('MockPlugin', event_manager, state_manager)
+        plugin_manager = PluginManager({'MockPlugin': mock_plugin})
+
+        hc = HomeCon(event_manager, plugin_manager, SyncExecutor())
+        state1 = State(state_manager, event_manager, 0, 'test1')
+        state2 = State(state_manager, event_manager, 1, 'test1')
+        state_manager._states[0] = state1
+        state_manager._states[1] = state2
+
+        event = event_manager.fire('state_value_changed', {'state': state1})
+        hc.get_and_handle_event()
+        hc.get_and_handle_event()
+        print(mock_plugin.handled_events)
+        assert mock_plugin.handled_events[0] == event
+        assert mock_plugin.handled_events[1].data['state'] == state2
+        assert state2.value == 1

@@ -12,8 +12,6 @@ from shutil import rmtree
 # from threading import Thread
 # import numpy as np
 
-from uuid import uuid4
-
 # from . import weather
 # from . import building
 #
@@ -23,9 +21,8 @@ from uuid import uuid4
 
 
 from homecon.core.database import database_path, set_database_uri, set_measurements_database_uri
-from homecon.core.state import State
-from homecon.plugins.pages import deserialize, Section
-
+from homecon.core.states.state import State
+from homecon.plugins.pages import deserialize
 
 logger = logging.getLogger(__name__)
 

@@ -17,6 +17,123 @@ logger = logging.getLogger(__name__)
 base_path = os.path.dirname(os.path.abspath(__file__))
 
 
+def configure_(create_folders=True,
+               set_static_ip=True, ip=None,
+               run_init_script=True, init_script_name='homecon',
+               install_ipopt=True, install_knxd=True):
+    ################################################################################
+    # Install non python dependencies
+    ################################################################################
+    from homecon import configure
+
+    if create_folders:
+        print('### Creating the Homecon folders')
+        configure.create_data_folders()
+
+    # set a static ip address
+    if set_static_ip:
+
+        setip = False
+
+        if ip is not None:
+            print('### Setting static ip address')
+            configure.set_static_ip(ip)
+            setip = True
+
+        if not setip:
+            # use dialogs
+            setip = input('Do you want to set a static ip address (yes): ')
+            if setip in ['', 'yes', 'y']:
+                print('### Setting static ip address')
+                configure.set_static_ip()
+
+            elif setip in ['no', 'n']:
+                pass
+            else:
+                raise Exception('{} is not a valid answer, yes/y/no/n'.format(setip))
+
+    # create an initscript
+    if run_init_script:
+        configure.set_init_script(scriptname=init_script_name)
+
+    # patch pyutilib
+    # if not '--nopatchpyutilib' in sys.argv:
+    #     print('### Patching the pytuilib')
+    #     configure.patch_pyutilib()
+
+    # install knxd
+    # if not '--noknxd' in sys.argv:
+    #     print('### Installing knxd')
+    #     configure.install_knxd()
+
+    # install bonmin
+    # if not '--nobonmin' in sys.argv:
+    #    if not configure.solver_available('bonmin'):
+    #        print('### Installing BONMIN')
+    #        configure.install_bonmin()
+
+    # install ipopt
+    if install_ipopt:
+        if not configure.solver_available('ipopt'):
+            print('### Installing IPOPT')
+            configure.install_ipopt()
+
+    # install cbc
+    # if not '--noglpk' in sys.argv:
+    #     if not configure.solver_available('glpk'):
+    #         print('### Installing GLPK')
+    #         print('installation does not work locally yet and is omitted')
+    #         configure.install_glpk()
+
+    # install knxd
+    if install_knxd:
+        print('### Installing knxd')
+        configure.install_knxd()
+
+
+def serve_app_(appsrc=False, appport=None):
+    app_kwargs = {}
+
+    if appport is not None:
+        app_kwargs['port'] = appport
+
+    if appsrc:
+        app_kwargs['document_root'] = os.path.abspath(os.path.join(base_path, '..', 'app'))
+
+    from homecon_app.server import HttpServer
+    http_server = HttpServer(**app_kwargs)
+    http_server.start()
+    return http_server
+
+
+def run(demo: bool = False):
+    """
+    Run HomeCon
+
+    :param demo:
+    :return:
+    """
+
+    if demo:
+        from homecon.demo import initialize
+        initialize()
+
+    from homecon.core.states.dal_state_manager import DALStateManager
+    from homecon.core.event import EventManager
+    from homecon.core.plugins.plugin import MemoryPluginManager
+    from homecon.homecon import HomeCon
+    from concurrent.futures import ThreadPoolExecutor
+
+    event_manager = EventManager()
+    state_manager = DALStateManager(folder=os.path.abspath(os.path.join(base_path, 'db')), uri='sqlite://homecon.db', event_manager=event_manager)
+    plugin_manager = MemoryPluginManager({
+    })
+    executor = ThreadPoolExecutor(max_workers=10)
+
+    homecon = HomeCon(event_manager, plugin_manager, executor)
+    return homecon
+
+
 def main(printlog=False, loglevel='INFO', dbloglevel='INFO', httploglevel='INFO',
          demo=False, appsrc=False, appport=None, serve_app=True,
          configure=False, create_folders=True,
@@ -49,135 +166,43 @@ def main(printlog=False, loglevel='INFO', dbloglevel='INFO', httploglevel='INFO'
     logging.getLogger('homecon.httpserver').setLevel(getattr(logging, httploglevel))
 
     if configure:
-        ################################################################################
-        # Install non python dependencies
-        ################################################################################
-        from . import configure
-
-        if create_folders:
-            print('### Creating the Homecon folders')
-            configure.create_data_folders()
-
-        # set a static ip address
-        if set_static_ip:
-
-            setip = False
-
-            if ip is not None:
-                print('### Setting static ip address')
-                configure.set_static_ip(ip)
-                setip = True
-
-            if not setip:
-                # use dialogs
-                setip = input('Do you want to set a static ip address (yes): ')
-                if setip in ['', 'yes', 'y']:
-                    print('### Setting static ip address')
-                    configure.set_static_ip()
-
-                elif setip in ['no', 'n']:
-                    pass
-                else:
-                    raise Exception('{} is not a valid answer, yes/y/no/n'.format(setip))
-
-        # create an initscript
-        if run_init_script:
-            configure.set_init_script(scriptname=init_script_name)
-
-        # patch pyutilib
-        # if not '--nopatchpyutilib' in sys.argv:
-        #     print('### Patching the pytuilib')
-        #     configure.patch_pyutilib()
-
-        # install knxd
-        # if not '--noknxd' in sys.argv:
-        #     print('### Installing knxd')
-        #     configure.install_knxd()
-
-        # install bonmin
-        #if not '--nobonmin' in sys.argv:
-        #    if not configure.solver_available('bonmin'):
-        #        print('### Installing BONMIN')
-        #        configure.install_bonmin()
-
-        # install ipopt
-        if install_ipopt:
-            if not configure.solver_available('ipopt'):
-                print('### Installing IPOPT')
-                configure.install_ipopt()
-
-        # install cbc
-        # if not '--noglpk' in sys.argv:
-        #     if not configure.solver_available('glpk'):
-        #         print('### Installing GLPK')
-        #         print('installation does not work locally yet and is omitted')
-        #         configure.install_glpk()
-
-        # install knxd
-        if install_knxd:
-            print('### Installing knxd')
-            configure.install_knxd()
+        configure_(create_folders=create_folders, set_static_ip=set_static_ip, ip=ip, run_init_script=run_init_script,
+                   init_script_name=init_script_name, install_ipopt=install_ipopt, install_knxd=install_knxd)
 
     else:
-        ################################################################################
-        # Run HomeCon
-        ################################################################################
-        app_kwargs = {}
-
-        if demo:
-            from homecon.demo import initialize
-            initialize()
-
-
-            # prepare_database()
-            # emulatorthread.start()
-            # forecastthread.start()
-            # responsethread.start()
-
-        if appport is not None:
-            app_kwargs['port'] = appport
-
-        if appsrc:
-            app_kwargs['document_root'] = os.path.abspath(os.path.join(base_path, '..', 'app'))
-
+        http_server = None
         if serve_app:
-            from homecon_app.server import HttpServer
-            http_server = HttpServer(**app_kwargs)
-            http_server.start()
+            http_server = serve_app_(appsrc=appsrc, appport=appport)
+        homecon = run(demo=demo)
 
-        ################################################################################
-        # start HomeCon
-        ################################################################################
-        from homecon.homecon import HomeCon
-
-        hc = HomeCon()
-
+        # noinspection PyUnusedLocal
         def stop(signum, frame):
-            if not hc.running:
+            if not homecon.running:
                 sys.exit(1)
             else:
-                hc.stop()
-                if serve_app:
+                homecon.stop()
+                if http_server is not None:
                     http_server.stop()
 
         signal(SIGTERM, stop)
         signal(SIGINT, stop)
 
         print('\nStarting HomeCon\nPress Ctrl + C to stop\n')
-        try:
-            hc.start()
+        homecon.start()
 
-        except KeyboardInterrupt:
-            print('\nStopping HomeCon\n')
-            stop()
-
-        except:
-            print('Stopping HomeCon')
-            stop()
-
-            exc_type, exc_value, exc_traceback = sys.exc_info()
-            traceback.print_exception(exc_type, exc_value, exc_traceback, file=sys.stdout)
-            print('\n'*3)
+        # try:
+        #     homecon.start()
+        #
+        # except KeyboardInterrupt:
+        #     print('\nStopping HomeCon\n')
+        #     stop()
+        # except:
+        #     print('Stopping HomeCon')
+        #     stop()
+        #
+        #     exc_type, exc_value, exc_traceback = sys.exc_info()
+        #     traceback.print_exception(exc_type, exc_value, exc_traceback, file=sys.stdout)
+        #     print('\n' * 3)
 
 
 if __name__ == '__main__':

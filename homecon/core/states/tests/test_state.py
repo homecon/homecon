@@ -17,119 +17,76 @@
 #    along with HomeCon.  If not, see <http://www.gnu.org/licenses/>.
 ################################################################################
 
-import datetime
-import numpy as np
-import time
-
-from homecon.tests import common
-from homecon.core.database import get_database
-from homecon.core.state import State
+from unittest import TestCase
+from homecon.core.states.state import MemoryStateManager
+from homecon.core.event import EventManager
 
 
-class TestState(common.TestCase):
+class TestDALStateManager(TestCase):
+
     def test_add(self):
-        s = State.add('mystate')
-        db, table = State.get_table()
-        self.assertEqual('mystate', db(db.states).select()[0]['name'])
-        print(db._uri)
-        self.assertTrue(db._uri.endswith('db_test/homecon.db'))
-        self.assertEqual('mystate', State.get(path='/mystate').name)
-        self.assertEqual('/mystate', s.path)
+        state_manager = MemoryStateManager(EventManager())
+        s = state_manager.add('mystate')
 
-    def test_add_parent_id(self):
-        s0 = State.add('mystate')
-        kwargs = {'name': 'living', 'parent': 1, 'type': '', 'quantity': '', 'unit': '', 'label': '', 'description': '',
-                  'config': {}}
-        name =kwargs.pop('name')
-        s1 = State.add(name, **kwargs)
-
-    def test_re_add(self):
-        s0 = State.add('mystate')
-        s1 = State.add('mystate')
-        self.assertEqual(s0, s1)
-
-    def test_get(self):
-        s1a = State.add('parent1')
-        s1b = State.add('parent2')
-        s2a = State.add('substate1', parent=s1a)
-        s2b = State.add('substate1', parent=s1b)
-        s = State.get(path='/parent2/substate1')
-        self.assertEqual(s, s2b)
-        s = State.get(path='/parent1')
-        self.assertEqual(s, s1a)
-
-    def test_update(self):
-        s = State.add('mystate')
-        s.update(name='test')
-        self.assertEqual(s.name, 'test')
-
-    def test_parent(self):
-        s1 = State.add('mystate')
-        s2 = State.add('substate', parent=s1)
-        s3 = State.add('substate2', parent='/mystate')
-        self.assertEqual('mystate', s2.parent.name)
-        self.assertEqual('mystate', s3.parent.name)
+        assert s.id == 0
+        assert s.name == 'mystate'
+        assert s.parent is None
+        assert s.value is None
 
     def test_full_path(self):
-        s1 = State.add('mystate')
-        s2 = State.add('substate', parent=s1)
-        self.assertEqual('/mystate', s1.path)
-        self.assertEqual('/mystate/substate', s2.path)
+        state_manager = MemoryStateManager(EventManager())
+        s1 = state_manager.add('mystate')
+        s2 = state_manager.add('substate', parent=s1)
+        assert s1.path == '/mystate'
+        assert s2.path == '/mystate/substate'
 
     def test_children(self):
-        s1 = State.add('mystate')
-        s2a = State.add('substate_a', parent=s1)
-        s2b = State.add('substate_b', parent=s1)
-        State.add('mynewstate')
+        state_manager = MemoryStateManager(EventManager())
+        s1 = state_manager.add('mystate')
+        s2a = state_manager.add('substate_a', parent=s1)
+        s2b = state_manager.add('substate_b', parent=s1)
+        state_manager.add('mynewstate')
         children = s1.children
-        self.assertEqual(len(children), 2)
-        self.assertIn(s2a, children)
-        self.assertIn(s2b, children)
-
-    def test_read_write_speed(self):
-        s = State.add('mystate')
-        start = time.time()
-        for i in range(50):
-            s.value = i
-            v = s.value
-        stop = time.time()
-        self.assertLess(stop-start, 1)
+        assert len(children) == 2
+        assert s2a in children
+        assert s2b in children
 
     def test_all(self):
-        State.add('mystate1')
-        State.add('mystate2')
-        states = State.all()
-        self.assertEqual(states[0].path, '/mystate1')
-        self.assertEqual(states[1].path, '/mystate2')
-
-    def test_triggers(self):
-        State.add('mystate', config={'someattr': True})
-        State.add('myotherstate', config={'someattr': True})
-        State.add('mycomputedstate', config={
-            'triggers': '[state.path for state in State.all()'
-                        ' if (`someattr` in state.config and state.config[`someattr`])]',
-            'computed': '5*State.get(`mystate`).value + State.get(`myotherstate`).value'})
-        self.assertEqual(State.get('mycomputedstate').triggers, ['/mystate', '/myotherstate'])
-        self.assertEqual(State.get('mystate').triggers, [])
-        self.assertEqual(State.get('myotherstate').triggers, [])
-
-    def test_computed(self):
-        State.add('mystate', config={'someattr': True})
-        State.add('myotherstate', config={'someattr': True})
-        State.add('mycomputedstate', config={
-            'triggers': '[state.path for state in State.all()'
-                        ' if (`someattr` in state.config and state.config[`someattr`])]',
-            'computed': '5*State.get(`mystate`).value + np.exp(State.get(`myotherstate`).value)'})
-        State.get('mystate').value = 10
-        State.get('myotherstate').value = 5
-        self.assertEqual(State.get('mycomputedstate').computed, 50 + np.exp(5))
-
-    def test_find(self):
-        State.add('parent/child1/state')
-        State.add('parent/child2/state')
-        State.add('parent/aha/state')
-        states = State.find('.*/child.*/state')
-        print(states)
+        state_manager = MemoryStateManager(EventManager())
+        state_manager.add('mystate1')
+        state_manager.add('mystate2')
+        states = state_manager.all()
+        assert states[0].path == '/mystate1'
+        assert states[1].path == '/mystate2'
+    #
+    # def test_triggers(self):
+    #     State.add('mystate', config={'someattr': True})
+    #     State.add('myotherstate', config={'someattr': True})
+    #     State.add('mycomputedstate', config={
+    #         'triggers': '[state.path for state in State.all()'
+    #                     ' if (`someattr` in state.config and state.config[`someattr`])]',
+    #         'computed': '5*State.get(`mystate`).value + State.get(`myotherstate`).value'})
+    #     self.assertEqual(State.get('mycomputedstate').triggers, ['/mystate', '/myotherstate'])
+    #     self.assertEqual(State.get('mystate').triggers, [])
+    #     self.assertEqual(State.get('myotherstate').triggers, [])
+    #
+    # def test_computed(self):
+    #     State.add('mystate', config={'someattr': True})
+    #     State.add('myotherstate', config={'someattr': True})
+    #     State.add('mycomputedstate', config={
+    #         'triggers': '[state.path for state in State.all()'
+    #                     ' if (`someattr` in state.config and state.config[`someattr`])]',
+    #         'computed': '5*State.get(`mystate`).value + np.exp(State.get(`myotherstate`).value)'})
+    #     State.get('mystate').value = 10
+    #     State.get('myotherstate').value = 5
+    #     self.assertEqual(State.get('mycomputedstate').computed, 50 + np.exp(5))
+    #
+    # def test_find(self):
+    #     State.add('parent/child1/state')
+    #     State.add('parent/child2/state')
+    #     State.add('parent/aha/state')
+    #     states = State.find('.*/child.*/state')
+    #     print(states)
 
     # def test_trigger(self):
     #     State.add('mystate', config={'someattr': True})

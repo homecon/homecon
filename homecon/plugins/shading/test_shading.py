@@ -1,6 +1,6 @@
 
 from homecon.tests import common
-from homecon.core.state import State
+from homecon.core.states.state import State
 from homecon.core.event import Event
 from homecon.plugins.shading import Shading
 

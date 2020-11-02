@@ -1,13 +1,11 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-import logging
 import json
 import pyomo.environ as pyomo
 
 from . import database
-from . import event
-from . import state
+from homecon.core.states import state
 
 
 class Component(state.BaseObject):
@@ -72,7 +70,7 @@ class Component(state.BaseObject):
                 config['component'] = self._path
 
                 # replace the initialized dictionary with the state
-                self.states[path] = state.states.add(fullpath,config=config)
+                self.states[path] = state.states.add(fullpath, config=config)
 
         # initialize
         self.initialize()

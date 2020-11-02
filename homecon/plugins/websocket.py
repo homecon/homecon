@@ -9,7 +9,7 @@ from uuid import uuid4
 
 import websockets
 
-from homecon.core.plugin import Plugin
+from homecon.core.plugins.plugin import Plugin
 from homecon.core.event import Event
 
 

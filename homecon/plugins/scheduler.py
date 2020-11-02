@@ -11,8 +11,8 @@ from apscheduler.executors.pool import ThreadPoolExecutor
 from apscheduler.triggers.cron import CronTrigger
 
 from homecon.core.event import Event
-from homecon.core.state import State
-from homecon.core.plugin import Plugin
+from homecon.core.states.state import State
+from homecon.core.plugins.plugin import Plugin
 
 
 logger = logging.getLogger(__name__)

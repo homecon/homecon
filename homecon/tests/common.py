@@ -20,19 +20,13 @@
 from unittest import TestCase
 from unittest.mock import patch
 import os
-import sqlite3
 import json
 import asyncws
-import time
 from shutil import rmtree
 
-from threading import Thread
-
 # from homecon.homecon import HomeCon
-from pydal import DAL
 
 # from homecon.core import plugin
-from homecon.core import state
 
 # create test databases
 # database.db = database.Database(database='test_homecon.db')

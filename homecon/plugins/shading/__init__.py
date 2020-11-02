@@ -7,8 +7,8 @@ import datetime
 import numpy as np
 import pyomo.environ as pyomo
 
-from homecon.core.plugin import Plugin
-from homecon.core.state import State
+from homecon.core.plugins.plugin import Plugin
+from homecon.core.states.state import State
 from homecon.util.executor import debounce
 
 from apscheduler.schedulers.background import BackgroundScheduler

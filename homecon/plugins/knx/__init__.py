@@ -6,8 +6,8 @@ import time
 from knxpy.knxd import KNXD
 from knxpy.util import decode_dpt
 
-from homecon.core.plugin import Plugin
-from homecon.core.state import State
+from homecon.core.plugins.plugin import Plugin
+from homecon.core.states.state import State
 
 logger = logging.getLogger(__name__)
 

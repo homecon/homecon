@@ -4,7 +4,7 @@
 import logging
 
 from homecon.core.database import get_database, Field
-from homecon.core.plugin import Plugin
+from homecon.core.plugins.plugin import Plugin
 
 from homecon.plugins.states import States
 from homecon.plugins.websocket import Websocket
