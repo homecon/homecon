@@ -1,16 +1,15 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-
 import logging
+import time
 
 from homecon.core.event import Event
-from homecon.core.plugins.plugin import Plugin
-from homecon.core.states.state import State
+from homecon.core.plugins.plugin import BasePlugin
+
 
 logger = logging.getLogger(__name__)
 
 
-class States(Plugin):
+class States(BasePlugin):
     """
     Class to control the HomeCon states
     
@@ -30,38 +29,38 @@ class States(Plugin):
     dependent expressions some regular expression syntax can be used.
     
     """
-    def __init__(self):
-        super().__init__()
+    def __init__(self, *args, now=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.last_update_timestamp = now or time.time()
+
         self.triggers = {}
         # add settings states
-        State.add('settings', type=None)
-        State.add('location', type=None, parent='/settings')
-        State.add('latitude', parent='/settings/location',
-                  type='number', quantity='angle', unit='deg',
-                  label='Latitude', description='HomeCon latitude', value=51.05)
-        State.add('longitude', parent='/settings/location',
-                  type='number', quantity='angle', unit='deg',
-                  label='Longitude', description='HomeCon longitude', value=5.58)
-        State.add('elevation', parent='/settings/location',
-                  type='number', quantity='height', unit='m',
-                  label='Elevation', description='HomeCon elevation', value=74.0)
-        State.add('timezone', parent='/settings/location',
-                  type='string', quantity='', unit='',
-                  label='Time zone', description='HomeCon time zone', value='Europe/Brussels')
+        self._state_manager.add('settings', type=None)
+        self._state_manager.add('location', type=None, parent='/settings')
+        self._state_manager.add('latitude', parent='/settings/location',
+                                type='number', quantity='angle', unit='deg',
+                                label='Latitude', description='HomeCon latitude', value=51.05)
+        self._state_manager.add('longitude', parent='/settings/location',
+                                type='number', quantity='angle', unit='deg',
+                                label='Longitude', description='HomeCon longitude', value=5.58)
+        self._state_manager.add('elevation', parent='/settings/location',
+                                type='number', quantity='height', unit='m',
+                                label='Elevation', description='HomeCon elevation', value=74.0)
+        self._state_manager.add('timezone', parent='/settings/location',
+                                type='string', quantity='', unit='',
+                                label='Time zone', description='HomeCon time zone', value='Europe/Brussels')
 
-    def initialize(self):
+    def start(self):
         logger.debug('States plugin Initialized')
 
-    def from_json(self, string):
-        State.from_json(string)
-
-    def parse_triggers(self):
-        for path in State.all_paths():
-            self.triggers[path] = {}
-            state = State.get(path=path)
-            for path in state.triggers:
-                if path in self._states and state not in self._states[path].trigger:
-                    self._states[path].trigger.append(state)
+    #
+    # def parse_triggers(self):
+    #     for path in State.all_paths():
+    #         self.triggers[path] = {}
+    #         state = State.get(path=path)
+    #         for path in state.triggers:
+    #             if path in self._states and state not in self._states[path].trigger:
+    #                 self._states[path].trigger.append(state)
 
     # def list(self):
     #     """
@@ -120,28 +119,28 @@ class States(Plugin):
     #             #core.websocket.send({'event':'state_config', 'path':state.path, 'value':state.config}, clients=[event.client])
     #             #core.websocket.send({'event':'list_states', 'path':'', 'value':self.list()}, clients=[event.client])
 
-    def listen_state(self, event):
+    def listen_state(self, event: Event):
         if 'id' in event.data:
-            state = State.get(id=event.data['id'])
+            state = self._state_manager.get(id=event.data['id'])
             event.reply({'id': event.data['id'], 'value': state.serialize()})
 
-    def listen_state_value(self, event):
+    def listen_state_value(self, event: Event):
         if 'id' in event.data and 'value' not in event.data:
-            state = State.get(id=event.data['id'])
+            state = self._state_manager.get(id=event.data['id'])
             if state is not None:
                 event.reply({'id': event.data['id'], 'value': state.value})
         elif 'path' in event.data and 'value' not in event.data:
-            state = State.get(path=event.data['path'])
+            state = self._state_manager.get(path=event.data['path'])
             if state is not None:
                 event.reply({'path': event.data['path'], 'value': state.value})
 
         elif 'id' in event.data and 'value' in event.data:
-            state = State.get(id=event.data['id'])
+            state = self._state_manager.get(id=event.data['id'])
             if state is not None:
                 state.value = event.data['value']
 
         elif 'path' in event.data and 'value' in event.data:
-            state = State.get(path=event.data['path'])
+            state = self._state_manager.get(path=event.data['path'])
             if state is not None:
                 state.value = event.data['value']
 
@@ -161,36 +160,32 @@ class States(Plugin):
 
     def listen_state_list(self, event: Event):
         print(event.type, event.source, event.target)
-        states = [s.serialize() for s in State.all()]
+        states = [s.serialize() for s in self._state_manager.all()]
         event.reply({'id': '', 'value': states})
 
     def listen_state_add(self, event):
         kwargs = dict(event.data)
         name = kwargs.pop('name')
-        State.add(name, **kwargs)
-        Event.fire('state_list_changed', data={'state_list': State.all()})
+        self._state_manager.add(name, **kwargs)
 
     def listen_state_update(self, event):
-        state = None
         if 'id' in event.data:
             kwargs = dict(event.data)
             id = kwargs.pop('id')
-            state = State.get(id=id)
+            state = self._state_manager.get(id=id)
+
+            if state is not None:
+                state.update(**kwargs)
+            else:
+                logger.error('cannot update state, state not found')
+
         else:
             logger.error('cannot update state, no id supplied')
 
-        if state is not None:
-            state.update(**kwargs)
-            Event.fire('state_changed', {'id': state.id, 'path': state.path, 'state': state})
-        else:
-            logger.error('cannot update state, state not found')
-
     def listen_state_delete(self, event):
         if 'id' in event.data:
-            state = State.get(id=event.data['id'])
+            state = self._state_manager.get(id=event.data['id'])
             state.delete()
-            Event.fire('state_deleted', {'state': state})
-            Event.fire('state_list_changed', data={'state_list': State.all()})
 
     @property
     def settings_sections(self):
@@ -201,25 +196,25 @@ class States(Plugin):
             'widgets': [{
                 'type': 'value-input',
                 'config': {
-                    'state': State.get(path='/settings/location/timezone').id,
+                    'state': self._state_manager.get(path='/settings/location/timezone').id,
                     'label': 'Timezone',
                 }
             }, {
                 'type': 'value-input',
                 'config': {
-                    'state': State.get(path='/settings/location/longitude').id,
+                    'state': self._state_manager.get(path='/settings/location/longitude').id,
                     'label': 'Longitude',
                 }
             }, {
                 'type': 'value-input',
                 'config': {
-                    'state': State.get(path='/settings/location/latitude').id,
+                    'state': self._state_manager.get(path='/settings/location/latitude').id,
                     'label': 'Latitude',
                 }
             }, {
                 'type': 'value-input',
                 'config': {
-                    'state': State.get(path='/settings/location/elevation').id,
+                    'state': self._state_manager.get(path='/settings/location/elevation').id,
                     'label': 'Elevation',
                 }
             }]

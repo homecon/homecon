@@ -34,16 +34,10 @@ class DALStateManager(MemoryStateManager):
             self._states[state.id] = state
 
     def row_to_state(self, row) -> State:
-        parent = self._states.get(row['parent'])  # FIXME this could couse problems related to the order of states in the db
+        parent = self._states.get(row['parent'])  # FIXME this could cause problems related to the order of states in the db
         return State(self, self.event_manager, row['id'], row['name'], parent=parent, type=row['type'], quantity=row['quantity'],
                      unit=row['unit'], label=row['label'], description=row['description'], config=json.loads(row['config']),
                      value=json.loads(row['value']) if row['value'] is not None else row['value'])
-
-    @staticmethod
-    def state_to_dict(state: State) -> dict:
-        return {'id': state.id, 'name': state.name, 'parent': None if state.parent is None else state.parent.id, 'type': state.type,
-                'quantity': state.quantity, 'unit': state.unit, 'label': state.label, 'description': state.description,
-                'config': '{}' if state.config is None else json.dumps(state.config), 'value': state.value}
 
     def delete(self, state: State):
         self._db(self._table.id == state.id).delete()
@@ -55,9 +49,19 @@ class DALStateManager(MemoryStateManager):
             super().delete(state)
 
     def add(self, name, parent: State = None, type: str = None, quantity: str = None, unit: str = None, label: str = None, description: str = None,
-            config: dict = None, value: Any = None):
+            config: dict = None, value: Any = None, **kwargs):
+
+        if isinstance(parent, int):
+            parent = self.get(parent)
+        elif isinstance(parent, str):
+            parent = self.get(path=parent)
+
+        existing_state = self.exists(name, parent=parent)
+        if existing_state:
+            return existing_state
+
         id_ = self._db.states.insert(name=name, parent=None if parent is None else parent.id, type=type, quantity=quantity, unit=unit, label=label,
-                                     description=description, config='{}' if config is None else json.dumps(config), value=value)
+                                     description=description, config=json.dumps(config), value=json.dumps(value))
         try:
             self._db.commit()
         except Exception:
@@ -68,7 +72,9 @@ class DALStateManager(MemoryStateManager):
 
     def update(self, state: State):
         row = self._db(self._table.id == state.id).select().first()
-        row.update_record(**self.state_to_dict(state))
+        row.update_record(name=state.name, parent=None if state.parent is None else state.parent.id, type=state.type, quantity=state.quantity,
+                          unit=state.unit, label=state.label, description=state.description, config=json.dumps(state.config),
+                          value=json.dumps(state.value))
         try:
             self._db.commit()
         except Exception:

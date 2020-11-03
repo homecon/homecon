@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-import logging
-import os
-import json
-from shutil import rmtree
+# import logging
+# import os
+# import json
+# from shutil import rmtree
 # import sys
 
 # import datetime
@@ -24,92 +24,7 @@ from homecon.core.database import database_path, set_database_uri, set_measureme
 from homecon.core.states.state import State
 from homecon.plugins.pages import deserialize
 
-logger = logging.getLogger(__name__)
 
-
-def initialize():
-    logger.info('initializing demo mode')
-    set_databases()
-    create_states()
-    create_pages()
-
-
-def set_databases():
-    logger.info('creating the demo database')
-
-    # clear the demo database
-    try:
-        rmtree(os.path.join(database_path, 'demo'))
-    except:
-        pass
-
-    # initialize the database
-    os.makedirs(os.path.join(database_path, 'demo'))
-    set_database_uri('sqlite://{}'.format(os.path.join(database_path, 'demo', 'homecon.db')))
-    set_measurements_database_uri('sqlite://{}'.format(os.path.join(database_path, 'demo', 'homecon_measurements.db')))
-
-
-def create_states():
-    logger.info('creating demo states')
-    State.add('ground_floor')
-    State.add('kitchen', parent='/ground_floor')
-    State.add('some_value', parent='/ground_floor/kitchen', type='int', value=20)
-    State.add('lights', parent='/ground_floor/kitchen')
-    State.add('light', parent='/ground_floor/kitchen/lights',
-              type='boolean', quantity='', unit='',
-              label='Kitchen light', description='',
-              config={'knx_ga_read': '1/1/31', 'knx_ga_write': '1/1/31', 'knx_dpt': '1'})
-    State.add('spotlight', parent='/ground_floor/kitchen/lights',
-              type='boolean', quantity='', unit='',
-              label='Kitchen spotlights', description='',
-              config={'knx_ga_read': '1/1/62', 'knx_ga_write': '1/1/62', 'knx_dpt': '1'})
-    State.add('dimmer', parent='/ground_floor/kitchen/lights',
-              type='float', quantity='', unit='',
-              label='Kitchen dimmer', description='')
-
-    State.add('living', parent='/ground_floor')
-    State.add('lights', parent='/ground_floor/living')
-    State.add('light', parent='/ground_floor/living/lights',
-              type='boolean', quantity='', unit='',
-              label='Living room light', description='',
-              config={'knx_ga_read': '1/1/41', 'knx_ga_write': '1/1/41', 'knx_dpt': '1'})
-
-    State.add('windows', parent='/ground_floor/kitchen')
-    State.add('south', parent='/ground_floor/kitchen/windows')
-    State.add('shading', parent='/ground_floor/kitchen/windows/south')
-    State.add('position', parent='/ground_floor/kitchen/windows/south/shading',
-              type='float', quantity='', unit='',
-              label='Position', description='',
-              config={'knx_ga_read': '2/4/61', 'knx_ga_write': '2/3/61', 'knx_dpt': '5'})
-    State.add('west', parent='/ground_floor/kitchen/windows')
-    State.add('shading', parent='/ground_floor/kitchen/windows/west')
-    State.add('position', parent='/ground_floor/kitchen/windows/west/shading',
-              type='float', quantity='', unit='',
-              label='Position', description='',
-              config={'knx_ga_read': '2/4/62', 'knx_ga_write': '2/3/62', 'knx_dpt': '5'})
-
-    State.add('myalarms')
-    State.add('dummy', parent='/myalarms', type='action', value=[
-        {'state': State.get('/ground_floor/kitchen/some_value').id, 'value': 10},
-        {'state': State.get('/ground_floor/kitchen/some_value').id, 'value': 0, 'delay': 5}
-    ], label='Dummy')
-    State.add('1', parent='/myalarms', type='schedule',
-              value={'trigger': {'day_of_week': '0,1,2,3,6', 'hour': '20', 'minute': '0'},
-                     'action': State.get('/myalarms/dummy').id})
-    State.add('central')
-    State.add('ventilation', parent='/central')
-    State.add('speed', parent='/central/ventilation',
-              type='int', quantity='', unit='',
-              label='Ventilation speed', description='',
-              config={'knx_ga_read': None, 'knx_ga_write': '4/0/4', 'knx_dpt': '6'})
-
-
-def create_pages():
-    logger.info('creating demo pages')
-    base_path = os.path.dirname(os.path.abspath(__file__))
-    with open(os.path.join(base_path, 'pages.json'), 'r') as f:
-        pages = json.load(f)
-    deserialize(pages)
 
 
 # def prepare_database():

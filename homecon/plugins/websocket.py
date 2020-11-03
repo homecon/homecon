@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 import logging
 import json
 import asyncio
@@ -9,35 +8,33 @@ from uuid import uuid4
 
 import websockets
 
-from homecon.core.plugins.plugin import Plugin
-from homecon.core.event import Event
+from homecon.core.plugins.plugin import BasePlugin
 
 
 class Logger(logging.Logger):
     """
     Custom logger which blanks out passwords and tokens.
     """
-
-# logger = Logger(__name__)
+    pass
 
 
 logger = logging.getLogger(__name__)
 
 
-class Websocket(Plugin):
+class Websocket(BasePlugin):
     """
     Class to control the HomeCon websocket
 
     """
-    def __init__(self, host='0.0.0.0', port=9099):
-        super().__init__()
+    def __init__(self, *args, host='0.0.0.0', port=9099, **kwargs):
+        super().__init__(*args, **kwargs)
         self.clients = {}
         self.host = host
         self.port = port
         self.server = None
         self._loop = asyncio.get_event_loop()
 
-    def initialize(self):
+    def start(self):
         # FIXME this is very ugly with an asyncio loop inside a thread
         logger.info(f'starting websocket at ws://{self.host}:{self.port}')
         clients_lock = asyncio.Lock()
@@ -67,11 +64,10 @@ class Websocket(Plugin):
                             if data['event'] == 'echo':
                                 await client.send(data)
                             else:
-                                Event.fire(data['event'], data['data'], source=self.__class__.__name__,
-                                           reply_to='Websocket/{}'.format(client.id))
+                                self.fire(data['event'], data['data'], reply_to='Websocket/{}'.format(client.id))
                         else:
                             logger.debug(f'A message was received but contained no event, {data}')
-                    except Exception as e:
+                    except Exception:
                         logger.exception('A message was received but could not be handled')
             finally:
                 with (await clients_lock):
@@ -88,6 +84,10 @@ class Websocket(Plugin):
         server_thread = Thread(target=run_server, args=(asyncio.get_event_loop(),))
         server_thread.start()
         logger.debug('Websocket plugin initialized')
+
+    def stop(self):
+        self.server.close()
+        asyncio.get_event_loop().stop()
 
     def log_data(self, address, data):
         """
@@ -184,15 +184,6 @@ class Websocket(Plugin):
             }
         })
 
-    def listen_state_list_changed(self, event):
-        self.send({
-            'event': 'state_list',
-            'data': {
-                'id': '',
-                'value': [s.serialize() for s in event.data['state_list']]
-            }
-        })
-
     def listen_state_changed(self, event):
         self.send({
             'event': 'state',
@@ -203,10 +194,24 @@ class Websocket(Plugin):
             }
         })
 
-    def listen_stop_plugin(self, event):
-        super().listen_stop_plugin(event)
-        self.server.close()
-        asyncio.get_event_loop().stop()
+    def listen_state_added(self, _):
+        print(self._state_manager.all())
+        self.send({
+            'event': 'state_list',
+            'data': {
+                'id': '',
+                'value': [s.serialize() for s in self._state_manager.all()]
+            }
+        })
+
+    def listen_state_deleted(self, _):
+        self.send({
+            'event': 'state_list',
+            'data': {
+                'id': '',
+                'value': [s.serialize() for s in self._state_manager.all()]
+            }
+        })
 
 
 class Client(object):

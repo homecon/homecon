@@ -11,7 +11,7 @@ from copy import deepcopy
 from homecon.core.event import Event
 from homecon.core.states.state import State
 from homecon.core.database import get_database, Field, DatabaseObject
-from homecon.core.plugins.plugin import Plugin
+from homecon.core.plugins.plugin import BasePlugin
 
 logger = logging.getLogger(__name__)
 
@@ -573,16 +573,16 @@ def clear_pages():
     db.close()
 
 
-class Pages(Plugin):
+class Pages(BasePlugin):
     """
     Notes
     -----
     A homecon app is structured using groups, pages, sections and widgets
 
     """
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, now=None, **kwargs):
         super().__init__(*args, **kwargs)
-        self.last_update_timestamp = time.time()
+        self.last_update_timestamp = now or time.time()
 
     def initialize(self):
         # set defaults

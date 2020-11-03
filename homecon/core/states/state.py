@@ -88,6 +88,13 @@ class State:
     def __repr__(self):
         return f'<State: {self.id}, name: {self.name}, value: {self.value}>'
 
+    def serialize(self):
+        return {
+            'id': self.id, 'name': self.name, 'value': self.value, 'parent': None if self.parent is None else self.parent.id,
+            'type': self.type, 'quantity': self.quantity, 'unit': self.unit, 'label': self.label, 'description': self.description,
+            'config': self.config or {}
+        }
+
 
 class IStateManager:
     def __init__(self, event_manager: IEventManager):
@@ -97,7 +104,7 @@ class IStateManager:
         raise NotImplementedError
 
     # noinspection PyShadowingBuiltins
-    def get(self, id: int = None, path: str = None) -> Optional[State]:
+    def get(self, path: str = None, id: int = None) -> Optional[State]:
         raise NotImplementedError
 
     def find(self, expr: str) -> List[State]:
@@ -127,13 +134,19 @@ class MemoryStateManager(IStateManager):
         return list(self._states.values())
 
     # noinspection PyShadowingBuiltins
-    def get(self, id: int = None, path: str = None):
+    def get(self, path: str = None, id: int = None):
         if id is not None:
             return self._states.get(id, None)
         else:
             for state in self._states.values():
                 if state.path == path:
                     return state
+
+    def exists(self, name, parent: State=None):
+        temp_state = State(self, self.event_manager, 0, name, parent=parent)
+        path = temp_state.path
+        state = self.get(path=path)
+        return state or False
 
     def find(self, expr: str):
         return []
@@ -148,9 +161,15 @@ class MemoryStateManager(IStateManager):
             id_ = max(self._states.keys()) + 1
         return id_
 
-    def add(self, *args, **kwargs):
+    def add(self, name, parent: State = None, type: str = None, quantity: str = None, unit: str = None, label: str = None, description: str = None,
+            config: dict = None, value: Any = None, **kwargs):
+        existing_state = self.exists(name, parent=parent)
+        if existing_state:
+            return existing_state
+
         id_ = kwargs.pop('id', None) or self.get_new_id()
-        state = super().add(id_, *args, **kwargs)
+        state = super().add(id_, name, parent=parent, type=type, quantity=quantity, unit=unit, label=label, description=description, config=config,
+                            value=value)
         self._states[state.id] = state
         return state
 

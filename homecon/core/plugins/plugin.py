@@ -36,6 +36,10 @@ class BasePlugin(IPlugin):
         super().__init__(*args, **kwargs)
         self.listeners = self._get_listeners()
 
+    def fire(self, type_: str, data: dict, target: str = None, reply_to: str = None):
+        source = self.name
+        self._event_manager.fire(type_, data, target=target, reply_to=reply_to, source=source)
+
     def handle_event(self, event: Event):
         """
         Base event handler method called when an event is taken from the queue.
@@ -123,7 +127,7 @@ class MemoryPluginManager(IPluginManager):
     def keys(self) -> Iterable[str]:
         return self._plugins.keys()
 
-    def items(self) -> Iterable[Tuple[str, IPlugin]]:
+    def items(self):
         return self._plugins.items()
 
     def values(self) -> Iterable[IPlugin]:

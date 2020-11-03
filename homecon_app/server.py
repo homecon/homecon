@@ -91,11 +91,12 @@ class HttpServer(object):
     def _run(self):
         global _document_root
         _document_root = self.document_root
+        self.http_server = HTTPServer((self.address, self.port), HttpRequestHandler)
+        # noinspection PyBroadException
         try:
-            self.http_server = HTTPServer((self.address, self.port), HttpRequestHandler)
             logger.info('Running the HomeCon app http server at {}:{}'.format(self.address, self.port))
             self.http_server.serve_forever()
-        except:
+        except Exception:
             logger.exception('exception in http server')
             self.http_server.shutdown()
             self.http_server.socket.close()

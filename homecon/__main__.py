@@ -1,8 +1,6 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 import sys
 import os
-import traceback
 import logging
 
 from argparse import ArgumentParser
@@ -106,27 +104,33 @@ def serve_app_(appsrc=False, appport=None):
     return http_server
 
 
-def run(demo: bool = False):
+def get_homecon():
     """
-    Run HomeCon
-
-    :param demo:
-    :return:
+    create the HomeCon object
     """
 
-    if demo:
-        from homecon.demo import initialize
-        initialize()
+    db_dir = os.path.abspath(os.path.join(base_path, 'db'))
+    try:
+        os.mkdir(db_dir)
+    except FileExistsError:
+        pass
 
-    from homecon.core.states.dal_state_manager import DALStateManager
+    # from homecon.core.states.dal_state_manager import DALStateManager
+    from homecon.core.states.state import MemoryStateManager
     from homecon.core.event import EventManager
     from homecon.core.plugins.plugin import MemoryPluginManager
     from homecon.homecon import HomeCon
     from concurrent.futures import ThreadPoolExecutor
 
+    from homecon.plugins.websocket import Websocket
+    from homecon.plugins.states import States
+
     event_manager = EventManager()
-    state_manager = DALStateManager(folder=os.path.abspath(os.path.join(base_path, 'db')), uri='sqlite://homecon.db', event_manager=event_manager)
+    # state_manager = DALStateManager(folder=db_dir, uri='sqlite://homecon.db', event_manager=event_manager)
+    state_manager = MemoryStateManager(event_manager=event_manager)
     plugin_manager = MemoryPluginManager({
+        'websocket': Websocket('websocket', event_manager, state_manager),
+        'states': States('states', event_manager, state_manager)
     })
     executor = ThreadPoolExecutor(max_workers=10)
 
@@ -173,7 +177,12 @@ def main(printlog=False, loglevel='INFO', dbloglevel='INFO', httploglevel='INFO'
         http_server = None
         if serve_app:
             http_server = serve_app_(appsrc=appsrc, appport=appport)
-        homecon = run(demo=demo)
+
+        if demo:
+            from homecon.demo.__main__ import get_homecon as get_homecon_demo
+            homecon = get_homecon_demo()
+        else:
+            homecon = get_homecon()
 
         # noinspection PyUnusedLocal
         def stop(signum, frame):

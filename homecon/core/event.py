@@ -53,7 +53,7 @@ class NoEventError(Exception):
 
 
 class IEventManager:
-    def fire(self, *args, **kwargs) -> Event:
+    def fire(self, type_: str, data: dict, source: str = None, target: str = None, reply_to: str = None) -> Event:
         raise NotImplementedError
 
     def get(self) -> Event:
@@ -61,18 +61,19 @@ class IEventManager:
 
 
 class EventManager(IEventManager):
-    def __init__(self):
+    def __init__(self, get_timeout=0.2):
         self._queue = Queue()
+        self._get_timeout = get_timeout
 
-    def fire(self, *args, **kwargs) -> Event:
-        event = Event(self, *args, **kwargs)
+    def fire(self, type_: str, data: dict, source: str = None, target: str = None, reply_to: str = None) -> Event:
+        event = Event(self, type_, data, source=source, target=target, reply_to=reply_to)
         logger.debug(f'putting {event} on queue')
         self._queue.put(event)
         return event
 
     def get(self) -> Event:
         try:
-            event = self._queue.get(timeout=1)
+            event = self._queue.get(timeout=self._get_timeout)
             logger.debug(f'got {event} from queue')
         except Empty:
             raise NoEventError
