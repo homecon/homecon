@@ -4,6 +4,7 @@ from homecon.homecon import HomeCon, IExecutor
 from homecon.core.event import EventManager
 from homecon.core.plugins.plugin import BasePlugin, IPluginManager
 from homecon.core.states.state import State, MemoryStateManager
+from homecon.core.pages.pages import MemoryPagesManager
 
 
 class SyncExecutor(IExecutor):
@@ -16,6 +17,9 @@ class PluginManager(IPluginManager):
         self._plugins = plugins
 
     def start(self):
+        pass
+
+    def stop(self):
         pass
 
     def __getitem__(self, key: str):
@@ -56,7 +60,8 @@ class TestHomecon(TestCase):
     def test_homecon(self):
         event_manager = EventManager()
         state_manager = MemoryStateManager(event_manager)
-        mock_plugin = MockPlugin('MockPlugin', event_manager, state_manager)
+        pages_manager = MemoryPagesManager()
+        mock_plugin = MockPlugin('MockPlugin', event_manager, state_manager, pages_manager)
         plugin_manager = PluginManager({'MockPlugin': mock_plugin})
 
         hc = HomeCon(event_manager, plugin_manager, SyncExecutor())
