@@ -12,8 +12,8 @@ from concurrent.futures import ThreadPoolExecutor
 
 from homecon.plugins.websocket import Websocket
 from homecon.plugins.states import States
-# from homecon.plugins.pages import deserialize
-
+from homecon.plugins.pages.pages import Pages
+from homecon.core.pages.pages import IPagesManager, MemoryPagesManager
 
 # the current file directory
 base_path = os.path.dirname(os.path.abspath(__file__))
@@ -77,12 +77,12 @@ def create_states(state_manager: IStateManager):
                       config={'knx_ga_read': None, 'knx_ga_write': '4/0/4', 'knx_dpt': '6'})
 
 
-def create_pages():
+def create_pages(state_manager: IStateManager, pages_manager: IPagesManager):
     logger.info('creating demo pages')
     base_path = os.path.dirname(os.path.abspath(__file__))
     with open(os.path.join(base_path, 'pages.json'), 'r') as f:
         pages = json.load(f)
-    deserialize(pages)
+    pages_manager.deserialize(pages, state_manager)
 
 
 def get_homecon():
@@ -98,11 +98,15 @@ def get_homecon():
     event_manager = EventManager()
     state_manager = DALStateManager(folder=db_dir, uri='sqlite://homecon_demo.db',
                                     event_manager=event_manager)
+    pages_manager = MemoryPagesManager()
+
     create_states(state_manager)
+    create_pages(state_manager, pages_manager)
     # state_manager = MemoryStateManager(event_manager=event_manager)
     plugin_manager = MemoryPluginManager({
-        'websocket': Websocket('websocket', event_manager, state_manager),
-        'states': States('states', event_manager, state_manager)
+        'websocket': Websocket('websocket', event_manager, state_manager, pages_manager),
+        'states': States('states', event_manager, state_manager, pages_manager),
+        'pages': Pages('pages', event_manager, state_manager, pages_manager),
     })
     executor = ThreadPoolExecutor(max_workers=10)
 

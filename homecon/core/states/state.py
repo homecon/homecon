@@ -175,3 +175,35 @@ class MemoryStateManager(IStateManager):
 
     def update(self, state: State):
         pass
+
+
+def config_state_paths_to_ids(config, state_manager: IStateManager):
+    """
+    Checks for state paths in a dict and converts them to the correct state id.
+    """
+    if config is not None:
+        for key, val in config.items():
+            if isinstance(val, str) and val.startswith('/'):
+                try:
+                    state = state_manager.get(val)
+                except:
+                    pass
+                else:
+                    if state is not None:
+                        config[key] = state.id
+
+
+def config_state_ids_to_paths(config, state_manager: IStateManager):
+    """
+    Checks for state ids in a dict and converts them to the correct state path.
+    """
+    if config is not None:
+        for key, val in config.items():
+            if 'state' in key and isinstance(val, int):
+                try:
+                    state = state_manager.get(id=val)
+                except:
+                    pass
+                else:
+                    if state is not None:
+                        config[key] = state.path

@@ -19,12 +19,12 @@
 # weatherdata = None
 # buildingdata = None
 
-
-from homecon.core.database import database_path, set_database_uri, set_measurements_database_uri
-from homecon.core.states.state import State
-from homecon.plugins.pages import deserialize
-
-
+#
+# from homecon.core.database import database_path, set_database_uri, set_measurements_database_uri
+# from homecon.core.states.state import State
+# from homecon.plugins.pages import deserialize
+#
+#
 
 
 # def prepare_database():

@@ -4,16 +4,17 @@ import logging
 from typing import Iterable, Tuple, Dict
 from homecon.core.event import Event, IEventManager
 from homecon.core.states.state import IStateManager
-
+from homecon.core.pages.pages import IPagesManager
 
 logger = logging.getLogger(__name__)
 
 
 class IPlugin:
-    def __init__(self, name: str, event_manager: IEventManager, state_manager: IStateManager):
+    def __init__(self, name: str, event_manager: IEventManager, state_manager: IStateManager, pages_manager: IPagesManager):
         self.name = name
         self._event_manager = event_manager
         self._state_manager = state_manager
+        self._pages_manager = pages_manager
 
     def start(self):
         pass
