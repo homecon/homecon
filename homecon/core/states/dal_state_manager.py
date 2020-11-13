@@ -59,11 +59,14 @@ class DALStateManager(MemoryStateManager):
         existing_state = self.exists(name, parent=parent)
         if existing_state:
             return existing_state
-
-        id_ = self._db.states.insert(name=name, parent=None if parent is None else parent.id, type=type, quantity=quantity, unit=unit, label=label,
-                                     description=description, config=json.dumps(config), value=json.dumps(value))
         try:
+            # noinspection PyProtectedMember
+            self._db._adapter.reconnect()
+            id_ = self._db.states.insert(name=name, parent=None if parent is None else parent.id, type=type, quantity=quantity, unit=unit,
+                                         label=label, description=description, config=json.dumps(config), value=json.dumps(value))
             self._db.commit()
+            # noinspection PyProtectedMember
+            self._db._adapter.close()
         except Exception:
             logger.exception('could not store state')
         else:
@@ -71,12 +74,16 @@ class DALStateManager(MemoryStateManager):
                                value=value, id=id_)
 
     def update(self, state: State):
-        row = self._db(self._table.id == state.id).select().first()
-        row.update_record(name=state.name, parent=None if state.parent is None else state.parent.id, type=state.type, quantity=state.quantity,
-                          unit=state.unit, label=state.label, description=state.description, config=json.dumps(state.config),
-                          value=json.dumps(state.value))
         try:
+            # noinspection PyProtectedMember
+            self._db._adapter.reconnect()
+            row = self._db(self._table.id == state.id).select().first()
+            row.update_record(name=state.name, parent=None if state.parent is None else state.parent.id, type=state.type, quantity=state.quantity,
+                              unit=state.unit, label=state.label, description=state.description, config=json.dumps(state.config),
+                              value=json.dumps(state.value))
             self._db.commit()
+            # noinspection PyProtectedMember
+            self._db._adapter.close()
         except Exception:
             logger.exception('could not store state')
         else:

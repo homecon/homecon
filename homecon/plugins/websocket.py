@@ -48,12 +48,12 @@ class Websocket(BasePlugin):
                 self.clients[client.id] = client
 
             address = client.address
-            logger.debug('Incomming connection from {}'.format(address))
+            logger.debug('incomming connection from {}'.format(address))
 
             try:
                 while True:
                     message = await websocket.recv()
-                    logger.debug(f'Recieved message, {message}')
+                    logger.debug(f'recieved message, {message}')
                     if message is None:
                         break
                     # parse the message and fire an event if the data is in the correct format
@@ -64,15 +64,15 @@ class Websocket(BasePlugin):
                             if data['event'] == 'echo':
                                 await client.send(data)
                             else:
-                                self.fire(data['event'], data['data'], reply_to='Websocket/{}'.format(client.id))
+                                self.fire(data['event'], data['data'], reply_to=f'{self.name}/{client.id}')
                         else:
-                            logger.debug(f'A message was received but contained no event, {data}')
+                            logger.debug(f'a message was received but contained no event, {data}')
                     except Exception:
-                        logger.exception('A message was received but could not be handled')
+                        logger.exception('a message was received but could not be handled')
             finally:
                 with (await clients_lock):
                     del self.clients[client.id]
-                logger.debug('Disconnected {}'.format(address))
+                logger.debug('disconnected {}'.format(address))
 
         def run_server(loop):
             # create a server and run it in the event loop
@@ -195,7 +195,6 @@ class Websocket(BasePlugin):
         })
 
     def listen_state_added(self, _):
-        print(self._state_manager.all())
         self.send({
             'event': 'state_list',
             'data': {
@@ -233,9 +232,9 @@ class Client(object):
         printmessage = message.__repr__()
         if len(printmessage) > 405:
             printmessage = printmessage[:200] + ' ... ' +printmessage[-200:]
-        logger.debug('send {} to {}'.format(printmessage, self))
 
         yield from self.websocket.send(json.dumps(message))
+        logger.debug(f'sent {printmessage} to {self}')
 
     def __repr__(self):
         return self.address

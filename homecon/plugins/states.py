@@ -125,6 +125,7 @@ class States(BasePlugin):
             event.reply({'id': event.data['id'], 'value': state.serialize()})
 
     def listen_state_value(self, event: Event):
+        logger.info(event)
         if 'id' in event.data and 'value' not in event.data:
             state = self._state_manager.get(id=event.data['id'])
             if state is not None:

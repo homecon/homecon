@@ -264,25 +264,25 @@ class IPagesManager:
         groups = deepcopy(groups)
         for group in groups:
             group.pop('id', None)
-            name = group.pop('name', uuid4())
+            name = group.pop('name', str(uuid4()))
             pages = group.pop('pages', [])
             config_state_paths_to_ids(group.get('config', {}).get('widget', {}).get('config'), state_manager)
             g = self.add_group(name, **group)
             for page in pages:
                 page.pop('id', None)
-                name = page.pop('name', uuid4())
+                name = page.pop('name', str(uuid4()))
                 sections = page.pop('sections', [])
                 config_state_paths_to_ids(page.get('config', {}).get('widget', {}).get('config'), state_manager)
                 p = self.add_page(name, g, **page)
                 for section in sections:
                     section.pop('id', None)
-                    name = section.pop('name', uuid4())
+                    name = section.pop('name', str(uuid4()))
                     widgets = section.pop('widgets', [])
                     config_state_paths_to_ids(section.get('config', {}).get('widget', {}).get('config'), state_manager)
                     s = self.add_section(name, p, **section)
                     for widget in widgets:
                         widget.pop('id', None)
-                        name = widget.pop('name', uuid4())
+                        name = widget.pop('name', str(uuid4()))
                         _type = widget.pop('type', None)
                         config_state_paths_to_ids(widget.get('config'), state_manager)
                         self.add_widget(name, s, _type, **widget)
@@ -293,6 +293,7 @@ class IPagesManager:
             g = {
                 'id': group.id,
                 'name': group.name,
+                'path': group.path,
                 'config': group.config,
                 'pages': []
             }
@@ -300,6 +301,7 @@ class IPagesManager:
                 p = {
                     'id': page.id,
                     'name': page.name,
+                    'path': page.path,
                     'config': page.config,
                     'sections': []
                 }
@@ -307,6 +309,7 @@ class IPagesManager:
                     s = {
                         'id': section.id,
                         'name': section.name,
+                        'path': section.path,
                         'config': section.config,
                         'widgets': []
                     }
@@ -317,6 +320,7 @@ class IPagesManager:
                         w = {
                             'id': widget.id,
                             'name': widget.name,
+                            'path': widget.path,
                             'type': widget.type,
                             'config': config,
                         }
