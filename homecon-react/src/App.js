@@ -201,7 +201,7 @@ class App extends React.Component {
   render(){
     return (
       <ThemeProvider theme={darkTheme}>
-        <HomeconLayout pagesData={this.state.pagesData}/>
+        <HomeconLayout pagesData={this.state.pagesData} states={this.state.states} ws={this.state.ws}/>
       </ThemeProvider>
     );
   }

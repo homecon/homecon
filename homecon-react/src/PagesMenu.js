@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import { Link } from "react-router-dom";
+
 import { createStyles, Theme, makeStyles } from '@material-ui/core/styles';
 import Collapse from '@material-ui/core/Collapse';
 
@@ -74,7 +76,6 @@ function HomeconPagesMenuGroup(props){
 
   const menuPages = props.pages
   const menu = menuPages.map((page) => <HomeconPagesMenuPage key={page.path} title={page.config.title} path={page.path} icon={page.config.icon} />);
-  console.log(menu)
   return (
     <div>
       <a className={classes.group} onClick={props.handleClick} href="#">{props.title}</a>
@@ -89,17 +90,16 @@ function HomeconPagesMenuGroup(props){
 function HomeconPagesMenuPage(props){
   const classes = useStyles();
 
-  const handleClick = (event) =>  {
-  };
+  const link = `/pages${props.path}`
 
   return (
     <div>
-      <a className={classes.page} onClick={handleClick} href="#">
+      <Link to={link} className={classes.page}>
         <div className={classes.pageIcon}>
           <HomeconIcon name={props.icon} color="ffffff"/>
         </div>
         <div className={classes.pageTitle}>{props.title}</div>
-      </a>
+      </Link>
     </div>
   );
 }

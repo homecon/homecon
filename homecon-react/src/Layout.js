@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { BrowserRouter, Switch, Route, Link } from "react-router-dom";
 
 import { createStyles, Theme, makeStyles } from '@material-ui/core/styles';
 import SwipeableDrawer from '@material-ui/core/SwipeableDrawer';
@@ -21,6 +22,7 @@ import MenuIcon from '@material-ui/icons/Menu';
 import MoreIcon from '@material-ui/icons/MoreVert';
 
 import HomeconPagesMenu from './PagesMenu.js';
+import {HomeconPage, HomeconPages, getPage} from './Pages.js';
 
 const drawerWidth = 460;
 
@@ -48,6 +50,10 @@ const useStyles = makeStyles((theme: Theme) =>
 
 
 function HomeconLayout(props){
+
+  const states = props.states;
+  const ws = props.ws;
+
   const classes = useStyles();
   const [pagesMenuOpen, setPagesMenuOpen] = useState(false);
   const [settingsMenuAnchor, setSettingsMenuAnchor] = useState(null);
@@ -71,58 +77,83 @@ function HomeconLayout(props){
   };
 
   return (
-    <div className={classes.root}>
-      <CssBaseline />
-      <AppBar position="fixed" className={classes.appBar}>
-        <Toolbar style={{display: "flex", paddingRight: "12px"}}>
-          <Hidden mdUp>
-            <IconButton edge="start" color="inherit" aria-label="open drawer" onClick={togglePagesMenu()}>
-              <MenuIcon/>
+    <BrowserRouter>
+      <div className={classes.root}>
+        <CssBaseline />
+        <AppBar position="fixed" className={classes.appBar}>
+          <Toolbar style={{display: "flex", paddingRight: "12px"}}>
+            <Hidden mdUp>
+              <IconButton edge="start" color="inherit" aria-label="open drawer" onClick={togglePagesMenu()}>
+                <MenuIcon/>
+              </IconButton>
+            </Hidden>
+            <Link to="/">
+              <img src="/logo512.png" style={{height: '50px', marginRight: '20px', marginLeft: '10px'}}/>
+            </Link>
+            <Typography variant="h6" style={{flexGrow: 1}}  noWrap>
+                HomeCon
+            </Typography>
+
+
+
+            <IconButton color="inherit" aria-label="open menu" onClick={toggleSettingsMenu(true)}>
+              <MoreIcon/>
             </IconButton>
-          </Hidden>
 
-          <img src="./logo512.png" style={{height: '50px', marginRight: '20px', marginLeft: '10px'}}/>
+          </Toolbar>
+        </AppBar>
 
-          <Typography variant="h6" style={{flexGrow: 1}} noWrap>
-              HomeCon
-          </Typography>
+        <Hidden mdUp>
+          <SwipeableDrawer anchor="left" className={classes.drawer} classes={{paper: classes.drawerPaper}}
+           open={pagesMenuOpen} onClose={togglePagesMenu(false)} onOpen={togglePagesMenu(true)}>
+            <Toolbar />
+            <HomeconPagesMenu groups={props.pagesData.groups} />
+          </SwipeableDrawer>
+        </Hidden>
 
-          <IconButton color="inherit" aria-label="open menu" onClick={toggleSettingsMenu(true)}>
-            <MoreIcon/>
-          </IconButton>
+        <Hidden smDown>
+          <Drawer anchor="left" className={classes.drawer} classes={{paper: classes.drawerPaper}} variant="permanent">
+            <Toolbar />
+            <HomeconPagesMenu groups={props.pagesData.groups} />
+          </Drawer>
+        </Hidden>
 
-        </Toolbar>
-      </AppBar>
+        <Menu anchorEl={settingsMenuAnchor} keepMounted open={Boolean(settingsMenuAnchor)} onClose={toggleSettingsMenu(false)}
+         anchorReference="none" PaperProps={{style: {top: '70px', right: '12px'}}}>
+          <Link to="/profile"><MenuItem onClick={toggleSettingsMenu(false)}>Profile</MenuItem></Link>
+          <Link to="/states"><MenuItem onClick={toggleSettingsMenu(false)}>States</MenuItem></Link>
+          <Link to="/plugins"><MenuItem onClick={toggleSettingsMenu(false)}>Plugins</MenuItem></Link>
+          <MenuItem onClick={toggleSettingsMenu(false)}>Logout</MenuItem>
+        </Menu>
 
-      <Hidden mdUp>
-        <SwipeableDrawer anchor="left" className={classes.drawer} classes={{paper: classes.drawerPaper}}
-         open={pagesMenuOpen} onClose={togglePagesMenu(false)} onOpen={togglePagesMenu(true)}>
+        <main className={classes.content}>
           <Toolbar />
-          <HomeconPagesMenu groups={props.pagesData.groups}/>
-        </SwipeableDrawer>
-      </Hidden>
+          <Switch>
+            <Route path="/pages/:group/:page" children={<HomeconPages pagesData={props.pagesData} states={states} ws={ws}/>} >
+            </Route>
+            <Route path="/login">
+              Login
+            </Route>
+            <Route path="/profile">
+              Profile
+            </Route>
+            <Route path="/states">
+              States
+            </Route>
+            <Route path="/plugins">
+              Plugins
+            </Route>
+            <Route path="/">
+              <HomeconPage page={getPage(props.pagesData, 'home', 'home')}/>
+            </Route>
+          </Switch>
+        </main>
 
-      <Hidden smDown>
-        <Drawer anchor="left" className={classes.drawer} classes={{paper: classes.drawerPaper}} variant="permanent">
-          <Toolbar />
-          <HomeconPagesMenu groups={props.pagesData.groups}/>
-        </Drawer>
-      </Hidden>
-
-      <Menu anchorEl={settingsMenuAnchor} keepMounted open={Boolean(settingsMenuAnchor)} onClose={toggleSettingsMenu(false)}
-       anchorReference="none" PaperProps={{style: {top: '70px', right: '12px'}}}>
-        <MenuItem onClick={toggleSettingsMenu(false)}>Profile</MenuItem>
-        <MenuItem onClick={toggleSettingsMenu(false)}>My account</MenuItem>
-        <MenuItem onClick={toggleSettingsMenu(false)}>Logout</MenuItem>
-      </Menu>
-
-      <main className={classes.content}>
-        <Toolbar />
-        test 123
-      </main>
-    </div>
+      </div>
+    </BrowserRouter>
   );
 }
+
 
 
 export default HomeconLayout;

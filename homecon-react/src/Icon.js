@@ -32,7 +32,7 @@ import React, { useState, useEffect, useRef } from 'react';
 //};
 
 function HomeconIcon(props) {
-  const src = `./icons/${props.color}/${props.name}.png`;
+  const src = `/icons/${props.color}/${props.name}.png`;
   if(props.name !== undefined){
     return (
       <img src={src} style={{height: '100%'}}/>
