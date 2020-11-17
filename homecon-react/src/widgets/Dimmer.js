@@ -1,10 +1,8 @@
 import React, { useState } from 'react';
 
 import { createStyles, Theme, makeStyles } from '@material-ui/core/styles';
-import Collapse from '@material-ui/core/Collapse';
-import Paper from '@material-ui/core/Paper';
 
-import {BaseStatusLight} from './Base.js';
+import {BaseStatusLight, BaseSlider} from './Base.js';
 
 
 const useStyles = makeStyles((theme: Theme) =>
@@ -13,21 +11,30 @@ const useStyles = makeStyles((theme: Theme) =>
       display: 'flex',
       justifyContent: 'flex-start',
       alignItems: 'center',
+    },
+    icon: {
+      width: '60px',
+      height: '60px',
       cursor: 'pointer'
+    },
+    rest: {
+      display: 'flex',
+      flexDirection: 'column',
+      flexGrow: 1,
+    },
+    slider: {
+      marginLeft: '15px',
+      marginRight: '15px',
     },
     label: {
       fontSize: '16px',
       fontWeight: 700
     },
-    icon: {
-      width: '60px',
-      height: '60px',
-    }
   })
 );
 
 
-function HomeconSwitch(props){
+function HomeconDimmer(props){
   const config = props.config;
 
   const stateId = config.state;
@@ -38,7 +45,7 @@ function HomeconSwitch(props){
   const valueOn = config.valueOn || 1;
   const valueOff = config.valueOff || 0;
 
-  const valueThreshold = 0.5*valueOn + 0.5*valueOff;
+  const valueThreshold = 0.01*valueOn + 0.99*valueOff;
   const states = props.states;
   const ws = props.ws
 
@@ -49,20 +56,34 @@ function HomeconSwitch(props){
 
   const classes = useStyles();
 
+  const setValue = (value) => {
+    ws.send({event: 'state_value', data: {id: state.id, value: value}});
+  }
+
   const handleClick = (event) => {
-    ws.send({event: 'state_value', data: {id: state.id, value: state.value > valueThreshold ? valueOff : valueOn}})
+    setValue(state.value > valueThreshold ? valueOff : valueOn);
+  }
+
+  const onChange = (event, newValue) => {
+    setValue(newValue);
   }
 
   return (
-    <div className={classes.root} onClick={handleClick}>
-      <div className={classes.icon}>
+    <div className={classes.root}>
+      <div className={classes.icon} onClick={(e) => handleClick(e)}>
         <BaseStatusLight value={state.value} valueThreshold={valueThreshold} icon={icon} colorOn={colorOn} colorOff={colorOff} />
       </div>
-      <div className={classes.label}>{label}</div>
+
+      <div className={classes.rest}>
+        <div className={classes.label}>{label}</div>
+        <div className={classes.slider}>
+          <BaseSlider value={state.value} valueMin={valueOff} valueMax={valueOn} onChange={onChange} />
+        </div>
+      </div>
     </div>
-  )
+  );
 
 }
 
 
-export {HomeconSwitch};
+export {HomeconDimmer};

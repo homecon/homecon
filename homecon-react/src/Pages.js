@@ -7,7 +7,9 @@ import Paper from '@material-ui/core/Paper';
 
 import HomeconIcon from './Icon.js';
 import {HomeconSwitch} from './widgets/Switch.js';
+import {HomeconDimmer} from './widgets/Dimmer.js';
 import {HomeconValue} from './widgets/Value.js';
+import {HomeconShading} from './widgets/Shading.js';
 
 
 const useStyles = makeStyles((theme: Theme) =>
@@ -178,6 +180,12 @@ function HomeconWidget(props){
 
   if(type === 'switch'){
     return <HomeconSwitch config={config} states={states} ws={ws}/>
+  }
+  else if(type === 'dimmer'){
+    return <HomeconDimmer config={config} states={states} ws={ws}/>
+  }
+  else if(type === 'shading'){
+    return <HomeconShading config={config} states={states} ws={ws}/>
   }
   else if(type === 'value-display'){
     return <HomeconValue config={config} states={states}/>
