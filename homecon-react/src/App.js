@@ -11,16 +11,16 @@ const darkTheme = createMuiTheme({
       paper: "rgba(35, 35, 35, 1)"
     },
     primary: {
-      main: "rgba(13, 13, 13, 1)",
+      main: "rgba(20, 20, 20, 1)",
       light: "rgba(25, 25, 25, 1)",
-      dark: "rgba(0, 0, 0, 1)",
-      contrastText: "rgba(220, 220, 220, 1)",
+      dark: "rgba(10, 10, 10, 1)",
+      contrastText: "rgba(240, 240, 240, 1)",
     },
     secondary: {
       main: "rgba(229, 229, 229, 1)",
       light: "rgba(220, 220, 220, 1)",
       dark: "rgba(200, 200, 200, 1)",
-      contrastText: "rgba(53, 53, 53, 1)",
+      contrastText: "rgba(33, 33, 33, 1)",
     },
     text: {
       primary: "rgba(233, 233, 233, 0.87)",
