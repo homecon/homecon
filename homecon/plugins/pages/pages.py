@@ -28,20 +28,75 @@ class DALObjectManager(MemoryObjectManager):
     def row_to_obj(self, row):
         raise NotImplementedError
 
+    def delete(self, obj):
+        self._db(self._table.id == obj.id).delete()
+        try:
+            self._db.commit()
+        except Exception:
+            logger.exception('could not store state')
+        else:
+            super().delete(obj)
+
+    def clear(self):
+        self._table.drop()
+        self._db.commit()
+
 
 class DALGroupManager(DALObjectManager):
     def row_to_obj(self, row):
         id = row.pop('id')
         name = row.pop('name')
-        return self._object_factory(self, id, name, **row)
+        return self._object_factory(self._pages_manager, id, name, **row)
+
+    def add(self, name: str, **kwargs):
+        try:
+            # noinspection PyProtectedMember
+            self._db._adapter.reconnect()
+            id_ = self._table.insert(name=name, **kwargs)
+            self._db.commit()
+            # noinspection PyProtectedMember
+            self._db._adapter.close()
+        except Exception:
+            logger.exception('could not store group')
+        else:
+            super().add(name, id=id_, **kwargs)
 
 
 class DALPageManager(DALObjectManager):
     def row_to_obj(self, row):
         id = row.pop('id')
         name = row.pop('name')
-        page = row.pop('name')
-        return self._object_factory(self, id, name, **row)
+        group = self._pages_manager.get_group(id=row.pop('group'))
+        return self._object_factory(self, id, name, group, **row)
+
+    def add(self, name: str, *args, **kwargs):
+        try:
+            # noinspection PyProtectedMember
+            self._db._adapter.reconnect()
+            id_ = self._table.insert(name=name, **kwargs)
+            self._db.commit()
+            # noinspection PyProtectedMember
+            self._db._adapter.close()
+        except Exception:
+            logger.exception('could not store state')
+        else:
+            super().add(name, id=id_, *args, **kwargs)
+
+
+class DALSectionManager(DALObjectManager):
+    def row_to_obj(self, row):
+        id = row.pop('id')
+        name = row.pop('name')
+        page = self._pages_manager.get_page(id=row.pop('page'))
+        return self._object_factory(self, id, name, page, **row)
+
+
+class DALWidgetManager(DALObjectManager):
+    def row_to_obj(self, row):
+        id = row.pop('id')
+        name = row.pop('name')
+        section = self._pages_manager.get_section(id=row.pop('section'))
+        return self._object_factory(self, id, name, section, **row)
 
 
 class DALPagesManager(MemoryPagesManager):
@@ -50,66 +105,43 @@ class DALPagesManager(MemoryPagesManager):
 
         self._db = DAL(uri, folder=folder)
         self._groups_table = self._db.define_table(
-            'page_groups',
+            'pages_groups',
             Field('name', type='string', default='', unique=True),
             Field('config', type='string', default='{}'),
             Field('order', type='integer', default=0),
         )
+        self._pages_table = self._db.define_table(
+            'pages_pages',
+            Field('name', type='string', default='', unique=True),
+            Field('group', type='int'),
+            Field('config', type='string', default='{}'),
+            Field('order', type='integer', default=0),
+        )
+        self._sections_table = self._db.define_table(
+            'pages_sections',
+            Field('name', type='string', default='', unique=True),
+            Field('page', type='int'),
+            Field('config', type='string', default='{}'),
+            Field('order', type='integer', default=0),
+        )
+        self._widgets_table = self._db.define_table(
+            'pages_widget',
+            Field('name', type='string', default='', unique=True),
+            Field('section', type='int'),
+            Field('config', type='string', default='{}'),
+            Field('order', type='integer', default=0),
+        )
 
-    def get_group(self, path=None, id=None):
-        if id is not None:
-            db_entry = table(id)
-            db.close()
-        elif path is not None:
-            parts = path.split('/')
-            db_entry = table(name=parts[-1])
-            db.close()
-        else:
-            logger.error("id or path must be supplied")
-            return None
-        if db_entry is not None:
-            return cls(**db_entry.as_dict())
-        else:
-            return None
-
-    def add_group(self, name, config=None, order=None):
-        """
-        Add a group
-        """
-        # check if it already exists
-        entry = self._groups_table(name=name)
-        if entry is None:
-            id = self._groups_table.insert(name=name, config=json.dumps(config or {}), order=order)
-            self._db.commit()
-
-            # FIXME error checking
-            obj = self.get_group(id=id)
-            logger.debug('added group')
-            Event.fire('group_added', {'group': object}, 'Group')
-        else:
-            obj = cls(**entry.as_dict())
-        return obj
+        self._groups_manager = DALGroupManager(self, Group, self._db, self._groups_table)
+        self._pages_manager = DALPageManager(self, Page, self._db, self._pages_table)
+        self._sections_manager = DALSectionManager(self, Section, self._db, self._sections_table)
+        self._widgets_manager = DALWidgetManager(self, Widget, self._db, self._widgets_table)
 
     def clear(self):
-        db, table = Widget.get_table()
-        table.drop()
-        db.commit()
-        db.close()
-
-        db, table = Section.get_table()
-        table.drop()
-        db.commit()
-        db.close()
-
-        db, table = Page.get_table()
-        table.drop()
-        db.commit()
-        db.close()
-
-        db, table = Group.get_table()
-        table.drop()
-        db.commit()
-        db.close()
+        self._groups_manager.clear()
+        self._pages_manager.clear()
+        self._sections_manager.clear()
+        self._widgets_manager.clear()
 
 
 class Pages(BasePlugin):

@@ -1,6 +1,8 @@
 from copy import deepcopy
 from typing import List, Any
 from uuid import uuid4
+import os
+import json
 
 from homecon.core.states.state import config_state_paths_to_ids, IStateManager, config_state_ids_to_paths
 
@@ -257,7 +259,7 @@ class IPagesManager:
     def clear(self):
         raise NotImplementedError
 
-    def deserialize(self, groups: dict, state_manager):
+    def deserialize(self, groups: dict, state_manager: IStateManager = None):
         """
         Reads a list of groups and adds states from it.
         """
@@ -266,51 +268,68 @@ class IPagesManager:
             group.pop('id', None)
             name = group.pop('name', str(uuid4()))
             pages = group.pop('pages', [])
-            config_state_paths_to_ids(group.get('config', {}).get('widget', {}).get('config'), state_manager)
+            group.pop('path', None)
+            if state_manager is not None:
+                config_state_paths_to_ids(group.get('config', {}).get('widget', {}).get('config'), state_manager)
             g = self.add_group(name, **group)
             for page in pages:
                 page.pop('id', None)
                 name = page.pop('name', str(uuid4()))
                 sections = page.pop('sections', [])
-                config_state_paths_to_ids(page.get('config', {}).get('widget', {}).get('config'), state_manager)
+                page.pop('path', None)
+                if state_manager is not None:
+                    config_state_paths_to_ids(page.get('config', {}).get('widget', {}).get('config'), state_manager)
                 p = self.add_page(name, g, **page)
                 for section in sections:
                     section.pop('id', None)
                     name = section.pop('name', str(uuid4()))
                     widgets = section.pop('widgets', [])
-                    config_state_paths_to_ids(section.get('config', {}).get('widget', {}).get('config'), state_manager)
+                    section.pop('path', None)
+                    if state_manager is not None:
+                        config_state_paths_to_ids(section.get('config', {}).get('widget', {}).get('config'), state_manager)
                     s = self.add_section(name, p, **section)
                     for widget in widgets:
                         widget.pop('id', None)
                         name = widget.pop('name', str(uuid4()))
                         _type = widget.pop('type', None)
-                        config_state_paths_to_ids(widget.get('config'), state_manager)
+                        widget.pop('path', None)
+                        if state_manager is not None:
+                            config_state_paths_to_ids(widget.get('config'), state_manager)
                         self.add_widget(name, s, _type, **widget)
 
-    def serialize(self, state_manager: IStateManager, convert_state_ids_to_paths=False):
+    def serialize(self, state_manager: IStateManager = None, convert_state_ids_to_paths=False):
         d = []
         for group in self.all_groups():
+            config = deepcopy(group.config)
+            if convert_state_ids_to_paths:
+                config_state_ids_to_paths(config, state_manager)
             g = {
                 'id': group.id,
                 'name': group.name,
                 'path': group.path,
-                'config': group.config,
+                'config': config,
                 'pages': []
             }
             for page in group.pages:
+                config = deepcopy(page.config)
+                if convert_state_ids_to_paths:
+                    config_state_ids_to_paths(config, state_manager)
                 p = {
                     'id': page.id,
                     'name': page.name,
                     'path': page.path,
-                    'config': page.config,
+                    'config': config,
                     'sections': []
                 }
                 for section in page.sections:
+                    config = deepcopy(section.config)
+                    if convert_state_ids_to_paths:
+                        config_state_ids_to_paths(config, state_manager)
                     s = {
                         'id': section.id,
                         'name': section.name,
                         'path': section.path,
-                        'config': section.config,
+                        'config': config,
                         'widgets': []
                     }
                     for widget in section.widgets:
@@ -366,7 +385,7 @@ class MemoryObjectManager:
         if obj:
             return obj
         else:
-            id_ = self.get_new_id()
+            id_ = kwargs.pop('id', None) or self.get_new_id()
             obj = self._object_factory(self._pages_manager, id_, name, *args, **kwargs)
             self._objects[obj.id] = obj
             return obj
@@ -400,6 +419,8 @@ class MemoryPagesManager(IPagesManager):
         return self._groups_manager.add(name, **kwargs)
 
     def delete_group(self, group):
+        for p in group.pages:
+            self.delete_page(p)
         return self._groups_manager.delete(group)
 
     def update_group(self, group):
@@ -416,6 +437,8 @@ class MemoryPagesManager(IPagesManager):
         return self._pages_manager.add(name, group, **kwargs)
 
     def delete_page(self, page):
+        for s in page.sections:
+            self.delete_section(s)
         return self._pages_manager.delete(page)
 
     def update_page(self, page):
@@ -432,6 +455,8 @@ class MemoryPagesManager(IPagesManager):
         return self._sections_manager.add(name, page, **kwargs)
 
     def delete_section(self, section):
+        for w in section.widgets:
+            self.delete_widget(w)
         return self._sections_manager.delete(section)
 
     def update_section(self, section):
@@ -458,3 +483,86 @@ class MemoryPagesManager(IPagesManager):
         self._pages_manager.clear()
         self._sections_manager.clear()
         self._widgets_manager.clear()
+
+
+class JSONPagesManager(MemoryPagesManager):
+    """
+    Stores pages in a flat file in a json format
+    """
+    def __init__(self, filename: str, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._filename = filename
+        self.load()
+
+    def add_group(self, *args, **kwargs):
+        obj = super().add_group(*args, **kwargs)
+        self.save()
+        return obj
+
+    def update_group(self, *args, **kwargs):
+        obj = super().update_group(*args, **kwargs)
+        self.save()
+        return obj
+
+    def delete_group(self, *args, **kwargs):
+        obj = super().delete_group(*args, **kwargs)
+        self.save()
+        return obj
+
+    def add_page(self, *args, **kwargs):
+        obj = super().add_page(*args, **kwargs)
+        self.save()
+        return obj
+
+    def update_page(self, *args, **kwargs):
+        obj = super().update_page(*args, **kwargs)
+        self.save()
+        return obj
+
+    def delete_page(self, *args, **kwargs):
+        obj = super().delete_page(*args, **kwargs)
+        self.save()
+        return obj
+
+    def add_section(self, *args, **kwargs):
+        obj = super().add_section(*args, **kwargs)
+        self.save()
+        return obj
+
+    def update_section(self, *args, **kwargs):
+        obj = super().update_section(*args, **kwargs)
+        self.save()
+        return obj
+
+    def delete_section(self, *args, **kwargs):
+        obj = super().delete_section(*args, **kwargs)
+        self.save()
+        return obj
+
+    def add_widget(self, *args, **kwargs):
+        obj = super().add_widget(*args, **kwargs)
+        self.save()
+        return obj
+
+    def update_widget(self, *args, **kwargs):
+        obj = super().update_widget(*args, **kwargs)
+        self.save()
+        return obj
+
+    def delete_widget(self, *args, **kwargs):
+        obj = super().delete_widget(*args, **kwargs)
+        self.save()
+        return obj
+
+    def clear(self):
+        if os.path.exists(self._filename):
+            os.remove(self._filename)
+
+    def load(self):
+        if os.path.exists(self._filename):
+            with open(self._filename, 'r') as f:
+                self.deserialize(json.load(f))
+
+    def save(self):
+        with open(self._filename, 'w') as f:
+            json.dump(self.serialize(), f)
