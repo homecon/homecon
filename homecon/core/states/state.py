@@ -47,11 +47,14 @@ class State:
 
     @value.setter
     def value(self, val):
-        old_val = self._value
         if self._value != val:
-            self._value = val
-            self._state_manager.update(self)
-            self.notify_values_changed(old_val=old_val)
+            self.set_value(val)
+
+    def set_value(self, val):
+        old_val = self._value
+        self._value = val
+        self._state_manager.update(self)
+        self.notify_values_changed(old_val=old_val)
 
     def update(self, **kwargs):
         if 'name' in kwargs:

@@ -9,7 +9,7 @@ from homecon.core.plugins.plugin import Plugin
 from homecon.plugins.states import States
 from homecon.plugins.websocket import Websocket
 from homecon.plugins.pages import Pages
-from homecon.plugins.scheduler import Scheduler
+from homecon.plugins.alarms.scheduler import Scheduler
 from homecon.plugins.knx import Knx
 
 

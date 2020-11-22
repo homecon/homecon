@@ -15,7 +15,6 @@ const darkTheme = createMuiTheme({
       light: "rgba(25, 25, 25, 1)",
       dark: "rgba(10, 10, 10, 1)",
       contrastText: "rgba(240, 240, 240, 1)",
-      on: "#f79a1f"
     },
     secondary: {
       main: "rgba(229, 229, 229, 1)",
@@ -28,8 +27,13 @@ const darkTheme = createMuiTheme({
       secondary: "rgba(190, 190, 190, 1)",
       disabled: "rgba(0, 0, 0, 1)",
       hint: "rgba(75, 75, 75, 1)",
+    },
+    widget: {
+      on: "rgba(247, 154, 31, 1)",
+      off: "rgba(240, 240, 240, 1)",
     }
   },
+
   overrides: {
     // Style sheet name ⚛️
     MuiSlider: {
