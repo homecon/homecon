@@ -115,11 +115,11 @@ def get_homecon():
     except FileExistsError:
         pass
 
-
     from homecon.core.event import EventManager
-    from homecon.core.states.state import MemoryStateManager
-    # from homecon.core.states.dal_state_manager import DALStateManager
-    from homecon.core.pages.pages import MemoryPagesManager
+    # from homecon.core.states.state import MemoryStateManager
+    from homecon.core.states.dal_state_manager import DALStateManager
+    # from homecon.core.pages.pages import MemoryPagesManager
+    from homecon.core.pages.pages import JSONPagesManager
     from homecon.core.plugins.plugin import MemoryPluginManager
     from homecon.homecon import HomeCon
     from concurrent.futures import ThreadPoolExecutor
@@ -129,10 +129,10 @@ def get_homecon():
     from homecon.plugins.pages.pages import Pages
 
     event_manager = EventManager()
-    # state_manager = DALStateManager(folder=db_dir, uri='sqlite://homecon.db', event_manager=event_manager)
-    state_manager = MemoryStateManager(event_manager=event_manager)
-    pages_manager = MemoryPagesManager()
-
+    state_manager = DALStateManager(folder=db_dir, uri='sqlite://homecon.db', event_manager=event_manager)
+    # state_manager = MemoryStateManager(event_manager=event_manager)
+    pages_manager = JSONPagesManager(os.path.join(db_dir, 'pages.json'))
+    # pages_manager = MemoryPagesManager()
     plugin_manager = MemoryPluginManager({
         'websocket': Websocket('websocket', event_manager, state_manager, pages_manager),
         'states': States('states', event_manager, state_manager, pages_manager),

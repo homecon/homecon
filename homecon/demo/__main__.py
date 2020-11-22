@@ -6,14 +6,15 @@ import logging
 from homecon.core.states.state import IStateManager
 from homecon.core.states.dal_state_manager import DALStateManager
 from homecon.core.event import EventManager
+from homecon.core.pages.pages import IPagesManager, JSONPagesManager
 from homecon.core.plugins.plugin import MemoryPluginManager
+
 from homecon.homecon import HomeCon
 from concurrent.futures import ThreadPoolExecutor
 
 from homecon.plugins.websocket import Websocket
 from homecon.plugins.states import States
 from homecon.plugins.pages.pages import Pages
-from homecon.core.pages.pages import IPagesManager, MemoryPagesManager
 
 # the current file directory
 base_path = os.path.dirname(os.path.abspath(__file__))
@@ -98,11 +99,10 @@ def get_homecon():
     event_manager = EventManager()
     state_manager = DALStateManager(folder=db_dir, uri='sqlite://homecon_demo.db',
                                     event_manager=event_manager)
-    pages_manager = MemoryPagesManager()
+    pages_manager = JSONPagesManager(os.path.join(db_dir, 'pages_demo.json'))
 
     create_states(state_manager)
     create_pages(state_manager, pages_manager)
-    # state_manager = MemoryStateManager(event_manager=event_manager)
     plugin_manager = MemoryPluginManager({
         'websocket': Websocket('websocket', event_manager, state_manager, pages_manager),
         'states': States('states', event_manager, state_manager, pages_manager),

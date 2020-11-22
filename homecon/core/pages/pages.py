@@ -555,6 +555,7 @@ class JSONPagesManager(MemoryPagesManager):
         return obj
 
     def clear(self):
+        super().clear()
         if os.path.exists(self._filename):
             os.remove(self._filename)
 
