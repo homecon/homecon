@@ -19,7 +19,7 @@ class Pages(BasePlugin):
     """
     def __init__(self, *args, now=None, **kwargs):
         super().__init__(*args, **kwargs)
-        self._last_update_timestamp = now or time.time()
+        self._last_update_timestamp = int(now or time.time())
 
     def start(self):
         # set defaults
@@ -95,4 +95,4 @@ class Pages(BasePlugin):
     def import_pages(self, groups: dict):
         self._pages_manager.clear()
         self._pages_manager.deserialize(groups)
-        self._last_update_timestamp = time.time()
+        self._last_update_timestamp = int(time.time())

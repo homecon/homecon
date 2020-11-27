@@ -8,11 +8,11 @@ const darkTheme = createMuiTheme({
   palette: {
     background: {
       default: "rgba(38, 38, 38, 1)",
-      paper: "rgba(35, 35, 35, 1)"
+      paper: "rgba(30, 30, 30, 1)"
     },
     primary: {
       main: "rgba(20, 20, 20, 1)",
-      light: "rgba(25, 25, 25, 1)",
+      light: "rgba(55, 55, 55, 1)",
       dark: "rgba(10, 10, 10, 1)",
       contrastText: "rgba(240, 240, 240, 1)",
     },
@@ -35,14 +35,21 @@ const darkTheme = createMuiTheme({
   },
 
   overrides: {
-    // Style sheet name ⚛️
     MuiSlider: {
-      // Name of the rule
       colorPrimary: {
-        // Some CSS
         color: "rgba(240, 240, 240, 1)",
       },
     },
+    MuiSwitch: {
+      colorSecondary: {
+        '&$checked': {
+          color: "rgba(247, 154, 31, 1)",
+        },
+        '&$checked + $track': {
+          backgroundColor: "rgba(247, 154, 31, 1)",
+        },
+      },
+    }
   },
 });
 
@@ -112,7 +119,7 @@ class HomeconWebsocket {
       console.log(`received ${evt.data}`)
 
       if(message.event === 'pages_timestamp'){
-        if(this.app.state.pages === null || this.app.state.pages.timestamp < message.data.value){
+        if(this.app.state.pagesData === null || this.app.state.pagesData.timestamp < message.data.value){
           this.send({'event': 'pages_pages', data: {'id': null}})
         }
       }

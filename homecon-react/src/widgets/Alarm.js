@@ -4,7 +4,7 @@ import { createStyles, Theme, makeStyles } from '@material-ui/core/styles';
 import Collapse from '@material-ui/core/Collapse';
 import Paper from '@material-ui/core/Paper';
 
-import {BaseStatusLight} from './Base.js';
+import {BaseAlarm} from './Base.js';
 
 
 const useStyles = makeStyles((theme: Theme) =>
@@ -27,42 +27,54 @@ const useStyles = makeStyles((theme: Theme) =>
 );
 
 
-function HomeconSwitch(props){
+function HomeconAlarm(props){
+  const classes = useStyles();
+
   const config = props.config;
 
   const stateId = config.state;
   const label = config.label;
-  const icon = config.icon || 'light_light';
-  const colorOn = config.colorOn || 'f79a1f';
-  const colorOff = config.colorOff || 'ffffff';
-  const valueOn = config.valueOn || 1;
-  const valueOff = config.valueOff || 0;
-
-  const valueThreshold = 0.5*valueOn + 0.5*valueOff;
   const states = props.states;
   const ws = props.ws
 
-  let state = {value: 0};
-  if(states !== null){
-    state = states[stateId];
+  if(states === null){
+    return null
   }
 
-  const classes = useStyles();
+  const state = states[stateId];
 
-  const handleClick = (event) => {
-    ws.send({event: 'state_value', data: {id: state.id, value: state.value > valueThreshold ? valueOff : valueOn}})
+  let alarmStates = []
+  let actionStates = []
+
+  Object.values(states).forEach((s) => {
+    if(s.parent === state.id){
+      if(s.type == 'alarm'){
+        alarmStates.push(s)
+      }
+      if(s.type === 'action'){
+        actionStates.push(s)
+      }
+    }
+  });
+
+  const handleAlarmChange = (alarm) => {
+    ws.send({event: 'state_value', data: {id: alarm.id, value: alarm.value}})
   }
 
   return (
-    <div className={classes.root} onClick={handleClick}>
-      <div className={classes.icon}>
-        <BaseStatusLight value={state.value} valueThreshold={valueThreshold} icon={icon} colorOn={colorOn} colorOff={colorOff} />
+    <div style={{marginTop: '10px'}}>
+      <div>{state.label}</div>
+      <div>
+        {alarmStates.map((alarm) => {
+          return (
+            <BaseAlarm key={alarm.id} alarm={alarm} actions={actionStates} onChange={handleAlarmChange}/>
+          );
+        })}
       </div>
-      <div className={classes.label}>{label}</div>
     </div>
   )
 
 }
 
 
-export {HomeconSwitch};
+export {HomeconAlarm};

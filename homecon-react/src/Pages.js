@@ -10,6 +10,7 @@ import {HomeconSwitch} from './widgets/Switch.js';
 import {HomeconDimmer} from './widgets/Dimmer.js';
 import {HomeconValue} from './widgets/Value.js';
 import {HomeconShading} from './widgets/Shading.js';
+import {HomeconAlarm} from './widgets/Alarm.js';
 
 
 const useStyles = makeStyles((theme: Theme) =>
@@ -189,6 +190,9 @@ function HomeconWidget(props){
   }
   else if(type === 'value-display'){
     return <HomeconValue config={config} states={states}/>
+  }
+  else if(type === 'alarm'){
+    return <HomeconAlarm config={config} states={states} ws={ws}/>
   }
   return (
     <div>{type} {JSON.stringify(config)}</div>

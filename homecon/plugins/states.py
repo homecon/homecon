@@ -35,18 +35,18 @@ class States(BasePlugin):
 
         self.triggers = {}
         # add settings states
-        self._state_manager.add('settings', type=None)
-        self._state_manager.add('location', type=None, parent='/settings')
-        self._state_manager.add('latitude', parent='/settings/location',
+        s = self._state_manager.add('settings', type=None)
+        sl = self._state_manager.add('location', type=None, parent=s)
+        self._state_manager.add('latitude', parent=sl,
                                 type='number', quantity='angle', unit='deg',
                                 label='Latitude', description='HomeCon latitude', value=51.05)
-        self._state_manager.add('longitude', parent='/settings/location',
+        self._state_manager.add('longitude', parent=sl,
                                 type='number', quantity='angle', unit='deg',
                                 label='Longitude', description='HomeCon longitude', value=5.58)
-        self._state_manager.add('elevation', parent='/settings/location',
+        self._state_manager.add('elevation', parent=sl,
                                 type='number', quantity='height', unit='m',
                                 label='Elevation', description='HomeCon elevation', value=74.0)
-        self._state_manager.add('timezone', parent='/settings/location',
+        self._state_manager.add('timezone', parent=sl,
                                 type='string', quantity='', unit='',
                                 label='Time zone', description='HomeCon time zone', value='Europe/Brussels')
 

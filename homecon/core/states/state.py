@@ -145,7 +145,7 @@ class MemoryStateManager(IStateManager):
                 if state.path == path:
                     return state
 
-    def exists(self, name, parent: State=None):
+    def exists(self, name, parent: State = None):
         temp_state = State(self, self.event_manager, 0, name, parent=parent)
         path = temp_state.path
         state = self.get(path=path)
