@@ -22,7 +22,7 @@ from homecon.core.states.state import MemoryStateManager
 from homecon.core.event import EventManager
 
 
-class TestDALStateManager(TestCase):
+class TestState(TestCase):
 
     def test_add(self):
         state_manager = MemoryStateManager(EventManager())

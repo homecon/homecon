@@ -6,13 +6,13 @@ import time
 from knxpy.knxd import KNXD
 from knxpy.util import decode_dpt
 
-from homecon.core.plugins.plugin import Plugin
+from homecon.core.plugins.plugin import BasePlugin
 from homecon.core.states.state import State
 
 logger = logging.getLogger(__name__)
 
 
-class Knx(Plugin):
+class Knx(BasePlugin):
     """
     Communicate with an EIB-KNX home automation system through knxd
 

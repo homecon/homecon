@@ -7,7 +7,7 @@ import ephem
 import numpy as np
 
 
-def sunposition(latitude,longitude,elevation=0,timestamp=None):
+def sunposition(latitude: float, longitude: float, elevation=0, timestamp=None):
     """
     Returns the sun azimuth and altitude at a certain time at the current
     location
@@ -68,8 +68,7 @@ def sunposition(latitude,longitude,elevation=0,timestamp=None):
     return solar_azimuth,solar_altitude
 
 
-
-def clearskyirrradiance(solar_azimuth,solar_altitude,timestamp=None):
+def clearskyirrradiance(solar_azimuth: float, solar_altitude: float, timestamp=None):
     """
     Compute the clear sky theoretical direct and diffuse solar irradiance
     at a certain time at the current location according to [1] results are
@@ -138,10 +137,10 @@ def clearskyirrradiance(solar_azimuth,solar_altitude,timestamp=None):
     else:
         I_diffuse_clearsky = 0
 
-    return I_direct_clearsky,I_diffuse_clearsky
+    return I_direct_clearsky, I_diffuse_clearsky
 
 
-def incidentirradiance(I_direct,I_diffuse,solar_azimuth,solar_altitude,surface_azimuth,surface_tilt):
+def incidentirradiance(I_direct, I_diffuse, solar_azimuth, solar_altitude, surface_azimuth, surface_tilt):
     """
     Method returns irradiation on a tilted surface according to ASHRAE
 
@@ -210,7 +209,7 @@ def incidentirradiance(I_direct,I_diffuse,solar_azimuth,solar_altitude,surface_a
 
 
 
-def cloudyskyirrradiance(I_direct_clearsky,I_diffuse_clearsky,cloudcover,solar_azimuth,solar_altitude,timestamp=None):
+def cloudyskyirrradiance(I_direct_clearsky, I_diffuse_clearsky, cloudcover, solar_azimuth, solar_altitude, timestamp=None):
     """
     Correction of the direct normal and diffuse horizontal irradiance using
     the the cloudcover fraction in accordance with [3] and [4].
