@@ -116,9 +116,7 @@ def get_homecon():
         pass
 
     from homecon.core.event import EventManager
-    # from homecon.core.states.state import MemoryStateManager
     from homecon.core.states.dal_state_manager import DALStateManager
-    # from homecon.core.pages.pages import MemoryPagesManager
     from homecon.core.pages.pages import JSONPagesManager
     from homecon.core.plugins.plugin import MemoryPluginManager
     from homecon.homecon import HomeCon
@@ -127,16 +125,18 @@ def get_homecon():
     from homecon.plugins.websocket import Websocket
     from homecon.plugins.states import States
     from homecon.plugins.pages.pages import Pages
+    from homecon.plugins.alarms.alarms import Alarms
+    from homecon.plugins.shading.shading import Shading
 
     event_manager = EventManager()
     state_manager = DALStateManager(folder=db_dir, uri='sqlite://homecon.db', event_manager=event_manager)
-    # state_manager = MemoryStateManager(event_manager=event_manager)
     pages_manager = JSONPagesManager(os.path.join(db_dir, 'pages.json'))
-    # pages_manager = MemoryPagesManager()
     plugin_manager = MemoryPluginManager({
         'websocket': Websocket('websocket', event_manager, state_manager, pages_manager),
         'states': States('states', event_manager, state_manager, pages_manager),
-        'pages': Pages('pages', event_manager, state_manager, pages_manager)
+        'pages': Pages('pages', event_manager, state_manager, pages_manager),
+        'alarms': Alarms('alarms', event_manager, state_manager, pages_manager),
+        'Shading': Shading('shading', event_manager, state_manager, pages_manager),
     })
     executor = ThreadPoolExecutor(max_workers=10)
 

@@ -314,32 +314,32 @@ class Shading(BasePlugin):
         super().__init__(*args, **kwargs)
 
         self._state_manager.add('settings', type=None)
-        self._state_manager.add('shading', type=None, parent='/settings')
-        self._state_manager.add('heat_demand', type=None, parent='/settings/shading')
+        self._state_manager.add('shading', type=None, parent_path='/settings')
+        self._state_manager.add('heat_demand', type=None, parent_path='/settings/shading')
         ambient_temperature_state = self._state_manager.add(
-            'ambient_temperature', parent='/settings/shading/heat_demand',
+            'ambient_temperature', parent_path='/settings/shading/heat_demand',
             type='float', quantity='Temperature', unit='degC',
             label='', description='Ambient temperature', value=15)
         indoor_temperature_state = self._state_manager.add(
-            'indoor_temperature', parent='/settings/shading/heat_demand',
+            'indoor_temperature', parent_path='/settings/shading/heat_demand',
             type='float', quantity='Temperature', unit='degC',
             label='', description='Ambient temperature', value=20)
         setpoint_temperature_state = self._state_manager.add(
-            'setpoint_temperature', parent='/settings/shading/heat_demand',
+            'setpoint_temperature', parent_path='/settings/shading/heat_demand',
             type='float', quantity='Temperature', unit='degC',
             label='', description='Ambient temperature', value=15)
 
-        self._state_manager.add('location', type=None, parent='/settings')
+        self._state_manager.add('location', type=None, parent_path='/settings')
         longitude_state = self._state_manager.add(
-            'longitude', parent='/settings/location',
+            'longitude', parent_path='/settings/location',
             type='float', quantity='Angle', unit='deg',
             label='', description='Longitude', value=5)
         latitude_state = self._state_manager.add(
-            'latitude', parent='/settings/location',
+            'latitude', parent_path='/settings/location',
             type='float', quantity='Angle', unit='deg',
             label='', description='Latitude', value=52)
         elevation_state = self._state_manager.add(
-            'elevation', parent='/settings/location',
+            'elevation', parent_path='/settings/location',
             type='float', quantity='Height', unit='m',
             label='', description='Elevation above sea level', value=60)
 

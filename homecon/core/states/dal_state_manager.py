@@ -1,7 +1,7 @@
 import json
 import logging
 
-from typing import Any
+from typing import Any, Optional
 from pydal import DAL, Field
 
 from homecon.core.states.state import State, MemoryStateManager
@@ -48,31 +48,6 @@ class DALStateManager(MemoryStateManager):
         else:
             super().delete(state)
 
-    def add(self, name, parent: State = None, type: str = None, quantity: str = None, unit: str = None, label: str = None, description: str = None,
-            config: dict = None, value: Any = None, **kwargs):
-
-        if isinstance(parent, int):
-            parent = self.get(parent)
-        elif isinstance(parent, str):
-            parent = self.get(path=parent)
-
-        existing_state = self.exists(name, parent=parent)
-        if existing_state:
-            return existing_state
-        try:
-            # noinspection PyProtectedMember
-            self._db._adapter.reconnect()
-            id_ = self._db.states.insert(name=name, parent=None if parent is None else parent.id, type=type, quantity=quantity, unit=unit,
-                                         label=label, description=description, config=json.dumps(config), value=json.dumps(value))
-            self._db.commit()
-            # noinspection PyProtectedMember
-            self._db._adapter.close()
-        except Exception:
-            logger.exception('could not store state')
-        else:
-            return super().add(name, parent=parent, type=type, quantity=quantity, unit=unit, label=label, description=description, config=config,
-                               value=value, id=id_)
-
     def update(self, state: State):
         try:
             # noinspection PyProtectedMember
@@ -88,3 +63,25 @@ class DALStateManager(MemoryStateManager):
             logger.exception('could not store state')
         else:
             super().update(state)
+
+    def _create_state(self, name: str, parent: Optional[State] = None,
+                      type: Optional[str] = None, quantity: Optional[str] = None, unit: Optional[str] = None,
+                      label: Optional[str] = None, description: Optional[str] = None,
+                      config: Optional[dict] = None, value: Optional[Any] = None) -> State:
+        try:
+            # noinspection PyProtectedMember
+            self._db._adapter.reconnect()
+            id_ = self._db.states.insert(name=name, parent=None if parent is None else parent.id, type=type,
+                                         quantity=quantity, unit=unit, label=label, description=description,
+                                         config=json.dumps(config), value=json.dumps(value))
+            self._db.commit()
+            # noinspection PyProtectedMember
+            self._db._adapter.close()
+        except Exception:
+            logger.exception('could not store state')
+        else:
+            state = State(self, self.event_manager, id_, name, parent=parent, type=type,
+                          quantity=quantity, unit=unit, label=label, description=description,
+                          config=config, value=value)
+            self._states[state.id] = state
+            return state

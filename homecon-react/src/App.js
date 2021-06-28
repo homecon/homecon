@@ -119,7 +119,9 @@ class HomeconWebsocket {
       console.log(`received ${evt.data}`)
 
       if(message.event === 'pages_timestamp'){
-        if(this.app.state.pagesData === null || this.app.state.pagesData.timestamp < message.data.value){
+      console.log(this.app.state.pagesData.timestamp, message.data.value)
+        if(this.app.state.pagesData === null || this.app.state.pagesData.timestamp === undefined ||
+           this.app.state.pagesData.timestamp < message.data.value){
           this.send({'event': 'pages_pages', data: {'id': null}})
         }
       }

@@ -13,7 +13,8 @@ class StateEventsTypes:
 
 class State:
     # noinspection PyShadowingBuiltins
-    def __init__(self, state_manager: 'IStateManager', event_manager: 'IEventManager', id_, name, parent: 'State' = None,
+    def __init__(self, state_manager: 'IStateManager', event_manager: 'IEventManager', id_, name,
+                 parent: 'State' = None,
                  type: str = None, quantity: str = None, unit: str = None, label: str = None, description: str = None,
                  config: dict = None, value: Any = None):
         self._state_manager = state_manager
@@ -113,19 +114,38 @@ class IStateManager:
     def find(self, expr: str) -> List[State]:
         raise NotImplementedError
 
+    def exists(self, name: str, parent: Optional[State] = None):
+        raise NotImplementedError
+
+    def _create_state(self, name: str, parent: Optional[State] = None,
+                      type: Optional[str] = None, quantity: Optional[str] = None, unit: Optional[str] = None,
+                      label: Optional[str] = None, description: Optional[str] = None,
+                      config: Optional[dict] = None, value: Optional[Any] = None) -> State:
+        raise NotImplementedError
+
     def delete(self, state: State):
         state.notify_deleted()
-
-    def add(self, *args, **kwargs):
-        state = State(self, self.event_manager, *args, **kwargs)
-        state.notify_created()
-        return state
 
     def update(self, state: State):
         raise NotImplementedError
 
-    def create_state(self, *args, **kwargs) -> State:
-        return State(self, *args, **kwargs)
+    def add(self, name: str, parent: Optional[State] = None, parent_path: Optional[str] = None,
+            type: Optional[str] = None, quantity: Optional[str] = None, unit: Optional[str] = None,
+            label: Optional[str] = None, description: Optional[str] = None,
+            config: Optional[dict] = None, value: Optional[Any] = None):
+
+        if parent is None:
+            if parent_path is not None:
+                parent = self.get(path=parent_path)
+
+        existing_state = self.exists(name, parent=parent)
+        if existing_state:
+            return existing_state
+
+        state = self._create_state(name, parent=parent, type=type, quantity=quantity, unit=unit,
+                                   label=label, description=description, config=config, value=value)
+        state.notify_created()
+        return state
 
 
 class MemoryStateManager(IStateManager):
@@ -164,20 +184,21 @@ class MemoryStateManager(IStateManager):
             id_ = max(self._states.keys()) + 1
         return id_
 
-    def add(self, name, parent: State = None, type: str = None, quantity: str = None, unit: str = None, label: str = None, description: str = None,
-            config: dict = None, value: Any = None, **kwargs):
-        existing_state = self.exists(name, parent=parent)
-        if existing_state:
-            return existing_state
-
-        id_ = kwargs.pop('id', None) or self.get_new_id()
-        state = super().add(id_, name, parent=parent, type=type, quantity=quantity, unit=unit, label=label, description=description, config=config,
-                            value=value)
-        self._states[state.id] = state
-        return state
-
     def update(self, state: State):
         pass
+
+    def _create_state(self, name: str, parent: Optional[State] = None,
+                      type: Optional[str] = None, quantity: Optional[str] = None, unit: Optional[str] = None,
+                      label: Optional[str] = None, description: Optional[str] = None,
+                      config: Optional[dict] = None, value: Optional[Any] = None) -> State:
+
+        id_ = self.get_new_id()
+        state = State(self, self.event_manager, id_, name, parent=parent, type=type,
+                      quantity=quantity, unit=unit, label=label,
+                      description=description, config=config,
+                      value=value)
+        self._states[state.id] = state
+        return state
 
 
 def config_state_paths_to_ids(config, state_manager: IStateManager):
