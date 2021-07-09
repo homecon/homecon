@@ -3,6 +3,8 @@ import React, { useState } from 'react';
 import { createStyles, Theme, makeStyles } from '@material-ui/core/styles';
 import Collapse from '@material-ui/core/Collapse';
 import Paper from '@material-ui/core/Paper';
+import Fab from '@material-ui/core/Fab';
+import AddIcon from '@material-ui/icons/Add';
 
 import {BaseAlarm} from './Base.js';
 
@@ -57,20 +59,33 @@ function HomeconAlarm(props){
     }
   });
 
+  const addAlarm = () => {
+    ws.send({event: 'add_schedule', data: {id: state.id}})
+  }
+
   const handleAlarmChange = (alarm) => {
     ws.send({event: 'state_value', data: {id: alarm.id, value: alarm.value}})
   }
 
+  const handleAlarmDelete = (alarm) => {
+    ws.send({event: 'delete_schedule', data: {id: alarm.id}})
+  }
+
   return (
-    <div style={{marginTop: '10px'}}>
+    <div style={{position: 'relative', marginTop: '10px', minHeight: '50px'}}>
       <div>{state.label}</div>
       <div>
         {alarmStates.map((alarm) => {
           return (
-            <BaseAlarm key={alarm.id} alarm={alarm} actions={actionStates} onChange={handleAlarmChange}/>
+            <div key={alarm.id} style={{marginBottom: '5px'}}>
+              <BaseAlarm alarm={alarm} actions={actionStates} onChange={handleAlarmChange} onDelete={handleAlarmDelete}/>
+            </div>
           );
         })}
       </div>
+      <Fab style={{position: 'absolute', bottom: '-10px', right: '10px'}} color="primary" aria-label="delete" onClick={(e) => addAlarm()}>
+        <AddIcon />
+      </Fab>
     </div>
   )
 

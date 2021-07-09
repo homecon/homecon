@@ -111,9 +111,12 @@ function BaseAlarm(props){
   const alarm = props.alarm;
   const actions = props.actions;
   const onChange = props.onChange;
+  const onDelete = props.onDelete;
 
   const [timePickerOpen, setTimePickerOpen] = useState(false)
   const [timePickerDate, setTimePickerDate] = React.useState(new Date('1970-01-01T00:00:00'));
+
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
 
   const [dayOfWeekTrigger, setDayOfWeekTrigger] = React.useState(JSON.parse(`[${alarm.value.trigger.day_of_week}]`));
 
@@ -123,14 +126,6 @@ function BaseAlarm(props){
       action = a;
     }
   });
-
-  const openEditDialog = (e) => {
-    console.log(e)
-  }
-
-  const openDeleteDialog = (e) => {
-    console.log(e)
-  }
 
   const parseTime = (trigger) => {
     var hh = '00';
@@ -180,11 +175,10 @@ function BaseAlarm(props){
     setTimePickerOpen(false)
   }
 
-
   const handleTimeChange = (e) => {
     setTimePickerOpen(false)
 
-    const newAlarm = JSON.parse(JSON.stringify(alarm));
+    let newAlarm = JSON.parse(JSON.stringify(alarm));
     newAlarm.value.trigger.hour = timePickerDate.getHours();
     newAlarm.value.trigger.minute = timePickerDate.getMinutes();
     onChange(newAlarm)
@@ -202,14 +196,24 @@ function BaseAlarm(props){
     }
     setDayOfWeekTrigger(newDayOfWeekTrigger)
 
-    const newAlarm = JSON.parse(JSON.stringify(alarm));
+    let newAlarm = JSON.parse(JSON.stringify(alarm));
     const newDayOfWeekTriggerStr = JSON.stringify(newDayOfWeekTrigger)
     newAlarm.value.trigger.day_of_week = newDayOfWeekTriggerStr.substring(1, newDayOfWeekTriggerStr.length - 1);
     onChange(newAlarm)
   }
 
   const handleActionChange = (e) => {
-    console.log(e)
+    let newAlarm = JSON.parse(JSON.stringify(alarm));
+    newAlarm.value.action = e.target.value;
+    onChange(newAlarm)
+  }
+
+  const handleDeleteDialogClose = () => {
+    setDeleteDialogOpen(false)
+  }
+
+  const handleDeleteAlarm = () => {
+    onDelete(alarm);
   }
 
   const dayJsx = (day) => {
@@ -224,43 +228,56 @@ function BaseAlarm(props){
   const theme = useTheme()
 
   return (
-    <div style={{border: 'solid 1px', borderColor: theme.palette.primary.light, borderRadius: '5px', padding: '10px'}}>
-      <div style={{display: 'flex', flexDirection: 'row'}}>
-        <div style={{fontSize: '45px', marginRight: '40px', cursor: 'pointer'}} onClick={openTimePicker}>
-          {time}
+    <div style={{border: 'solid 1px', borderColor: theme.palette.primary.light, borderRadius: '5px', padding: '10px', position: 'relative'}}>
+      <div style={{display: 'flex', width: '100%'}}>
+
+        <div style={{width: '100%'}}>
+          <div style={{fontSize: '45px', marginRight: '20px', marginBottom: '5px', cursor: 'pointer'}} onClick={openTimePicker}>
+            {time}
+          </div>
+
+          <Dialog onClose={handleTimePickerClose} open={timePickerOpen}>
+            <MuiPickersUtilsProvider utils={DateFnsUtils}>
+              <KeyboardTimePicker margin="normal" id="time-picker" label="Time" value={timePickerDate} onChange={handleTimePickerChange} ampm={false} variant="static"/>
+            </MuiPickersUtilsProvider>
+            <Button variant="contained" onClick={() => setTimePickerOpen(false)}>cancel</Button>
+            <Button variant="contained" color="primary" onClick={handleTimeChange}>save</Button>
+          </Dialog>
+
+          <div style={{display: 'flex', flexFlow: 'row wrap', width: '100%'}}>
+            <div style={{display: 'flex', flexFlow: 'row wrap'}}>
+              {weekDays.map((day) => {
+                return dayJsx(day)
+              })}
+            </div>
+            <div style={{display: 'flex', flexFlow: 'row wrap'}}>
+               {weekendDays.map((day) => {
+                return dayJsx(day)
+              })}
+            </div>
+          </div>
         </div>
-        <Dialog onClose={handleTimePickerClose} open={timePickerOpen}>
-          <MuiPickersUtilsProvider utils={DateFnsUtils}>
-            <KeyboardTimePicker margin="normal" id="time-picker" label="Time" value={timePickerDate} onChange={handleTimePickerChange} ampm={false} variant="static"/>
-          </MuiPickersUtilsProvider>
-          <Button variant="contained">cancel</Button>
-          <Button variant="contained" color="primary" onClick={handleTimeChange}>save</Button>
+
+        <Fab color="primary" aria-label="delete" onClick={(e) => setDeleteDialogOpen(true)}>
+          <DeleteIcon />
+        </Fab>
+        <Dialog onClose={handleDeleteDialogClose} open={deleteDialogOpen}>
+          <h3>Delete alarm?</h3>
+          <Button variant="contained" onClick={() => setDeleteDialogOpen(false)}>cancel</Button>
+          <Button variant="contained" color="primary" onClick={(e) => handleDeleteAlarm()}>Delete</Button>
         </Dialog>
-        <div style={{display: 'flex', flexFlow: 'row wrap'}}>
-          <div style={{display: 'flex', flexFlow: 'row wrap'}}>
-            {weekDays.map((day) => {
-              return dayJsx(day)
-            })}
-          </div>
-          <div style={{display: 'flex', flexFlow: 'row wrap'}}>
-             {weekendDays.map((day) => {
-              return dayJsx(day)
-            })}
-          </div>
-        </div>
+
       </div>
+
       <div style={{width: '100%', marginTop: '5px'}}>
         <InputLabel id="action-select-label">Action</InputLabel>
-        <Select style={{width: '100%'}} labelId="action-select-label" id="demo-simple-select-helper" value={action.id} onChange={handleActionChange}>
+        <Select style={{width: '80%'}} labelId="action-select-label" id="demo-simple-select-helper" value={action.id} onChange={handleActionChange}>
           {actions.map((a) => {
             return <MenuItem key={a.id} value={a.id}>{a.label}</MenuItem>
-
           })}
         </Select>
       </div>
-      <Fab style={{position: 'absolute', top: '10px', right: '10px'}} color="primary" aria-label="delete" onClick={openDeleteDialog}>
-        <DeleteIcon />
-      </Fab>
+
     </div>
   );
 }
