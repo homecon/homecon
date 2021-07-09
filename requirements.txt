@@ -2,6 +2,7 @@ aiohttp
 apscheduler
 asyncws
 ephem
+flask
 passlib
 PyJWT
 numpy

@@ -4,6 +4,7 @@ import os
 import logging
 
 from argparse import ArgumentParser
+from multiprocessing import Process
 from signal import signal, SIGTERM, SIGINT
 from logging.handlers import TimedRotatingFileHandler
 
@@ -89,19 +90,14 @@ def configure_(create_folders=True,
         configure.install_knxd()
 
 
-def serve_app_(appsrc=False, appport=None):
-    app_kwargs = {}
+def serve_app_(appport=None) -> Process:
+    from server.server import app
+    from multiprocessing import Process
 
-    if appport is not None:
-        app_kwargs['port'] = appport
+    server = Process(target=lambda: app.run(host='0.0.0.0', port=appport))
+    server.start()
 
-    if appsrc:
-        app_kwargs['document_root'] = os.path.abspath(os.path.join(base_path, '..', 'app'))
-
-    from homecon_app.server import HttpServer
-    http_server = HttpServer(**app_kwargs)
-    http_server.start()
-    return http_server
+    return server
 
 
 def get_homecon():
@@ -145,7 +141,7 @@ def get_homecon():
 
 
 def main(printlog=False, loglevel='INFO', dbloglevel='INFO', httploglevel='INFO',
-         demo=False, appsrc=False, appport=None, serve_app=True,
+         demo=False, appport=None, serve_app=True,
          configure=False, create_folders=True,
          set_static_ip=True, ip=None,
          run_init_script=True, init_script_name='homecon',
@@ -180,9 +176,9 @@ def main(printlog=False, loglevel='INFO', dbloglevel='INFO', httploglevel='INFO'
                    init_script_name=init_script_name, install_ipopt=install_ipopt, install_knxd=install_knxd)
 
     else:
-        http_server = None
+        app_server = None
         if serve_app:
-            http_server = serve_app_(appsrc=appsrc, appport=appport)
+            app_server = serve_app_(appport=appport)
 
         if demo:
             from homecon.demo.__main__ import get_homecon as get_homecon_demo
@@ -196,8 +192,9 @@ def main(printlog=False, loglevel='INFO', dbloglevel='INFO', httploglevel='INFO'
                 sys.exit(1)
             else:
                 homecon.stop()
-                if http_server is not None:
-                    http_server.stop()
+                if app_server is not None:
+                    app_server.terminate()
+                    app_server.join()
 
         signal(SIGTERM, stop)
         signal(SIGINT, stop)
@@ -229,8 +226,7 @@ if __name__ == '__main__':
     parser.add_argument('--demo', action='store_true')
     parser.add_argument('--printlog', action='store_true')
     parser.add_argument('--noapp', dest='serve_app', action='store_false')
-    parser.add_argument('--appsrc', action='store_true')
-    parser.add_argument('--appport', type=str, default=None)
+    parser.add_argument('--appport', type=int, default=12300)
     parser.add_argument('--configure', action='store_true')
     parser.add_argument('--nofolders', dest='create_folders', action='store_false')
     parser.add_argument('--nostaticip', dest='set_static_ip', action='store_false')

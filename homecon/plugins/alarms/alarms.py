@@ -179,4 +179,16 @@ class Alarms(BasePlugin):
                     'trigger': {'hour': '0', 'minute': '0', 'day_of_week': '0,1,2,3,4'},
                     'action': None
                 }
-                self._state_manager.add(name=str(uuid4()), parent=state, type=self.ALARM_STATE_TYPE, value=default_schedule_value)
+                self._state_manager.add(name=str(uuid4()), parent=state,
+                                        type=self.ALARM_STATE_TYPE, value=default_schedule_value)
+
+    def listen_delete_schedule(self, event: Event):
+        if 'id' in event.data:
+            state = self._state_manager.get(id=event.data['id'])
+            if state is not None:
+                if state.type == self.ALARM_STATE_TYPE:
+                    self._state_manager.delete(state)
+                else:
+                    logger.error(f'state {state} is not an alarm')
+            else:
+                logger.error('no state')
