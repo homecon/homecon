@@ -1,11 +1,10 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useParams } from "react-router-dom";
 
 import { createStyles, Theme, makeStyles } from '@material-ui/core/styles';
-import Collapse from '@material-ui/core/Collapse';
-import Paper from '@material-ui/core/Paper';
 
-import HomeconIcon from './Icon.js';
+
+import {PageHeader, PageSection} from './PageLayout.js'
 import {HomeconSwitch} from './widgets/Switch.js';
 import {HomeconDimmer} from './widgets/Dimmer.js';
 import {HomeconValue} from './widgets/Value.js';
@@ -55,9 +54,11 @@ const getPage = (pagesData, groupName, pageName) => {
             p = page
             return true;
           }
+          return false;
         });
         return true;
       }
+      return false;
     });
   }
   return p;
@@ -98,17 +99,16 @@ function HomeconPage(props){
   if(page !== null){
     return (
       <div>
-        <HomeconPageHeader icon ={page.config.icon} title={page.config.title} widget={headerWidget}/>
+        <PageHeader icon ={page.config.icon} title={page.config.title} widget={headerWidget}/>
         <div className={classes.pageContent}>
 
-        {page.sections.map((section) => {
-        return <HomeconPageSection key={section.path} title={section.config.title} type={section.config.type}>
-          {section.widgets.map((widget) => {
-            return <HomeconWidget key={widget.path} type={widget.type} config={widget.config} states={states} ws={ws}/>
-          })}
-        </HomeconPageSection>
-
-        })}
+        {page.sections.map((section) => (
+          <PageSection key={section.path} title={section.config.title} type={section.config.type}>
+            {section.widgets.map((widget) => {
+              return <HomeconWidget key={widget.path} type={widget.type} config={widget.config} states={states} ws={ws}/>
+            })}
+          </PageSection>
+        ))}
         </div>
       </div>
     );
@@ -117,61 +117,6 @@ function HomeconPage(props){
 }
 
 
-function HomeconPageHeader(props){
-  const title = props.title;
-  const icon = props.icon;
-  const widget = props.widget;
-
-  const classes = useStyles();
-
-  return (
-    <div className={classes.pageHeader}>
-     <div className={classes.pageIcon}>
-        <HomeconIcon name={icon} color="ffffff"/>
-     </div>
-     <div className={classes.pageTitle}>
-      {title}
-     </div>
-     <div className={classes.pageWidget}>
-       {widget}
-     </div>
-   </div>
-  );
-}
-
-function HomeconPageSection(props){
-  const title = props.title;
-  const type = props.type;
-
-  const children = props.children
-
-  const classes = useStyles();
-
-  if(type === 'raised') {
-    return (
-      <Paper className={classes.pageSection}>
-        <div style={{position: 'absolute', top: '-12px', left: '5px'}}>{title}</div>
-        <div>
-          {children}
-        </div>
-      </Paper>
-    );
-  }
-  else if(type === 'underlined') {
-    return (
-      <div className={`${classes.pageSection} ${classes.underlined}`}>
-        {children}
-      </div>
-    );
-  }
-  else {
-    return (
-      <div className={classes.pageSection}>
-        {children}
-      </div>
-    );
-  }
-}
 
 function HomeconWidget(props){
   const type = props.type;

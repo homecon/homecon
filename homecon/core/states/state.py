@@ -94,8 +94,10 @@ class State:
 
     def serialize(self):
         return {
-            'id': self.id, 'name': self.name, 'value': self.value, 'parent': None if self.parent is None else self.parent.id,
-            'type': self.type, 'quantity': self.quantity, 'unit': self.unit, 'label': self.label, 'description': self.description,
+            'id': self.id, 'name': self.name, 'path': self.path, 'value': self.value,
+            'parent': None if self.parent is None else self.parent.id,
+            'type': self.type, 'quantity': self.quantity, 'unit': self.unit, 'label': self.label,
+            'description': self.description,
             'config': self.config or {}
         }
 
@@ -146,6 +148,30 @@ class IStateManager:
                                    label=label, description=description, config=config, value=value)
         state.notify_created()
         return state
+
+    def export_states(self) -> List[dict]:
+        states_list = []
+        for state in self.all():
+            states_list.append({
+                'name': state.name,
+                'parent_path': state.parent.path if state.parent is not None else None,
+                'type': state.type,
+                'quantity': state.quantity,
+                'unit': state.unit,
+                'label': state.label,
+                'description': state.description,
+                'config': state.config,
+                'value': state.value
+            })
+        return sorted(states_list, key= lambda x: len(x.get('parent_path') or ''))
+
+    def import_states(self, states_list: List[dict]):
+        old_states = list(self.all())
+        for state in old_states:
+            self.delete(state)
+
+        for state_dict in sorted(states_list, key= lambda x: len(x.get('parent_path') or '')):
+            self.add(**state_dict)
 
 
 class MemoryStateManager(IStateManager):

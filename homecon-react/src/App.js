@@ -59,6 +59,7 @@ class HomeconWebsocket {
   constructor(app) {
     this.app = app
     this.ws = null
+    this.event_listeners = {}
   }
 
   timeout = 250; // Initial timeout duration as a class variable
@@ -119,7 +120,7 @@ class HomeconWebsocket {
       console.log(`received ${evt.data}`)
 
       if(message.event === 'pages_timestamp'){
-      console.log(this.app.state.pagesData.timestamp, message.data.value)
+        console.log(this.app.state.pagesData.timestamp, message.data.value)
         if(this.app.state.pagesData === null || this.app.state.pagesData.timestamp === undefined ||
            this.app.state.pagesData.timestamp < message.data.value){
           this.send({'event': 'pages_pages', data: {'id': null}})
@@ -155,6 +156,9 @@ class HomeconWebsocket {
           states: states
         });
       }
+      else if(this.event_listeners[message.event] !== undefined){
+        this.event_listeners[message.event](message)
+      }
     }
   };
 
@@ -166,6 +170,14 @@ class HomeconWebsocket {
     } catch (error) {
       console.log(error)
     }
+  };
+
+  listen_for_response(event, data, callback) {
+    this.event_listeners[event] = (message) => {
+      callback(message);
+      // remove the listener?
+    }
+    this.send({event: event, data: data})
   };
 
   parse_pages_data(pages_data) {

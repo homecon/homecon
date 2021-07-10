@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { BrowserRouter, Switch, Route, Link } from "react-router-dom";
 
 import { createStyles, Theme, makeStyles } from '@material-ui/core/styles';
@@ -7,12 +7,7 @@ import Drawer from '@material-ui/core/Drawer';
 import AppBar from '@material-ui/core/AppBar';
 import CssBaseline from '@material-ui/core/CssBaseline';
 import Toolbar from '@material-ui/core/Toolbar';
-import List from '@material-ui/core/List';
 import Typography from '@material-ui/core/Typography';
-import Divider from '@material-ui/core/Divider';
-import ListItem from '@material-ui/core/ListItem';
-import ListItemIcon from '@material-ui/core/ListItemIcon';
-import ListItemText from '@material-ui/core/ListItemText';
 import IconButton from '@material-ui/core/IconButton';
 import Hidden from '@material-ui/core/Hidden';
 import Menu from '@material-ui/core/Menu';
@@ -23,6 +18,8 @@ import MoreIcon from '@material-ui/icons/MoreVert';
 
 import HomeconPagesMenu from './PagesMenu.js';
 import {HomeconPage, HomeconPages, getPage} from './Pages.js';
+import ViewStates from './ViewStates.js';
+
 
 const drawerWidth = 460;
 
@@ -88,7 +85,7 @@ function HomeconLayout(props){
               </IconButton>
             </Hidden>
             <Link to="/">
-              <img src="/logo512.png" style={{height: '50px', marginRight: '20px', marginLeft: '10px'}}/>
+              <img src="/logo512.png" alt="Homecon logo" style={{height: '50px', marginRight: '20px', marginLeft: '10px'}}/>
             </Link>
             <Typography variant="h6" style={{flexGrow: 1}}  noWrap>
                 HomeCon
@@ -138,7 +135,7 @@ function HomeconLayout(props){
               Profile
             </Route>
             <Route path="/states">
-              States
+              <ViewStates states={states} ws={ws}/>
             </Route>
             <Route path="/plugins">
               Plugins

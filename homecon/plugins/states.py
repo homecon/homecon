@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import logging
 import time
+import json
 
 from homecon.core.event import Event
 from homecon.core.plugins.plugin import BasePlugin
@@ -160,7 +161,6 @@ class States(BasePlugin):
     #                                                  'value': states}})
 
     def listen_state_list(self, event: Event):
-        print(event.type, event.source, event.target)
         states = [s.serialize() for s in self._state_manager.all()]
         event.reply({'id': '', 'value': states})
 
@@ -187,6 +187,12 @@ class States(BasePlugin):
         if 'id' in event.data:
             state = self._state_manager.get(id=event.data['id'])
             state.delete()
+
+    def listen_export_states(self, event):
+        event.reply({'id': '', 'value': json.dumps(self._state_manager.export_states(), indent=2)})
+
+    def listen_import_states(self, event):
+        self._state_manager.import_states(json.loads(event.data['value']))
 
     @property
     def settings_sections(self):
