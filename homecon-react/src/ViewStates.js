@@ -13,6 +13,8 @@ import Button from '@material-ui/core/Button';
 import TextField from '@material-ui/core/TextField';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
+import Select from '@material-ui/core/Select';
+import InputLabel from '@material-ui/core/InputLabel';
 
 import Menu from '@material-ui/core/Menu';
 import MenuItem from '@material-ui/core/MenuItem';
@@ -38,10 +40,13 @@ const useStyles = makeStyles((theme: Theme) =>
 
 function EditStateDialog(props){
   const state = props.state;
+  const states = props.states;
+
   const onCancel = props.onCancel;
   const onSave = props.onSave;
 
   const [name, setName] = useState('')
+  const [parent, setParent] = useState(null)
   const [type, setType] = useState('')
   const [quantity, setQuantity] = useState('')
   const [unit, setUnit] = useState('')
@@ -51,14 +56,17 @@ function EditStateDialog(props){
   const [value, setValue] = useState('')
 
   useEffect(() => {
-    setName(state.name || '');
-    setType(state.type || '');
-    setQuantity(state.quantity || '');
-    setUnit(state.unit || '');
-    setLabel(state.label || '');
-    setDescription(state.description || '');
-    setConfig(state.config !== null ? JSON.stringify(state.config, undefined, 2) : '{}');
-    setValue(state.value !== null ? JSON.stringify(state.value) : '');
+    if(state !== null){
+      setName(state.name || '');
+      setParent(state.parent || null);
+      setType(state.type || '');
+      setQuantity(state.quantity || '');
+      setUnit(state.unit || '');
+      setLabel(state.label || '');
+      setDescription(state.description || '');
+      setConfig(state.config !== null ? JSON.stringify(state.config, undefined, 2) : '{}');
+      setValue(state.value !== null ? JSON.stringify(state.value) : '');
+    }
   }, [state]);
 
   const handleSave = () => {
@@ -100,10 +108,12 @@ function EditStateDialog(props){
       }
     }
 
-
-    let newState = JSON.parse(JSON.stringify(state));
-
+    let newState = {}
+    if(state !== null){
+      newState.id = state.id;
+    }
     newState.name = name;
+    newState.parent = parent;
     newState.type = type === '' ? null : type;
     newState.quantity = quantity;
     newState.label = label;
@@ -119,6 +129,13 @@ function EditStateDialog(props){
       <form>
         <div style={{display: 'flex', flexDirection: 'column'}}>
           <TextField label="Name" value={name} onChange={(e) => setName(e.target.value)}/>
+          <InputLabel id="Parent-select-label">Parent</InputLabel>
+          <Select style={{width: '80%'}} labelId="action-select-label" id="demo-simple-select-helper" value={parent} onChange={(e) => setParent(e.target.value)}>
+            <MenuItem value={null}>/</MenuItem>
+            {states.map((a) => {
+              return <MenuItem key={a.id} value={a.id}>{a.path}</MenuItem>
+            })}
+          </Select>
           <TextField label="Type" value={type} onChange={(e) => setType(e.target.value)}/>
           <TextField label="Quantity" value={quantity} onChange={(e) => setQuantity(e.target.value)}/>
           <TextField label="Unit" value={unit} onChange={(e) => setUnit(e.target.value)}/>
@@ -142,6 +159,7 @@ function StatesList(props) {
 
   const states = props.states;
   const updateState = props.updateState;
+  const addState = props.addState;
 
   const [editStateDialogOpen, setEditStateDialogOpen] = useState(false)
   const [selectedState, setSelectedState] = useState(null)
@@ -154,13 +172,23 @@ function StatesList(props) {
   const closeMenu = () => {
     setMenuAnchorEl(null);
   };
-  const editState = () => {
+  const editStateDialog = () => {
     closeMenu();
     setEditStateDialogOpen(true);
   }
+  const addStateDialog = () => {
+    setSelectedState(null);
+    setEditStateDialogOpen(true);
+  }
+
   const handleSave = (state) => {
     setEditStateDialogOpen(false)
-    updateState(state)
+    if(state.id === undefined){
+      addState(state)
+    }
+    else {
+      updateState(state)
+    }
   }
 
   const classes = useStyles();
@@ -209,7 +237,7 @@ function StatesList(props) {
       </TableContainer>
 
       <Menu anchorEl={menuAnchorEl} keepMounted open={Boolean(menuAnchorEl)} onClose={closeMenu}>
-        <MenuItem onClick={editState}>
+        <MenuItem onClick={editStateDialog}>
           <ListItemIcon style={{color: "#ffffff"}}>
             <EditIcon/>
           </ListItemIcon>
@@ -231,13 +259,14 @@ function StatesList(props) {
 
       <Dialog open={editStateDialogOpen} onClose={(e) => setEditStateDialogOpen(false)} fullWidth maxWidth="sm">
         <div style={{padding: '10px'}}>
-          <EditStateDialog state={selectedState} onCancel={(e) => setEditStateDialogOpen(false)} onSave={handleSave}/>
+          <EditStateDialog state={selectedState} states={makeStateList(states)} onCancel={(e) => setEditStateDialogOpen(false)} onSave={handleSave}/>
         </div>
       </Dialog>
 
-      <Fab color="primary" aria-label="add" style={{float: 'right', marginRight: '20px', marginTop: '-5px'}}>
+      <Fab color="primary" aria-label="add" style={{float: 'right', marginRight: '20px', marginTop: '-5px'}} onClick={addStateDialog}>
         <AddIcon />
       </Fab>
+
     </div>
   );
 }
@@ -257,7 +286,6 @@ function ViewStates(props) {
         document.body.appendChild(element);
         element.click();
         document.body.removeChild(element);
-
       }
     )
   }
@@ -299,7 +327,9 @@ function ViewStates(props) {
       </PageSection>
 
       <PageSection type="raised">
-        <StatesList states={states} updateState={(state) => ws.send({event: 'state_update', data: state})}/>
+        <StatesList states={states}
+         updateState={(state) => ws.send({event: 'state_update', data: state})}
+         addState={(state) => ws.send({event: 'state_add', data: state})} />
       </PageSection>
     </div>
   );

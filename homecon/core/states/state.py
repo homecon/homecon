@@ -61,6 +61,8 @@ class State:
     def update(self, **kwargs):
         if 'name' in kwargs:
             self.name = kwargs['name']
+        if 'parent' in kwargs:
+            self.parent = kwargs['parent']
         if 'type' in kwargs:
             self.type = kwargs['type']
         if 'quantity' in kwargs:

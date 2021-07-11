@@ -167,7 +167,12 @@ class States(BasePlugin):
     def listen_state_add(self, event):
         kwargs = dict(event.data)
         name = kwargs.pop('name')
-        self._state_manager.add(name, **kwargs)
+        parent_id = kwargs.pop('parent', None)
+        if parent_id is not None:
+            parent = self._state_manager.get(id=parent_id)
+        else:
+            parent = None
+        self._state_manager.add(name, parent=parent, **kwargs)
 
     def listen_state_update(self, event):
         if 'id' in event.data:
@@ -176,6 +181,13 @@ class States(BasePlugin):
             state = self._state_manager.get(id=id)
 
             if state is not None:
+                if 'parent' in kwargs:
+                    parent_id = kwargs.pop('parent')
+                    if parent_id is not None:
+                        kwargs['parent'] = self._state_manager.get(id=parent_id)
+                    else:
+                        kwargs['parent'] = None
+
                 state.update(**kwargs)
             else:
                 logger.error('cannot update state, state not found')
