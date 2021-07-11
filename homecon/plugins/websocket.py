@@ -184,13 +184,20 @@ class Websocket(BasePlugin):
             }
         })
 
-    def listen_state_changed(self, event):
+    def listen_state_updated(self, event):
         self.send({
             'event': 'state',
             'data': {
                 'path': event.data['state'].path,
                 'id': event.data['state'].id,
                 'value': event.data['state'].serialize()
+            }
+        })
+        self.send({
+            'event': 'state_list',
+            'data': {
+                'id': '',
+                'value': [s.serialize() for s in self._state_manager.all()]
             }
         })
 

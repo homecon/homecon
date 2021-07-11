@@ -16,6 +16,8 @@ from homecon.plugins.states import States
 from homecon.plugins.pages.pages import Pages
 from homecon.plugins.alarms.alarms import Alarms
 from homecon.plugins.shading.shading import Shading
+from homecon.plugins.knx import Knx
+
 
 # the current file directory
 base_path = os.path.dirname(os.path.abspath(__file__))
@@ -31,11 +33,11 @@ def create_states(state_manager: IStateManager):
     state_manager.add('some_value', parent=state_manager.get('/ground_floor/kitchen'), type='int', value=20)
     state_manager.add('lights', parent=state_manager.get('/ground_floor/kitchen'))
     state_manager.add('light', parent=state_manager.get('/ground_floor/kitchen/lights'),
-                      type='boolean', quantity='', unit='',
+                      type='bool', quantity='', unit='',
                       label='Kitchen light', description='',
                       config={'knx_ga_read': '1/1/31', 'knx_ga_write': '1/1/31', 'knx_dpt': '1'})
     state_manager.add('spotlight', parent=state_manager.get('/ground_floor/kitchen/lights'),
-                      type='boolean', quantity='', unit='',
+                      type='bool', quantity='', unit='',
                       label='Kitchen spotlights', description='',
                       config={'knx_ga_read': '1/1/62', 'knx_ga_write': '1/1/62', 'knx_dpt': '1'})
     state_manager.add('dimmer', parent=state_manager.get('/ground_floor/kitchen/lights'),
@@ -45,7 +47,7 @@ def create_states(state_manager: IStateManager):
     state_manager.add('living', parent=state_manager.get('/ground_floor'))
     state_manager.add('lights', parent=state_manager.get('/ground_floor/living'))
     state_manager.add('light', parent=state_manager.get('/ground_floor/living/lights'),
-                      type='boolean', quantity='', unit='',
+                      type='bool', quantity='', unit='',
                       label='Living room light', description='',
                       config={'knx_ga_read': '1/1/41', 'knx_ga_write': '1/1/41', 'knx_dpt': '1'})
 
@@ -108,7 +110,8 @@ def get_homecon():
         'states': States('states', event_manager, state_manager, pages_manager),
         'pages': Pages('pages', event_manager, state_manager, pages_manager),
         'alarms': Alarms('alarms', event_manager, state_manager, pages_manager),
-        'Shading': Shading('shading', event_manager, state_manager, pages_manager),
+        'shading': Shading('shading', event_manager, state_manager, pages_manager),
+        'knx': Knx('knx', event_manager, state_manager, pages_manager),
     })
     executor = ThreadPoolExecutor(max_workers=10)
 

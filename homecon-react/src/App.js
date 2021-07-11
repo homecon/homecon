@@ -50,6 +50,7 @@ const darkTheme = createMuiTheme({
         },
       },
     }
+
   },
 });
 

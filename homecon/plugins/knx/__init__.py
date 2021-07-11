@@ -25,16 +25,17 @@ class Knx(BasePlugin):
         self.address_state = None
         self.port_state = None
 
-    def initialize(self):
+        # add settings states
         self._state_manager.add('settings', type=None)
         self._state_manager.add('knxd', type=None, parent_path='/settings')
         self._state_manager.add('address', parent_path='/settings/knxd',
-                                type='string', quantity='', unit='',
+                                type='str', quantity='', unit='',
                                 label='', description='knxd address', value='localhost')
         self._state_manager.add('port', parent_path='/settings/knxd',
-                                type='number', quantity='', unit='',
+                                type='int', quantity='', unit='',
                                 label='', description='knxd port', value=6720)
 
+    def start(self):
         # build the ga_read_mapping
         for state in self._state_manager.all():
             knx_ga_read = state.config.get('knx_ga_read')
@@ -45,17 +46,24 @@ class Knx(BasePlugin):
         logger.debug('KNX plugin Initialized')
 
     def connect(self):
-        if self.connection is not None:
-            self.connection.close()
-        self.connection = KNXD(self._state_manager.get('/settings/knxd/address').value,
-                               int(self._state_manager.get('/settings/knxd/port').value))
-        self.connection.connect()
-        self.connection.listen(self.callback)
+        try:
+            if self.connection is not None:
+                self.connection.close()
 
-        time.sleep(1)
-        for key in self.ga_read_mapping.keys():
-            logger.debug('reading {}'.format(key))
-            self.connection.group_read(key)
+            address = self._state_manager.get('/settings/knxd/address').value
+            port = self._state_manager.get('/settings/knxd/port').value
+
+            if address is not None and port is not None:
+                self.connection = KNXD(address, port)
+                self.connection.connect()
+                self.connection.listen(self.callback)
+
+                time.sleep(1)
+                for key in self.ga_read_mapping.keys():
+                    logger.debug('reading {}'.format(key))
+                    self.connection.group_read(key)
+        except ConnectionRefusedError:
+            logger.exception('KNXD connection refused')
 
     def callback(self, message):
         if message is not None:
