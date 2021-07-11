@@ -7,7 +7,6 @@ from knxpy.knxd import KNXD
 from knxpy.util import decode_dpt
 
 from homecon.core.plugins.plugin import BasePlugin
-from homecon.core.states.state import State
 
 logger = logging.getLogger(__name__)
 
@@ -19,25 +18,25 @@ class Knx(BasePlugin):
     """
     DEFAULT_DPT = '1'
 
-    def __init__(self):
-        super().__init__()
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
         self.ga_read_mapping = {}
         self.connection = None
         self.address_state = None
         self.port_state = None
 
     def initialize(self):
-        State.add('settings', type=None)
-        State.add('knxd', type=None, parent='/settings')
-        State.add('address', parent='/settings/knxd',
-                  type='string', quantity='', unit='',
-                  label='', description='knxd address', value='localhost')
-        State.add('port', parent='/settings/knxd',
-                  type='number', quantity='', unit='',
-                  label='', description='knxd port', value=6720)
+        self._state_manager.add('settings', type=None)
+        self._state_manager.add('knxd', type=None, parent_path='/settings')
+        self._state_manager.add('address', parent_path='/settings/knxd',
+                                type='string', quantity='', unit='',
+                                label='', description='knxd address', value='localhost')
+        self._state_manager.add('port', parent_path='/settings/knxd',
+                                type='number', quantity='', unit='',
+                                label='', description='knxd port', value=6720)
 
         # build the ga_read_mapping
-        for state in State.all():
+        for state in self._state_manager.all():
             knx_ga_read = state.config.get('knx_ga_read')
             if knx_ga_read is not None:
                 self.ga_read_mapping[knx_ga_read] = state.id
@@ -48,7 +47,8 @@ class Knx(BasePlugin):
     def connect(self):
         if self.connection is not None:
             self.connection.close()
-        self.connection = KNXD(State.get('/settings/knxd/address').value, int(State.get('/settings/knxd/port').value))
+        self.connection = KNXD(self._state_manager.get('/settings/knxd/address').value,
+                               int(self._state_manager.get('/settings/knxd/port').value))
         self.connection.connect()
         self.connection.listen(self.callback)
 
@@ -64,13 +64,13 @@ class Knx(BasePlugin):
                 # find a state with the dst address
                 state_id = self.ga_read_mapping.get(message.dst)
                 if state_id is not None:
-                    state = State.get(id=state_id)
+                    state = self._state_manager.get(id=state_id)
                     logger.debug('found state {} corresponding to message {}'.format(state, message))
                     dpt = state.config.get('knx_dpt', self.DEFAULT_DPT)
                     state.set_value(decode_dpt(message.val, dpt), source=self.name)
                 else:
                     logger.debug('no state corresponding to ga {}'.format(message.dst))
-            except:
+            except:  # noqa
                 logger.exception('error while parsing message {}'.format(message))
 
     def listen_state_value_changed(self, event):
@@ -113,13 +113,13 @@ class Knx(BasePlugin):
             'widgets': [{
                 'type': 'value-input',
                 'config': {
-                    'state': State.get(path='/settings/knxd/address').id,
+                    'state': self._state_manager.get(path='/settings/knxd/address').id,
                     'label': 'Address',
                 }
             }, {
                 'type': 'value-input',
                 'config': {
-                    'state': State.get(path='/settings/knxd/port').id,
+                    'state': self._state_manager.get(path='/settings/knxd/port').id,
                     'label': 'Port',
                 }
             }

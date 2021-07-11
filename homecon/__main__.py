@@ -122,6 +122,7 @@ def get_homecon():
     from homecon.plugins.states import States
     from homecon.plugins.pages.pages import Pages
     from homecon.plugins.alarms.alarms import Alarms
+    from homecon.plugins.knx import Knx
     from homecon.plugins.shading.shading import Shading
 
     event_manager = EventManager()
@@ -132,7 +133,8 @@ def get_homecon():
         'states': States('states', event_manager, state_manager, pages_manager),
         'pages': Pages('pages', event_manager, state_manager, pages_manager),
         'alarms': Alarms('alarms', event_manager, state_manager, pages_manager),
-        'Shading': Shading('shading', event_manager, state_manager, pages_manager),
+        'shading': Shading('shading', event_manager, state_manager, pages_manager),
+        'knx': Knx('knx', event_manager, state_manager, pages_manager),
     })
     executor = ThreadPoolExecutor(max_workers=10)
 
