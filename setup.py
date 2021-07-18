@@ -34,15 +34,13 @@ setup(
         [os.path.join('util', 'network_template'), os.path.join('util', 'init_template')]
     )],
     package_data={'homecon': ['demo/*.json'],
-                  'homecon_app': ['build/es5-bundled/*.*',
-                                  'build/es5-bundled/**/*.*',
-                                  'build/es5-bundled/**/**/*.*',
-                                  'build/es5-bundled/**/**/**/*.*']},
-    install_requires=['pytz', 'ephem', 'passlib', 'PyJWT', 'asyncws', 'aiohttp', 'numpy', 'pyomo', 'knxpy', 'pydal', 'websockets',
-                      'scipy', 'apscheduler'],
+                  'server': ['static/*.*', 'static/**/*.*', 'static/**/**/*.*']},
+    install_requires=[
+        'pytz', 'ephem', 'passlib', 'PyJWT', 'asyncws', 'aiohttp', 'numpy', 'pyomo', 'knxpy', 'pydal', 'websockets',
+        'scipy', 'apscheduler', 'flask'
+    ],
     classifiers=['Programming Language :: Python :: 3.6'],
     entry_points={'console_scripts': [
         'homecon=homecon.__main__:main',
-        'homecon-app=homecon_app.__main__:main',
     ]},
 )

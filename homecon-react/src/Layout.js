@@ -91,8 +91,6 @@ function HomeconLayout(props){
                 HomeCon
             </Typography>
 
-
-
             <IconButton color="inherit" aria-label="open menu" onClick={toggleSettingsMenu(true)}>
               <MoreIcon/>
             </IconButton>

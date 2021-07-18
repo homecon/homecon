@@ -16,3 +16,20 @@ Check the project `documentation <https://pythonhosted.org/homecon/>`_ for a mor
 
 
 
+Installation
+------------
+..code::
+
+  mkdir homecon
+  cd homecon
+  python3 -m venv env
+  source env/bin/activate
+  pip install wheel
+  pip install homecon-0.0.0.tar.gz
+
+
+Running
+-------
+..code::
+
+  python -m homecon

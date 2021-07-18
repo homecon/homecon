@@ -1,7 +1,11 @@
-import React from 'react';
+import React, { useState, useEffect }  from 'react';
 import { createMuiTheme, ThemeProvider } from '@material-ui/core/styles';
 
 import HomeconLayout from './Layout.js';
+
+import Dialog from '@material-ui/core/Dialog';
+import Button from '@material-ui/core/Button';
+import TextField from '@material-ui/core/TextField';
 
 
 const darkTheme = createMuiTheme({
@@ -65,14 +69,14 @@ class HomeconWebsocket {
 
   timeout = 250; // Initial timeout duration as a class variable
 
-  connect() {
-    var ws = new WebSocket("ws://localhost:9099");
+  connect(url) {
+    var ws = new WebSocket(this.app.state.wsUrl);
     let that = this; // cache the this
     var connectInterval;
 
     // websocket onopen event listener
     ws.onopen = () => {
-      console.log("connected to homecon");
+      console.log(`Connected to HomeCon server at ${this.app.state.wsUrl}`);
       this.ws = ws
 
       // add the websocket to the state
@@ -102,6 +106,9 @@ class HomeconWebsocket {
       );
 
       that.timeout = that.timeout + that.timeout; //increment retry interval
+      this.app.setState({
+        ws: null
+      });
       connectInterval = setTimeout(this.check.bind(this), Math.min(10000, that.timeout)); //call check function after timeout
     };
 
@@ -214,14 +221,41 @@ class HomeconWebsocket {
 }
 
 
+function ConnectionSettings(props){
+  const wsUrl = props.wsUrl;
+  const setWsUrl = props.setWsUrl;
+  const connected = props.connected
+  const [open, setOpen] = useState(false)
+
+  useEffect(() =>{
+    setOpen(!connected)
+  }, [connected])
+
+  return (
+    <div>
+      <Dialog open={open}>
+        <div style={{margin: '20px'}}>
+          <div>
+            <TextField label='HomeCon Web Socket url' value={wsUrl} onChange={(e) => setWsUrl(e.target.value)}/>
+          </div>
+          <div style={{marginTop: '10px'}}>
+            <Button>connect</Button>
+          </div>
+        </div>
+      </Dialog>
+    </div>
+  )
+}
+
 class App extends React.Component {
 
   constructor(props) {
     super(props);
 
-    this.homeconWebsocket= new HomeconWebsocket(this)
+    this.homeconWebsocket = new HomeconWebsocket(this)
 
     this.state = {
+      wsUrl: 'ws://localhost:9099',
       ws: null,
       states: null,
       stateList: [],
@@ -239,9 +273,11 @@ class App extends React.Component {
     return (
       <ThemeProvider theme={darkTheme}>
         <HomeconLayout pagesData={this.state.pagesData} states={this.state.states} ws={this.state.ws}/>
+        <ConnectionSettings wsUrl={this.state.wsUrl} setWsUrl={(val) => {this.setState({wsUrl: val})}} connected={this.state.ws !== null}/>
       </ThemeProvider>
     );
   }
 }
+
 
 export default App;
