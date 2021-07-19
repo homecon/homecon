@@ -49,9 +49,12 @@ function HomeconDimmer(props){
   const states = props.states;
   const ws = props.ws
 
-  let state = {value: 0};
+  let state = undefined;
   if(states !== null){
     state = states[stateId];
+  }
+  if(state === undefined){
+    state = {value: 0};
   }
 
   const classes = useStyles();

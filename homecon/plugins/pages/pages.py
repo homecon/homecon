@@ -1,8 +1,7 @@
 #!/usr/bin/env python3
-
 import logging
 import time
-
+import json
 
 from homecon.core.plugins.plugin import BasePlugin
 
@@ -81,12 +80,12 @@ class Pages(BasePlugin):
     def listen_pages_export(self, event):
         # FIXME check permissions
         d = self._pages_manager.serialize(self._state_manager, convert_state_ids_to_paths=True)
-        event.reply({'id': event.data['id'], 'value': d})
+        event.reply({'id': '', 'value': json.dumps(d, indent=2)})
 
     def listen_pages_import(self, event):
         # FIXME check permissions
         if 'value' in event.data:
-            self.import_pages(event.data['value'])
+            self.import_pages(json.loads(event.data['value']))
             # FIXME send pages to all connected clients this should be independent of the websocket plugin.
             #  so there should be a IIOManager in core which is accessible through the plugins
             d = self._pages_manager.serialize(self._state_manager)
@@ -94,5 +93,5 @@ class Pages(BasePlugin):
 
     def import_pages(self, groups: dict):
         self._pages_manager.clear()
-        self._pages_manager.deserialize(groups)
+        self._pages_manager.deserialize(groups, self._state_manager)
         self._last_update_timestamp = int(time.time())

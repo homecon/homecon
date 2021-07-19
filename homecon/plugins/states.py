@@ -200,10 +200,10 @@ class States(BasePlugin):
             state = self._state_manager.get(id=event.data['id'])
             state.delete()
 
-    def listen_export_states(self, event):
+    def listen_states_export(self, event):
         event.reply({'id': '', 'value': json.dumps(self._state_manager.export_states(), indent=2)})
 
-    def listen_import_states(self, event):
+    def listen_states_import(self, event):
         self._state_manager.import_states(json.loads(event.data['value']))
 
     @property

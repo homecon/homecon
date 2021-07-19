@@ -238,7 +238,7 @@ def config_state_paths_to_ids(config, state_manager: IStateManager):
         for key, val in config.items():
             if isinstance(val, str) and val.startswith('/'):
                 try:
-                    state = state_manager.get(val)
+                    state = state_manager.get(path=val)
                 except:
                     pass
                 else:

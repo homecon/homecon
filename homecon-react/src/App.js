@@ -70,6 +70,7 @@ class HomeconWebsocket {
   timeout = 250; // Initial timeout duration as a class variable
 
   connect(url) {
+    console.log(`attempting to connect to homecon at ${this.app.state.wsUrl}`)
     var ws = new WebSocket(this.app.state.wsUrl);
     let that = this; // cache the this
     var connectInterval;
@@ -128,7 +129,6 @@ class HomeconWebsocket {
       console.log(`received ${evt.data}`)
 
       if(message.event === 'pages_timestamp'){
-        console.log(this.app.state.pagesData.timestamp, message.data.value)
         if(this.app.state.pagesData === null || this.app.state.pagesData.timestamp === undefined ||
            this.app.state.pagesData.timestamp < message.data.value){
           this.send({'event': 'pages_pages', data: {'id': null}})
@@ -196,7 +196,6 @@ class HomeconWebsocket {
    * utilited by the @function connect to check if the connection is close, if so attempts to reconnect
    */
   check() {
-    console.log(this)
     const  ws = this.ws;
     if (!ws || ws.readyState === WebSocket.CLOSED){
       this.connect(); //check if websocket instance is closed, if so call `connect` function.
@@ -245,7 +244,6 @@ class App extends React.Component {
     if(wsUrl === null){
       wsUrl = 'ws://localhost:9099'
     }
-    console.log(wsUrl)
 
     this.state = {
       wsUrl: wsUrl,
@@ -270,7 +268,7 @@ class App extends React.Component {
     return (
       <ThemeProvider theme={darkTheme}>
         <HomeconLayout pagesData={this.state.pagesData} states={this.state.states} ws={this.state.ws}/>
-        <ConnectionSettings wsUrl={this.state.wsUrl} setWsUrl={(val) => this.setWsUrl(val)} connect={() => this.homeconWebsocket.connect()} connected={this.state.ws !== null}/>
+        <ConnectionSettings wsUrl={this.state.wsUrl} setWsUrl={(val) => this.setWsUrl(val)} connect={() => this.homeconWebsocket.check()} connected={this.state.ws !== null}/>
       </ThemeProvider>
     );
   }

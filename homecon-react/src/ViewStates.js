@@ -277,7 +277,7 @@ function ViewStates(props) {
 
   const export_states = () =>{
     ws.listen_for_response(
-      'export_states', {}, (message) => {
+      'states_export', {}, (message) => {
         const filename = 'states.json'
         const element = document.createElement('a');
         element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(message.data.value));
@@ -304,7 +304,7 @@ function ViewStates(props) {
       reader.readAsText(file, "UTF-8");
       reader.onload = function (evt) {
         console.log(evt.target.result);
-        ws.send({event: 'import_states', data: {value: evt.target.result}})
+        ws.send({event: 'states_import', data: {value: evt.target.result}})
       }
       reader.onerror = function (evt) {
           console.error('error reading file')

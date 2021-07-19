@@ -19,6 +19,7 @@ import MoreIcon from '@material-ui/icons/MoreVert';
 import HomeconPagesMenu from './PagesMenu.js';
 import {HomeconPage, HomeconPages, getPage} from './Pages.js';
 import ViewStates from './ViewStates.js';
+import ViewEditPages from './ViewEditPages.js';
 
 
 const drawerWidth = 460;
@@ -50,7 +51,7 @@ function HomeconLayout(props){
 
   const states = props.states;
   const ws = props.ws;
-
+  console.log(states)
   const classes = useStyles();
   const [pagesMenuOpen, setPagesMenuOpen] = useState(false);
   const [settingsMenuAnchor, setSettingsMenuAnchor] = useState(null);
@@ -117,6 +118,7 @@ function HomeconLayout(props){
          anchorReference="none" PaperProps={{style: {top: '70px', right: '12px'}}}>
           <Link to="/profile"><MenuItem onClick={toggleSettingsMenu(false)}>Profile</MenuItem></Link>
           <Link to="/states"><MenuItem onClick={toggleSettingsMenu(false)}>States</MenuItem></Link>
+          <Link to="/edit-pages"><MenuItem onClick={toggleSettingsMenu(false)}>Pages</MenuItem></Link>
           <Link to="/plugins"><MenuItem onClick={toggleSettingsMenu(false)}>Plugins</MenuItem></Link>
           <MenuItem onClick={toggleSettingsMenu(false)}>Logout</MenuItem>
         </Menu>
@@ -134,6 +136,9 @@ function HomeconLayout(props){
             </Route>
             <Route path="/states">
               <ViewStates states={states} ws={ws}/>
+            </Route>
+            <Route path="/edit-pages">
+              <ViewEditPages ws={ws}/>
             </Route>
             <Route path="/plugins">
               Plugins

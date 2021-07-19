@@ -1,8 +1,6 @@
-import React, { useState } from 'react';
+import React from 'react';
 
 import { createStyles, Theme, makeStyles } from '@material-ui/core/styles';
-import Collapse from '@material-ui/core/Collapse';
-import Paper from '@material-ui/core/Paper';
 import Fab from '@material-ui/core/Fab';
 import AddIcon from '@material-ui/icons/Add';
 
@@ -12,10 +10,9 @@ import {BaseAlarm} from './Base.js';
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
     root: {
-      display: 'flex',
-      justifyContent: 'flex-start',
-      alignItems: 'center',
-      cursor: 'pointer'
+      position: 'relative',
+      marginTop: '10px',
+      minHeight: '50px'
     },
     label: {
       fontSize: '16px',
@@ -44,13 +41,16 @@ function HomeconAlarm(props){
   }
 
   const state = states[stateId];
+  if(state === undefined){
+    return null
+  }
 
   let alarmStates = []
   let actionStates = []
 
   Object.values(states).forEach((s) => {
     if(s.parent === state.id){
-      if(s.type == 'alarm'){
+      if(s.type === 'alarm'){
         alarmStates.push(s)
       }
       if(s.type === 'action'){
@@ -72,8 +72,8 @@ function HomeconAlarm(props){
   }
 
   return (
-    <div style={{position: 'relative', marginTop: '10px', minHeight: '50px'}}>
-      <div>{state.label}</div>
+    <div className={classes.root}>
+      <div>{label || state.label}</div>
       <div>
         {alarmStates.map((alarm) => {
           return (
