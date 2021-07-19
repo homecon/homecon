@@ -297,52 +297,64 @@ class IPagesManager:
                             config_state_paths_to_ids(widget.get('config'), state_manager)
                         self.add_widget(name, s, _type, **widget)
 
-    def serialize(self, state_manager: IStateManager = None, convert_state_ids_to_paths=False):
+    def serialize(self, state_manager: IStateManager = None, convert_state_ids_to_paths=False, include_paths=True, include_ids=True):
         d = []
         for group in self.all_groups():
             config = deepcopy(group.config)
             if convert_state_ids_to_paths:
                 config_state_ids_to_paths(config, state_manager)
             g = {
-                'id': group.id,
                 'name': group.name,
-                'path': group.path,
                 'config': config,
                 'pages': []
             }
+            if include_paths:
+                g['path'] = group.path
+            if include_ids:
+                g['id'] = group.id
+
             for page in group.pages:
                 config = deepcopy(page.config)
                 if convert_state_ids_to_paths:
                     config_state_ids_to_paths(config, state_manager)
                 p = {
-                    'id': page.id,
                     'name': page.name,
-                    'path': page.path,
                     'config': config,
                     'sections': []
                 }
+                if include_paths:
+                    p['path'] = page.path
+                if include_ids:
+                    p['id'] = page.id
+
                 for section in page.sections:
                     config = deepcopy(section.config)
                     if convert_state_ids_to_paths:
                         config_state_ids_to_paths(config, state_manager)
                     s = {
-                        'id': section.id,
                         'name': section.name,
-                        'path': section.path,
                         'config': config,
                         'widgets': []
                     }
+                    if include_paths:
+                        s['path'] = section.path
+                    if include_ids:
+                        s['id'] = section.id
+
                     for widget in section.widgets:
                         config = deepcopy(widget.config)
                         if convert_state_ids_to_paths:
                             config_state_ids_to_paths(config, state_manager)
                         w = {
-                            'id': widget.id,
                             'name': widget.name,
-                            'path': widget.path,
                             'type': widget.type,
                             'config': config,
                         }
+                        if include_paths:
+                            w['path'] = widget.path
+                        if include_ids:
+                            w['id'] = widget.id
+
                         s['widgets'].append(w)
                     p['sections'].append(s)
                 g['pages'].append(p)
