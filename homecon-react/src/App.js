@@ -142,10 +142,6 @@ class HomeconWebsocket {
         this.parse_pages_data(message.data.value)
       }
       else if(message.event === 'state_list'){
-        this.app.setState({
-          stateList: message.data.value
-        });
-
         const states = {};
         message.data.value.forEach((item, index) => {
            states[item.id] = item;
@@ -193,17 +189,6 @@ class HomeconWebsocket {
       this.app.setState({
         pagesData: pages_data
       });
-
-      const pages = {};
-      pages_data.groups.forEach((group, index) => {
-        group.pages.forEach((page, index) => {
-          pages[page.path] = page;
-        });
-      });
-      this.app.setState({
-        pages: pages
-      });
-
     }
   }
 
@@ -224,10 +209,12 @@ class HomeconWebsocket {
 function ConnectionSettings(props){
   const wsUrl = props.wsUrl;
   const setWsUrl = props.setWsUrl;
-  const connected = props.connected
+  const connect = props.connect;
+  const connected = props.connected;
+
   const [open, setOpen] = useState(false)
 
-  useEffect(() =>{
+  useEffect(() => {
     setOpen(!connected)
   }, [connected])
 
@@ -239,7 +226,7 @@ function ConnectionSettings(props){
             <TextField label='HomeCon Web Socket url' value={wsUrl} onChange={(e) => setWsUrl(e.target.value)}/>
           </div>
           <div style={{marginTop: '10px'}}>
-            <Button>connect</Button>
+            <Button onClick={() => connect()}>connect</Button>
           </div>
         </div>
       </Dialog>
@@ -254,14 +241,18 @@ class App extends React.Component {
 
     this.homeconWebsocket = new HomeconWebsocket(this)
 
+    let wsUrl = window.localStorage.getItem('websocketUrl');
+    if(wsUrl === null){
+      wsUrl = 'ws://localhost:9099'
+    }
+    console.log(wsUrl)
+
     this.state = {
-      wsUrl: 'ws://localhost:9099',
+      wsUrl: wsUrl,
       ws: null,
       states: null,
-      stateList: [],
       pages: null,
       pagesData: [],
-      pagesMenuOpen: false
     };
   }
 
@@ -269,15 +260,20 @@ class App extends React.Component {
     this.homeconWebsocket.connect();
   }
 
-  render(){
+  setWsUrl(value) {
+    this.setState({wsUrl: value});
+    window.localStorage.setItem('websocketUrl', value);
+  }
+
+  render() {
+
     return (
       <ThemeProvider theme={darkTheme}>
         <HomeconLayout pagesData={this.state.pagesData} states={this.state.states} ws={this.state.ws}/>
-        <ConnectionSettings wsUrl={this.state.wsUrl} setWsUrl={(val) => {this.setState({wsUrl: val})}} connected={this.state.ws !== null}/>
+        <ConnectionSettings wsUrl={this.state.wsUrl} setWsUrl={(val) => this.setWsUrl(val)} connect={() => this.homeconWebsocket.connect()} connected={this.state.ws !== null}/>
       </ThemeProvider>
     );
   }
 }
-
 
 export default App;
