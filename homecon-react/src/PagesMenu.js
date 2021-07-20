@@ -95,10 +95,11 @@ function HomeconPagesMenuPage(props){
 
   const link = `/pages${props.path}`
   const closeMenu = props.closeMenu;
+  console.log(closeMenu)
 
   return (
     <div>
-      <Link to={link} className={classes.page} onClick={(e) => closeMenu()}>
+      <Link to={link} className={classes.page} onClick={(e) => closeMenu !== undefined ? closeMenu() : null}>
         <div className={classes.pageIcon}>
           <HomeconIcon name={props.icon} color="ffffff"/>
         </div>
