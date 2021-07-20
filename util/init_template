@@ -24,8 +24,7 @@ SCRIPTNAME=/etc/init.d/$NAME
 . /lib/init/vars.sh
 #. /lib/lsb/init-functions
 
-do_start()
-{{
+do_start() {{
   echo "Starting HomeCon"
   start-stop-daemon --start --background --make-pidfile --pidfile $PIDFILE --exec $DAEMON -- $DAEMON_ARGS
   case $? in

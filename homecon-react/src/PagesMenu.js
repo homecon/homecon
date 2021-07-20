@@ -53,6 +53,7 @@ const useStyles = makeStyles((theme: Theme) =>
 function HomeconPagesMenu(props){
 
   const [openGroupPath, setOpenGroupPath] = useState(null);
+  const closeMenu = props.closeMenu;
 
   const toggleCollapse = (group) => (event) =>  {
     setOpenGroupPath(group.path)
@@ -62,7 +63,7 @@ function HomeconPagesMenu(props){
     const menuGroups = props.groups.filter((group) => group.path !== '/home')
 
     const menu = menuGroups.map((group) => <HomeconPagesMenuGroup key={group.path} title={group.config.title} path={group.path} pages={group.pages}
-                                            handleClick={toggleCollapse(group)} collapsed={openGroupPath===group.path} />);
+                                            handleClick={toggleCollapse(group)} collapsed={openGroupPath===group.path} closeMenu={closeMenu}/>);
     return menu;
   }
   else {
@@ -75,10 +76,12 @@ function HomeconPagesMenuGroup(props){
   const classes = useStyles();
 
   const menuPages = props.pages
-  const menu = menuPages.map((page) => <HomeconPagesMenuPage key={page.path} title={page.config.title} path={page.path} icon={page.config.icon} />);
+  const closeMenu = props.closeMenu;
+
+  const menu = menuPages.map((page) => <HomeconPagesMenuPage key={page.path} title={page.config.title} path={page.path} icon={page.config.icon} closeMenu={closeMenu}/>);
   return (
     <div>
-      <a className={classes.group} onClick={props.handleClick} href="#">{props.title}</a>
+      <span className={classes.group} onClick={props.handleClick}>{props.title}</span>
       <Collapse in={props.collapsed}>
         {menu}
       </Collapse>
@@ -91,10 +94,11 @@ function HomeconPagesMenuPage(props){
   const classes = useStyles();
 
   const link = `/pages${props.path}`
+  const closeMenu = props.closeMenu;
 
   return (
     <div>
-      <Link to={link} className={classes.page}>
+      <Link to={link} className={classes.page} onClick={(e) => closeMenu()}>
         <div className={classes.pageIcon}>
           <HomeconIcon name={props.icon} color="ffffff"/>
         </div>

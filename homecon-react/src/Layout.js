@@ -51,7 +51,7 @@ function HomeconLayout(props){
 
   const states = props.states;
   const ws = props.ws;
-  console.log(states)
+
   const classes = useStyles();
   const [pagesMenuOpen, setPagesMenuOpen] = useState(false);
   const [settingsMenuAnchor, setSettingsMenuAnchor] = useState(null);
@@ -66,6 +66,9 @@ function HomeconLayout(props){
   }
 
   const toggleSettingsMenu = (open) => (event) => {
+    if(open === undefined){
+      open = settingsMenuAnchor === null;
+    }
     if(open){
       setSettingsMenuAnchor(event.currentTarget);
     }
@@ -92,7 +95,7 @@ function HomeconLayout(props){
                 HomeCon
             </Typography>
 
-            <IconButton color="inherit" aria-label="open menu" onClick={toggleSettingsMenu(true)}>
+            <IconButton color="inherit" aria-label="open menu" onClick={toggleSettingsMenu()}>
               <MoreIcon/>
             </IconButton>
 
@@ -103,7 +106,7 @@ function HomeconLayout(props){
           <SwipeableDrawer anchor="left" className={classes.drawer} classes={{paper: classes.drawerPaper}}
            open={pagesMenuOpen} onClose={togglePagesMenu(false)} onOpen={togglePagesMenu(true)}>
             <Toolbar />
-            <HomeconPagesMenu groups={props.pagesData.groups} />
+            <HomeconPagesMenu groups={props.pagesData.groups} closeMenu={togglePagesMenu(false)}/>
           </SwipeableDrawer>
         </Hidden>
 
@@ -116,10 +119,10 @@ function HomeconLayout(props){
 
         <Menu anchorEl={settingsMenuAnchor} keepMounted open={Boolean(settingsMenuAnchor)} onClose={toggleSettingsMenu(false)}
          anchorReference="none" PaperProps={{style: {top: '70px', right: '12px'}}}>
-          <Link to="/profile"><MenuItem onClick={toggleSettingsMenu(false)}>Profile</MenuItem></Link>
-          <Link to="/states"><MenuItem onClick={toggleSettingsMenu(false)}>States</MenuItem></Link>
-          <Link to="/edit-pages"><MenuItem onClick={toggleSettingsMenu(false)}>Pages</MenuItem></Link>
-          <Link to="/plugins"><MenuItem onClick={toggleSettingsMenu(false)}>Plugins</MenuItem></Link>
+          <MenuItem onClick={toggleSettingsMenu(false)} component={Link} to="/profile">Profile</MenuItem>
+          <MenuItem onClick={toggleSettingsMenu(false)} component={Link} to="/states">States</MenuItem>
+          <MenuItem onClick={toggleSettingsMenu(false)} component={Link} to="/edit-pages">Pages</MenuItem>
+          <MenuItem onClick={toggleSettingsMenu(false)} component={Link} to="/plugins">Plugins</MenuItem>
           <MenuItem onClick={toggleSettingsMenu(false)}>Logout</MenuItem>
         </Menu>
 

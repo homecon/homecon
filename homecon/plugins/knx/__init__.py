@@ -18,7 +18,8 @@ class ListMapping:
     def add(self, key, val):
         if key not in self._map:
             self._map[key] = []
-        self._map[key].append(val)
+        if val not in self._map[key]:
+            self._map[key].append(val)
 
     def remove(self, val):
         for values in self._map.values():

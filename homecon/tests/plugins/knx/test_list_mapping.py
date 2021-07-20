@@ -16,6 +16,12 @@ class TestListMapping:
         assert mapping.get('c') == [3]
         assert mapping.get('d') == []
 
+    def test_add_existing(self):
+        mapping = ListMapping()
+        mapping.add('a', 0)
+        mapping.add('a', 0)
+        assert mapping.get('a') == [0]
+
     def test_remove(self):
         mapping = ListMapping()
         mapping.add('a', 0)
