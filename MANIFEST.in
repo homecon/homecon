@@ -1,3 +1,0 @@
-include README.rst
-include LICENSE
-recursive-include homecon_app/build/es5-bundled *

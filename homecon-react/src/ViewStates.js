@@ -40,7 +40,10 @@ const useStyles = makeStyles((theme: Theme) =>
 
 function EditStateDialog(props){
   const state = props.state;
+  const parentState = props.parentState || null;
   const states = props.states;
+
+  console.log(parentState)
 
   const onCancel = props.onCancel;
   const onSave = props.onSave;
@@ -67,7 +70,10 @@ function EditStateDialog(props){
       setConfig(state.config !== null ? JSON.stringify(state.config, undefined, 2) : '{}');
       setValue(state.value !== null ? JSON.stringify(state.value) : '');
     }
-  }, [state]);
+    else if(parentState !== null){
+      setParent(parentState.id);
+    }
+  }, [state, parentState]);
 
   const handleSave = () => {
     let newValue = null;
@@ -163,6 +169,7 @@ function StatesList(props) {
 
   const [editStateDialogOpen, setEditStateDialogOpen] = useState(false)
   const [selectedState, setSelectedState] = useState(null)
+  const [parentState, setParentState] = useState(null)
   const [menuAnchorEl, setMenuAnchorEl] = React.useState(null);
 
   const openMenu = (event, state) => {
@@ -180,6 +187,13 @@ function StatesList(props) {
     setSelectedState(null);
     setEditStateDialogOpen(true);
   }
+  const addChildStateDialog = () => {
+    closeMenu();
+    setParentState(selectedState)
+    setSelectedState(null);
+    setEditStateDialogOpen(true);
+  }
+
 
   const handleSave = (state) => {
     setEditStateDialogOpen(false)
@@ -243,7 +257,7 @@ function StatesList(props) {
           </ListItemIcon>
           <ListItemText primary="Edit" />
         </MenuItem>
-        <MenuItem onClick={closeMenu}>
+        <MenuItem onClick={addChildStateDialog}>
           <ListItemIcon style={{color: "#ffffff"}}>
             <AddIcon/>
           </ListItemIcon>
@@ -259,7 +273,7 @@ function StatesList(props) {
 
       <Dialog open={editStateDialogOpen} onClose={(e) => setEditStateDialogOpen(false)} fullWidth maxWidth="sm">
         <div style={{padding: '10px'}}>
-          <EditStateDialog state={selectedState} states={makeStateList(states)} onCancel={(e) => setEditStateDialogOpen(false)} onSave={handleSave}/>
+          <EditStateDialog state={selectedState} parentState={parentState} states={makeStateList(states)} onCancel={(e) => setEditStateDialogOpen(false)} onSave={handleSave}/>
         </div>
       </Dialog>
 
@@ -299,11 +313,9 @@ function ViewStates(props) {
   const onFileChange = async (event) => {
     try {
       const file = event.target.files[0];
-      console.log(file)
       var reader = new FileReader();
       reader.readAsText(file, "UTF-8");
       reader.onload = function (evt) {
-        console.log(evt.target.result);
         ws.send({event: 'states_import', data: {value: evt.target.result}})
       }
       reader.onerror = function (evt) {

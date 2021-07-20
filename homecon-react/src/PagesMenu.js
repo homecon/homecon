@@ -95,7 +95,6 @@ function HomeconPagesMenuPage(props){
 
   const link = `/pages${props.path}`
   const closeMenu = props.closeMenu;
-  console.log(closeMenu)
 
   return (
     <div>
