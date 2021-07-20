@@ -14,7 +14,7 @@
 DESC="HomeCon server"
 NAME=homecon
 DAEMON={env}/bin/python
-DAEMON_ARGS="-m homecon --loglevel=DEBUG --printlog"
+DAEMON_ARGS="-m homecon --loglevel=DEBUG"
 PIDFILE=/var/run/$NAME.pid
 SCRIPTNAME=/etc/init.d/$NAME
 

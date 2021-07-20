@@ -2,7 +2,20 @@
 # -*- coding: utf-8 -*-
 
 from setuptools import setup, find_packages
+from distutils.command.sdist import sdist
+import shutil
 import os
+
+
+class custom_sdist(sdist):
+    def run(self):
+        print('copying app build')
+        basepath = os.path.dirname(os.path.abspath(__file__))
+        static_folder_path = os.path.join(basepath, 'server', 'static')
+        if os.path.exists(static_folder_path):
+            shutil.rmtree(static_folder_path)
+        shutil.copytree(os.path.join(basepath, 'homecon-react', 'build'), static_folder_path)
+        super().run()
 
 
 # retrieve the version
@@ -43,4 +56,5 @@ setup(
     entry_points={'console_scripts': [
         'homecon=homecon.__main__:main',
     ]},
+    cmdclass=dict(sdist=custom_sdist)
 )

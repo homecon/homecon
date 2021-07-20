@@ -171,7 +171,7 @@ def main(printlog=False, loglevel='INFO', dbloglevel='INFO', httploglevel='INFO'
 
     logging.root.setLevel(getattr(logging, loglevel))
     logging.getLogger('homecon.core.database').setLevel(getattr(logging, dbloglevel))
-    logging.getLogger('homecon.httpserver').setLevel(getattr(logging, httploglevel))
+    logging.getLogger('server.server').setLevel(getattr(logging, httploglevel))
 
     if configure:
         configure_(create_folders=create_folders, set_static_ip=set_static_ip, ip=ip, run_init_script=run_init_script,
