@@ -1,12 +1,17 @@
-from flask import Flask  # Import flask
+import os
+from flask import Flask, send_from_directory
 
-app = Flask(__name__, static_url_path='')  # Setup the flask app by creating an instance of Flask
-
-
-@app.route('/')  # When someone goes to / on the server, execute the following function
-def home():
-    return app.send_static_file('index.html')
+app = Flask(__name__, static_url_path='')
 
 
-if __name__ == '__main__':  # If the script that was run is this script (we have not been imported)
-    app.run()  # Start the server
+@app.route('/', defaults={'path': ''})
+@app.route('/<path>')
+def serve(path):
+    if path != '' and os.path.exists(os.path.join(app.static_folder, path)):
+        return send_from_directory(app.static_folder, path)
+    else:
+        return app.send_static_file('index.html')
+
+
+if __name__ == '__main__':
+    app.run()
