@@ -12,7 +12,8 @@ const useStyles = makeStyles((theme: Theme) =>
     root: {
       position: 'relative',
       marginTop: '10px',
-      minHeight: '50px'
+      minHeight: '50px',
+      paddingBottom: '30px'
     },
     label: {
       fontSize: '16px',

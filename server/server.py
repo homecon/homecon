@@ -6,7 +6,7 @@ app = Flask(__name__, static_url_path='')
 @app.route('/', defaults={'group': None, 'page': None})
 @app.route('/profile')
 @app.route('/states')
-@app.route('/pages')
+@app.route('/edit-pages')
 @app.route('/plugins')
 @app.route('/pages/<group>/<page>')
 def serve(group=None, page=None):
