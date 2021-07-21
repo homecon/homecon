@@ -154,7 +154,12 @@ class HomeconWebsocket {
       else if(message.event === 'state_value'){
 
         var states = {...this.app.state.states}
-        states[message.data.id].value = message.data.value;
+        if(states === undefined || states[message.data.id] === undefined){
+          console.warning(`no state with id ${message.data.id}`)
+        }
+        else{
+          states[message.data.id].value = message.data.value;
+        }
 
         this.app.setState({
           states: states
@@ -250,7 +255,7 @@ class App extends React.Component {
       ws: null,
       states: null,
       pages: null,
-      pagesData: [],
+      pagesData: {timestamp: 0, groups: []},
     };
   }
 
