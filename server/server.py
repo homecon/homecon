@@ -1,16 +1,16 @@
-import os
-from flask import Flask, send_from_directory
+from flask import Flask
 
 app = Flask(__name__, static_url_path='')
 
 
-@app.route('/', defaults={'path': ''})
-@app.route('/<path>')
-def serve(path):
-    if path != '' and os.path.exists(os.path.join(app.static_folder, path)):
-        return send_from_directory(app.static_folder, path)
-    else:
-        return app.send_static_file('index.html')
+@app.route('/', defaults={'group': None, 'page': None})
+@app.route('/profile')
+@app.route('/states')
+@app.route('/pages')
+@app.route('/plugins')
+@app.route('/pages/<group>/<page>')
+def serve(group=None, page=None):
+    return app.send_static_file('index.html')
 
 
 if __name__ == '__main__':
