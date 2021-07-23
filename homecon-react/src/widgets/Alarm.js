@@ -33,7 +33,6 @@ function HomeconAlarm(props){
   const config = props.config;
 
   const stateId = config.state;
-  const label = config.label;
   const states = props.states;
   const ws = props.ws
 
@@ -45,6 +44,7 @@ function HomeconAlarm(props){
   if(state === undefined){
     return null
   }
+  const label = config.label || state.label;
 
   let alarmStates = []
   let actionStates = []

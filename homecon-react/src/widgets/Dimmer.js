@@ -38,7 +38,6 @@ function HomeconDimmer(props){
   const config = props.config;
 
   const stateId = config.state;
-  const label = config.label;
   const icon = config.icon || 'light_light';
   const colorOn = config.colorOn || 'f79a1f';
   const colorOff = config.colorOff || 'ffffff';
@@ -54,8 +53,9 @@ function HomeconDimmer(props){
     state = states[stateId];
   }
   if(state === undefined){
-    state = {value: 0};
+    state = {value: 0, label: ''};
   }
+  const label = config.label || state.label;
 
   const classes = useStyles();
 

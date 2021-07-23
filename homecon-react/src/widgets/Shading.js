@@ -50,11 +50,10 @@ function HomeconShading(props){
   const config = props.config;
 
   const stateId = config.state;
-  const label = config.label;
   const iconOpen = config.iconOpen || 'fts_shutter_10';
   const iconClosed = config.iconClosed || 'fts_shutter_100';
-  const positionOpen = config.valueOn || 1;
-  const positionClosed = config.valueOff || 0;
+  const positionOpen = config.positionOpen || 1;
+  const positionClosed = config.positionClosed || 0;
 
   const states = props.states;
   const ws = props.ws
@@ -64,8 +63,9 @@ function HomeconShading(props){
     state = states[stateId];
   }
   if(state === undefined){
-    state = {value: 0};
+    state = {value: 0, label: ''};
   }
+  const label = config.label || state.label;
 
   const classes = useStyles();
 
