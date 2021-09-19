@@ -6,14 +6,7 @@ from homecon.core.event import IEventManager, Event
 
 from homecon.plugins.shading.shading import IShading, StateBasedShading, IWantedHeatGainCalculator, \
     EqualShadingPositionCalculator, StateBasedHeatingCurveWantedHeatGainCalculator, ShadingController
-
-
-class DummyEventManager(IEventManager):
-    def fire(self, type_: str, data: dict, source: str = None, target: str = None, reply_to: str = None):
-        pass
-
-    def get(self):
-        pass
+from homecon.tests.mocks import DummyEventManager
 
 
 class TestStateBasedShading:

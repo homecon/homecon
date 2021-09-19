@@ -2,6 +2,7 @@
 import sys
 import os
 import logging
+import time
 
 from argparse import ArgumentParser
 from multiprocessing import Process
@@ -154,24 +155,23 @@ def main(printlog=False, loglevel='INFO', dbloglevel='INFO', httploglevel='INFO'
 
     # configure logging
     os.makedirs(os.path.join(sys.prefix, 'var', 'log', 'homecon'), exist_ok=True)
-    logFormatter = logging.Formatter('%(asctime)s %(levelname)7.7s  %(processName)-12.12s  %(name)-28.28s %(message)s')
+    log_formatter = logging.Formatter('%(asctime)s %(levelname)7.7s  %(processName)-12.12s  %(name)-28.28s %(message)s')
     if 'homecon.file_handler' not in [lh.name for lh in logger.handlers]:
         file_handler = TimedRotatingFileHandler(os.path.join(sys.prefix, 'var', 'log', 'homecon', 'homecon.log'),
                                                 when="midnight")
-        file_handler.setFormatter(logFormatter)
+        file_handler.setFormatter(log_formatter)
         file_handler.set_name('homecon.file_handler')
         logging.root.handlers.append(file_handler)
 
     if printlog:
         if 'homecon.console_handler' not in [lh.name for lh in logger.handlers]:
             console_handler = logging.StreamHandler()
-            console_handler.setFormatter(logFormatter)
+            console_handler.setFormatter(log_formatter)
             console_handler.set_name('homecon.console_handler')
             logging.root.handlers.append(console_handler)
 
     logging.root.setLevel(getattr(logging, loglevel))
     logging.getLogger('homecon.core.database').setLevel(getattr(logging, dbloglevel))
-    logging.getLogger('server.server').setLevel(getattr(logging, httploglevel))
 
     if configure:
         configure_(create_folders=create_folders, set_static_ip=set_static_ip, ip=ip, run_init_script=run_init_script,
@@ -196,6 +196,8 @@ def main(printlog=False, loglevel='INFO', dbloglevel='INFO', httploglevel='INFO'
                 homecon.stop()
                 if app_server is not None:
                     app_server.terminate()
+                    time.sleep(2)
+                    app_server.kill()
                     app_server.join()
 
         signal(SIGTERM, stop)
@@ -203,20 +205,6 @@ def main(printlog=False, loglevel='INFO', dbloglevel='INFO', httploglevel='INFO'
 
         print('\nStarting HomeCon\nPress Ctrl + C to stop\n')
         homecon.start()
-
-        # try:
-        #     homecon.start()
-        #
-        # except KeyboardInterrupt:
-        #     print('\nStopping HomeCon\n')
-        #     stop()
-        # except:
-        #     print('Stopping HomeCon')
-        #     stop()
-        #
-        #     exc_type, exc_value, exc_traceback = sys.exc_info()
-        #     traceback.print_exception(exc_type, exc_value, exc_traceback, file=sys.stdout)
-        #     print('\n' * 3)
 
 
 if __name__ == '__main__':

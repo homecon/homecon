@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 import logging
 import time
+from typing import Callable, Any
 
 from knxpy.knxd import KNXD
 from knxpy.util import decode_dpt
@@ -35,17 +36,68 @@ class ListMapping:
         return self._map.keys()
 
 
+class IKNXDConnection:
+    def connect(self, address: str, port: int) -> None:
+        raise NotImplementedError
+
+    def close(self) -> None:
+        raise NotImplementedError
+
+    def listen(self, callback: Callable):
+        raise NotImplementedError
+
+    def group_read(self, key: str):
+        raise NotImplementedError
+
+    def group_write(self, ga: str, value: Any, dpt: str):
+        raise NotImplementedError
+
+
+class Message:
+    def __init__(self, dst, val):
+        self.dst = dst
+        self.val = val
+
+
+class KNXDConnection(IKNXDConnection):
+    def __init__(self):
+        self.knxd = None
+
+    def connect(self, address: str, port: int) -> None:
+        if self.knxd is not None:
+            self.knxd.close()
+        self.knxd = KNXD(address, port)
+        self.knxd.connect()
+
+    def close(self) -> None:
+        self.knxd.close()
+
+    def listen(self, callback: Callable[[Message], None]):
+        return self.knxd.listen(callback)
+
+    def group_read(self, key: str):
+        return self.knxd.group_read(key)
+
+    def group_write(self, ga: str, value: Any, dpt: str):
+        self.knxd.group_write(ga, value, dpt)
+
+
 class Knx(BasePlugin):
     """
     Communicate with an EIB-KNX home automation system through knxd
 
     """
     DEFAULT_DPT = '1'
+    KNX_GA_READ = 'knx_ga_read'
+    KNX_GA_WRITE = 'knx_ga_write'
+    KNX_DPT = 'knx_dpt'
+    KNX_EVAL_READ = 'knx_eval_read'
+    KNX_EVAL_WRITE = 'knx_eval_write'
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.ga_read_mapping = ListMapping()
-        self.connection = None
+        self.connection = KNXDConnection()
         self.address_state = None
         self.port_state = None
 
@@ -62,7 +114,7 @@ class Knx(BasePlugin):
     def start(self):
         # build the ga_read_mapping
         for state in self._state_manager.all():
-            knx_ga_read = state.config.get('knx_ga_read')
+            knx_ga_read = state.config.get(self.KNX_GA_READ)
             if knx_ga_read is not None:
                 self.ga_read_mapping.add(knx_ga_read, state.id)
 
@@ -71,15 +123,11 @@ class Knx(BasePlugin):
 
     def connect(self):
         try:
-            if self.connection is not None:
-                self.connection.close()
-
             address = self._state_manager.get('/settings/knxd/address').value
             port = self._state_manager.get('/settings/knxd/port').value
 
             if address is not None and port is not None:
-                self.connection = KNXD(address, port)
-                self.connection.connect()
+                self.connection.connect(address, port)
                 self.connection.listen(self.callback)
 
                 time.sleep(1)
@@ -97,8 +145,13 @@ class Knx(BasePlugin):
                 for state_id in self.ga_read_mapping.get(message.dst):
                     state = self._state_manager.get(id=state_id)
                     logger.debug('found state {} corresponding to message {}'.format(state, message))
-                    dpt = state.config.get('knx_dpt', self.DEFAULT_DPT)
-                    state.set_value(decode_dpt(message.val, dpt), source=self.name)
+                    dpt = state.config.get(self.KNX_DPT, self.DEFAULT_DPT)
+                    eval_read = state.config.get(self.KNX_EVAL_READ)
+                    if eval_read is not None:
+                        value = eval(eval_read, {'value': decode_dpt(message.val, dpt)})
+                    else:
+                        value = decode_dpt(message.val, dpt)
+                    state.set_value(value, source=self.name)
 
             except:  # noqa
                 logger.exception('error while parsing message {}'.format(message))
@@ -109,23 +162,28 @@ class Knx(BasePlugin):
         if state.path == 'settings/knxd/address' or state.path == 'settings/knxd/port':
             self.connect()
 
-        elif 'knx_ga_write' in state.config and 'knx_dpt' in state.config:
+        elif self.KNX_GA_WRITE in state.config and self.KNX_DPT in state.config:
             if not event.source == self.name:
+                eval_write = state.config.get(self.KNX_EVAL_WRITE)
+                if eval_write is not None:
+                    value = eval(eval_write, {'value': state.value})
+                else:
+                    value = state.value
                 logger.debug('{} changed, writing {} to knx group address: {}'
-                             .format(state, state.value, state.config['knx_ga_write']))
+                             .format(state, value, state.config[self.KNX_GA_WRITE]))
                 self.connection.group_write(
-                    str(state.config['knx_ga_write']), state.value, str(state.config['knx_dpt'])
+                    str(state.config[self.KNX_GA_WRITE]), value, str(state.config[self.KNX_DPT])
                 )
 
     def listen_state_added(self, event):
         state = event.data['state']
-        if 'knx_ga_read' in state.config:
-            self.ga_read_mapping.add(state.config['knx_ga_read'], state.id)
+        if self.KNX_GA_READ in state.config:
+            self.ga_read_mapping.add(state.config[self.KNX_GA_READ], state.id)
 
     def listen_state_changed(self, event):
         state = event.data['state']
-        if 'knx_ga_read' in state.config:
-            self.ga_read_mapping.add(state.config['knx_ga_read'], state.id)
+        if self.KNX_GA_READ in state.config:
+            self.ga_read_mapping.add(state.config[self.KNX_GA_READ], state.id)
         else:
             self.ga_read_mapping.remove(state)
 

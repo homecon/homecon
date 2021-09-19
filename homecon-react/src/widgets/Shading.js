@@ -52,8 +52,8 @@ function HomeconShading(props){
   const stateId = config.state;
   const iconOpen = config.iconOpen || 'fts_shutter_10';
   const iconClosed = config.iconClosed || 'fts_shutter_100';
-  const positionOpen = config.positionOpen || 1;
-  const positionClosed = config.positionClosed || 0;
+  const positionOpen = config.positionOpen || 0;
+  const positionClosed = config.positionClosed || 1;
 
   const states = props.states;
   const ws = props.ws

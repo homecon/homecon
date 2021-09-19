@@ -37,8 +37,9 @@ class HomeCon:
         return self._running
 
     def handle_event(self, event: Event):
+        target_plugin = event.target.split('/')[0] if event.target is not None else None
         for plugin in self._plugin_manager.values():
-            if event.target is None or event.target.split('/')[0] == plugin.name:
+            if event.target is None or target_plugin == plugin.name:
                 self._executor.submit(plugin.handle_event, event)
 
     def get_and_handle_event(self):
