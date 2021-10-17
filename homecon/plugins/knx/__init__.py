@@ -3,6 +3,7 @@
 import logging
 import time
 from typing import Callable, Any
+from threading import Lock
 
 from knxpy.knxd import KNXD
 from knxpy.util import decode_dpt
@@ -60,8 +61,10 @@ class Message:
 
 
 class KNXDConnection(IKNXDConnection):
-    def __init__(self):
+    def __init__(self, write_lock_time: float = 0.05):
         self.knxd = None
+        self._write_lock = Lock()
+        self._write_lock_time = write_lock_time
 
     def connect(self, address: str, port: int) -> None:
         if self.knxd is not None:
@@ -79,7 +82,10 @@ class KNXDConnection(IKNXDConnection):
         return self.knxd.group_read(key)
 
     def group_write(self, ga: str, value: Any, dpt: str):
+        self._write_lock.acquire()
         self.knxd.group_write(ga, value, dpt)
+        time.sleep(self._write_lock_time)
+        self._write_lock.release()
 
 
 class Knx(BasePlugin):
