@@ -41,18 +41,19 @@ class StateAction:
 class Action:
     STATE_TYPE = 'action'
 
-    def __init__(self, actions: List[StateAction]):
-        self.actions = actions
+    def __init__(self, state_actions: List[StateAction]):
+        self._state_actions = state_actions
 
     def execute(self, source=''):
-        for action in self.actions:
+        logger.debug('executing action')
+        for action in self._state_actions:
             action.execute(source=source)
 
     @classmethod
     def from_state(cls, state: State, state_manager: IStateManager):
         assert state.type == cls.STATE_TYPE
 
-        actions = []
+        state_actions = []
         for v in state.value:
 
             if isinstance(v['state'], int):
@@ -62,8 +63,8 @@ class Action:
 
             delay = v.get('delay', 0)
             value = v['value']
-            actions.append(StateAction(states, value, delay=delay))
-        return cls(actions)
+            state_actions.append(StateAction(states, value, delay=delay))
+        return cls(state_actions)
 
 
 class Alarms(BasePlugin):

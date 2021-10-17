@@ -58,6 +58,32 @@ class TestState(TestCase):
         states = state_manager.all()
         assert states[0].path == '/mystate1'
         assert states[1].path == '/mystate2'
+
+    def test_find_single(self):
+        state_manager = MemoryStateManager(EventManager())
+        state_manager.add('mystate1')
+        state_manager.add('mystate2')
+        states = state_manager.find('/mystate1')
+        assert len(states) == 1
+        assert states[0].path == '/mystate1'
+
+    def test_find_multiple(self):
+        state_manager = MemoryStateManager(EventManager())
+        s0 = state_manager.add('mystate1')
+        s1 = state_manager.add('mystate2')
+        s2 = state_manager.add('mystate3', parent=s1)
+
+        s00 = state_manager.add('shading', parent=s0)
+        s20 = state_manager.add('shading', parent=s2)
+
+        state_manager.add('position', parent=s00)
+        state_manager.add('position', parent=s20)
+
+        states = state_manager.find('.*/shading/position')
+        assert len(states) == 2
+        assert states[0].path == '/mystate1/shading/position'
+        assert states[1].path == '/mystate2/mystate3/shading/position'
+
     #
     # def test_triggers(self):
     #     State.add('mystate', config={'someattr': True})

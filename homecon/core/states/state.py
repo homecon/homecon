@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import re
 from typing import Any, List, Optional
 
 from homecon.core.event import IEventManager
@@ -203,7 +204,8 @@ class MemoryStateManager(IStateManager):
         return state or False
 
     def find(self, expr: str):
-        return []
+        compiled = re.compile(expr)
+        return [state for state in self._states.values() if compiled.match(state.path)]
 
     def delete(self, state: State):
         del self._states[state.id]
