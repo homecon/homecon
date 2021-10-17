@@ -131,6 +131,7 @@ class States(BasePlugin):
             state = self._state_manager.get(id=event.data['id'])
             if state is not None:
                 event.reply({'id': event.data['id'], 'value': state.value})
+
         elif 'path' in event.data and 'value' not in event.data:
             state = self._state_manager.get(path=event.data['path'])
             if state is not None:

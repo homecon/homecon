@@ -75,6 +75,8 @@ class State:
             self.description = kwargs['description']
         if 'config' in kwargs:
             self.config = kwargs['config']
+        if 'value' in kwargs:
+            self._value = kwargs['value']
         self._state_manager.update(self)
         self.notify_updated()
 

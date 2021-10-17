@@ -18,9 +18,7 @@ from homecon.core.plugins.plugin import BasePlugin
 logger = logging.getLogger(__name__)
 
 
-class Action:
-    STATE_TYPE = 'action'
-
+class StateAction:
     def __init__(self, states: List[State], value: Any, delay: int = 0):
         self.states = states
         self.value = value
@@ -40,10 +38,10 @@ class Action:
             func()
 
 
-class ActionList:
-    STATE_TYPE = 'action_list'
+class Action:
+    STATE_TYPE = 'action'
 
-    def __init__(self, actions: List[Action]):
+    def __init__(self, actions: List[StateAction]):
         self.actions = actions
 
     def execute(self, source=''):
@@ -64,7 +62,7 @@ class ActionList:
 
             delay = v.get('delay', 0)
             value = v['value']
-            actions.append(Action(states, value, delay=delay))
+            actions.append(StateAction(states, value, delay=delay))
         return cls(actions)
 
 
@@ -75,7 +73,7 @@ class Alarms(BasePlugin):
     """
 
     ALARM_STATE_TYPE = 'alarm'
-    ACTION_STATE_TYPE = ActionList.STATE_TYPE
+    ACTION_STATE_TYPE = Action.STATE_TYPE
 
     DEFAULT_TIMEZONE = 'utc'
     TIMEZONE_STATE_PATH = '/settings/location/timezone'
@@ -130,8 +128,8 @@ class Alarms(BasePlugin):
             def func():
                 logger.debug('executing scheduler {}'.format(state))
                 action_state = self._state_manager.get(id=state.value['action'])
-                action_list = ActionList.from_state(action_state)
-                action_list.execute(source=f'schedule {state}')
+                action = Action.from_state(action_state, self._state_manager)
+                action.execute(source=f'schedule {state}')
 
             job = self.scheduler.get_job(self.get_job_id(state))
             if job is None:
