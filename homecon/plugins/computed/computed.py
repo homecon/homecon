@@ -51,6 +51,14 @@ class Computed(BasePlugin):
         self._value_computer = ValueComputer(self._state_manager)
         self._computed_mapping = {}
 
+    def start(self):
+        # build the _computed_mapping
+        for state in self._state_manager.all():
+            expr = state.config.get(self.COMPUTED)
+            if expr is not None:
+                self._computed_mapping[state.id] = expr
+        logger.debug('Computed plugin initialized')
+
     def listen_state_added(self, event: Event):
         state = event.data['state']
         if self.COMPUTED in state.config:
