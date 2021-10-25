@@ -9,32 +9,10 @@ from knxpy.knxd import KNXD
 from knxpy.util import decode_dpt
 
 from homecon.core.plugins.plugin import BasePlugin
+from homecon.core.event import Event
+from homecon.util.list_mapping import ListMapping
 
 logger = logging.getLogger(__name__)
-
-
-class ListMapping:
-    def __init__(self):
-        self._map = {}
-
-    def add(self, key, val):
-        if key not in self._map:
-            self._map[key] = []
-        if val not in self._map[key]:
-            self._map[key].append(val)
-
-    def remove(self, val):
-        for values in self._map.values():
-            try:
-                values.pop(values.index(val))
-            except ValueError:
-                pass
-
-    def get(self, key) -> list:
-        return self._map.get(key, [])
-
-    def keys(self):
-        return self._map.keys()
 
 
 class IKNXDConnection:
@@ -162,7 +140,7 @@ class Knx(BasePlugin):
             except:  # noqa
                 logger.exception('error while parsing message {}'.format(message))
 
-    def listen_state_value_changed(self, event):
+    def listen_state_value_changed(self, event: Event):
         state = event.data['state']
 
         if state.path == 'settings/knxd/address' or state.path == 'settings/knxd/port':
@@ -181,19 +159,19 @@ class Knx(BasePlugin):
                     str(state.config[self.KNX_GA_WRITE]), value, str(state.config[self.KNX_DPT])
                 )
 
-    def listen_state_added(self, event):
+    def listen_state_added(self, event: Event):
         state = event.data['state']
         if self.KNX_GA_READ in state.config:
             self.ga_read_mapping.add(state.config[self.KNX_GA_READ], state.id)
 
-    def listen_state_changed(self, event):
+    def listen_state_changed(self, event: Event):
         state = event.data['state']
         if self.KNX_GA_READ in state.config:
             self.ga_read_mapping.add(state.config[self.KNX_GA_READ], state.id)
         else:
             self.ga_read_mapping.remove(state)
 
-    def listen_state_deleted(self, event):
+    def listen_state_deleted(self, event: Event):
         state = event.data['state']
         self.ga_read_mapping.remove(state.id)
 

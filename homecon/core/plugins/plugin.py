@@ -33,8 +33,8 @@ class IPlugin:
 
 
 class BasePlugin(IPlugin):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+    def __init__(self, name: str, event_manager: IEventManager, state_manager: IStateManager, pages_manager: IPagesManager):
+        super().__init__(name, event_manager, state_manager, pages_manager)
         self.listeners = self._get_listeners()
 
     def fire(self, type_: str, data: dict, target: str = None, reply_to: str = None):

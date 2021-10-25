@@ -1,4 +1,4 @@
-from homecon.plugins.knx import ListMapping
+from homecon.util.list_mapping import ListMapping
 
 
 class TestListMapping:

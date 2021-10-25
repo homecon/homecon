@@ -3,8 +3,7 @@ from homecon.core.states.state import MemoryStateManager
 from homecon.core.pages.pages import MemoryPagesManager
 from homecon.core.event import Event
 
-from homecon.plugins.knx import Knx, IKNXDConnection, Message
-from knxpy.util import encode_dpt
+from homecon.plugins.knx.knx import Knx, IKNXDConnection, Message
 
 
 class MockKNXDConnection(IKNXDConnection):

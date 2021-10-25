@@ -119,12 +119,13 @@ def get_homecon():
     from homecon.homecon import HomeCon
     from concurrent.futures import ThreadPoolExecutor
 
-    from homecon.plugins.websocket import Websocket
+    from homecon.plugins.websocket.websocket import Websocket
     from homecon.plugins.states.states import States
     from homecon.plugins.pages.pages import Pages
     from homecon.plugins.alarms.alarms import Alarms
-    from homecon.plugins.knx import Knx
+    from homecon.plugins.knx.knx import Knx
     from homecon.plugins.shading.shading import Shading
+    from homecon.plugins.computed.computed import Computed
 
     event_manager = EventManager()
     state_manager = DALStateManager(folder=db_dir, uri='sqlite://homecon.db', event_manager=event_manager)
@@ -136,6 +137,7 @@ def get_homecon():
         'alarms': Alarms('alarms', event_manager, state_manager, pages_manager),
         'shading': Shading('shading', event_manager, state_manager, pages_manager),
         'knx': Knx('knx', event_manager, state_manager, pages_manager),
+        'computed': Computed('computed', event_manager, state_manager, pages_manager),
     })
     executor = ThreadPoolExecutor(max_workers=10)
 
