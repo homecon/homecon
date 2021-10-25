@@ -12,7 +12,7 @@ from homecon.homecon import HomeCon
 from concurrent.futures import ThreadPoolExecutor
 
 from homecon.plugins.websocket import Websocket
-from homecon.plugins.states import States
+from homecon.plugins.states.states import States
 from homecon.plugins.pages.pages import Pages
 from homecon.plugins.alarms.alarms import Alarms
 from homecon.plugins.shading.shading import Shading

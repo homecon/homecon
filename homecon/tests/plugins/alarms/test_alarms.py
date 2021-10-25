@@ -1,8 +1,5 @@
-import time
-
-from homecon.tests import common
 from homecon.core.event import Event, IEventManager
-from homecon.core.states.state import State, MemoryStateManager
+from homecon.core.states.state import MemoryStateManager
 from homecon.plugins.alarms.alarms import Alarms
 
 
@@ -14,7 +11,7 @@ class DummyEventManager(IEventManager):
         pass
 
 
-class TestScheduler(common.TestCase):
+class TestScheduler:
     def test_add_job(self):
         event_manager = DummyEventManager()
         state_manager = MemoryStateManager(event_manager)
