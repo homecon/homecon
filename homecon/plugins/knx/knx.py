@@ -164,7 +164,7 @@ class Knx(BasePlugin):
         if self.KNX_GA_READ in state.config:
             self.ga_read_mapping.add(state.config[self.KNX_GA_READ], state.id)
 
-    def listen_state_changed(self, event: Event):
+    def listen_state_updated(self, event: Event):
         state = event.data['state']
         if self.KNX_GA_READ in state.config:
             self.ga_read_mapping.add(state.config[self.KNX_GA_READ], state.id)

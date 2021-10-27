@@ -64,12 +64,14 @@ class Computed(BasePlugin):
         if self.COMPUTED in state.config:
             self._computed_mapping[state.id] = state.config[self.COMPUTED]
 
-    def listen_state_changed(self, event: Event):
+    def listen_state_updated(self, event: Event):
         state = event.data['state']
         if self.COMPUTED in state.config:
             self._computed_mapping[state.id] = state.config[self.COMPUTED]
+            logger.debug(f'added state {state.id} to the computed mapping with expr {state.config[self.COMPUTED]}')
         elif state.id in self._computed_mapping:
             del self._computed_mapping[state.id]
+            logger.debug(f'removed state {state.id} from the computed mapping')
 
     def listen_state_deleted(self, event: Event):
         state = event.data['state']

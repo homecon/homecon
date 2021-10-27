@@ -124,7 +124,7 @@ class Building(core.plugin.Plugin):
         result = self.validate()
 
 
-    def listen_state_changed(self,event):
+    def listen_state_updated(self,event):
 
 
         if event.data['state'].path == 'building/model':

@@ -10,11 +10,9 @@ logger = logging.getLogger(__name__)
 
 
 class IPlugin:
-    def __init__(self, name: str, event_manager: IEventManager, state_manager: IStateManager, pages_manager: IPagesManager):
-        self.name = name
-        self._event_manager = event_manager
-        self._state_manager = state_manager
-        self._pages_manager = pages_manager
+    @property
+    def name(self):
+        raise NotImplementedError
 
     def start(self):
         pass
@@ -34,8 +32,16 @@ class IPlugin:
 
 class BasePlugin(IPlugin):
     def __init__(self, name: str, event_manager: IEventManager, state_manager: IStateManager, pages_manager: IPagesManager):
-        super().__init__(name, event_manager, state_manager, pages_manager)
+        self._name = name
+        self._event_manager = event_manager
+        self._state_manager = state_manager
+        self._pages_manager = pages_manager
+
         self.listeners = self._get_listeners()
+
+    @property
+    def name(self):
+        return self._name
 
     def fire(self, type_: str, data: dict, target: str = None, reply_to: str = None):
         source = self.name

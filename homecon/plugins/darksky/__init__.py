@@ -149,7 +149,7 @@ class Darksky(core.plugin.Plugin):
             return False
 
 
-    def listen_state_changed(self,event):
+    def listen_state_updated(self,event):
         if event.data['state'].path == 'darksky/settings/apikey':
             if not self._loading:
                 #self._loop.create_task(self.darksky_forecast())

@@ -217,7 +217,7 @@ class Weather(core.plugin.Plugin):
         return value
 
 
-    def listen_state_changed(self,event):
+    def listen_state_updated(self,event):
 
         if event.data['state'].path == 'weather/sun/altitude' or event.data['state'].path == 'weather/cloudcover':
             

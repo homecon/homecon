@@ -55,25 +55,35 @@ class TestComputed:
         computed.listen_state_deleted(Event(event_manager, 'state_deleted', {'state': a}))
         assert computed._computed_mapping == {}
 
-    def test_listen_state_changed_remove_computed(self):
+    def test_listen_state_updated_remove_computed(self):
         event_manager = DummyEventManager()
         state_manager = MemoryStateManager(event_manager)
         a = state_manager.add('a', config={'computed': 'test'})
 
         computed = Computed('computed', event_manager, state_manager, IPagesManager)
         a.config = {}
-        computed.listen_state_changed(Event(event_manager, 'state_changed', {'state': a}))
+        computed.listen_state_updated(Event(event_manager, 'state_changed', {'state': a}))
         assert computed._computed_mapping == {}
 
-    def test_listen_state_changed_add_computed(self):
+    def test_listen_state_updated_add_computed(self):
         event_manager = DummyEventManager()
         state_manager = MemoryStateManager(event_manager)
         a = state_manager.add('a', config={})
 
         computed = Computed('computed', event_manager, state_manager, IPagesManager)
         a.config = {'computed': 'test'}
-        computed.listen_state_changed(Event(event_manager, 'state_changed', {'state': a}))
+        computed.listen_state_updated(Event(event_manager, 'state_changed', {'state': a}))
         assert computed._computed_mapping == {0: 'test'}
+
+    def test_listen_state_updated_edit_computed(self):
+        event_manager = DummyEventManager()
+        state_manager = MemoryStateManager(event_manager)
+        a = state_manager.add('a', config={'computed': 'test'})
+
+        computed = Computed('computed', event_manager, state_manager, IPagesManager)
+        a.config = {'computed': '123'}
+        computed.listen_state_updated(Event(event_manager, 'state_changed', {'state': a}))
+        assert computed._computed_mapping == {0: '123'}
 
     def test_listen_state_value_changed(self):
         event_manager = DummyEventManager()

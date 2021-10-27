@@ -11,12 +11,13 @@ from homecon.core.plugins.plugin import MemoryPluginManager
 from homecon.homecon import HomeCon
 from concurrent.futures import ThreadPoolExecutor
 
-from homecon.plugins.websocket import Websocket
+from homecon.plugins.websocket.websocket import Websocket
 from homecon.plugins.states.states import States
 from homecon.plugins.pages.pages import Pages
 from homecon.plugins.alarms.alarms import Alarms
 from homecon.plugins.shading.shading import Shading
-from homecon.plugins.knx import Knx
+from homecon.plugins.knx.knx import Knx
+from homecon.plugins.computed.computed import Computed
 
 
 # the current file directory
@@ -38,32 +39,29 @@ def create_states(state_manager: IStateManager):
                       config={'knx_ga_read': '1/1/31', 'knx_ga_write': '1/1/31', 'knx_dpt': '1'})
     state_manager.add('spotlight', parent=state_manager.get('/ground_floor/kitchen/lights'),
                       type='bool', quantity='', unit='',
-                      label='Kitchen spotlights', description='',
-                      config={'knx_ga_read': '1/1/62', 'knx_ga_write': '1/1/62', 'knx_dpt': '1'})
+                      label='Kitchen spotlights', description='')
     state_manager.add('dimmer', parent=state_manager.get('/ground_floor/kitchen/lights'),
                       type='float', quantity='', unit='',
                       label='Kitchen dimmer', description='')
+    state_manager.add('lights_on', config={'computed': '1 if sum([v for v in Values(".*/lights/.*") if v is not None]) > 0 else 0'})
 
     state_manager.add('living', parent=state_manager.get('/ground_floor'))
     state_manager.add('lights', parent=state_manager.get('/ground_floor/living'))
     state_manager.add('light', parent=state_manager.get('/ground_floor/living/lights'),
                       type='bool', quantity='', unit='',
-                      label='Living room light', description='',
-                      config={'knx_ga_read': '1/1/41', 'knx_ga_write': '1/1/41', 'knx_dpt': '1'})
+                      label='Living room light', description='')
 
     state_manager.add('windows', parent=state_manager.get('/ground_floor/kitchen'))
     state_manager.add('south', parent=state_manager.get('/ground_floor/kitchen/windows'))
     state_manager.add('shading', parent=state_manager.get('/ground_floor/kitchen/windows/south'))
     state_manager.add('position', parent=state_manager.get('/ground_floor/kitchen/windows/south/shading'),
                       type='float', quantity='', unit='',
-                      label='Position', description='',
-                      config={'knx_ga_read': '2/4/61', 'knx_ga_write': '2/3/61', 'knx_dpt': '5'})
+                      label='Position', description='')
     state_manager.add('west', parent=state_manager.get('/ground_floor/kitchen/windows'))
     state_manager.add('shading', parent=state_manager.get('/ground_floor/kitchen/windows/west'))
     state_manager.add('position', parent=state_manager.get('/ground_floor/kitchen/windows/west/shading'),
                       type='float', quantity='', unit='',
-                      label='Position', description='',
-                      config={'knx_ga_read': '2/4/62', 'knx_ga_write': '2/3/62', 'knx_dpt': '5'})
+                      label='Position', description='')
 
     state_manager.add('myalarms')
     state_manager.add('dummy', parent=state_manager.get('/myalarms'), type='action', value=[
@@ -77,8 +75,7 @@ def create_states(state_manager: IStateManager):
     state_manager.add('ventilation', parent=state_manager.get('/central'))
     state_manager.add('speed', parent=state_manager.get('/central/ventilation'),
                       type='int', quantity='', unit='',
-                      label='Ventilation speed', description='',
-                      config={'knx_ga_read': None, 'knx_ga_write': '4/0/4', 'knx_dpt': '6'})
+                      label='Ventilation speed', description='')
 
 
 def create_pages(state_manager: IStateManager, pages_manager: IPagesManager):
@@ -112,6 +109,7 @@ def get_homecon():
         'alarms': Alarms('alarms', event_manager, state_manager, pages_manager),
         'shading': Shading('shading', event_manager, state_manager, pages_manager),
         'knx': Knx('knx', event_manager, state_manager, pages_manager),
+        'computed': Computed('computed', event_manager, state_manager, pages_manager),
     })
     executor = ThreadPoolExecutor(max_workers=10)
 

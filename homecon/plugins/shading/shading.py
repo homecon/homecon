@@ -301,7 +301,7 @@ class ShadingController:
 
     def listen_state_value_changed(self, event: Event):
         state = event.data['state']
-        if state.parent.type == self.SHADING_STATE_TYPE:
+        if state.parent is not None and state.parent.type == self.SHADING_STATE_TYPE:
             self.run()
 
 
