@@ -78,12 +78,13 @@ class Knx(BasePlugin):
     KNX_EVAL_READ = 'knx_eval_read'
     KNX_EVAL_WRITE = 'knx_eval_write'
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, connect_sleep_time=1, **kwargs):
         super().__init__(*args, **kwargs)
         self.ga_read_mapping = ListMapping()
         self.connection = KNXDConnection()
         self.address_state = None
         self.port_state = None
+        self._connect_sleep_time = connect_sleep_time
 
         # add settings states
         self._state_manager.add('settings', type=None)
@@ -114,7 +115,7 @@ class Knx(BasePlugin):
                 self.connection.connect(address, port)
                 self.connection.listen(self.callback)
 
-                time.sleep(1)
+                time.sleep(self._connect_sleep_time)
                 for key in self.ga_read_mapping.keys():
                     logger.debug('reading {}'.format(key))
                     self.connection.group_read(key)

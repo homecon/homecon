@@ -6,7 +6,7 @@ from homecon.core.event import IEventManager, Event
 
 from homecon.plugins.shading.shading import IShading, StateBasedShading, IWantedHeatGainCalculator, \
     EqualShadingPositionCalculator, StateBasedHeatingCurveWantedHeatGainCalculator, ShadingController
-from homecon.tests.mocks import DummyEventManager
+from homecon.tests import DummyEventManager
 
 
 class TestStateBasedShading:

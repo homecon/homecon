@@ -5,7 +5,7 @@ from unittest.mock import MagicMock
 from homecon.core.event import Event
 from homecon.core.states.state import MemoryStateManager
 from homecon.core.pages.pages import IPagesManager
-from homecon.tests.mocks import DummyEventManager
+from homecon.tests import DummyEventManager
 from homecon.plugins.computed.computed import ValueComputer, EvaluationError, Computed
 
 

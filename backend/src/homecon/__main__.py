@@ -92,7 +92,7 @@ def configure_(create_folders=True,
 
 
 def serve_app_(appport=None) -> Process:
-    from server.server import app
+    from webserver.server import app
     from multiprocessing import Process
 
     server = Process(target=lambda: app.run(host='0.0.0.0', port=appport))

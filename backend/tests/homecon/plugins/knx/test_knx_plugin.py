@@ -1,4 +1,4 @@
-from homecon.tests.mocks import DummyEventManager
+from homecon.tests import DummyEventManager
 from homecon.core.states.state import MemoryStateManager
 from homecon.core.pages.pages import MemoryPagesManager
 from homecon.core.event import Event

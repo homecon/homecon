@@ -40,7 +40,7 @@ class State:
     def notify_updated(self):
         self._event_manager.fire(StateEventsTypes.STATE_UPDATED, data={'state': self})
 
-    def notify_values_changed(self, old_val=None, source=None):
+    def notify_value_changed(self, old_val=None, source=None):
         self._event_manager.fire(StateEventsTypes.STATE_VALUE_CHANGED, source=source,
                                  data={'state': self, 'old': old_val, 'new': self._value})
 
@@ -57,7 +57,7 @@ class State:
         old_val = self._value
         self._value = val
         self._state_manager.update(self)
-        self.notify_values_changed(old_val=old_val, source=source)
+        self.notify_value_changed(old_val=old_val, source=source)
 
     def update(self, **kwargs):
         if 'name' in kwargs:
