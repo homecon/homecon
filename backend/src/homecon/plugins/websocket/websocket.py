@@ -33,6 +33,7 @@ class Websocket(BasePlugin):
         self.port = port
         self.server = None
         self._loop = asyncio.get_event_loop()
+        self._server_thread = None
 
     def start(self):
         # FIXME this is very ugly with an asyncio loop inside a thread
@@ -77,17 +78,20 @@ class Websocket(BasePlugin):
         def run_server(loop):
             # create a server and run it in the event loop
             asyncio.set_event_loop(loop)
-            server_generator = websockets.serve(connect_client, host=self.host, port=self.port, loop=self._loop)
-            self.server = self._loop.run_until_complete(server_generator)
+            server_generator = websockets.serve(connect_client, host=self.host, port=self.port, loop=loop)
+            self.server = loop.run_until_complete(server_generator)
             loop.run_forever()
 
-        server_thread = Thread(target=run_server, args=(asyncio.get_event_loop(),))
-        server_thread.start()
+        self._server_thread = Thread(target=run_server, args=(asyncio.get_event_loop(),))
+        self._server_thread.start()
         logger.debug('Websocket plugin initialized')
 
     def stop(self):
         self.server.close()
-        asyncio.get_event_loop().stop()
+        self._loop.call_soon_threadsafe(self._loop.stop)
+
+        if self._server_thread is not None:
+            self._server_thread.join()
 
     def log_data(self, address, data):
         """

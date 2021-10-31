@@ -93,8 +93,6 @@ def configure_(create_folders=True,
 
 def serve_app_(appport=None) -> Process:
     from webserver.server import app
-    from multiprocessing import Process
-
     server = Process(target=lambda: app.run(host='0.0.0.0', port=appport))
     server.start()
 
@@ -157,7 +155,7 @@ def main(printlog=False, loglevel='INFO', dbloglevel='INFO', httploglevel='INFO'
 
     # configure logging
     os.makedirs(os.path.join(sys.prefix, 'var', 'log', 'homecon'), exist_ok=True)
-    log_formatter = logging.Formatter('%(asctime)s %(levelname)7.7s  %(processName)-12.12s  %(name)-28.28s %(message)s')
+    log_formatter = logging.Formatter('%(asctime)s %(levelname)7.7s %(name)-36.36s %(message)s')
     if 'homecon.file_handler' not in [lh.name for lh in logger.handlers]:
         file_handler = TimedRotatingFileHandler(os.path.join(sys.prefix, 'var', 'log', 'homecon', 'homecon.log'),
                                                 when="midnight")

@@ -77,6 +77,26 @@
         }
       }]
     }]
+  }, {
+    "name": "lights",
+    "config": {
+      "title": "Lights",
+      "icon": "light_light"
+    },
+    "sections": [{
+      "name": "lights",
+      "config": {
+        "type": "raised",
+        "title": "Lights"
+      },
+      "widgets": [{
+        "type": "value-display",
+        "config": {
+          "label": "Any light on",
+          "state": "/lights_on"
+        }
+      }]
+    }]
   }]
 }, {
   "name": "ground_floor",

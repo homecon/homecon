@@ -108,7 +108,7 @@ def get_homecon():
         'pages': Pages('pages', event_manager, state_manager, pages_manager),
         'alarms': Alarms('alarms', event_manager, state_manager, pages_manager),
         'shading': Shading('shading', event_manager, state_manager, pages_manager),
-        'knx': Knx('knx', event_manager, state_manager, pages_manager),
+        # 'knx': Knx('knx', event_manager, state_manager, pages_manager),
         'computed': Computed('computed', event_manager, state_manager, pages_manager),
     })
     executor = ThreadPoolExecutor(max_workers=10)

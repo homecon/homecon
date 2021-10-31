@@ -87,5 +87,7 @@ class Computed(BasePlugin):
                 logger.exception(f'could not compute value for {state} from {expr}')
             else:
                 if state.value != value:
-                    logger.debug(f'computed new value {value} for {state} from {expr}')
+                    logger.info(f'computed new value {value} for {state} from {expr}')
                     state.set_value(value, source=self.name)
+                else:
+                    logger.debug(f'computed equal value {value} for {state} from {expr}')
