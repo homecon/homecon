@@ -8,7 +8,11 @@ from uuid import uuid4
 
 import websockets
 
-from homecon.core.plugins.plugin import BasePlugin
+from homecon.core.states.state import IStateManager
+from homecon.core.event import Event
+from homecon.core.auth import IAuthManager
+
+from homecon.core.plugins.plugin import IPlugin, BasePlugin
 
 
 class Logger(logging.Logger):
@@ -21,19 +25,24 @@ class Logger(logging.Logger):
 logger = logging.getLogger(__name__)
 
 
-class Websocket(BasePlugin):
+class Websocket(IPlugin):
     """
     Class to control the HomeCon websocket
 
     """
-    def __init__(self, *args, host='0.0.0.0', port=9099, **kwargs):
-        super().__init__(*args, **kwargs)
+    def __init__(self, state_manager: IStateManager, auth_manager: IAuthManager, host='0.0.0.0', port=9099):
+        self._state_manager = state_manager
+        self._auth_manager = auth_manager
         self.clients = {}
         self.host = host
         self.port = port
         self.server = None
         self._loop = asyncio.get_event_loop()
         self._server_thread = None
+
+    @property
+    def name(self):
+        return 'websocket'
 
     def start(self):
         # FIXME this is very ugly with an asyncio loop inside a thread
@@ -62,12 +71,15 @@ class Websocket(BasePlugin):
                         data = json.loads(message)
                         self.log_data(address, data)
                         if 'event' in data:
-                            if data['event'] == 'echo':
-                                await client.send(data)
+                            if self._auth_manager.is_authorized(data['event'], data.get('data', {}), data.get('token', '')):
+                                if data['event'] == 'echo':
+                                    await client.send(data)
+                                else:
+                                    self.fire(data['event'], data['data'], reply_to=f'{self.name}/{client.id}')
                             else:
-                                self.fire(data['event'], data['data'], reply_to=f'{self.name}/{client.id}')
+                                logger.info(f'unauthorized message received from {address}: {data}')
                         else:
-                            logger.debug(f'a message was received but contained no event, {data}')
+                            logger.info(f'a message was received but contained no event, {data}')
                     except Exception:
                         logger.exception('a message was received but could not be handled')
             finally:
@@ -137,37 +149,24 @@ class Websocket(BasePlugin):
         if not hasattr(clients, '__len__'):
             clients = {'temp': clients}
         for client in clients.values():
-            if (self.check_readpermission(client, readusers=readusers, readgroups=readgroups)
-                    or data['event'] == 'request_token'):
+            if True or data['event'] == 'request_token':
                 asyncio.run_coroutine_threadsafe(client.send(data), loop=self._loop)
 
-    def check_readpermission(self, client, readusers=None, readgroups=None):
-        """
-        Check if a client has the permission to read based on the readusers and
-        readgroups lists
-
-        """
-        return True
-        # FIXME
-        permitted = False
-        if client.tokenpayload:
-            if readusers is None and readgroups is None:
-                permitted = True
-            else:
-                if readusers is None:
-                    readusers = []
-
-                if readgroups is None:
-                    readgroups = []
-
-                if client.tokenpayload['userid'] in readusers:
-                    permitted = True
-                else:
-                    for g in client.tokenpayload['groupids']:
-                        if g in readgroups:
-                            permitted = True
-                            break
-        return permitted
+    def handle_event(self, event: Event):
+        if event.type == 'websocket_send':
+            self.listen_websocket_send(event)
+        if event.type == 'websocket_reply':
+            self.listen_websocket_reply(event)
+        if event.type == 'reply':
+            self.listen_reply(event)
+        if event.type == 'state_value_changed':
+            self.listen_state_value_changed(event)
+        if event.type == 'state_updated':
+            self.listen_state_updated(event)
+        if event.type == 'state_added':
+            self.listen_state_added(event)
+        if event.type == 'state_deleted':
+            self.listen_state_deleted(event)
 
     def listen_websocket_send(self, event):
         self.send(event.data)

@@ -1,4 +1,5 @@
 
+JWT_SECRET = 'secret'
+JWT_ALGORITHM = 'HS256'
 
-jwt_secret = 'secret'
-jwt_algorithm = 'HS256'
+PASSWORD = 'astrongpasswordhere'

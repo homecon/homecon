@@ -6,7 +6,7 @@ from homecon.core.event import IEventManager, Event
 
 from homecon.plugins.shading.shading import IShading, StateBasedShading, IWantedHeatGainCalculator, \
     EqualShadingPositionCalculator, StateBasedHeatingCurveWantedHeatGainCalculator, ShadingController
-from homecon.tests import DummyEventManager
+from mocks import DummyEventManager
 
 
 class TestStateBasedShading:
@@ -19,7 +19,7 @@ class TestStateBasedShading:
             State(state_manager, DummyEventManager(), 1, 'position_max', value=1.0),
         )
         date = datetime(2021, 1, 1, 12, 0)
-        assert shading.get_maximum_heat_gain(date) == approx(607, rel=0.01)
+        assert shading.get_maximum_heat_gain(date) == approx(643, rel=0.01)
 
     def test_get_heat_gain(self):
         state_manager = MemoryStateManager(DummyEventManager())
@@ -29,7 +29,7 @@ class TestStateBasedShading:
             State(state_manager, DummyEventManager(), 1, 'position_max', value=1.0),
         )
         date = datetime(2021, 1, 1, 12, 0)
-        assert shading.get_heat_gain(0.2, date) == approx(0.8*607, rel=0.01)
+        assert shading.get_heat_gain(0.2, date) == approx(0.8*643, rel=0.01)
 
     def test_get_shading_factor(self):
         state_manager = MemoryStateManager(DummyEventManager())

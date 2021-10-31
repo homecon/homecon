@@ -7,6 +7,7 @@ from homecon.core.states.state import IStateManager, MemoryStateManager
 from homecon.core.event import EventManager
 from homecon.core.pages.pages import IPagesManager, MemoryPagesManager
 from homecon.core.plugins.plugin import MemoryPluginManager
+from homecon.core.auth import AuthManager
 
 from homecon.homecon import HomeCon
 from concurrent.futures import ThreadPoolExecutor
@@ -16,7 +17,6 @@ from homecon.plugins.states.states import States
 from homecon.plugins.pages.pages import Pages
 from homecon.plugins.alarms.alarms import Alarms
 from homecon.plugins.shading.shading import Shading
-from homecon.plugins.knx.knx import Knx
 from homecon.plugins.computed.computed import Computed
 
 
@@ -99,11 +99,12 @@ def get_homecon():
     event_manager = EventManager()
     state_manager = MemoryStateManager(event_manager=event_manager)
     pages_manager = MemoryPagesManager()
+    auth_manger = AuthManager()
 
     create_states(state_manager)
     create_pages(state_manager, pages_manager)
     plugin_manager = MemoryPluginManager({
-        'websocket': Websocket('websocket', event_manager, state_manager, pages_manager),
+        'websocket': Websocket(state_manager, auth_manger),
         'states': States('states', event_manager, state_manager, pages_manager),
         'pages': Pages('pages', event_manager, state_manager, pages_manager),
         'alarms': Alarms('alarms', event_manager, state_manager, pages_manager),

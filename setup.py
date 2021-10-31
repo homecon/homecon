@@ -7,28 +7,32 @@ import shutil
 import os
 
 
-class custom_sdist(sdist):
-    def run(self):
-        print('copying app build')
-        basepath = os.path.dirname(os.path.abspath(__file__))
-        static_folder_path = os.path.join(basepath, 'server', 'static')
-        if os.path.exists(static_folder_path):
-            shutil.rmtree(static_folder_path)
-        shutil.copytree(os.path.join(basepath, 'homecon-react', 'build'), static_folder_path)
-        super().run()
+base_path = os.path.dirname(os.path.abspath(__file__))
+backend_path = os.path.join(base_path, 'backend')
+frontend_path = os.path.join(base_path, 'frontend')
 
 
 # retrieve the version
 try:
-    versionfile = os.path.join('homecon', '__version__.py')
-    f = open(versionfile, 'r')
+    version_file = os.path.join(backend_path, 'src', 'homecon', '__version__.py')
+    f = open(version_file, 'r')
     f.readline()
     content = f.readline()
-    splitcontent = content.split('\'')
-    version = splitcontent[1]
+    split_content = content.split('\'')
+    version = split_content[1]
     f.close()
-except:
+except Exception:
     raise Exception('Could not determine the version from homecon/__version__.py')
+
+
+class CustomSdist(sdist):
+    def run(self):
+        print('copying frontend build')
+        static_folder_path = os.path.join(backend_path, 'src', 'webserver', 'static')
+        if os.path.exists(static_folder_path):
+            shutil.rmtree(static_folder_path)
+        shutil.copytree(os.path.join(frontend_path, 'build'), static_folder_path)
+        super().run()
 
 
 # run the setup command
@@ -37,24 +41,25 @@ setup(
     version=version,
     license='GPLv3',
     description='Integrated home optimization',
-    long_description=open(os.path.join(os.path.dirname(__file__), 'README.rst')).read(),
+    long_description=open(os.path.join(base_path, 'README.rst')).read(),
     url='http://github.com/homecon/homecon',
     author='Brecht Baeten',
     author_email='brecht.baeten@gmail.com',
-    packages=find_packages(),
+    package_dir={'': 'backend/src'},
+    packages=find_packages(where='backend/src'),
+    package_data={'homecon': ['demo/*.json'],
+                  'webserver': ['static/*.*', 'static/**/*.*', 'static/**/**/*.*']},
     data_files=[(
         os.path.join('var', 'tmp', 'homecon'),
         [os.path.join('util', 'network_template'), os.path.join('util', 'init_template')]
     )],
-    package_data={'homecon': ['demo/*.json'],
-                  'server': ['static/*.*', 'static/**/*.*', 'static/**/**/*.*']},
     install_requires=[
         'pytz', 'ephem', 'passlib', 'PyJWT', 'asyncws', 'aiohttp', 'numpy', 'pyomo', 'knxpy', 'pydal', 'websockets',
         'scipy', 'apscheduler', 'flask'
     ],
-    classifiers=['Programming Language :: Python :: 3.6'],
+    classifiers=['Programming Language :: Python :: 3'],
     entry_points={'console_scripts': [
         'homecon=homecon.__main__:main',
     ]},
-    cmdclass=dict(sdist=custom_sdist)
+    cmdclass={'sdist': CustomSdist}
 )

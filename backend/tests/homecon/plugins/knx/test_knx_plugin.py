@@ -1,4 +1,5 @@
-from homecon.tests import DummyEventManager
+from mocks import DummyEventManager
+
 from homecon.core.states.state import MemoryStateManager
 from homecon.core.pages.pages import MemoryPagesManager
 from homecon.core.event import Event
@@ -35,7 +36,7 @@ class TestKnx:
         state_manager._create_state('test', parent=None, type='float',
                                     config={'knx_ga_read': '1/1/1', 'knx_dpt': '1', 'knx_eval_read': 'value / 255'})
 
-        knx_plugin = Knx('knx', event_manager, state_manager, pages_manager)
+        knx_plugin = Knx('knx', event_manager, state_manager, pages_manager, connect_sleep_time=0)
         knx_plugin.connection = MockKNXDConnection()
         knx_plugin.start()
 
@@ -51,7 +52,7 @@ class TestKnx:
         state_manager._create_state('test', parent=None, type='float',
                                     config={Knx.KNX_GA_WRITE: '1/1/1', Knx.KNX_DPT: '1', Knx.KNX_EVAL_WRITE: 'value * 255'})
 
-        knx_plugin = Knx('knx', event_manager, state_manager, pages_manager)
+        knx_plugin = Knx('knx', event_manager, state_manager, pages_manager, connect_sleep_time=0)
         knx_plugin.connection = MockKNXDConnection()
         knx_plugin.start()
 
