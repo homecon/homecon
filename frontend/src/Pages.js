@@ -10,6 +10,7 @@ import {HomeconDimmer} from './widgets/Dimmer.js';
 import {HomeconValue} from './widgets/Value.js';
 import {HomeconShading} from './widgets/Shading.js';
 import {HomeconAlarm} from './widgets/Alarm.js';
+import {HomeconClock} from './widgets/Clock.js';
 
 
 const useStyles = makeStyles((theme: Theme) =>
@@ -87,6 +88,7 @@ function HomeconPage(props){
   const page = props.page;
   const states = props.states;
   const ws = props.ws;
+  let showHeader = true;
 
   const classes = useStyles();
 
@@ -95,11 +97,14 @@ function HomeconPage(props){
     headerWidget = <HomeconWidget key={page.config.widget.path} type={page.config.widget.type} config={page.config.widget.config}
                     states={states} ws={ws}/>
   }
+  if(page !== null && page.config.show_header !== undefined){
+    showHeader = page.config.show_header;
+  }
 
   if(page !== null){
     return (
       <div>
-        <PageHeader icon ={page.config.icon} title={page.config.title} widget={headerWidget}/>
+        {showHeader && (<PageHeader icon={page.config.icon} title={page.config.title} widget={headerWidget}/>)}
         <div className={classes.pageContent}>
 
         {page.sections.map((section) => (
@@ -138,6 +143,9 @@ function HomeconWidget(props){
   }
   else if(type === 'alarm'){
     return <HomeconAlarm config={config} states={states} ws={ws}/>
+  }
+  else if(type === 'clock'){
+    return <HomeconClock config={config}/>
   }
   return (
     <div>{type} {JSON.stringify(config)}</div>

@@ -6,8 +6,9 @@
   "pages": [{
     "name": "home",
     "config": {
-      "title": "Home", 
-      "icon": "blank"
+      "title": "Home",
+      "icon": "blank",
+      "show_header": false
     },
     "sections": [{
       "name": "time",
@@ -16,8 +17,6 @@
       },
       "widgets": [{
         "type": "clock"
-      }, {
-        "type": "date"
       }]
     }, {
       "name": "weather",
