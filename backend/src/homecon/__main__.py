@@ -3,6 +3,8 @@ import sys
 import os
 import logging
 import time
+import random
+import string
 
 from argparse import ArgumentParser
 from multiprocessing import Process
@@ -110,6 +112,14 @@ def get_homecon():
     except FileExistsError:
         pass
 
+    token_path = os.path.join(db_dir, 'token.conf')
+    if not os.path.exists(token_path):
+        with open(token_path, 'w') as f:
+            f.write(''.join(random.choices(string.ascii_lowercase, k=8)))
+            logger.info(f'generated new token stored in {token_path}')
+    with open(token_path, 'r') as f:
+        token = f.read()
+
     from homecon.core.event import EventManager
     from homecon.core.states.dal_state_manager import DALStateManager
     from homecon.core.pages.pages import JSONPagesManager
@@ -129,7 +139,7 @@ def get_homecon():
     state_manager = DALStateManager(folder=db_dir, uri='sqlite://homecon.db', event_manager=event_manager)
     pages_manager = JSONPagesManager(os.path.join(db_dir, 'pages.json'))
     plugin_manager = MemoryPluginManager({
-        'websocket': Websocket('websocket', event_manager, state_manager, pages_manager),
+        'websocket': Websocket('websocket', event_manager, state_manager, pages_manager, token=token),
         'states': States('states', event_manager, state_manager, pages_manager),
         'pages': Pages('pages', event_manager, state_manager, pages_manager),
         'alarms': Alarms('alarms', event_manager, state_manager, pages_manager),

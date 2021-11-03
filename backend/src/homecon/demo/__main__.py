@@ -103,7 +103,7 @@ def get_homecon():
     create_states(state_manager)
     create_pages(state_manager, pages_manager)
     plugin_manager = MemoryPluginManager({
-        'websocket': Websocket('websocket', event_manager, state_manager, pages_manager),
+        'websocket': Websocket('websocket', event_manager, state_manager, pages_manager, token='demo'),
         'states': States('states', event_manager, state_manager, pages_manager),
         'pages': Pages('pages', event_manager, state_manager, pages_manager),
         'alarms': Alarms('alarms', event_manager, state_manager, pages_manager),

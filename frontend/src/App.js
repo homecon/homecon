@@ -71,102 +71,112 @@ class HomeconWebsocket {
 
   connect(url) {
     console.log(`attempting to connect to homecon at ${this.app.state.wsUrl}`)
-    var ws = new WebSocket(this.app.state.wsUrl);
-    let that = this; // cache the this
-    var connectInterval;
+    let ws
+    try{
+      ws = new WebSocket(this.app.state.wsUrl);
+    }
+    catch(error){
+      console.error(error)
+      ws = null
+    }
 
-    // websocket onopen event listener
-    ws.onopen = () => {
-      console.log(`Connected to HomeCon server at ${this.app.state.wsUrl}`);
-      this.ws = ws
+    if (ws !== null) {
+      let that = this; // cache the this
+      let connectInterval;
 
-      // add the websocket to the state
-      this.app.setState({
-        ws: this
-      });
+      // websocket onopen event listener
+      ws.onopen = () => {
+        console.log(`Connected to HomeCon server at ${this.app.state.wsUrl}`);
+        this.ws = ws
 
-      // send connection messages
-      // user auth
-      // pages
-      const pages_data = JSON.parse(window.localStorage.getItem('pages_data'));
-      this.parse_pages_data(pages_data)
-      this.send({'event': 'pages_timestamp', data: {'id': null}})
-
-      // states
-      this.send({'event': 'state_list', data: {'id': null}})
-
-      that.timeout = 250; // reset timer to 250 on open of websocket connection
-      clearTimeout(connectInterval); // clear Interval on on open of websocket connection
-    };
-
-    // websocket onclose event listener
-    ws.onclose = e => {
-      console.log(
-        `Socket is closed. Reconnect will be attempted in ${Math.min(10000 / 1000, (that.timeout + that.timeout) / 1000)} second.`,
-        e.reason
-      );
-
-      that.timeout = that.timeout + that.timeout; //increment retry interval
-      this.app.setState({
-        ws: null
-      });
-      connectInterval = setTimeout(this.check.bind(this), Math.min(10000, that.timeout)); //call check function after timeout
-    };
-
-    // websocket onerror event listener
-    ws.onerror = err => {
-      console.error(
-        "Socket encountered error: ",
-        err.message,
-        "Closing socket"
-      );
-      ws.close();
-    };
-
-    ws.onmessage = evt => {
-      // listen to data sent from the websocket server
-      const message = JSON.parse(evt.data)
-      console.log(`received ${evt.data}`)
-
-      if(message.event === 'pages_timestamp'){
-        if(this.app.state.pagesData === null || this.app.state.pagesData.timestamp === undefined ||
-           this.app.state.pagesData.timestamp < message.data.value){
-          this.send({'event': 'pages_pages', data: {'id': null}})
-        }
-      }
-      else if(message.event === 'pages_pages'){
+        // add the websocket to the state
         this.app.setState({
-          pagesData: message.data.value
+          ws: this
         });
-        window.localStorage.setItem('pages_data', JSON.stringify(message.data.value));
-        this.parse_pages_data(message.data.value)
-      }
-      else if(message.event === 'state_list'){
-        const states = {};
-        message.data.value.forEach((item, index) => {
-           states[item.id] = item;
-        });
+
+        // send connection messages
+        // user auth
+        // pages
+        const pages_data = JSON.parse(window.localStorage.getItem('pages_data'));
+        this.parse_pages_data(pages_data)
+        this.send({'event': 'pages_timestamp', data: {'id': null}})
+
+        // states
+        this.send({'event': 'state_list', data: {'id': null}})
+
+        that.timeout = 250; // reset timer to 250 on open of websocket connection
+        clearTimeout(connectInterval); // clear Interval on on open of websocket connection
+      };
+
+      // websocket onclose event listener
+      ws.onclose = e => {
+        console.log(
+          `Socket is closed. Reconnect will be attempted in ${Math.min(10000 / 1000, (that.timeout + that.timeout) / 1000)} second.`,
+          e.reason
+        );
+
+        that.timeout = that.timeout + that.timeout; //increment retry interval
         this.app.setState({
-          states: states
+          ws: null
         });
+        connectInterval = setTimeout(this.check.bind(this), Math.min(10000, that.timeout)); //call check function after timeout
+      };
 
-      }
-      else if(message.event === 'state_value'){
+      // websocket onerror event listener
+      ws.onerror = err => {
+        console.error(
+          "Socket encountered error: ",
+          err.message,
+          "Closing socket"
+        );
+        ws.close();
+      };
 
-        var states = {...this.app.state.states}
-        if(states === undefined || states[message.data.id] === undefined){
-          console.warning(`no state with id ${message.data.id}`)
+      ws.onmessage = evt => {
+        // listen to data sent from the websocket server
+        const message = JSON.parse(evt.data)
+        console.log(`received ${evt.data}`)
+
+        if(message.event === 'pages_timestamp'){
+          if(this.app.state.pagesData === null || this.app.state.pagesData.timestamp === undefined ||
+             this.app.state.pagesData.timestamp < message.data.value){
+            this.send({'event': 'pages_pages', data: {'id': null}})
+          }
         }
-        else{
-          states[message.data.id].value = message.data.value;
+        else if(message.event === 'pages_pages'){
+          this.app.setState({
+            pagesData: message.data.value
+          });
+          window.localStorage.setItem('pages_data', JSON.stringify(message.data.value));
+          this.parse_pages_data(message.data.value)
         }
+        else if(message.event === 'state_list'){
+          const states = {};
+          message.data.value.forEach((item, index) => {
+             states[item.id] = item;
+          });
+          this.app.setState({
+            states: states
+          });
 
-        this.app.setState({
-          states: states
-        });
-      }
-      else if(this.event_listeners[message.event] !== undefined){
-        this.event_listeners[message.event](message)
+        }
+        else if(message.event === 'state_value'){
+
+          var states = {...this.app.state.states}
+          if(states === undefined || states[message.data.id] === undefined){
+            console.warning(`no state with id ${message.data.id}`)
+          }
+          else{
+            states[message.data.id].value = message.data.value;
+          }
+
+          this.app.setState({
+            states: states
+          });
+        }
+        else if(this.event_listeners[message.event] !== undefined){
+          this.event_listeners[message.event](message)
+        }
       }
     }
   };

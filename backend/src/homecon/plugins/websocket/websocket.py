@@ -2,9 +2,10 @@
 import logging
 import json
 import asyncio
-from threading import Thread
 
+from threading import Thread
 from uuid import uuid4
+from http import HTTPStatus
 
 import websockets
 
@@ -26,27 +27,30 @@ class Websocket(BasePlugin):
     Class to control the HomeCon websocket
 
     """
-    def __init__(self, *args, host='0.0.0.0', port=9099, **kwargs):
+    def __init__(self, *args, host: str = '0.0.0.0', port: int = 9099, token: str = '', **kwargs):
         super().__init__(*args, **kwargs)
-        self.clients = {}
-        self.host = host
-        self.port = port
+        self._host = host
+        self._port = port
+        self._token = token
+
+        self._clients = {}
         self.server = None
         self._loop = asyncio.get_event_loop()
         self._server_thread = None
 
     def start(self):
         # FIXME this is very ugly with an asyncio loop inside a thread
-        logger.info(f'starting websocket at ws://{self.host}:{self.port}')
+        logger.info(f'starting websocket at ws://{self._host}:{self._port}')
         clients_lock = asyncio.Lock()
 
         async def connect_client(websocket, path):
             """
             connect a client and listen for messages
             """
+
             client = Client(websocket)
             with (await clients_lock):
-                self.clients[client.id] = client
+                self._clients[client.id] = client
 
             address = client.address
             logger.debug('incomming connection from {}'.format(address))
@@ -72,13 +76,20 @@ class Websocket(BasePlugin):
                         logger.exception('a message was received but could not be handled')
             finally:
                 with (await clients_lock):
-                    del self.clients[client.id]
+                    del self._clients[client.id]
                 logger.debug('disconnected {}'.format(address))
+
+        async def process_request(path, headers):
+            token = path[1:]
+            if token != self._token:
+                logger.warning(f'client tried to connect with an invalid token')
+                return HTTPStatus.UNAUTHORIZED, [], b'incorrect token'
 
         def run_server(loop):
             # create a server and run it in the event loop
             asyncio.set_event_loop(loop)
-            server_generator = websockets.serve(connect_client, host=self.host, port=self.port, loop=loop)
+            server_generator = websockets.serve(connect_client, process_request=process_request,
+                                                host=self._host, port=self._port, loop=loop)
             self.server = loop.run_until_complete(server_generator)
             loop.run_forever()
 
@@ -132,7 +143,7 @@ class Websocket(BasePlugin):
         """
 
         if clients is None:
-            clients = self.clients
+            clients = self._clients
 
         if not hasattr(clients, '__len__'):
             clients = {'temp': clients}
