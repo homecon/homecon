@@ -118,7 +118,7 @@ def get_homecon():
             f.write(''.join(random.choices(string.ascii_lowercase, k=8)))
             logger.info(f'generated new token stored in {token_path}')
     with open(token_path, 'r') as f:
-        token = f.read()
+        token = f.read().splitlines()[0]
 
     from homecon.core.event import EventManager
     from homecon.core.states.dal_state_manager import DALStateManager
@@ -239,4 +239,3 @@ if __name__ == '__main__':
     kwargs = vars(parser.parse_args())
 
     main(**kwargs)
-

@@ -96,6 +96,10 @@ def get_homecon():
     except FileExistsError:
         pass
 
+    token_path = os.path.join(base_path, 'token.conf')
+    with open(token_path, 'r') as f:
+        token = f.read().splitlines()[0]
+
     event_manager = EventManager()
     state_manager = MemoryStateManager(event_manager=event_manager)
     pages_manager = MemoryPagesManager()
@@ -103,7 +107,7 @@ def get_homecon():
     create_states(state_manager)
     create_pages(state_manager, pages_manager)
     plugin_manager = MemoryPluginManager({
-        'websocket': Websocket('websocket', event_manager, state_manager, pages_manager, token='demo'),
+        'websocket': Websocket('websocket', event_manager, state_manager, pages_manager, token=token),
         'states': States('states', event_manager, state_manager, pages_manager),
         'pages': Pages('pages', event_manager, state_manager, pages_manager),
         'alarms': Alarms('alarms', event_manager, state_manager, pages_manager),
