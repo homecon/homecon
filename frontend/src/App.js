@@ -6,6 +6,12 @@ import HomeconLayout from './Layout.js';
 import Dialog from '@material-ui/core/Dialog';
 import Button from '@material-ui/core/Button';
 import TextField from '@material-ui/core/TextField';
+import Accordion from '@material-ui/core/Accordion';
+import AccordionSummary from '@material-ui/core/AccordionSummary';
+import AccordionDetails from '@material-ui/core/AccordionDetails';
+import Typography from '@material-ui/core/Typography';
+import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
+
 
 
 const darkTheme = createMuiTheme({
@@ -71,9 +77,11 @@ class HomeconWebsocket {
 
   connect(url) {
     console.log(`attempting to connect to homecon at ${this.app.state.wsUrl}`)
+
+    const fullUrl = this.app.state.wsUrl + "/" + this.app.state.token;
     let ws
     try{
-      ws = new WebSocket(this.app.state.wsUrl);
+      ws = new WebSocket(fullUrl);
     }
     catch(error){
       console.error(error)
@@ -111,8 +119,7 @@ class HomeconWebsocket {
       // websocket onclose event listener
       ws.onclose = e => {
         console.log(
-          `Socket is closed. Reconnect will be attempted in ${Math.min(10000 / 1000, (that.timeout + that.timeout) / 1000)} second.`,
-          e.reason
+          `Socket is closed. Reconnect will be attempted in ${Math.min(10000 / 1000, (that.timeout + that.timeout) / 1000)} second.`
         );
 
         that.timeout = that.timeout + that.timeout; //increment retry interval
@@ -125,9 +132,7 @@ class HomeconWebsocket {
       // websocket onerror event listener
       ws.onerror = err => {
         console.error(
-          "Socket encountered error: ",
-          err.message,
-          "Closing socket"
+          "Socket encountered error, Closing socket"
         );
         ws.close();
       };
@@ -223,6 +228,9 @@ class HomeconWebsocket {
 function ConnectionSettings(props){
   const wsUrl = props.wsUrl;
   const setWsUrl = props.setWsUrl;
+  const token = props.token;
+  const setToken = props.setToken;
+
   const connect = props.connect;
   const connected = props.connected;
 
@@ -235,13 +243,27 @@ function ConnectionSettings(props){
   return (
     <div>
       <Dialog open={open}>
+
         <div style={{margin: '20px'}}>
-          <div>
-            <TextField label='HomeCon Web Socket url' value={wsUrl} onChange={(e) => setWsUrl(e.target.value)}/>
-          </div>
-          <div style={{marginTop: '10px'}}>
-            <Button onClick={() => connect()}>connect</Button>
-          </div>
+
+          <Typography>Not connected to homecon</Typography>
+
+          <Accordion>
+            <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+              <Typography>Connection settings</Typography>
+            </AccordionSummary>
+            <AccordionDetails>
+              <Typography>
+                <div style={{display: "flex", flexDirection: "column"}}>
+                  <TextField label="HomeCon Web Socket url" value={wsUrl} onChange={(e) => setWsUrl(e.target.value)}/>
+                  <TextField label="Token" type="password" value={token} onChange={(e) => setToken(e.target.value)}/>
+                </div>
+                <div style={{marginTop: '10px'}}>
+                  <Button onClick={() => connect()}>re-connect</Button>
+                </div>
+              </Typography>
+            </AccordionDetails>
+          </Accordion>
         </div>
       </Dialog>
     </div>
@@ -259,9 +281,14 @@ class App extends React.Component {
     if(wsUrl === null){
       wsUrl = 'ws://localhost:9099'
     }
+    let token = window.localStorage.getItem('token');
+    if(token === null){
+      token = ''
+    }
 
     this.state = {
       wsUrl: wsUrl,
+      token: token,
       ws: null,
       states: null,
       pages: null,
@@ -270,12 +297,16 @@ class App extends React.Component {
   }
 
   componentDidMount() {
-    this.homeconWebsocket.connect();
+    this.homeconWebsocket.check();
   }
 
   setWsUrl(value) {
     this.setState({wsUrl: value});
     window.localStorage.setItem('websocketUrl', value);
+  }
+  setToken(value) {
+    this.setState({token: value});
+    window.localStorage.setItem('token', value);
   }
 
   render() {
@@ -283,7 +314,7 @@ class App extends React.Component {
     return (
       <ThemeProvider theme={darkTheme}>
         <HomeconLayout pagesData={this.state.pagesData} states={this.state.states} ws={this.state.ws}/>
-        <ConnectionSettings wsUrl={this.state.wsUrl} setWsUrl={(val) => this.setWsUrl(val)} connect={() => this.homeconWebsocket.check()} connected={this.state.ws !== null}/>
+        <ConnectionSettings wsUrl={this.state.wsUrl} setWsUrl={(val) => this.setWsUrl(val)} token={this.state.token} setToken={(val) => this.setToken(val)} connect={() => this.homeconWebsocket.check()} connected={this.state.ws !== null}/>
       </ThemeProvider>
     );
   }
