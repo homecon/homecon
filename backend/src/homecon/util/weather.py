@@ -42,7 +42,7 @@ def sunposition(latitude: float, longitude: float, elevation=0, timestamp=None):
 
     """
 
-    if timestamp == None:
+    if timestamp is None:
         utcdatetime = datetime.datetime.utcnow()
     else:
         utcdatetime = datetime.datetime.utcfromtimestamp(timestamp)

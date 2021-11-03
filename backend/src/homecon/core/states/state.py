@@ -53,7 +53,7 @@ class State:
         if self._value != val:
             self.set_value(val)
 
-    def set_value(self, val, source=None):
+    def set_value(self, val, source: str = None):
         old_val = self._value
         self._value = val
         self._state_manager.update(self)

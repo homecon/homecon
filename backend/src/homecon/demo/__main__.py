@@ -16,8 +16,9 @@ from homecon.plugins.states.states import States
 from homecon.plugins.pages.pages import Pages
 from homecon.plugins.alarms.alarms import Alarms
 from homecon.plugins.shading.shading import Shading
-from homecon.plugins.knx.knx import Knx
 from homecon.plugins.computed.computed import Computed
+from homecon.plugins.weather.weather import Weather
+from homecon.plugins.openweathermap.openweathermap import OpenWeatherMap
 
 
 # the current file directory
@@ -114,6 +115,8 @@ def get_homecon():
         'shading': Shading('shading', event_manager, state_manager, pages_manager),
         # 'knx': Knx('knx', event_manager, state_manager, pages_manager),
         'computed': Computed('computed', event_manager, state_manager, pages_manager),
+        'weather': Weather(event_manager, state_manager),
+        'openweathermap': OpenWeatherMap(state_manager),
     })
     executor = ThreadPoolExecutor(max_workers=10)
 

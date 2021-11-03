@@ -55,7 +55,7 @@ setup(
     )],
     install_requires=[
         'pytz', 'ephem', 'passlib', 'PyJWT', 'asyncws', 'aiohttp', 'numpy', 'pyomo', 'knxpy', 'pydal', 'websockets',
-        'scipy', 'apscheduler', 'flask'
+        'scipy', 'apscheduler', 'flask', 'requests'
     ],
     classifiers=['Programming Language :: Python :: 3'],
     entry_points={'console_scripts': [

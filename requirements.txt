@@ -12,3 +12,4 @@ knxpy
 pydal
 scipy
 websockets
+requests
