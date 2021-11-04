@@ -11,7 +11,7 @@ import {HomeconValue} from './widgets/Value.js';
 import {HomeconShading} from './widgets/Shading.js';
 import {HomeconAlarm} from './widgets/Alarm.js';
 import {HomeconClock} from './widgets/Clock.js';
-import {HomeconWeatherBlock} from './widgets/Weather.js';
+import {HomeconWeatherBlock, HomeconWeatherForecastSummary} from './widgets/Weather.js';
 
 
 const useStyles = makeStyles((theme: Theme) =>
@@ -151,6 +151,10 @@ function HomeconWidget(props){
   else if(type === 'weather-block'){
     return <HomeconWeatherBlock config={config} states={states}/>
   }
+  else if(type === 'weather-forecast-summary'){
+    return <HomeconWeatherForecastSummary config={config} states={states}/>
+  }
+
 
   return (
     <div>{type} {JSON.stringify(config)}</div>

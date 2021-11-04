@@ -24,28 +24,8 @@
         "type": "underlined"
       },
       "widgets": [{
-        "type": "weather-block",
+        "type": "weather-forecast-summary",
         "config": {
-          "daily": true,
-          "timeoffset": 0
-        }
-      }, {
-        "type": "weather-block",
-        "config": {
-          "daily": true,
-          "timeoffset": 1
-        }
-      }, {
-        "type": "weather-block",
-        "config": {
-          "daily": true,
-          "timeoffset": 2
-        }
-      }, {
-        "type": "weather-block",
-        "config": {
-          "daily": true,
-          "timeoffset": 3
         }
       }]
     }]

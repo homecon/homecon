@@ -59,14 +59,14 @@ function HomeconWeatherBlock(props){
 
   const getWindSpeed = (value) => {
     if(value.wind_speed !== undefined && value.wind_speed !== null){
-      return `${(value.wind_speed*3.6).toFixed(1)} km/h`
+      return `${(value.wind_speed*3.6).toFixed(0)} km/h`
     }
     else{
       return ''
     }
   }
   const getWindDirection = (value) => {
-    const dirs = ['N','NE','E','SE','S','SW','W','NW','N'];
+    const dirs = ['N','NO','O','ZO','Z','ZW','W','NW','N'];
     if(value.wind_direction !== undefined && value.wind_direction !== null){
       return dirs[Math.round(value.wind_direction/360*8)];
     }
@@ -84,7 +84,7 @@ function HomeconWeatherBlock(props){
   }
 
   return (
-    <div style={{display: "inline-block", maxWidth: "180px"}}>
+    <div>
       <img src={getIcon(state.value)} style={{width: "100%"}} alt="weather forecast"/>
       <div style={{textAlign: "center"}}>{getDate(state.value)}</div>
       <div style={{textAlign: "center"}}>{getTemperature(state.value)}</div>
@@ -94,4 +94,16 @@ function HomeconWeatherBlock(props){
   )
 }
 
-export {HomeconWeatherBlock};
+function HomeconWeatherForecastSummary(props) {
+  const states = props.states;
+  return (
+    <div style={{display: "flex", flexDirection: "row", marginLeft: "-20px", marginRight: "-20px"}}>
+      <HomeconWeatherBlock config={{daily: true, timeoffset: 0}} states={states} style={{width: "60px", flexGrow: 1}}/>
+      <HomeconWeatherBlock config={{daily: true, timeoffset: 1}} states={states} style={{width: "60px", flexGrow: 1}}/>
+      <HomeconWeatherBlock config={{daily: true, timeoffset: 2}} states={states} style={{width: "60px", flexGrow: 1}}/>
+      <HomeconWeatherBlock config={{daily: true, timeoffset: 3}} states={states} style={{width: "60px", flexGrow: 1}}/>
+    </div>
+  )
+}
+
+export {HomeconWeatherBlock, HomeconWeatherForecastSummary};
