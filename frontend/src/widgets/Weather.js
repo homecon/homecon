@@ -76,7 +76,7 @@ function HomeconWeatherBlock(props){
   }
   const getRain = (value) => {
     if(value.rain !== undefined && value.rain !== null){
-      return `${(value.rain*100).toFixed(0)} %`
+      return `Regen: ${(value.rain).toFixed(0)} mm`
     }
     else{
       return ''
@@ -89,7 +89,7 @@ function HomeconWeatherBlock(props){
       <div style={{textAlign: "center"}}>{getDate(state.value)}</div>
       <div style={{textAlign: "center"}}>{getTemperature(state.value)}</div>
       <div style={{textAlign: "center"}}>{getWindSpeed(state.value)} {getWindDirection(state.value)}</div>
-      <div style={{textAlign: "center"}}>Regen: {getRain(state.value)}</div>
+      <div style={{textAlign: "center"}}>{getRain(state.value)}</div>
     </div>
   )
 }

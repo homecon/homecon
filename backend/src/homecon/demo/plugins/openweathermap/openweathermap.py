@@ -66,7 +66,7 @@ class MockOpenWeatherMapForecastClient(ForecastClient):
                     wind_speed=round(15 * random.random(), 2),
                     wind_direction=round(360 * random.random(), 2),
                     icon=list(self.ICON_MAP.values())[random.randint(0, len(self.ICON_MAP)-1)],
-                    rain=round(1 * random.random(), 2),
+                    rain=round(30 * random.random(), 0),
                 )
             )
 
@@ -86,7 +86,7 @@ class MockOpenWeatherMapForecastClient(ForecastClient):
                     wind_speed=round(15 * random.random(), 2),
                     wind_direction=round(360 * random.random(), 2),
                     icon=list(self.ICON_MAP.values())[random.randint(0, len(self.ICON_MAP)-1)],
-                    rain=round(1 * random.random(), 2),
+                    rain=round(30 * random.random(), 0),
                 )
             )
 
