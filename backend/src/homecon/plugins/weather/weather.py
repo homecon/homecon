@@ -2,9 +2,6 @@
 # -*- coding: utf-8 -*-
 
 import logging
-from datetime import datetime
-# import ephem
-# import numpy as np
 
 from dataclasses import dataclass
 from typing import List
