@@ -33,19 +33,19 @@
         "type": "weather-block",
         "config": {
           "daily": true,
-          "timeoffset": 24
+          "timeoffset": 1
         }
       }, {
         "type": "weather-block",
         "config": {
           "daily": true,
-          "timeoffset": 48
+          "timeoffset": 2
         }
       }, {
         "type": "weather-block",
         "config": {
           "daily": true,
-          "timeoffset": 72
+          "timeoffset": 3
         }
       }]
     }]

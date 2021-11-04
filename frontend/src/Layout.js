@@ -147,7 +147,7 @@ function HomeconLayout(props){
               Plugins
             </Route>
             <Route path="/">
-              <HomeconPage page={getPage(props.pagesData, 'home', 'home')}/>
+              <HomeconPage page={getPage(props.pagesData, 'home', 'home')} states={states} ws={ws}/>
             </Route>
           </Switch>
         </main>

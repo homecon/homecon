@@ -3,8 +3,7 @@ import requests
 import json
 import time
 
-from datetime import datetime
-from typing import List
+from typing import List, Optional
 from dataclasses import asdict
 
 from apscheduler.schedulers.background import BackgroundScheduler
@@ -92,7 +91,7 @@ class OpenWeatherMapForecastClient(ForecastClient):
                         timestamp=hourly['dt'],
                         temperature=hourly['temp'],
                         pressure=hourly['pressure'],
-                        relative_humidity=hourly['humidity'],
+                        relative_humidity=hourly['humidity']/100,
                         dew_point=hourly['dew_point'],
                         cloud_cover=hourly['clouds']/100,
                         wind_speed=hourly['wind_speed'],
@@ -110,7 +109,7 @@ class OpenWeatherMapForecastClient(ForecastClient):
                         temperature_min=daily['temp']['min'],
                         temperature_max=daily['temp']['max'],
                         pressure=daily['pressure'],
-                        relative_humidity=daily['humidity'],
+                        relative_humidity=daily['humidity']/100,
                         dew_point=daily['dew_point'],
                         cloud_cover=daily['clouds']/100,
                         wind_speed=daily['wind_speed'],
@@ -151,6 +150,7 @@ class OpenWeatherMap(IPlugin):
 
     def start(self):
         self._scheduler.start()
+        self._get_forecast()
         logger.info('OpenWeatherMap plugin Initialized')
 
     def stop(self):
@@ -162,16 +162,22 @@ class OpenWeatherMap(IPlugin):
                 logger.info('api key updated, getting forecasts')
                 self._get_forecast()
 
+    def _get_forecast_client(self) -> Optional[ForecastClient]:
+        api_key = self._state_manager.get(path=f'/{self.BASE_STATE}/{self.API_KEY_STATE}').value
+        if api_key is not None and api_key != '':
+            longitude = self._state_manager.get(path='/settings/location/longitude').value
+            latitude = self._state_manager.get(path='/settings/location/latitude').value
+
+            return OpenWeatherMapForecastClient(OpenWeatherMapApiClient(), api_key, longitude, latitude)
+        else:
+            return None
+
     def _get_forecast(self):
         last_update = self._state_manager.get(path=f'/weather/forecast/last_update')
-
         if last_update.value < time.time() - 0.9 * self._interval:
-            api_key = self._state_manager.get(path=f'/{self.BASE_STATE}/{self.API_KEY_STATE}').value
-            if api_key is not None and api_key != '':
-                longitude = self._state_manager.get(path='/settings/location/longitude').value
-                latitude = self._state_manager.get(path='/settings/location/latitude').value
-
-                client = OpenWeatherMapForecastClient(OpenWeatherMapApiClient(), api_key, longitude, latitude)
+            client = self._get_forecast_client()
+            if client is not None:
+                logger.info('getting weather forecast')
                 try:
                     daily_forecasts, hourly_forecasts = client.get_forecast()
                 except NoForecastAvailableException:
@@ -188,5 +194,8 @@ class OpenWeatherMap(IPlugin):
                             state.set_value(asdict(forecast), source=self.name)
 
                     last_update.set_value(int(time.time()), source=self.name)
+                    logger.info('updated weather forecasts')
+            else:
+                logger.info('no weather forecast client available')
         else:
             logger.debug('last update was not long ago, not updating forecasts to avoid api flooding')

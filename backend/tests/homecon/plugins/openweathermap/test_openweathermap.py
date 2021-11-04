@@ -1,5 +1,3 @@
-from datetime import datetime
-
 from homecon.plugins.openweathermap.openweathermap import OpenWeatherMapForecastClient
 from plugins.openweathermap.mock import MockOpenWeatherMapApiClient
 
@@ -15,4 +13,3 @@ class TestOpenWeatherMapApiClient:
         assert daily_forecasts[0].icon == 'sun_7'
 
         assert len(hourly_forecasts) == 48
-        

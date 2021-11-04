@@ -18,7 +18,8 @@ from homecon.plugins.alarms.alarms import Alarms
 from homecon.plugins.shading.shading import Shading
 from homecon.plugins.computed.computed import Computed
 from homecon.plugins.weather.weather import Weather
-from homecon.plugins.openweathermap.openweathermap import OpenWeatherMap
+
+from homecon.demo.plugins.openweathermap.openweathermap import OpenWeatherMap
 
 
 # the current file directory

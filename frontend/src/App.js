@@ -169,7 +169,7 @@ class HomeconWebsocket {
 
           var states = {...this.app.state.states}
           if(states === undefined || states[message.data.id] === undefined){
-            console.warning(`no state with id ${message.data.id}`)
+            console.info(`no state with id ${message.data.id}`)
           }
           else{
             states[message.data.id].value = message.data.value;
