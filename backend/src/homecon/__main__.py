@@ -134,6 +134,8 @@ def get_homecon():
     from homecon.plugins.knx.knx import Knx
     from homecon.plugins.shading.shading import Shading
     from homecon.plugins.computed.computed import Computed
+    from homecon.plugins.weather.weather import Weather
+    from homecon.plugins.openweathermap.openweathermap import OpenWeatherMap
 
     event_manager = EventManager()
     state_manager = DALStateManager(folder=db_dir, uri='sqlite://homecon.db', event_manager=event_manager)
@@ -146,6 +148,8 @@ def get_homecon():
         'shading': Shading('shading', event_manager, state_manager, pages_manager),
         'knx': Knx('knx', event_manager, state_manager, pages_manager),
         'computed': Computed('computed', event_manager, state_manager, pages_manager),
+        'weather': Weather(event_manager, state_manager),
+        'openweathermap': OpenWeatherMap(state_manager),
     })
     executor = ThreadPoolExecutor(max_workers=10)
 
