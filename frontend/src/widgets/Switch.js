@@ -62,8 +62,67 @@ function HomeconSwitch(props){
       <div className={classes.label}>{label}</div>
     </div>
   )
-
 }
 
 
-export {HomeconSwitch};
+function HomeconMultiSwitch(props){
+  const config = props.config;
+
+  const stateId = config.state;
+  const levels = config.values || [
+    {value: 0, icon: 'vent_ventilation_level_0'},
+    {value: 1, icon: 'vent_ventilation_level_1'},
+    {value: 2, icon: 'vent_ventilation_level_2'},
+    {value: 3, icon: 'vent_ventilation_level_3'},
+  ];
+  const threshold = config.threshold || 0.1;
+  const colorOn = config.colorOn || 'f79a1f';
+  const colorOff = config.colorOff || 'ffffff';
+  const states = props.states;
+  const ws = props.ws
+
+  let state = undefined;
+  if(states !== null){
+    state = states[stateId];
+  }
+  if(state === undefined){
+    state = {value: 0, label: ''};
+  }
+  const label = config.label || state.label;
+
+  const handleClick = (value) => {
+    const handle = (event) => {
+      console.log({id: state.id, value: value})
+      ws.send({event: 'state_value', data: {id: state.id, value: value}})
+    };
+    return handle;
+  }
+
+  const getStatusValue = (value, levelValue) => {
+    if(Math.abs(value - levelValue) < threshold){
+      return 1;
+    }
+    return 0;
+  }
+
+  const classes = useStyles();
+
+  return (
+    <div style={{display: "flex", flexDirection: "column"}}>
+
+      <div className={classes.label}>{label}</div>
+      <div style={{display: "flex", flexDirection: "row"}}>
+        {levels.map((level, index) => (
+          <div className={classes.icon} style={{cursor: 'pointer'}} key={index} onClick={handleClick(level.value)}>
+            <BaseStatusLight value={getStatusValue(state.value, level.value)} valueThreshold={0.5} icon={level.icon}
+             colorOn={colorOn} colorOff={colorOff}/>
+          </div>
+        ))}
+      </div>
+
+    </div>
+  )
+}
+
+
+export {HomeconSwitch, HomeconMultiSwitch};

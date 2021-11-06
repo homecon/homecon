@@ -48,11 +48,16 @@
         "title": "Ventilation"
       },
       "widgets": [{
-        "type": "ventilation-speed",
+        "type": "multi-switch",
         "config": {
           "label": "Speed",
           "state": "/central/ventilation/speed",
-          "values": [19, 20, 21, 22]
+          "values": [
+            {"value": 19, "icon":  "vent_ventilation_level_0"},
+            {"value": 20, "icon":  "vent_ventilation_level_1"},
+            {"value": 21, "icon":  "vent_ventilation_level_2"},
+            {"value": 22, "icon":  "vent_ventilation_level_3"}
+          ]
         }
       }]
     }]
@@ -73,6 +78,14 @@
         "config": {
           "label": "Any light on",
           "state": "/lights_on"
+        }
+      }, {
+        "type": "state-value-button",
+        "config": {
+          "label": "Turn all lights off",
+          "state": "/lights_on",
+          "value": 0,
+          "statusState": "/lights_on"
         }
       }]
     }]

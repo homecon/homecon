@@ -5,13 +5,14 @@ import { createStyles, Theme, makeStyles } from '@material-ui/core/styles';
 
 
 import {PageHeader, PageSection} from './PageLayout.js'
-import {HomeconSwitch} from './widgets/Switch.js';
+import {HomeconSwitch, HomeconMultiSwitch} from './widgets/Switch.js';
 import {HomeconDimmer} from './widgets/Dimmer.js';
 import {HomeconValue} from './widgets/Value.js';
 import {HomeconShading} from './widgets/Shading.js';
 import {HomeconAlarm} from './widgets/Alarm.js';
 import {HomeconClock} from './widgets/Clock.js';
 import {HomeconWeatherBlock, HomeconWeatherForecastSummary} from './widgets/Weather.js';
+import {HomeconButton, HomeconStateValueButton} from './widgets/Button.js';
 
 
 const useStyles = makeStyles((theme: Theme) =>
@@ -154,6 +155,16 @@ function HomeconWidget(props){
   else if(type === 'weather-forecast-summary'){
     return <HomeconWeatherForecastSummary config={config} states={states}/>
   }
+  else if(type === 'button'){
+    return <HomeconButton config={config} states={states} ws={ws}/>
+  }
+  else if(type === 'state-value-button'){
+    return <HomeconStateValueButton config={config} states={states} ws={ws}/>
+  }
+  else if(type === 'multi-switch'){
+    return <HomeconMultiSwitch config={config} states={states} ws={ws}/>
+  }
+
 
 
   return (
