@@ -50,7 +50,7 @@ class State:
 
     @value.setter
     def value(self, val):
-        if self._value != val:
+        if self._value != val or self.config.get('force_change', False):
             self.set_value(val)
 
     def set_value(self, val, source: str = None):
