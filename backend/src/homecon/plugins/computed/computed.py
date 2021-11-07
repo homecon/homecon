@@ -21,19 +21,24 @@ class ValueComputer:
     def __init__(self, state_manger: IStateManager):
         self._state_manger = state_manger
         self._locals = {
-            'Value': self.state_value,
-            'Values': self.state_values,
+            'Value': self._state_value,
+            'Values': self._state_values,
             'sin': np.sin,
             'cos': np.cos,
             'exp': np.exp,
             'log': np.log,
+            'abs': np.abs,
+            'min': min,
+            'max': max,
         }
 
-    def state_value(self, path: str) -> Any:
+    def _state_value(self, path: str) -> Any:
         return self._state_manger.get(path).value
 
-    def state_values(self, expr: str) -> List[Any]:
-        return [state.value for state in self._state_manger.find(expr)]
+    def _state_values(self, expr: str) -> List[Any]:
+        values = {state.id: state.value for state in self._state_manger.find(expr)}
+        logger.debug(values)
+        return list(values.values())
 
     def compute_value(self, expr: str) -> Any:
         try:
@@ -71,11 +76,12 @@ class Computed(BasePlugin):
         logger.debug('Computed plugin initialized')
 
     def _try_to_add_state_to_mapping(self, state):
-        computed_config = state.config.get(self.COMPUTED)
-        if computed_config is not None:
+        computed_config_dict = state.config.get(self.COMPUTED)
+        if computed_config_dict is not None:
             try:
-                self._computed_mapping[state.id] = ComputedConfig.from_dict(computed_config)
-                logger.debug(f'added state {state.id} to the computed mapping with config {ComputedConfig}')
+                computed_config = ComputedConfig.from_dict(computed_config_dict)
+                self._computed_mapping[state.id] = computed_config
+                logger.debug(f'added state {state.id} to the computed mapping with config {computed_config}')
             except TypeError:
                 logger.exception('could not add state to computed_mapping')
         elif state.id in self._computed_mapping:
