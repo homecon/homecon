@@ -1,12 +1,14 @@
 import pytest
 
 from unittest.mock import MagicMock
+from dataclasses import asdict
 
 from homecon.core.event import Event
 from homecon.core.states.state import MemoryStateManager
 from homecon.core.pages.pages import IPagesManager
-from homecon.tests import DummyEventManager
-from homecon.plugins.computed.computed import ValueComputer, EvaluationError, Computed
+from homecon.plugins.computed.computed import ValueComputer, EvaluationError, Computed, ComputedConfig
+
+from mocks import DummyEventManager
 
 
 class TestValueComputer:
@@ -38,18 +40,23 @@ class TestValueComputer:
 
 
 class TestComputed:
+    test_config = ComputedConfig(
+        '10 * Value("/b")',
+        '/b'
+    )
+
     def test_listen_state_added(self):
         event_manager = DummyEventManager()
         state_manager = MemoryStateManager(event_manager)
         computed = Computed('computed', event_manager, state_manager, IPagesManager)
-        a = state_manager.add('a', config={'computed': 'test'})
+        a = state_manager.add('a', config={'computed': asdict(self.test_config)})
         computed.listen_state_added(Event(event_manager, 'state_added', {'state': a}))
-        assert computed._computed_mapping == {0: 'test'}
+        assert computed._computed_mapping == {0: self.test_config}
 
     def test_listen_state_deleted(self):
         event_manager = DummyEventManager()
         state_manager = MemoryStateManager(event_manager)
-        a = state_manager.add('a', config={'computed': 'test'})
+        a = state_manager.add('a', config={'computed': asdict(self.test_config)})
 
         computed = Computed('computed', event_manager, state_manager, IPagesManager)
         computed.listen_state_deleted(Event(event_manager, 'state_deleted', {'state': a}))
@@ -58,7 +65,7 @@ class TestComputed:
     def test_listen_state_updated_remove_computed(self):
         event_manager = DummyEventManager()
         state_manager = MemoryStateManager(event_manager)
-        a = state_manager.add('a', config={'computed': 'test'})
+        a = state_manager.add('a', config={'computed': asdict(self.test_config)})
 
         computed = Computed('computed', event_manager, state_manager, IPagesManager)
         a.config = {}
@@ -71,24 +78,25 @@ class TestComputed:
         a = state_manager.add('a', config={})
 
         computed = Computed('computed', event_manager, state_manager, IPagesManager)
-        a.config = {'computed': 'test'}
+        a.config = {'computed': asdict(self.test_config)}
         computed.listen_state_updated(Event(event_manager, 'state_changed', {'state': a}))
-        assert computed._computed_mapping == {0: 'test'}
+        assert computed._computed_mapping == {0: self.test_config}
 
     def test_listen_state_updated_edit_computed(self):
         event_manager = DummyEventManager()
         state_manager = MemoryStateManager(event_manager)
-        a = state_manager.add('a', config={'computed': 'test'})
+        a = state_manager.add('a', config={'computed': asdict(self.test_config)})
 
         computed = Computed('computed', event_manager, state_manager, IPagesManager)
-        a.config = {'computed': '123'}
+        new_config = ComputedConfig('123', '/c')
+        a.config = {'computed': asdict(new_config)}
         computed.listen_state_updated(Event(event_manager, 'state_changed', {'state': a}))
-        assert computed._computed_mapping == {0: '123'}
+        assert computed._computed_mapping == {0: new_config}
 
     def test_listen_state_value_changed(self):
         event_manager = DummyEventManager()
         state_manager = MemoryStateManager(event_manager)
-        a = state_manager.add('a', config={'computed': '10 * Value("/b")'})
+        a = state_manager.add('a', config={'computed': asdict(self.test_config)})
         b = state_manager.add('b', value=5)
 
         computed = Computed('computed', event_manager, state_manager, IPagesManager)
@@ -99,12 +107,26 @@ class TestComputed:
     def test_listen_state_value_changed_equal(self):
         event_manager = DummyEventManager()
         state_manager = MemoryStateManager(event_manager)
-        a = state_manager.add('a', config={'computed': '10 * Value("/b")'}, value=50)
+        a = state_manager.add('a', config={'computed': asdict(self.test_config)}, value=50)
         a.set_value = MagicMock()
         b = state_manager.add('b', value=5)
 
         computed = Computed('computed', event_manager, state_manager, IPagesManager)
         computed.start()
         computed.listen_state_value_changed(Event(event_manager, 'state_changed', {'state': b}))
+
+        assert not a.set_value.called
+
+    def test_listen_state_value_changed_not_triggered(self):
+        event_manager = DummyEventManager()
+        state_manager = MemoryStateManager(event_manager)
+        a = state_manager.add('a', config={'computed': asdict(self.test_config)}, value=1)
+        a.set_value = MagicMock()
+        b = state_manager.add('b', value=5)
+        c = state_manager.add('c', value=1)
+
+        computed = Computed('computed', event_manager, state_manager, IPagesManager)
+        computed.start()
+        computed.listen_state_value_changed(Event(event_manager, 'state_changed', {'state': c}))
 
         assert not a.set_value.called
