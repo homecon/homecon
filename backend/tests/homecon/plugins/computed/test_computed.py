@@ -53,6 +53,14 @@ class TestComputed:
         computed.listen_state_added(Event(event_manager, 'state_added', {'state': a}))
         assert computed._computed_mapping == {0: self.test_config}
 
+    def test_listen_state_added_mis_configured(self):
+        event_manager = DummyEventManager()
+        state_manager = MemoryStateManager(event_manager)
+        computed = Computed('computed', event_manager, state_manager, IPagesManager)
+        a = state_manager.add('a', config={'computed': 'nonsense'})
+        computed.listen_state_added(Event(event_manager, 'state_added', {'state': a}))
+        assert computed._computed_mapping == {}
+
     def test_listen_state_deleted(self):
         event_manager = DummyEventManager()
         state_manager = MemoryStateManager(event_manager)

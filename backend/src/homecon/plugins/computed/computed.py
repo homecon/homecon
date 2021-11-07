@@ -70,26 +70,31 @@ class Computed(BasePlugin):
                 self._computed_mapping[state.id] = ComputedConfig.from_dict(computed_config)
         logger.debug('Computed plugin initialized')
 
-    def listen_state_added(self, event: Event):
-        state = event.data['state']
+    def _try_to_add_state_to_mapping(self, state):
         computed_config = state.config.get(self.COMPUTED)
         if computed_config is not None:
-            self._computed_mapping[state.id] = ComputedConfig.from_dict(computed_config)
-
-    def listen_state_updated(self, event: Event):
-        state = event.data['state']
-        computed_config = state.config.get(self.COMPUTED)
-        if computed_config is not None:
-            self._computed_mapping[state.id] = ComputedConfig.from_dict(computed_config)
-            logger.debug(f'added state {state.id} to the computed mapping with config {ComputedConfig}')
+            try:
+                self._computed_mapping[state.id] = ComputedConfig.from_dict(computed_config)
+                logger.debug(f'added state {state.id} to the computed mapping with config {ComputedConfig}')
+            except TypeError:
+                logger.exception('could not add state to computed_mapping')
         elif state.id in self._computed_mapping:
             del self._computed_mapping[state.id]
             logger.debug(f'removed state {state.id} from the computed mapping')
+
+    def listen_state_added(self, event: Event):
+        state = event.data['state']
+        self._try_to_add_state_to_mapping(state)
+
+    def listen_state_updated(self, event: Event):
+        state = event.data['state']
+        self._try_to_add_state_to_mapping(state)
 
     def listen_state_deleted(self, event: Event):
         state = event.data['state']
         if state.id in self._computed_mapping:
             del self._computed_mapping[state.id]
+            logger.debug(f'removed state {state.id} from the computed mapping')
 
     def listen_state_value_changed(self, event: Event):
         for state_id, computed_config in self._computed_mapping.items():
