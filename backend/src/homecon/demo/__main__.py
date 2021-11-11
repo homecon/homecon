@@ -3,7 +3,8 @@ import json
 import os
 import logging
 
-from homecon.core.states.state import IStateManager, MemoryStateManager
+from homecon.core.states.state import IStateManager
+from homecon.core.states.memory_state_manager import MemoryStateManager
 from homecon.core.event import EventManager
 from homecon.core.pages.pages import IPagesManager, MemoryPagesManager
 from homecon.core.plugins.plugin import MemoryPluginManager

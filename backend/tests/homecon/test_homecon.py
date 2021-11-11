@@ -3,7 +3,8 @@ from unittest import TestCase
 from homecon.homecon import HomeCon, IExecutor
 from homecon.core.event import EventManager
 from homecon.core.plugins.plugin import BasePlugin, IPluginManager
-from homecon.core.states.state import State, MemoryStateManager
+from homecon.core.states.state import State
+from homecon.core.states.memory_state_manager import MemoryStateManager
 from homecon.core.pages.pages import MemoryPagesManager
 
 

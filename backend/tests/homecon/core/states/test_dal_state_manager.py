@@ -81,3 +81,14 @@ class TestDALStateManager(TestCase):
         state_manager = DALStateManager(self.DB_DIR, self.DB_URI, EventManager())
         s = state_manager.get(path='/test')
         assert s.id == 1
+
+    def test_update_store_history(self):
+        state_manager = DALStateManager(self.DB_DIR, self.DB_URI, EventManager())
+        s = state_manager.add('mystate', value=5, store_history=True)
+        s.update(value={'test': 123})
+        assert s.value == {'test': 123}
+
+        timeseries = state_manager.get_state_history(s.id, since=0)
+        assert len(timeseries) == 2
+        assert timeseries[0].value == 5
+        assert timeseries[1].value == {'test': 123}

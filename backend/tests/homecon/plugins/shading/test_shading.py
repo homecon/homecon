@@ -1,12 +1,13 @@
 from datetime import datetime
 from pytest import approx
 
-from homecon.core.states.state import State, MemoryStateManager
+from homecon.core.states.state import State
+from homecon.core.states.memory_state_manager import MemoryStateManager
 from homecon.core.event import IEventManager, Event
 
 from homecon.plugins.shading.shading import IShading, StateBasedShading, IWantedHeatGainCalculator, \
     EqualShadingPositionCalculator, StateBasedHeatingCurveWantedHeatGainCalculator, ShadingController
-from homecon.tests import DummyEventManager
+from mocks import DummyEventManager
 
 
 class TestStateBasedShading:

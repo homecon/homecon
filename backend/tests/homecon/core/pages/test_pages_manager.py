@@ -1,6 +1,6 @@
 from unittest import TestCase
 from homecon.core.pages.pages import MemoryPagesManager
-from homecon.core.states.state import MemoryStateManager
+from homecon.core.states.memory_state_manager import MemoryStateManager
 from homecon.core.event import IEventManager
 
 
