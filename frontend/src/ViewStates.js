@@ -15,6 +15,7 @@ import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 import Select from '@material-ui/core/Select';
 import InputLabel from '@material-ui/core/InputLabel';
+import Checkbox from '@material-ui/core/Checkbox';
 
 import Menu from '@material-ui/core/Menu';
 import MenuItem from '@material-ui/core/MenuItem';
@@ -55,6 +56,7 @@ function EditStateDialog(props){
   const [unit, setUnit] = useState('')
   const [label, setLabel] = useState('')
   const [description, setDescription] = useState('')
+  const [logKey, setLogKey] = useState('')
   const [config, setConfig] = useState('{}')
   const [value, setValue] = useState('')
 
@@ -67,6 +69,7 @@ function EditStateDialog(props){
       setUnit(state.unit || '');
       setLabel(state.label || '');
       setDescription(state.description || '');
+      setLogKey(state.log_key || '');
       setConfig(state.config !== null ? JSON.stringify(state.config, undefined, 2) : '{}');
       setValue(state.value !== null ? JSON.stringify(state.value) : '');
     }
@@ -124,10 +127,26 @@ function EditStateDialog(props){
     newState.quantity = quantity;
     newState.label = label;
     newState.description = description;
+    newState.log_key = logKey;
     newState.config = JSON.parse(config);
     newState.value = newValue;
 
     onSave(newState);
+  }
+
+  const handleLogKeyCheckbox = (value) => {
+    const UUIDGeneratorBrowser = () =>
+      ([1e7] + -1e3 + -4e3 + -8e3 + -1e11).replace(/[018]/g, c =>
+        (c ^ (crypto.getRandomValues(new Uint8Array(1))[0] & (15 >> (c / 4)))).toString(16)
+      );
+
+    if(value) {
+      setLogKey(UUIDGeneratorBrowser())
+    }
+    else {
+      setLogKey('')
+    }
+
   }
 
   return (
@@ -147,6 +166,13 @@ function EditStateDialog(props){
           <TextField label="Unit" value={unit} onChange={(e) => setUnit(e.target.value)}/>
           <TextField label="Label" value={label} onChange={(e) => setLabel(e.target.value)}/>
           <TextField label="Description" value={description} onChange={(e) => setDescription(e.target.value)}/>
+          <div style={{marginTop: '10px', width: '100%'}}>
+            <InputLabel>Log Values</InputLabel>
+            <div style={{display: 'flex', flexDirection: 'row'}}>
+              <Checkbox style={{marginTop: '10px'}} checked={logKey !== ''} onChange={(e) => handleLogKeyCheckbox(e.target.checked)}/>
+              <TextField label="Key" value={logKey} onChange={(e) => setLogKey(e.target.value)} style={{flexGrow: 1}}/>
+            </div>
+          </div>
           <TextField label="Config" value={config} onChange={(e) => setConfig(e.target.value)} multiline/>
           <TextField label="Value" value={value} onChange={(e) => setValue(e.target.value)}/>
         </div>

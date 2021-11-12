@@ -46,13 +46,18 @@ def create_states(state_manager: IStateManager):
     state_manager.add('dimmer', parent=state_manager.get('/ground_floor/kitchen/lights'),
                       type='float', quantity='', unit='',
                       label='Kitchen dimmer', description='')
-    state_manager.add('lights_on', config={'computed': '1 if sum([v for v in Values(".*/lights/.*") if v is not None]) > 0 else 0'})
+    state_manager.add('lights_on', config={
+        'computed': {
+            'value': '1 if sum([v for v in Values(".*/lights/.*") if v is not None]) > 0 else 0',
+            'trigger': '.*/lights/.*'
+        }
+    })
 
     state_manager.add('living', parent=state_manager.get('/ground_floor'))
     state_manager.add('lights', parent=state_manager.get('/ground_floor/living'))
     state_manager.add('light', parent=state_manager.get('/ground_floor/living/lights'),
                       type='bool', quantity='', unit='',
-                      label='Living room light', description='')
+                      label='Living room light', description='', log_key=None)
 
     state_manager.add('windows', parent=state_manager.get('/ground_floor/kitchen'))
     state_manager.add('south', parent=state_manager.get('/ground_floor/kitchen/windows'))
@@ -67,13 +72,14 @@ def create_states(state_manager: IStateManager):
                       label='Position', description='')
 
     state_manager.add('myalarms')
-    state_manager.add('dummy', parent=state_manager.get('/myalarms'), type='action', value=[
-        {'state': state_manager.get('/ground_floor/kitchen/some_value').id, 'value': 10},
+    state_manager.add('all_lights_off', label='All lights off', parent=state_manager.get('/myalarms'), type='action', value=[
+        {'state': '.*/lights/.*', 'value': 0},
+        {'state': state_manager.get('/ground_floor/kitchen/some_value').id, 'value': 10, 'delay': 0},
         {'state': state_manager.get('/ground_floor/kitchen/some_value').id, 'value': 0, 'delay': 5}
-    ], label='Dummy')
+    ])
     state_manager.add('1', parent=state_manager.get('/myalarms'), type='alarm',
                       value={'trigger': {'day_of_week': '0,1,2,3,6', 'hour': '20', 'minute': '0'},
-                             'action': state_manager.get('/myalarms/dummy').id})
+                             'action': state_manager.get('/myalarms/all_lights_off').id})
     state_manager.add('central')
     state_manager.add('ventilation', parent=state_manager.get('/central'))
     state_manager.add('speed', parent=state_manager.get('/central/ventilation'),

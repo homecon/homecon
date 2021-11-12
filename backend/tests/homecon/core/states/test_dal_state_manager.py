@@ -52,6 +52,7 @@ class TestDALStateManager(TestCase):
         assert s.name == 'mystate'
         assert s.parent is None
         assert s.value is None
+        assert s.log_key == s.NO_LOGGING_KEY
 
         state_manager = DALStateManager(self.DB_DIR, self.DB_URI, EventManager())
         s = state_manager.get(id=1)
@@ -82,13 +83,22 @@ class TestDALStateManager(TestCase):
         s = state_manager.get(path='/test')
         assert s.id == 1
 
-    def test_update_store_history(self):
+    def test_update_log_values(self):
         state_manager = DALStateManager(self.DB_DIR, self.DB_URI, EventManager())
-        s = state_manager.add('mystate', value=5, store_history=True)
-        s.update(value={'test': 123})
-        assert s.value == {'test': 123}
+        s0 = state_manager.add('myotherstate', value=20, log_key=None)
+        assert s0.log_key is not None
 
-        timeseries = state_manager.get_state_history(s.id, since=0)
-        assert len(timeseries) == 2
-        assert timeseries[0].value == 5
-        assert timeseries[1].value == {'test': 123}
+        s1 = state_manager.add('mystate', value=5, log_key=None)
+        assert s1.log_key is not None
+
+        s1.update(value={'test': 123})
+        assert s1.value == {'test': 123}
+
+        timeseries0 = state_manager.get_state_values_log(s0, since=0)
+        assert len(timeseries0) == 1
+        assert timeseries0[0].value == 20
+
+        timeseries1 = state_manager.get_state_values_log(s1, since=0)
+        assert len(timeseries1) == 2
+        assert timeseries1[0].value == 5
+        assert timeseries1[1].value == {'test': 123}

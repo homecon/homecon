@@ -44,24 +44,24 @@ class MemoryStateManager(IStateManager):
         return id_
 
     def update(self, state: State):
-        if state.store_history:
-            if state.id not in self._state_timeseries:
-                self._state_timeseries[state.id] = []
-            self._state_timeseries[state.id].append((int(time.time()), state.value))
+        if state.log_key != state.NO_LOGGING_KEY:
+            if state.log_key not in self._state_timeseries:
+                self._state_timeseries[state.log_key] = []
+            self._state_timeseries[state.log_key].append((int(time.time()), state.value))
 
-    def get_state_history(self, state_id: int, since: int, until: Optional[int] = None) -> List[TimestampedValue]:
-        timeseries = self._state_timeseries.get(state_id)
+    def get_state_values_log(self, state: State, since: int, until: Optional[int] = None) -> List[TimestampedValue]:
+        timeseries = self._state_timeseries.get(state.log_key)
         return [TimestampedValue(t, v) for t, v in timeseries if since <= t and (until is None or t < until)]
 
     def _create_state(self, name: str, parent: Optional[State] = None,
                       type: Optional[str] = None, quantity: Optional[str] = None, unit: Optional[str] = None,
-                      label: Optional[str] = None, description: Optional[str] = None, store_history: Optional[bool] = False,
+                      label: Optional[str] = None, description: Optional[str] = None, log_key: Optional[str] = '',
                       config: Optional[dict] = None, value: Optional[Any] = None) -> State:
 
         id_ = self.get_new_id()
         state = State(self, self.event_manager, id_, name, parent=parent, type=type,
                       quantity=quantity, unit=unit, label=label,
-                      description=description, store_history=store_history, config=config,
+                      description=description, log_key=log_key, config=config,
                       value=value)
         self._states[state.id] = state
         return state
