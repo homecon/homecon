@@ -4,7 +4,8 @@ from uuid import uuid4
 import os
 import json
 
-from homecon.core.states.state import config_state_paths_to_ids, IStateManager, config_state_ids_to_paths
+from homecon.core.states.state import IStateManager
+from homecon.core.states.util import config_state_paths_to_ids, config_state_ids_to_paths
 
 
 class Group:

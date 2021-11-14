@@ -94,11 +94,26 @@ class TestDALStateManager(TestCase):
         s1.update(value={'test': 123})
         assert s1.value == {'test': 123}
 
-        timeseries0 = state_manager.get_state_values_log(s0, since=0)
+        timeseries0 = state_manager.get_state_values_log(s0, since=0.)
         assert len(timeseries0) == 1
         assert timeseries0[0].value == 20
 
-        timeseries1 = state_manager.get_state_values_log(s1, since=0)
+        timeseries1 = state_manager.get_state_values_log(s1, since=0.)
         assert len(timeseries1) == 2
         assert timeseries1[0].value == 5
         assert timeseries1[1].value == {'test': 123}
+
+    def test_query_log_values_initial_value(self):
+        state_manager = DALStateManager(self.DB_DIR, self.DB_URI, EventManager())
+        s0 = state_manager.add('myotherstate', value=0, log_key=None)
+        s0.update(value=1)
+        now = time.time()
+        s0.update(value=0)
+
+        timeseries0 = state_manager.get_state_values_log(s0, since=now)
+        print(timeseries0)
+        assert len(timeseries0) == 2
+        assert timeseries0[0].value == 1
+        assert timeseries0[1].value == 0
+        assert timeseries0[0].timestamp < now
+        assert timeseries0[1].timestamp >= now

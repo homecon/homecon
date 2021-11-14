@@ -33,7 +33,7 @@ class DALStateManager(MemoryStateManager):
         self._table_values_log = self._db.define_table(
             'state_values_log',
             Field('state_key', type='string'),
-            Field('timestamp', type='integer'),
+            Field('timestamp', type='float'),
             Field('value', type='string'),
         )
 
@@ -69,14 +69,22 @@ class DALStateManager(MemoryStateManager):
         except Exception:
             logger.exception('could not store state')
 
-    def get_state_values_log(self, state: State, since: int, until: Optional[int] = None) -> List[TimestampedValue]:
+    def get_state_values_log(self, state: State, since: float, until: Optional[float] = None) -> List[TimestampedValue]:
         table = self._table_values_log
         if until is None:
             query = (table.state_key == state.log_key) & (table.timestamp >= since)
         else:
             query = (table.state_key == state.log_key) & (table.timestamp >= since) & (table.timestamp < until)
         rows = self._db(query).select(table.ALL)
-        return [TimestampedValue(row['timestamp'], json.loads(row['value'])) for row in rows]
+        timeseries = [TimestampedValue(row['timestamp'], json.loads(row['value'])) for row in rows]
+
+        if len(timeseries) > 0 and timeseries[0].timestamp > since:
+            # get the first entry less than since
+            row = self._db((table.state_key == state.log_key) & (table.timestamp < since)).select(table.ALL).last()
+            if row is not None:
+                timeseries = [TimestampedValue(row['timestamp'], json.loads(row['value']))] + timeseries
+        return timeseries
+
 
     def _row_to_state(self, row) -> State:
         parent = self._states.get(row['parent'])  # FIXME this could cause problems related to the order of states in the db
@@ -111,4 +119,4 @@ class DALStateManager(MemoryStateManager):
             return state
 
     def _store_state_log(self, state):
-        self._table_values_log.insert(state_key=state.log_key, timestamp=int(time.time()), value=json.dumps(state.value))
+        self._table_values_log.insert(state_key=state.log_key, timestamp=time.time(), value=json.dumps(state.value))

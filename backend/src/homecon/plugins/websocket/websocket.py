@@ -9,6 +9,7 @@ from http import HTTPStatus
 
 import websockets
 
+from homecon.core.event import Event
 from homecon.core.plugins.plugin import BasePlugin
 
 
@@ -20,6 +21,11 @@ class Logger(logging.Logger):
 
 
 logger = logging.getLogger(__name__)
+
+
+class WebsocketEvents:
+    WEBSOCKET_SEND = 'websocket_send'
+    WEBSOCKET_REPLY = 'websocket_reply'
 
 
 class Websocket(BasePlugin):
@@ -53,12 +59,12 @@ class Websocket(BasePlugin):
                 self._clients[client.id] = client
 
             address = client.address
-            logger.debug('incomming connection from {}'.format(address))
+            logger.debug('incoming connection from {}'.format(address))
 
             try:
                 while True:
                     message = await websocket.recv()
-                    logger.debug(f'recieved message, {message}')
+                    logger.debug(f'received message, {message}')
                     if message is None:
                         break
                     # parse the message and fire an event if the data is in the correct format
@@ -123,7 +129,7 @@ class Websocket(BasePlugin):
 
         logger.debug('Client on {} sent {}'.format(address, newdata))
 
-    def send(self, data, clients=None, readusers=None, readgroups=None):
+    def send(self, data, clients=None):
         """
         Send data to clients
 
@@ -134,12 +140,6 @@ class Websocket(BasePlugin):
 
         clients: list of Client or single Client, optional
             Clients to send the data to
-
-        readusers: list, optional
-            List of user id's which are allowed to read the data
-
-        readgroups: list, optional
-            List of group id's which are allowed to read the data
         """
 
         if clients is None:
@@ -148,48 +148,27 @@ class Websocket(BasePlugin):
         if not hasattr(clients, '__len__'):
             clients = {'temp': clients}
         for client in clients.values():
-            if (self.check_readpermission(client, readusers=readusers, readgroups=readgroups)
-                    or data['event'] == 'request_token'):
+            if self.check_readpermission(client):
                 asyncio.run_coroutine_threadsafe(client.send(data), loop=self._loop)
 
-    def check_readpermission(self, client, readusers=None, readgroups=None):
+    def check_readpermission(self, client):
         """
         Check if a client has the permission to read based on the readusers and
         readgroups lists
 
         """
         return True
-        # FIXME
-        permitted = False
-        if client.tokenpayload:
-            if readusers is None and readgroups is None:
-                permitted = True
-            else:
-                if readusers is None:
-                    readusers = []
 
-                if readgroups is None:
-                    readgroups = []
-
-                if client.tokenpayload['userid'] in readusers:
-                    permitted = True
-                else:
-                    for g in client.tokenpayload['groupids']:
-                        if g in readgroups:
-                            permitted = True
-                            break
-        return permitted
-
-    def listen_websocket_send(self, event):
+    def listen_websocket_send(self, event: Event):
         self.send(event.data)
 
-    def listen_websocket_reply(self, event):
+    def listen_websocket_reply(self, event: Event):
         self.send(event.data)
 
     def listen_reply(self, event):
         self.send(event.data)
 
-    def listen_state_value_changed(self, event):
+    def listen_state_value_changed(self, event: Event):
         self.send({
             'event': 'state_value',
             'data': {
@@ -199,7 +178,7 @@ class Websocket(BasePlugin):
             }
         })
 
-    def listen_state_updated(self, event):
+    def listen_state_updated(self, event: Event):
         self.send({
             'event': 'state',
             'data': {

@@ -205,6 +205,19 @@
           "positionOpen": 0, "positionClosed": 255
         }
       }]
+    }, {
+      "name": "charts",
+      "config": {
+        "type": "raised",
+        "title": "Charts"
+      },
+      "widgets": [{
+        "type": "chart",
+        "config": {
+          "title": "light",
+          "states": ["/ground_floor/living/lights/light"]
+        }
+      }]
     }]
   }]
 }, {

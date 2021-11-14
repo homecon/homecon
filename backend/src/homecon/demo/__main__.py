@@ -19,6 +19,7 @@ from homecon.plugins.alarms.alarms import Alarms
 from homecon.plugins.shading.shading import Shading
 from homecon.plugins.computed.computed import Computed
 from homecon.plugins.weather.weather import Weather
+from homecon.plugins.timeseries.timeseries import TimeSeries
 
 from homecon.demo.plugins.openweathermap.openweathermap import OpenWeatherMap
 
@@ -125,6 +126,7 @@ def get_homecon():
         'computed': Computed('computed', event_manager, state_manager, pages_manager),
         'weather': Weather(event_manager, state_manager),
         'openweathermap': OpenWeatherMap(state_manager),
+        'timeseries': TimeSeries(event_manager, state_manager),
     })
     executor = ThreadPoolExecutor(max_workers=10)
 

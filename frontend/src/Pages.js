@@ -13,6 +13,7 @@ import {HomeconAlarm} from './widgets/Alarm.js';
 import {HomeconClock} from './widgets/Clock.js';
 import {HomeconWeatherBlock, HomeconWeatherForecastSummary} from './widgets/Weather.js';
 import {HomeconButton, HomeconStateValueButton} from './widgets/Button.js';
+import {HomeconChart} from './widgets/Chart.js';
 
 
 const useStyles = makeStyles((theme: Theme) =>
@@ -163,6 +164,9 @@ function HomeconWidget(props){
   }
   else if(type === 'multi-switch'){
     return <HomeconMultiSwitch config={config} states={states} ws={ws}/>
+  }
+  else if(type === 'chart'){
+    return <HomeconChart config={config} states={states} ws={ws}/>
   }
 
 

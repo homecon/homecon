@@ -14,6 +14,12 @@ class StateEventsTypes:
     STATE_ADDED = 'state_added'
 
 
+@dataclass
+class TimestampedValue:
+    timestamp: float
+    value: Any
+
+
 class State:
 
     NO_LOGGING_KEY = ''
@@ -48,8 +54,9 @@ class State:
         self._event_manager.fire(StateEventsTypes.STATE_UPDATED, data={'state': self})
 
     def notify_value_changed(self, old_val=None, source=None):
-        self._event_manager.fire(StateEventsTypes.STATE_VALUE_CHANGED, source=source,
-                                 data={'state': self, 'old': old_val, 'new': self._value})
+        self._event_manager.fire(StateEventsTypes.STATE_VALUE_CHANGED,
+                                 data={'state': self, 'old': old_val, 'new': self._value},
+                                 source=source)
 
     @property
     def value(self):
@@ -101,6 +108,9 @@ class State:
         else:
             return '{}/{}'.format(self.parent.path, self.name)
 
+    def get_values_log(self, since: float, until: Optional[float] = None) -> List[TimestampedValue]:
+        return self._state_manager.get_state_values_log(self, since, until=until)
+
     def __call__(self):
         return self.value
 
@@ -115,12 +125,6 @@ class State:
             'description': self.description, 'log_key': self.log_key,
             'config': self.config or {}
         }
-
-
-@dataclass
-class TimestampedValue:
-    timestamp: int
-    value: Any
 
 
 class IStateManager:
@@ -170,7 +174,7 @@ class IStateManager:
         state.notify_created()
         return state
 
-    def get_state_values_log(self, state_id: int, since: int, until: int) -> List[TimestampedValue]:
+    def get_state_values_log(self, state: State, since: float, until: float) -> List[TimestampedValue]:
         raise NotImplementedError
 
     def export_states(self) -> List[dict]:
@@ -199,35 +203,3 @@ class IStateManager:
 
         for state_dict in sorted(states_list, key=lambda x: len(x.get('parent_path') or '')):
             self.add(**state_dict)
-
-
-def config_state_paths_to_ids(config, state_manager: IStateManager):
-    """
-    Checks for state paths in a dict and converts them to the correct state id.
-    """
-    if config is not None:
-        for key, val in config.items():
-            if isinstance(val, str) and val.startswith('/'):
-                try:
-                    state = state_manager.get(path=val)
-                except:
-                    pass
-                else:
-                    if state is not None:
-                        config[key] = state.id
-
-
-def config_state_ids_to_paths(config, state_manager: IStateManager):
-    """
-    Checks for state ids in a dict and converts them to the correct state path.
-    """
-    if config is not None:
-        for key, val in config.items():
-            if 'state' in key and isinstance(val, int):
-                try:
-                    state = state_manager.get(id=val)
-                except:
-                    pass
-                else:
-                    if state is not None:
-                        config[key] = state.path

@@ -186,6 +186,7 @@ def main(printlog=False, loglevel='INFO', dbloglevel='INFO', httploglevel='INFO'
 
     logging.root.setLevel(getattr(logging, loglevel))
     logging.getLogger('homecon.core.database').setLevel(getattr(logging, dbloglevel))
+    logging.getLogger('websockets.protocol').setLevel(logging.INFO)
 
     if configure:
         configure_(create_folders=create_folders, set_static_ip=set_static_ip, ip=ip, run_init_script=run_init_script,

@@ -47,11 +47,17 @@ class MemoryStateManager(IStateManager):
         if state.log_key != state.NO_LOGGING_KEY:
             if state.log_key not in self._state_timeseries:
                 self._state_timeseries[state.log_key] = []
-            self._state_timeseries[state.log_key].append((int(time.time()), state.value))
+            self._state_timeseries[state.log_key].append(TimestampedValue(time.time(), state.value))
 
-    def get_state_values_log(self, state: State, since: int, until: Optional[int] = None) -> List[TimestampedValue]:
-        timeseries = self._state_timeseries.get(state.log_key)
-        return [TimestampedValue(t, v) for t, v in timeseries if since <= t and (until is None or t < until)]
+    def get_state_values_log(self, state: State, since: float, until: Optional[float] = None) -> List[TimestampedValue]:
+        full_timeseries = self._state_timeseries.get(state.log_key, [])
+
+        timeseries = [v for v in full_timeseries if since <= v.timestamp and (until is None or v.timestamp < until)]
+        if len(timeseries) > 0 and timeseries[0].timestamp > since:
+            initial_values = [v for v in full_timeseries if v.timestamp < timeseries[0].timestamp]
+            if len(initial_values) > 0:
+                timeseries = [initial_values[-1]] + timeseries
+        return timeseries
 
     def _create_state(self, name: str, parent: Optional[State] = None,
                       type: Optional[str] = None, quantity: Optional[str] = None, unit: Optional[str] = None,

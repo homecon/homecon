@@ -155,6 +155,7 @@ class HomeconWebsocket {
           window.localStorage.setItem('pages_data', JSON.stringify(message.data.value));
           this.parse_pages_data(message.data.value)
         }
+
         else if(message.event === 'state_list'){
           const states = {};
           message.data.value.forEach((item, index) => {
@@ -165,6 +166,7 @@ class HomeconWebsocket {
           });
 
         }
+
         else if(message.event === 'state_value'){
 
           var states = {...this.app.state.states}
@@ -179,6 +181,35 @@ class HomeconWebsocket {
             states: states
           });
         }
+
+        else if(message.event === 'state_timeseries'){
+          var states = {...this.app.state.states}
+          if(states === undefined || states[message.data.id] === undefined){
+            console.info(`no state with id ${message.data.id}`)
+          }
+          else{
+            states[message.data.id].timeseries = message.data.timeseries;
+          }
+          this.app.setState({
+            states: states
+          });
+        }
+
+        else if(message.event === 'state_timeseries_update'){
+          var states = {...this.app.state.states}
+          if(states === undefined || states[message.data.id] === undefined){
+            console.info(`no state with id ${message.data.id}`)
+          }
+          else{
+            states[message.data.id].timeseries.push(...message.data.timeseries);
+          }
+
+          this.app.setState({
+            states: states
+          });
+
+        }
+
         else if(this.event_listeners[message.event] !== undefined){
           this.event_listeners[message.event](message)
         }
