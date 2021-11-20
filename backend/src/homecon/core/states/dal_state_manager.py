@@ -85,7 +85,6 @@ class DALStateManager(MemoryStateManager):
                 timeseries = [TimestampedValue(row['timestamp'], json.loads(row['value']))] + timeseries
         return timeseries
 
-
     def _row_to_state(self, row) -> State:
         parent = self._states.get(row['parent'])  # FIXME this could cause problems related to the order of states in the db
         return State(self, self.event_manager, row['id'], row['name'], parent=parent, type=row['type'], quantity=row['quantity'],
