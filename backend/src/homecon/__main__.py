@@ -2,14 +2,14 @@
 import sys
 import os
 import logging
-import time
 import random
 import string
 
 from argparse import ArgumentParser
-from multiprocessing import Process
 from signal import signal, SIGTERM, SIGINT
 from logging.handlers import TimedRotatingFileHandler
+
+from webserver.server import AppServer
 
 
 logger = logging.getLogger(__name__)
@@ -93,14 +93,6 @@ def configure_(create_folders=True,
         configure.install_knxd()
 
 
-def serve_app_(appport=None) -> Process:
-    from webserver.server import app
-    server = Process(target=lambda: app.run(host='0.0.0.0', port=appport))
-    server.start()
-
-    return server
-
-
 def get_homecon():
     """
     create the HomeCon object
@@ -157,7 +149,7 @@ def get_homecon():
     return homecon
 
 
-def main(printlog=False, loglevel='INFO', dbloglevel='INFO', httploglevel='INFO',
+def main(printlog=False, loglevel='INFO', dbloglevel='INFO',
          demo=False, appport=None, serve_app=True,
          configure=False, create_folders=True,
          set_static_ip=True, ip=None,
@@ -195,7 +187,9 @@ def main(printlog=False, loglevel='INFO', dbloglevel='INFO', httploglevel='INFO'
     else:
         app_server = None
         if serve_app:
-            app_server = serve_app_(appport=appport)
+            app_server = AppServer(port=appport)
+            app_server.start()
+            logger.info('serving app at http://0.0.0.0:%s', appport)
 
         if demo:
             from homecon.demo.__main__ import get_homecon as get_homecon_demo
@@ -210,10 +204,7 @@ def main(printlog=False, loglevel='INFO', dbloglevel='INFO', httploglevel='INFO'
             else:
                 homecon.stop()
                 if app_server is not None:
-                    app_server.terminate()
-                    time.sleep(2)
-                    app_server.kill()
-                    app_server.join()
+                    app_server.stop()
 
         signal(SIGTERM, stop)
         signal(SIGINT, stop)
@@ -227,7 +218,6 @@ if __name__ == '__main__':
     parser = ArgumentParser(description='Homecon')
     parser.add_argument('-l', '--loglevel', type=str, choices=['INFO', 'DEBUG'], default='INFO')
     parser.add_argument('--dbloglevel', type=str, choices=['INFO', 'DEBUG'], default='INFO')
-    parser.add_argument('--httploglevel', type=str, choices=['INFO', 'DEBUG'], default='INFO')
     parser.add_argument('--demo', action='store_true')
     parser.add_argument('--printlog', action='store_true')
     parser.add_argument('--noapp', dest='serve_app', action='store_false')

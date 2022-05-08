@@ -8,6 +8,7 @@ from uuid import uuid4
 from http import HTTPStatus
 
 import websockets
+from websockets.exceptions import ConnectionClosedOK
 
 from homecon.core.event import Event
 from homecon.core.plugins.plugin import BasePlugin
@@ -80,6 +81,9 @@ class Websocket(BasePlugin):
                             logger.debug(f'a message was received but contained no event, {data}')
                     except Exception:
                         logger.exception('a message was received but could not be handled')
+            except ConnectionClosedOK:
+                logger.debug('%s connection closed ', address)
+
             finally:
                 with (await clients_lock):
                     del self._clients[client.id]
