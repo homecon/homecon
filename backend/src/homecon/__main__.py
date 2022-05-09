@@ -9,7 +9,7 @@ from argparse import ArgumentParser
 from signal import signal, SIGTERM, SIGINT
 from logging.handlers import TimedRotatingFileHandler
 
-from webserver.server import AppServer
+from homecon.webserver.server import AppServer
 
 
 logger = logging.getLogger(__name__)
