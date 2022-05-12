@@ -4,6 +4,5 @@ VERSION = $(shell backend/src/homecon/__version__.py)
 
 .PHONY: image
 image:
-	docker build --build-arg project=$(PROJECT) -t homecon .
-	docker tag homecon homecon:$(VERSION)
-	docker save homecon:$(VERSION) > dist/homecon-$(VERSION).tar
+	docker build --build-arg project=$(PROJECT) -t brechtba/homecon .
+	docker tag brechtba/homecon brechtba/homecon:$(VERSION)
