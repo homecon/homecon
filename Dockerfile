@@ -1,4 +1,4 @@
-FROM python:3.6
+FROM python:3.8
 
 ARG project=homecon
 
@@ -16,8 +16,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
        libatlas-base-dev \
        libblas-dev \
        libcairo2 \
-       libffi6 \
-       libffi-dev \
        liblapack-dev \
        make \
        python3-tk \
@@ -31,25 +29,25 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
        libfmt-dev \
    && rm -rf /var/lib/apt/lists/*
 
-
 # RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
-RUN mkdir /homecon
-
-COPY ./requirements.txt /homecon
-
-# RUN pip3 --no-cache-dir install -U pip wheel setuptools
-RUN pip3 --no-cache-dir install -r /homecon/requirements.txt
-
-COPY ./homecon       /homecon/homecon
-COPY ./app/build     /homecon/app/build
-
-ENV PYTHONPATH /homecon
-
-
 # knxd
-RUN git clone https://github.com/knxd/knxd.git
+RUN mkdir /knxd
 WORKDIR /knxd
+RUN git clone https://github.com/knxd/knxd.git
+WORKDIR /knxd/knxd
+RUN git checkout debian
+
+# RUN apt-get install --no-install-recommends build-essential devscripts equivs
+# RUN mk-build-deps --install --tool='apt-get --no-install-recommends --yes --allow-unauthenticated' debian/control
+# RUN rm -f knxd-build-deps_*.deb
 RUN dpkg-buildpackage -b -uc
-WORKDIR /
+WORKDIR /knxd
 RUN dpkg -i knxd_*.deb knxd-tools_*.deb
+WORKDIR /
+
+# homecon
+RUN mkdir /homecon
+RUN python3 -m venv /homecon/venv
+COPY ./dist/homecon-0.0.0.tar.gz /homecon
+RUN /homecon/venv/bin/pip --no-cache-dir install /homecon/homecon-0.0.0.tar.gz

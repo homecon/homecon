@@ -1,5 +1,5 @@
 PROJECT = homecon
-VERSION = $(shell homecon/__version__.py)
+VERSION = $(shell backend/src/homecon/__version__.py)
 
 
 .PHONY: image

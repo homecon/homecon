@@ -28,7 +28,7 @@ except Exception:
 class CustomSdist(sdist):
     def run(self):
         print('copying frontend build')
-        static_folder_path = os.path.join(backend_path, 'src', 'webserver', 'static')
+        static_folder_path = os.path.join(backend_path, 'src', 'homecon', 'webserver', 'static')
         if os.path.exists(static_folder_path):
             shutil.rmtree(static_folder_path)
         shutil.copytree(os.path.join(frontend_path, 'build'), static_folder_path)
@@ -47,8 +47,7 @@ setup(
     author_email='brecht.baeten@gmail.com',
     package_dir={'': 'backend/src'},
     packages=find_packages(where='backend/src'),
-    package_data={'homecon': ['demo/*.json'],
-                  'webserver': ['static/*.*', 'static/**/*.*', 'static/**/**/*.*']},
+    package_data={'homecon': ['demo/*.json', 'webserver/static/*.*', 'webserver/static/**/*.*', 'webserver/static/**/**/*.*']},
     data_files=[(
         os.path.join('var', 'tmp', 'homecon'),
         [os.path.join('util', 'network_template'), os.path.join('util', 'init_template')]

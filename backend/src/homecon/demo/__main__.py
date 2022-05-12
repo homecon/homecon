@@ -107,6 +107,10 @@ def get_homecon():
         pass
 
     token_path = os.path.join(base_path, 'token.conf')
+    if not os.path.exists(token_path):
+        with open(token_path, 'w') as f:
+            f.write('demo')
+            logger.info(f'generated new token stored in {token_path}')
     with open(token_path, 'r') as f:
         token = f.read().splitlines()[0]
 

@@ -1,10 +1,13 @@
+import os
 from threading import Thread
 
 from flask import Flask
 from werkzeug.serving import make_server
 
 
-app = Flask(__name__, static_url_path='')
+static_folder = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'static')
+
+app = Flask(__name__, static_url_path='', static_folder=static_folder)
 
 
 @app.route('/', defaults={'group': None, 'page': None})
@@ -14,6 +17,11 @@ app = Flask(__name__, static_url_path='')
 @app.route('/plugins')
 @app.route('/pages/<group>/<page>')
 def serve(group=None, page=None):
+    return app.send_static_file('index.html')
+
+
+@app.errorhandler(404)
+def page_not_found(e):
     return app.send_static_file('index.html')
 
 
