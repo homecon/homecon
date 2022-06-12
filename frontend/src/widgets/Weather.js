@@ -28,7 +28,7 @@ function HomeconWeatherBlock(props){
   }
 
   const getIcon = (value) => {
-    if(value.icon !== undefined && value.icon !== null){
+    if(value !== null && value.icon !== undefined && value.icon !== null){
       return `/weather/${value.icon}.png`;
     }
     else{
@@ -37,7 +37,7 @@ function HomeconWeatherBlock(props){
   }
 
   const getDate = (value) => {
-    if(value.timestamp !== undefined && value.timestamp !== null){
+    if(value !== null && value.timestamp !== undefined && value.timestamp !== null){
       const date = new Date(value.timestamp * 1000);
       const locale = config.locale || 'nl-BE';
       const options = config.dateOptions || {weekday: 'long'};
@@ -49,7 +49,7 @@ function HomeconWeatherBlock(props){
   }
 
   const getTemperature = (value) => {
-    if(value.temperature_max !== undefined && value.temperature_max !== null){
+    if(value !== null && value.temperature_max !== undefined && value.temperature_max !== null){
       return `${(value.temperature_max).toFixed(1)} °C`
     }
     else{
@@ -58,7 +58,7 @@ function HomeconWeatherBlock(props){
   }
 
   const getWindSpeed = (value) => {
-    if(value.wind_speed !== undefined && value.wind_speed !== null){
+    if(value !== null && value.wind_speed !== undefined && value.wind_speed !== null){
       return `${(value.wind_speed*3.6).toFixed(0)} km/h`
     }
     else{
@@ -67,7 +67,7 @@ function HomeconWeatherBlock(props){
   }
   const getWindDirection = (value) => {
     const dirs = ['N','NO','O','ZO','Z','ZW','W','NW','N'];
-    if(value.wind_direction !== undefined && value.wind_direction !== null){
+    if(value !== null && value.wind_direction !== undefined && value.wind_direction !== null){
       return dirs[Math.round(value.wind_direction/360*8)];
     }
     else{
@@ -75,7 +75,7 @@ function HomeconWeatherBlock(props){
     }
   }
   const getRain = (value) => {
-    if(value.rain !== undefined && value.rain !== null){
+    if(value !== null && value.rain !== undefined && value.rain !== null){
       return `Regen: ${(value.rain).toFixed(0)} mm`
     }
     else{

@@ -72,7 +72,10 @@ class Computed(BasePlugin):
         for state in self._state_manager.all():
             computed_config = state.config.get(self.COMPUTED)
             if computed_config is not None:
-                self._computed_mapping[state.id] = ComputedConfig.from_dict(computed_config)
+                try:
+                    self._computed_mapping[state.id] = ComputedConfig.from_dict(computed_config)
+                except TypeError:
+                    logger.exception('could not add state to computed_mapping')
         logger.debug('Computed plugin initialized')
 
     def _try_to_add_state_to_mapping(self, state):
