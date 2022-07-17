@@ -116,8 +116,7 @@ def get_homecon():
     from homecon.core.states.dal_state_manager import DALStateManager
     from homecon.core.pages.pages import JSONPagesManager
     from homecon.core.plugins.plugin import MemoryPluginManager
-    from homecon.homecon import HomeCon
-    from concurrent.futures import ThreadPoolExecutor
+    from homecon.homecon import HomeCon, SyncExecutor
 
     from homecon.plugins.websocket.websocket import Websocket
     from homecon.plugins.states.states import States
@@ -143,7 +142,7 @@ def get_homecon():
         'weather': Weather(event_manager, state_manager),
         'openweathermap': OpenWeatherMap(state_manager),
     })
-    executor = ThreadPoolExecutor(max_workers=10)
+    executor = SyncExecutor()
 
     homecon = HomeCon(event_manager, plugin_manager, executor)
     return homecon

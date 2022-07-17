@@ -61,7 +61,10 @@ class KNXDConnection(IKNXDConnection):
 
     def group_write(self, ga: str, value: Any, dpt: str):
         self._write_lock.acquire()
-        self.knxd.group_write(ga, value, dpt)
+        try:
+            self.knxd.group_write(ga, value, dpt)
+        except Exception:
+            logger.exception('exception in group_write')
         time.sleep(self._write_lock_time)
         self._write_lock.release()
 

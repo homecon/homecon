@@ -241,6 +241,14 @@ function StatesList(props) {
       const statesList = Object.values(states).map((value) => {
         return value;
       })
+      statesList.sort((a, b) => {
+        if(a.path > b.path) {
+          return 1
+        }
+        else {
+          return -1
+        }
+      })
       return statesList;
     }
   }

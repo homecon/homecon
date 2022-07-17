@@ -263,6 +263,7 @@ class WeatherForecastCloudCoverCalculator(ICloudCoverCalculator):
 class ShadingController:
 
     SHADING_STATE_TYPE = 'shading'
+    EVENT_SOURCE = 'shading_controller'
 
     def __init__(self,
                  state_manager: IStateManager,
@@ -323,7 +324,7 @@ class ShadingController:
         return StateBasedShading(
             name=state.path,
             position=position_state.value,
-            set_position=lambda x: position_state.set_value(x),
+            set_position=lambda x: position_state.set_value(x, source=self.EVENT_SOURCE),
             minimum_position=minimum_position_state.value
             if minimum_position_state is not None and minimum_position_state.value is not None else None,
             maximum_position=maximum_position_state.value
@@ -361,7 +362,7 @@ class ShadingController:
 
     def listen_state_value_changed(self, event: Event):
         state = event.data['state']
-        if state.parent is not None and state.parent.type == self.SHADING_STATE_TYPE:
+        if state.parent is not None and state.parent.type == self.SHADING_STATE_TYPE and event.source != self.EVENT_SOURCE:
             self.run()
 
 
@@ -426,7 +427,7 @@ class Shading(BasePlugin):
             cloud_cover_calculator,
             cloud_cover_state,
             EqualShadingPositionCalculator(),
-            longitude_state, latitude_state, elevation_state, interval=10
+            longitude_state, latitude_state, elevation_state
         )
 
     def start(self):

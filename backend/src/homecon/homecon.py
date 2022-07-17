@@ -16,6 +16,11 @@ class IExecutor:
         raise NotImplementedError
 
 
+class SyncExecutor(IExecutor):
+    def submit(self, fn, *args, **kwargs):
+        fn(*args, **kwargs)
+
+
 class HomeCon:
     def __init__(self, event_manager: IEventManager, plugin_manager: IPluginManager, executor: IExecutor):
         """
@@ -39,7 +44,7 @@ class HomeCon:
     def handle_event(self, event: Event):
         target_plugin = event.target.split('/')[0] if event.target is not None else None
         for plugin in self._plugin_manager.values():
-            if event.target is None or target_plugin == plugin.name:
+            if target_plugin is None or target_plugin == plugin.name:
                 self._executor.submit(plugin.handle_event, event)
 
     def get_and_handle_event(self):
@@ -56,7 +61,10 @@ class HomeCon:
         Listen for events in all plugins
         """
         while self._running:
-            self.get_and_handle_event()
+            try:
+                self.get_and_handle_event()
+            except Exception:
+                logger.exception('exception while running')
 
     def start(self):
         self._running = True

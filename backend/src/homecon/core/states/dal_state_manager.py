@@ -66,6 +66,7 @@ class DALStateManager(MemoryStateManager):
             self._db.commit()
             # noinspection PyProtectedMember
             self._db._adapter.close()
+            logger.debug(f'updated state {state}')
         except Exception:
             logger.exception('could not store state')
 
