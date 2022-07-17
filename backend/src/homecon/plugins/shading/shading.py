@@ -37,7 +37,7 @@ class IShading:
     def maximum_position(self) -> float:
         raise NotImplementedError
 
-    def get_heat_gain(self, position: float, date: datetime) -> float:
+    def get_heat_gain(self, position: float, date: datetime, cloud_cover: Optional[float] = 0.0) -> float:
         raise NotImplementedError
 
 
@@ -46,14 +46,16 @@ class StateBasedShading(IShading):
     position: 0 means fully open, 1 means fully closed
     """
 
-    def __init__(self, position_state: Optional[State] = None,
-                 minimum_position_state: Optional[State] = None,
-                 maximum_position_state: Optional[State] = None,
+    def __init__(self, name: str, position: float, set_position: Callable[[float], None],
+                 minimum_position: Optional[float] = None,
+                 maximum_position: Optional[float] = None,
                  area: float = 1., transparency: float = 0., azimuth: float = 180., tilt: float = 90.,
                  longitude: float = 0, latitude: float = 0, elevation: float = 80.):
-        self.position_state = position_state
-        self.minimum_position_state = minimum_position_state
-        self.maximum_position_state = maximum_position_state
+        self._name = name
+        self._position = position
+        self._set_position = set_position
+        self._minimum_position = minimum_position
+        self._maximum_position = maximum_position
         self._area = area
         self.transparency = transparency
         self._azimuth = azimuth
@@ -65,14 +67,14 @@ class StateBasedShading(IShading):
     def get_shading_factor(self, position):
         return position * self.transparency + (1 - position) * 1
 
-    def get_heat_gain(self, position: float, date: datetime) -> float:
-        return self.get_shading_factor(position) * self.get_maximum_heat_gain(date)
+    def get_heat_gain(self, position: float, date: datetime, cloud_cover: Optional[float] = 0.0) -> float:
+        return self.get_shading_factor(position) * self.get_maximum_heat_gain(date, cloud_cover)
 
-    def get_maximum_heat_gain(self, date: datetime) -> float:
+    def get_maximum_heat_gain(self, date: datetime, cloud_cover: Optional[float] = 0.0) -> float:
         solar_azimuth, solar_altitude = sunposition(self._latitude, self._longitude, self._elevation,
                                                     timestamp=int(date.timestamp()))
         irradiance_direct_clearsky, irradiance_diffuse_clearsky = clearskyirrradiance(solar_azimuth, solar_altitude)
-        cloud_cover = 0.0
+
         irradiance_direct, irradiance_diffuse = cloudyskyirrradiance(
             irradiance_direct_clearsky, irradiance_diffuse_clearsky, cloud_cover, solar_azimuth, solar_altitude,
             timestamp=int(date.timestamp()))
@@ -84,31 +86,25 @@ class StateBasedShading(IShading):
 
     @property
     def minimum_position(self) -> float:
-        if self.minimum_position_state is not None and self.minimum_position_state.value is not None:
-            return self.minimum_position_state.value
-        return 0.
+        return self._minimum_position or 0
 
     @property
     def maximum_position(self) -> float:
-        if self.maximum_position_state is not None and self.maximum_position_state.value is not None:
-            return self.maximum_position_state.value
-        return 1.
+        return self._maximum_position or 1
 
     @property
     def position(self) -> float:
-        if self.position_state is not None and self.position_state.value is not None:
-            return self.position_state.value
-        return 0.
+        return self._position
 
     def set_position(self, value) -> None:
-        if self.position_state is not None:
-            self.position_state.set_value(value)
-        else:
-            logger.error('cannot set position, no state')
+        self._set_position(value)
+
+    def __repr__(self):
+        return f'<StateBasedShading {self._name}>'
 
 
 class IShadingPositionCalculator:
-    def get_positions(self, shadings: List[IShading], wanted_heat_gain: float):
+    def get_positions(self, shadings: List[IShading], wanted_heat_gain: float, cloud_cover: Optional[float] = 0.0) -> List[float]:
         raise NotImplementedError
 
 
@@ -119,10 +115,15 @@ class EqualShadingPositionCalculator(IShadingPositionCalculator):
         self.heat_gain_threshold = heat_gain_threshold
         self._now = now
 
-    def get_positions(self, shadings: List[IShading], wanted_heat_gain):
+    def get_positions(self, shadings: List[IShading], wanted_heat_gain: float, cloud_cover: Optional[float] = 0.0):
+        logger.debug(f'get positions for shadings: {shadings}')
         date = self._now()
-        maximum_heat_gains = [s.get_heat_gain(s.minimum_position, date) for s in shadings]
-        minimum_heat_gains = [s.get_heat_gain(s.maximum_position, date) for s in shadings]
+
+        maximum_heat_gains = [s.get_heat_gain(s.minimum_position, date, cloud_cover) for s in shadings]
+        minimum_heat_gains = [s.get_heat_gain(s.maximum_position, date, cloud_cover) for s in shadings]
+
+        logger.debug(f'calculated minimum_heat_gains: {minimum_heat_gains}')
+        logger.debug(f'calculated maximum_heat_gains: {maximum_heat_gains}')
 
         if wanted_heat_gain > sum(maximum_heat_gains):
             return [s.minimum_position for s in shadings]
@@ -223,9 +224,40 @@ class StateBasedHeatingCurveWantedHeatGainCalculator(IWantedHeatGainCalculator):
         heat_demand_max = self._get_heat_demand_max()
         indoor_temperature_correction_scale = self._get_indoor_temperature_correction_factor()
 
+        logger.debug(f'calculating heat demand from ambient_temperature: {ambient_temperature:.1f}, indoor_temperature: {indoor_temperature:.1f}, '
+                     f'setpoint_temperature: {setpoint_temperature:.1f}, '
+                     f'ambient_temperature_min: {ambient_temperature_min:.1f}, ambient_temperature_max: {ambient_temperature_max:.1f}, '
+                     f'heat_demand_max: {heat_demand_max:.1f}, indoor_temperature_correction_scale: {indoor_temperature_correction_scale:.1f}')
         return self._calculate_heat_demand(ambient_temperature, indoor_temperature, setpoint_temperature,
                                            ambient_temperature_min, ambient_temperature_max, heat_demand_max,
                                            indoor_temperature_correction_scale)
+
+
+class ICloudCoverCalculator:
+    def calculate_cloud_cover(self) -> float:
+        """0: no clouds, 1: fully clouded"""
+        raise NotImplementedError
+
+
+class DummyCloudCoverCalculator(ICloudCoverCalculator):
+    def calculate_cloud_cover(self) -> float:
+        return 0.0
+
+
+class WeatherForecastCloudCoverCalculator(ICloudCoverCalculator):
+    # "/weather/forecast/hourly/0"
+    # {"timestamp":1657951200,"temperature":16.86,"pressure":1022,"relative_humidity":0.72,"dew_point":11.79,"cloud_cover":0.23,
+    # "wind_speed":2.47,"wind_direction":294,"icon":"sun_3","rain":0}
+
+    def __init__(self, forecast_state: State):
+        self._forecast_state = forecast_state
+
+    def calculate_cloud_cover(self) -> float:
+        try:
+            return self._forecast_state.value.get("cloud_cover", 0)
+        except:
+            logger.exception('cloud cover not available in forecast')
+            return 0.0
 
 
 class ShadingController:
@@ -235,11 +267,19 @@ class ShadingController:
     def __init__(self,
                  state_manager: IStateManager,
                  wanted_heat_gain_calculator: IWantedHeatGainCalculator,
+                 wanted_heat_gain_state: State,
+                 cloud_cover_calculator: ICloudCoverCalculator,
+                 cloud_cover_state: State,
                  position_calculator: IShadingPositionCalculator,
                  longitude_state: State, latitude_state: State, elevation_state: State,
                  interval: int = 1800):
         self._state_manager = state_manager
         self._wanted_heat_gain_calculator = wanted_heat_gain_calculator
+        self._wanted_heat_gain_state = wanted_heat_gain_state
+
+        self._cloud_cover_calculator = cloud_cover_calculator
+        self._cloud_cover_state = cloud_cover_state
+
         self._position_calculator = position_calculator
 
         self._longitude_state = longitude_state
@@ -259,6 +299,7 @@ class ShadingController:
 
     def start(self):
         self.scheduler.start()
+        logger.info('started shading controller')
 
     def stop(self):
         self.scheduler.shutdown(wait=False)
@@ -271,30 +312,49 @@ class ShadingController:
         for child in state.children:
             if child.name == 'position':
                 position_state = child
-            if child.name == 'minimum':
+            if child.name == 'minimum_position':
                 minimum_position_state = child
-            if child.name == 'maximum':
+            if child.name == 'maximum_position':
                 maximum_position_state = child
 
-        return StateBasedShading(position_state=position_state,
-                                 minimum_position_state=minimum_position_state,
-                                 maximum_position_state=maximum_position_state,
-                                 area=state.config.get('area', 1.0),
-                                 transparency=state.config.get('transparency', 0.0),
-                                 azimuth=state.config.get('azimuth', 0.0),
-                                 tilt=state.config.get('tilt', 90.0),
-                                 longitude=self._longitude_state.value or 0.0,
-                                 latitude=self._latitude_state.value or 0.0,
-                                 elevation=self._elevation_state.value or 0.0)
+        if position_state is None:
+            raise ValueError('state must have a position child')
+
+        return StateBasedShading(
+            name=state.path,
+            position=position_state.value,
+            set_position=lambda x: position_state.set_value(x),
+            minimum_position=minimum_position_state.value
+            if minimum_position_state is not None and minimum_position_state.value is not None else None,
+            maximum_position=maximum_position_state.value
+            if maximum_position_state is not None and maximum_position_state.value is not None else None,
+            area=state.config.get('area', 1.0),
+            transparency=state.config.get('transparency', 0.0),
+            azimuth=state.config.get('azimuth', 0.0),
+            tilt=state.config.get('tilt', 90.0),
+            longitude=self._longitude_state.value or 0.0,
+            latitude=self._latitude_state.value or 0.0,
+            elevation=self._elevation_state.value or 0.0
+        )
 
     def run(self):
+        logger.debug('running shading controller')
         shadings = []
         for state in self._state_manager.all():
             if state.type == self.SHADING_STATE_TYPE:
+                logger.debug(f'creating shading object for state {state}')
                 shadings.append(self._get_shading_from_state(state))
 
         wanted_heat_gain = self._wanted_heat_gain_calculator.calculate_wanted_heat_gain()
-        positions = self._position_calculator.get_positions(shadings, wanted_heat_gain)
+        logger.debug(f'calculated wanted heat gain: {wanted_heat_gain:.0f} W')
+        self._wanted_heat_gain_state.set_value(wanted_heat_gain)
+
+        cloud_cover = self._cloud_cover_calculator.calculate_cloud_cover()
+        logger.debug(f'calculated cloud cover: {cloud_cover:.2f}')
+        self._cloud_cover_state.set_value(cloud_cover)
+
+        positions = self._position_calculator.get_positions(shadings, wanted_heat_gain, cloud_cover)
+        logger.debug(f'calculated positions: {positions}')
 
         for shading, position in zip(shadings, positions):
             shading.set_position(position)
@@ -323,11 +383,19 @@ class Shading(BasePlugin):
         indoor_temperature_state = self._state_manager.add(
             'indoor_temperature', parent_path='/settings/shading/heat_demand',
             type='float', quantity='Temperature', unit='degC',
-            label='', description='Ambient temperature', value=20)
+            label='', description='Indoor temperature', value=20)
         setpoint_temperature_state = self._state_manager.add(
             'setpoint_temperature', parent_path='/settings/shading/heat_demand',
             type='float', quantity='Temperature', unit='degC',
-            label='', description='Ambient temperature', value=15)
+            label='', description='Setpoint temperature', value=20)
+        wanted_heat_gain_state = self._state_manager.add(
+            'wanted_heat_gain', parent_path='/settings/shading/heat_demand',
+            type='float', quantity='Power', unit='W',
+            label='', description='Wanted heat gain', value=15)
+        cloud_cover_state = self._state_manager.add(
+            'cloud_cover', parent_path='/settings/shading/heat_demand',
+            type='float', quantity='', unit='-',
+            label='', description='Cloud cover', value=0.)
 
         self._state_manager.add('location', type=None, parent_path='/settings')
         longitude_state = self._state_manager.add(
@@ -343,13 +411,22 @@ class Shading(BasePlugin):
             type='float', quantity='Height', unit='m',
             label='', description='Elevation above sea level', value=60)
 
+        forecast_state = self._state_manager.get(path='/weather/forecast/hourly/0')
+        if forecast_state is not None:
+            cloud_cover_calculator = WeatherForecastCloudCoverCalculator(forecast_state)
+        else:
+            cloud_cover_calculator = DummyCloudCoverCalculator()
+
         self.controller = ShadingController(
             self._state_manager,
             StateBasedHeatingCurveWantedHeatGainCalculator(
                 ambient_temperature_state, indoor_temperature_state, setpoint_temperature_state
             ),
+            wanted_heat_gain_state,
+            cloud_cover_calculator,
+            cloud_cover_state,
             EqualShadingPositionCalculator(),
-            longitude_state, latitude_state, elevation_state
+            longitude_state, latitude_state, elevation_state, interval=10
         )
 
     def start(self):

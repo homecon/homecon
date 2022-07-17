@@ -1,4 +1,6 @@
 from datetime import datetime
+from typing import Optional
+
 from pytest import approx
 
 from homecon.core.states.state import State
@@ -6,7 +8,7 @@ from homecon.core.states.memory_state_manager import MemoryStateManager
 from homecon.core.event import IEventManager, Event
 
 from homecon.plugins.shading.shading import IShading, StateBasedShading, IWantedHeatGainCalculator, \
-    EqualShadingPositionCalculator, StateBasedHeatingCurveWantedHeatGainCalculator, ShadingController
+    EqualShadingPositionCalculator, StateBasedHeatingCurveWantedHeatGainCalculator, ShadingController, ICloudCoverCalculator
 from mocks import DummyEventManager
 
 
@@ -14,61 +16,51 @@ class TestStateBasedShading:
 
     def test_get_maximum_heat_gain(self):
         state_manager = MemoryStateManager(DummyEventManager())
+        position_state = State(state_manager, DummyEventManager(), 1, 'position', value=0.0)
         shading = StateBasedShading(
-            State(state_manager, DummyEventManager(), 1, 'position', value=0.0),
-            State(state_manager, DummyEventManager(), 1, 'position_min', value=0.0),
-            State(state_manager, DummyEventManager(), 1, 'position_max', value=1.0),
+            position_state.value,
+            lambda x: position_state.set_value(x),
+            0.0,
+            1.0,
         )
         date = datetime(2021, 1, 1, 12, 0)
         assert shading.get_maximum_heat_gain(date) == approx(607, rel=0.05)
 
     def test_get_heat_gain(self):
         state_manager = MemoryStateManager(DummyEventManager())
+        position_state = State(state_manager, DummyEventManager(), 1, 'position', value=0.0)
         shading = StateBasedShading(
-            State(state_manager, DummyEventManager(), 1, 'position', value=0.0),
-            State(state_manager, DummyEventManager(), 1, 'position_min', value=0.0),
-            State(state_manager, DummyEventManager(), 1, 'position_max', value=1.0),
+            position_state.value,
+            lambda x: position_state.set_value(x),
+            0.0,
+            1.0,
         )
         date = datetime(2021, 1, 1, 12, 0)
         assert shading.get_heat_gain(0.2, date) == approx(0.8*607, rel=0.05)
 
     def test_get_shading_factor(self):
         state_manager = MemoryStateManager(DummyEventManager())
-        shading = StateBasedShading(
-            State(state_manager, DummyEventManager(), 1, 'position', value=0.0),
-            State(state_manager, DummyEventManager(), 1, 'position_min', value=0.0),
-            State(state_manager, DummyEventManager(), 1, 'position_max', value=1.0),
-        )
+        position_state = State(state_manager, DummyEventManager(), 1, 'position', value=0.0)
+        shading = StateBasedShading(position_state.value, lambda x: position_state.set_value(x), 0.0, 1.0)
         assert shading.get_shading_factor(0.0) == 1.0
         assert shading.get_shading_factor(1.0) == 0.0
         assert shading.get_shading_factor(0.5) == 0.5
 
     def test_position_bounds(self):
         state_manager = MemoryStateManager(IEventManager())
-        shading = StateBasedShading(
-            State(state_manager, DummyEventManager(), 1, 'position', value=0.0),
-            State(state_manager, DummyEventManager(), 1, 'position_min', value=0.0),
-            State(state_manager, DummyEventManager(), 1, 'position_max', value=1.0),
-        )
+        position_state = State(state_manager, DummyEventManager(), 1, 'position', value=0.0)
+        shading = StateBasedShading(position_state.value, lambda x: position_state.set_value(x), 0.0, 1.0)
         assert shading.minimum_position == 0.0
         assert shading.maximum_position == 1.0
 
-        shading = StateBasedShading(
-            State(state_manager, DummyEventManager(), 1, 'position', value=0.0),
-            State(state_manager, DummyEventManager(), 1, 'position_min', value=0.2),
-            State(state_manager, DummyEventManager(), 1, 'position_max', value=0.8),
-        )
+        shading = StateBasedShading(position_state.value, lambda x: position_state.set_value(x), 0.2, 0.8)
         assert shading.minimum_position == 0.2
         assert shading.maximum_position == 0.8
 
     def test_set_positions(self):
         state_manager = MemoryStateManager(DummyEventManager())
         position_state = State(state_manager, DummyEventManager(), 1, 'position', value=0.0)
-        shading = StateBasedShading(
-            position_state,
-            State(state_manager, DummyEventManager(), 1, 'position_min', value=0.0),
-            State(state_manager, DummyEventManager(), 1, 'position_max', value=1.0),
-        )
+        shading = StateBasedShading(position_state.value, lambda x: position_state.set_value(x), 0.2, 0.8)
         shading.set_position(0.5)
         assert position_state.value == 0.5
 
@@ -95,8 +87,8 @@ class MockShading(IShading):
     def maximum_position(self) -> float:
         return self._maximum_position
 
-    def get_heat_gain(self, position: float, date: datetime) -> float:
-        return (1-position) * self._heat_gain
+    def get_heat_gain(self, position: float, date: datetime, cloud_cover: Optional[float] = 0.0) -> float:
+        return (1-position) * (1-cloud_cover) * self._heat_gain
 
 
 class TestEqualShadingPositionCalculator:
@@ -202,11 +194,16 @@ class TestStateBasedHeatingCurveWantedHeatGainCalculator:
 
 
 class MockHeatGainCalculator(IWantedHeatGainCalculator):
-    def __init__(self, wanted_heat_gain = 0):
+    def __init__(self, wanted_heat_gain: float = 0.0):
         self._wanted_heat_gain = wanted_heat_gain
 
     def calculate_wanted_heat_gain(self) -> float:
         return self._wanted_heat_gain
+
+
+class MockCloudCoverCalculator(ICloudCoverCalculator):
+    def calculate_cloud_cover(self) -> float:
+        return 0.0
 
 
 class TestShadingController:
@@ -219,10 +216,10 @@ class TestShadingController:
             'position', shading
         )
         shading_minimum = state_manager.add(
-            'minimum', shading
+            'minimum_position', shading
         )
         shading_maximum = state_manager.add(
-            'maximum', shading
+            'maximum_position', shading
         )
         return shading, shading_position, shading_minimum, shading_maximum
 
@@ -234,10 +231,15 @@ class TestShadingController:
             state_manager, 'shading2', {'area': 2.0, 'azimuth': 180., 'tilt': 90., 'transparency': 0.0})
         shading3, shading_position3, shading_minimum3, shading_maximum3 = self.create_shading_state(
             state_manager, 'shading3', {'area': 3.0, 'azimuth': 270., 'tilt': 90., 'transparency': 0.0})
+        wanted_heat_gain_state = State(state_manager, state_manager.event_manager, 1, 'wanted_heat_gain')
+        cloud_cover_state = State(state_manager, state_manager.event_manager, 1, 'cloud_cover')
 
         controller = ShadingController(
             state_manager,
             MockHeatGainCalculator(8000),
+            wanted_heat_gain_state,
+            MockCloudCoverCalculator(),
+            cloud_cover_state,
             EqualShadingPositionCalculator(),
             State(state_manager, DummyEventManager(), 1, 'longitude', value=5),
             State(state_manager, DummyEventManager(), 2, 'latitude', value=50),
@@ -251,6 +253,9 @@ class TestShadingController:
         controller = ShadingController(
             state_manager,
             MockHeatGainCalculator(0),
+            wanted_heat_gain_state,
+            MockCloudCoverCalculator(),
+            cloud_cover_state,
             EqualShadingPositionCalculator(),
             State(state_manager, DummyEventManager(), 1, 'longitude', value=5),
             State(state_manager, DummyEventManager(), 2, 'latitude', value=50),
@@ -269,6 +274,8 @@ class TestShadingController:
             state_manager, 'shading2', {'area': 2.0, 'azimuth': 180., 'tilt': 90., 'transparency': 0.0})
         shading3, shading_position3, shading_minimum3, shading_maximum3 = self.create_shading_state(
             state_manager, 'shading3', {'area': 3.0, 'azimuth': 270., 'tilt': 90., 'transparency': 0.0})
+        wanted_heat_gain_state = State(state_manager, state_manager.event_manager, 1, 'wanted_heat_gain')
+        cloud_cover_state = State(state_manager, state_manager.event_manager, 1, 'cloud_cover')
 
         shading_minimum1.value = 1.0
         shading_minimum2.value = 0.5
@@ -276,6 +283,9 @@ class TestShadingController:
         controller = ShadingController(
             state_manager,
             MockHeatGainCalculator(8000),
+            wanted_heat_gain_state,
+            MockCloudCoverCalculator(),
+            cloud_cover_state,
             EqualShadingPositionCalculator(now=lambda: datetime(2021, 1, 1, 12, 0)),
             State(state_manager, DummyEventManager(), 1, 'longitude', value=5),
             State(state_manager, DummyEventManager(), 2, 'latitude', value=50),
@@ -294,10 +304,15 @@ class TestShadingController:
             state_manager, 'shading2', {'area': 2.0, 'azimuth': 180., 'tilt': 90., 'transparency': 0.0})
         shading3, shading_position3, shading_minimum3, shading_maximum3 = self.create_shading_state(
             state_manager, 'shading3', {'area': 3.0, 'azimuth': 270., 'tilt': 90., 'transparency': 0.0})
+        wanted_heat_gain_state = State(state_manager, state_manager.event_manager, 1, 'wanted_heat_gain')
+        cloud_cover_state = State(state_manager, state_manager.event_manager, 1, 'cloud_cover')
 
         controller = ShadingController(
             state_manager,
             MockHeatGainCalculator(8000),
+            wanted_heat_gain_state,
+            MockCloudCoverCalculator(),
+            cloud_cover_state,
             EqualShadingPositionCalculator(now=lambda: datetime(2021, 1, 1, 12, 0)),
             State(state_manager, DummyEventManager(), 1, 'longitude', value=5),
             State(state_manager, DummyEventManager(), 2, 'latitude', value=50),
