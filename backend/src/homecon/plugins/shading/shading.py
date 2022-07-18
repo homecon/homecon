@@ -4,7 +4,7 @@ from homecon.core.event import Event
 from homecon.core.plugins.plugin import BasePlugin
 from homecon.plugins.shading.controller import ShadingController
 from homecon.plugins.shading.calculator import EqualShadingPositionCalculator, StateBasedHeatingCurveWantedHeatGainCalculator, \
-    DummyCloudCoverCalculator, WeatherForecastCloudCoverCalculator
+    DummyCloudCoverCalculator, WeatherForecastCloudCoverCalculator, StateRainCalculator
 
 logger = logging.getLogger(__name__)
 
@@ -54,12 +54,18 @@ class Shading(BasePlugin):
             'elevation', parent_path='/settings/location',
             type='float', quantity='Height', unit='m',
             label='', description='Elevation above sea level', value=60)
+        rain_state = self._state_manager.add(
+            'rain', parent_path='/settings/rain',
+            type='bool', quantity='', unit='-',
+            label='', description='Rain or not', value=0)
 
         forecast_state = self._state_manager.get(path='/weather/forecast/hourly/0')
         if forecast_state is not None:
             cloud_cover_calculator = WeatherForecastCloudCoverCalculator(forecast_state)
         else:
             cloud_cover_calculator = DummyCloudCoverCalculator()
+
+        rain_calculator = StateRainCalculator(rain_state)
 
         self.controller = ShadingController(
             self._state_manager,
@@ -69,6 +75,7 @@ class Shading(BasePlugin):
             wanted_heat_gain_state,
             cloud_cover_calculator,
             cloud_cover_state,
+            rain_calculator,
             EqualShadingPositionCalculator(),
             longitude_state, latitude_state, elevation_state
         )

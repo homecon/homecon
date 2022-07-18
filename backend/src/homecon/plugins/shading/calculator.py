@@ -164,3 +164,16 @@ class WeatherForecastCloudCoverCalculator(ICloudCoverCalculator):
         except:
             logger.exception('cloud cover not available in forecast')
             return 0.0
+
+
+class IRainCalculator:
+    def calculate_rain(self) -> bool:
+        raise NotImplementedError
+
+
+class StateRainCalculator(IRainCalculator):
+    def __init__(self, state):
+        self._state = state
+
+    def calculate_rain(self) -> bool:
+        return self._state.value == 1

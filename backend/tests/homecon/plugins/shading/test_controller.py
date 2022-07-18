@@ -6,7 +6,7 @@ from homecon.core.event import Event
 
 from homecon.plugins.shading.controller import ShadingController
 from homecon.plugins.shading.calculator import EqualShadingPositionCalculator, IWantedHeatGainCalculator, \
-    ICloudCoverCalculator
+    ICloudCoverCalculator, IRainCalculator
 from mocks import DummyEventManager
 
 
@@ -23,6 +23,11 @@ class MockCloudCoverCalculator(ICloudCoverCalculator):
         return 0.0
 
 
+class MockRainCalculator(IRainCalculator):
+    def calculate_rain(self) -> bool:
+        return True
+
+
 class TestShadingController:
     @staticmethod
     def create_shading_state(state_manager, name, config=None):
@@ -37,6 +42,9 @@ class TestShadingController:
         )
         shading_maximum = state_manager.add(
             'maximum_position', shading
+        )
+        state_manager.add(
+            'controller_override', shading
         )
         return shading, shading_position, shading_minimum, shading_maximum
 
@@ -57,7 +65,8 @@ class TestShadingController:
             wanted_heat_gain_state,
             MockCloudCoverCalculator(),
             cloud_cover_state,
-            EqualShadingPositionCalculator(),
+            MockRainCalculator(),
+            EqualShadingPositionCalculator(now=lambda: datetime(2022, 6, 18, 12, 0, 0)),
             State(state_manager, DummyEventManager(), 1, 'longitude', value=5),
             State(state_manager, DummyEventManager(), 2, 'latitude', value=50),
             State(state_manager, DummyEventManager(), 3, 'elevation', value=50),
@@ -73,7 +82,8 @@ class TestShadingController:
             wanted_heat_gain_state,
             MockCloudCoverCalculator(),
             cloud_cover_state,
-            EqualShadingPositionCalculator(),
+            MockRainCalculator(),
+            EqualShadingPositionCalculator(now=lambda: datetime(2022, 6, 18, 12, 0, 0)),
             State(state_manager, DummyEventManager(), 1, 'longitude', value=5),
             State(state_manager, DummyEventManager(), 2, 'latitude', value=50),
             State(state_manager, DummyEventManager(), 3, 'elevation', value=50),
@@ -103,6 +113,7 @@ class TestShadingController:
             wanted_heat_gain_state,
             MockCloudCoverCalculator(),
             cloud_cover_state,
+            MockRainCalculator(),
             EqualShadingPositionCalculator(now=lambda: datetime(2021, 1, 1, 12, 0)),
             State(state_manager, DummyEventManager(), 1, 'longitude', value=5),
             State(state_manager, DummyEventManager(), 2, 'latitude', value=50),
@@ -130,6 +141,7 @@ class TestShadingController:
             wanted_heat_gain_state,
             MockCloudCoverCalculator(),
             cloud_cover_state,
+            MockRainCalculator(),
             EqualShadingPositionCalculator(now=lambda: datetime(2021, 1, 1, 12, 0)),
             State(state_manager, DummyEventManager(), 1, 'longitude', value=5),
             State(state_manager, DummyEventManager(), 2, 'latitude', value=50),
@@ -142,7 +154,7 @@ class TestShadingController:
 
         shading_minimum1.value = 1.0
         controller.listen_state_value_changed(
-            Event(DummyEventManager(), 'state_value_changed', {'state': shading_minimum1})
+            Event(DummyEventManager(), 'state_value_changed', {'state': shading_minimum1, 'old': 0.1, 'new': 0.0})
         )
 
         assert controller._run_job is not None
@@ -158,6 +170,6 @@ class TestShadingController:
         assert controller._run_job is None
 
         controller.listen_state_value_changed(
-            Event(DummyEventManager(), 'state_value_changed', {'state': shading_minimum1})
+            Event(DummyEventManager(), 'state_value_changed', {'state': shading_minimum1, 'old': 0.1, 'new': 0.0})
         )
         assert controller._run_job is not None

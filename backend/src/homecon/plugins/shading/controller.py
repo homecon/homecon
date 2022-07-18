@@ -8,7 +8,7 @@ from apscheduler.triggers.date import DateTrigger
 
 from homecon.core.event import Event
 from homecon.core.states.state import State, IStateManager
-from homecon.plugins.shading.calculator import IShadingPositionCalculator, IWantedHeatGainCalculator, ICloudCoverCalculator
+from homecon.plugins.shading.calculator import IShadingPositionCalculator, IWantedHeatGainCalculator, ICloudCoverCalculator, IRainCalculator
 from homecon.plugins.shading.domain import StateBasedShading
 
 
@@ -30,6 +30,7 @@ class ShadingController:
                  wanted_heat_gain_state: State,
                  cloud_cover_calculator: ICloudCoverCalculator,
                  cloud_cover_state: State,
+                 rain_calculator: IRainCalculator,
                  position_calculator: IShadingPositionCalculator,
                  longitude_state: State, latitude_state: State, elevation_state: State,
                  interval: int = 1800, override_duration: int = 4 * 3600):
@@ -39,6 +40,8 @@ class ShadingController:
 
         self._cloud_cover_calculator = cloud_cover_calculator
         self._cloud_cover_state = cloud_cover_state
+
+        self._rain_calculator = rain_calculator
 
         self._position_calculator = position_calculator
 
@@ -69,7 +72,7 @@ class ShadingController:
     def stop(self):
         self.scheduler.shutdown(wait=False)
 
-    def _get_shading_from_state(self, state: State) -> StateBasedShading:
+    def _get_shading_from_state(self, state: State, rain: bool) -> StateBasedShading:
         position_state = None
         minimum_position_state = None
         maximum_position_state = None
@@ -97,6 +100,8 @@ class ShadingController:
         if controller_override_state is None:
             controller_override_state = self._state_manager.add(self.CONTROLLER_OVERRIDE_STATE, parent=state, type='bool', value=0)
 
+        override_when_raining = state.config.get('override_when_raining', 0) == 1 and rain
+
         return StateBasedShading(
             name=state.path,
             position=position_state.value,
@@ -105,7 +110,7 @@ class ShadingController:
             if minimum_position_state is not None and minimum_position_state.value is not None else None,
             maximum_position=maximum_position_state.value
             if maximum_position_state is not None and maximum_position_state.value is not None else None,
-            controller_override=controller_override_state.value == 1
+            controller_override=controller_override_state.value == 1 or override_when_raining
             if controller_override_state is not None and controller_override_state.value is not None else False,
             area=state.config.get('area', 1.0),
             transparency=state.config.get('transparency', 0.0),
@@ -140,12 +145,14 @@ class ShadingController:
             pass
 
     def run(self):
-        logger.debug('running shading controller')
+        logger.info('running shading controller')
+        rain = self._rain_calculator.calculate_rain()
+
         shadings = []
         for state in self._state_manager.all():
             if state.type == self.SHADING_STATE_TYPE:
                 logger.debug(f'creating shading object for state {state}')
-                shadings.append(self._get_shading_from_state(state))
+                shadings.append(self._get_shading_from_state(state, rain))
 
         wanted_heat_gain = self._wanted_heat_gain_calculator.calculate_wanted_heat_gain()
         logger.debug(f'calculated wanted heat gain: {wanted_heat_gain:.0f} W')
@@ -156,7 +163,7 @@ class ShadingController:
         self._cloud_cover_state.set_value(cloud_cover)
 
         positions = self._position_calculator.get_positions(shadings, wanted_heat_gain, cloud_cover)
-        logger.debug(f'calculated positions: {positions}')
+        logger.info(f'calculated positions: {positions}')
 
         for shading, position in zip(shadings, positions):
             shading.set_position(position)
@@ -178,5 +185,5 @@ class ShadingController:
             if event.source != self.EVENT_SOURCE:
                 if state.name == 'position' and event.source == 'websocket':
                     self.set_override(state.parent)
-
-                self.schedule_run()
+                if event.data['old'] != event.data['new']:
+                    self.schedule_run()
