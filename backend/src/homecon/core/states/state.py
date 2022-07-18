@@ -63,17 +63,17 @@ class State:
         return self._value
 
     @value.setter
-    def value(self, val):
+    def value(self, val) -> None:
         if self._value != val or self.config.get('force_change', False):
             self.set_value(val)
 
-    def set_value(self, val, source: str = None):
+    def set_value(self, val, source: str = None) -> None:
         old_val = self._value
         self._value = val
         self._state_manager.update(self)
         self.notify_value_changed(old_val=old_val, source=source)
 
-    def update(self, **kwargs):
+    def update(self, **kwargs) -> None:
         if 'name' in kwargs:
             self.name = kwargs['name']
         if 'parent' in kwargs:
@@ -98,11 +98,11 @@ class State:
         self.notify_updated()
 
     @property
-    def children(self):
+    def children(self) -> List['State']:
         return [s for s in self._state_manager.all() if s.parent is not None and s.parent.id == self.id]
 
     @property
-    def path(self):
+    def path(self) -> str:
         if self.parent is None:
             return '/{}'.format(self.name)
         else:
