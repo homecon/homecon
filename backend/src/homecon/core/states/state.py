@@ -194,7 +194,7 @@ class IStateManager:
             if state.log_key != State.NO_LOGGING_KEY:
                 dict_['log_key'] = state.log_key
             states_list.append(dict_)
-        return sorted(states_list, key= lambda x: len(x.get('parent_path') or ''))
+        return sorted(states_list, key=lambda x: len(x.get('parent_path') or ''))
 
     def import_states(self, states_list: List[dict]):
         old_states = list(self.all())

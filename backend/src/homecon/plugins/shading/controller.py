@@ -139,6 +139,8 @@ class ShadingController:
 
     def reset_override(self, child: State):
         child.set_value(0)
+        logger.debug(f'resetting override for {child.parent}')
+
         try:
             self._reset_jobs.pop(child.path)
         except KeyError:
@@ -146,6 +148,9 @@ class ShadingController:
 
     def run(self):
         logger.info('running shading controller')
+        with self._run_job_lock:
+            self._run_job = None
+
         rain = self._rain_calculator.calculate_rain()
 
         shadings = []
@@ -167,9 +172,6 @@ class ShadingController:
 
         for shading, position in zip(shadings, positions):
             shading.set_position(position)
-
-        with self._run_job_lock:
-            self._run_job = None
 
     def schedule_run(self):
         with self._run_job_lock:

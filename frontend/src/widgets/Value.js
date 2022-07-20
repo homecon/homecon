@@ -8,6 +8,7 @@ function HomeconValue(props){
 
   const stateId = config.state;
   const precision = config.precision || 0;
+  const scale = config.scale || 1;
   const prefix = config.prefix || '';
   const suffix = config.suffix || '';
 
@@ -22,7 +23,7 @@ function HomeconValue(props){
   }
 
   return (
-    <BaseValueDisplay value={state.value} precision={precision} prefix={prefix} suffix={suffix} />
+    <BaseValueDisplay value={state.value} scale={scale} precision={precision} prefix={prefix} suffix={suffix} />
   )
 
 }

@@ -208,26 +208,30 @@ def incidentirradiance(I_direct, I_diffuse, solar_azimuth, solar_altitude, surfa
     return I_total_surface, I_direct_surface, I_diffuse_surface, I_ground_surface
 
 
-
-def cloudyskyirrradiance(I_direct_clearsky, I_diffuse_clearsky, cloudcover, solar_azimuth, solar_altitude, timestamp=None):
+def cloudyskyirrradiance(irradiance_direct_clearsky, irradiance_diffuse_clearsky, cloud_cover, solar_azimuth, solar_altitude, timestamp=None):
     """
-    Correction of the direct normal and diffuse horizontal irradiance using
-    the the cloudcover fraction in accordance with [3] and [4].
+    Correction of the direct normal and diffuse horizontal irradiance using the cloud_cover fraction in accordance with [3] and [4].
     Credits to Damien Picard for the literature and coding
 
     Parameters
     ----------
-    I_direct_clearsky : number
+    irradiance_direct_clearsky : number
         direct clearsky solar irradiance
 
-    I_diffuse_clearsky : number
+    irradiance_diffuse_clearsky : number
         diffuse clearsky solar irradiance
 
-    cloudcover : number
+    cloud_cover : number
         fraction of the sky covered by clouds
 
     timestamp : int
         the unix timestamp when to compute the sun position
+
+    solar_azimuth: float
+        deg
+
+    solar_altitude: float
+        deg
 
     Returns
     -------
@@ -249,47 +253,43 @@ def cloudyskyirrradiance(I_direct_clearsky, I_diffuse_clearsky, cloudcover, sola
     """
 
     # clear sky irradiance on a horizontal surface
-    I_total_horizontal_clearsky, I_direct_horizontal_clearsky, I_diffuse_horizontal_clearsky, I_ground_horizontal_clearsky = incidentirradiance(I_direct_clearsky,I_diffuse_clearsky,solar_azimuth,solar_altitude,0,0)
+    irradiance_total_horizontal_clearsky, irradiance_direct_horizontal_clearsky, \
+        irradiance_diffuse_horizontal_clearsky, irradiance_ground_horizontal_clearsky = \
+        incidentirradiance(irradiance_direct_clearsky, irradiance_diffuse_clearsky, solar_azimuth, solar_altitude, 0, 0)
 
+    if irradiance_total_horizontal_clearsky > 0.1:
 
-    if I_total_horizontal_clearsky > 0.1:
-
-        if timestamp == None:
+        if timestamp is None:
             utcdatetime = datetime.datetime.utcnow()
         else:
             utcdatetime = datetime.datetime.utcfromtimestamp(timestamp)
-
 
         # month of the year.
         month = float(utcdatetime.strftime('%m'))
 
         # Data from table 1 of [1]. Month of december and march are repeated for interpolation.
-        P = np.interp(month, [-1., 3., 6., 9., 12., 15. ], [1.14, 1.06, 0.96, 0.95, 1.14, 1.06])
-        Q = np.interp(month, [-1., 3., 6., 9., 12., 15. ], [0.003, 0.012, 0.033, 0.030, 0.003, 0.012])
-        R = np.interp(month, [-1., 3., 6., 9., 12., 15. ], [-0.0082, -0.0084, -0.0106, -0.0108, -0.0082, -0.0084])
+        p = np.interp(month, [-1., 3., 6., 9., 12., 15.], [1.14, 1.06, 0.96, 0.95, 1.14, 1.06])
+        q = np.interp(month, [-1., 3., 6., 9., 12., 15.], [0.003, 0.012, 0.033, 0.030, 0.003, 0.012])
+        r = np.interp(month, [-1., 3., 6., 9., 12., 15.], [-0.0082, -0.0084, -0.0106, -0.0108, -0.0082, -0.0084])
 
         # Cloud coverage and cloud coverage factor
-        CC = cloudcover*10.
-        CCF = P + Q*CC + R*CC**2
-        # Notice: CCF can be > 1 (higher radiation than average) and has a maximum at CC = 2-3 (see Fig.3, [1])
+        cc = cloud_cover * 10.
+        ccf = p + q*cc + r*cc**2
+        # Notice: ccf can be > 1 (higher radiation than average) and has a maximum at cc = 2-3 (see Fig.3, [1])
 
         # Correction for horizontal surface, according to [1]
-
         # equation 1, [1]: total radiation on horizontal surface, corrected with cloud coverage factor
-        I_total_horizontal_cloudy = (I_total_horizontal_clearsky - I_ground_horizontal_clearsky) * CCF
+        irradiance_total_horizontal_cloudy = (irradiance_total_horizontal_clearsky - irradiance_ground_horizontal_clearsky) * ccf
 
         # Direct radiation is proportional to cloud fraction (eq. 12, [1])
-        I_direct_cloudy = max(0,I_direct_clearsky*(1-cloudcover))
-        I_direct_horizontal_cloudy = max(0,I_direct_horizontal_clearsky*(1-cloudcover))
+        irradiance_direct_cloudy = max(0, irradiance_direct_clearsky * (1 - cloud_cover))
+        irradiance_direct_horizontal_cloudy = max(0, irradiance_direct_horizontal_clearsky * (1 - cloud_cover))
 
         # Diffuse radiation = total radiation - direct radiation (equivalent to eq. 13, [1])
-        I_diffuse_cloudy = max(0,I_total_horizontal_cloudy - I_direct_horizontal_cloudy)
+        irradiance_diffuse_cloudy = max(0, irradiance_total_horizontal_cloudy - irradiance_direct_horizontal_cloudy)
 
     else:
-        I_direct_cloudy = I_direct_clearsky
-        I_diffuse_cloudy = I_diffuse_clearsky
+        irradiance_direct_cloudy = irradiance_direct_clearsky
+        irradiance_diffuse_cloudy = irradiance_diffuse_clearsky
 
-
-    return I_direct_cloudy , I_diffuse_cloudy
-
-
+    return irradiance_direct_cloudy, irradiance_diffuse_cloudy

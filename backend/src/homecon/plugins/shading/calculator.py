@@ -80,34 +80,40 @@ class StateBasedHeatingCurveWantedHeatGainCalculator(IWantedHeatGainCalculator):
         return self._ambient_temperature_state.value
 
     def _get_indoor_temperature(self) -> float:
+        default = 20.
         if self._indoor_temperature_state is not None:
-            return self._indoor_temperature_state.value
-        return 20.
+            return self._indoor_temperature_state.value or default
+        return default
 
     def _get_setpoint_temperature(self) -> float:
+        default = 21.
         if self._setpoint_temperature_state is not None:
-            return self._setpoint_temperature_state.value
-        return 20.
+            return self._setpoint_temperature_state.value or default
+        return default
 
     def _get_ambient_temperature_min(self) -> float:
+        default = -10.
         if self._ambient_temperature_min_state is not None:
-            return self._ambient_temperature_min_state.value
-        return -10.
+            return self._ambient_temperature_min_state.value or default
+        return default
 
     def _get_ambient_temperature_max(self) -> float:
+        default = 18.
         if self._ambient_temperature_max_state is not None:
-            return self._ambient_temperature_max_state.value
-        return 18.
+            return self._ambient_temperature_max_state.value or default
+        return default
 
     def _get_heat_demand_max(self) -> float:
+        default = 8000.
         if self._heat_demand_max_state is not None:
-            return self._heat_demand_max_state.value
-        return 8000.
+            return self._heat_demand_max_state.value or default
+        return default
 
     def _get_indoor_temperature_correction_factor(self) -> float:
+        default = 0.2
         if self._indoor_temperature_correction_factor_state is not None:
-            return self._indoor_temperature_correction_factor_state.value
-        return 0.2
+            return self._indoor_temperature_correction_factor_state.value or default
+        return default
 
     @staticmethod
     def _calculate_heat_demand(ambient_temperature, indoor_temperature, setpoint_temperature,

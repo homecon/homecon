@@ -140,12 +140,12 @@ class States(BasePlugin):
         elif 'id' in event.data and 'value' in event.data:
             state = self._state_manager.get(id=event.data['id'])
             if state is not None:
-                state.value = event.data['value']
+                state.set_value(event.data['value'], event.source)
 
         elif 'path' in event.data and 'value' in event.data:
             state = self._state_manager.get(path=event.data['path'])
             if state is not None:
-                state.value = event.data['value']
+                state.set_value(event.data['value'], event.source)
 
     # def listen_state_children(self, event):
     #     if 'id' in event.data:

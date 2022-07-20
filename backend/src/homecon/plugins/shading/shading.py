@@ -41,6 +41,11 @@ class Shading(BasePlugin):
             type='float', quantity='', unit='-',
             label='', description='Cloud cover', value=0.)
 
+        rain_state = self._state_manager.add(
+            'rain', parent_path='/settings/shading',
+            type='bool', quantity='', unit='-',
+            label='', description='Rain or not', value=0)
+
         self._state_manager.add('location', type=None, parent_path='/settings')
         longitude_state = self._state_manager.add(
             'longitude', parent_path='/settings/location',
@@ -54,10 +59,6 @@ class Shading(BasePlugin):
             'elevation', parent_path='/settings/location',
             type='float', quantity='Height', unit='m',
             label='', description='Elevation above sea level', value=60)
-        rain_state = self._state_manager.add(
-            'rain', parent_path='/settings/rain',
-            type='bool', quantity='', unit='-',
-            label='', description='Rain or not', value=0)
 
         forecast_state = self._state_manager.get(path='/weather/forecast/hourly/0')
         if forecast_state is not None:

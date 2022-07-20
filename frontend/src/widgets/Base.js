@@ -42,6 +42,7 @@ function BaseStatusLight(props){
 
 function BaseValueDisplay(props){
   const value = props.value;
+  const scale = props.scale;
   const precision = props.precision;
   const prefix = props.prefix;
   const suffix = props.suffix;
@@ -49,7 +50,8 @@ function BaseValueDisplay(props){
   let displayValue = value
 
   if(typeof value == 'number'){
-    displayValue = parseFloat(value).toFixed(precision)
+  scaledValue = parseFloat(value) * parseFloat(scale)
+    displayValue = scaledValue.toFixed(precision)
   }
 
   return (

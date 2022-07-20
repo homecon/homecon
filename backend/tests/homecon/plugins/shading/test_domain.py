@@ -16,7 +16,8 @@ class TestStateBasedShading:
         position_state = State(state_manager, DummyEventManager(), 1, 'position', value=0.0)
         shading = StateBasedShading('test', position_state.value, lambda x: position_state.set_value(x), 0.0, 1.0)
         date = datetime(2021, 1, 1, 12, 0)
-        assert shading.get_maximum_heat_gain(date) == approx(607, rel=0.05)
+        assert shading.get_maximum_heat_gain(date, cloud_cover=0.0) == approx(607, rel=0.05)
+        assert shading.get_maximum_heat_gain(date, cloud_cover=1.0) == approx(256, rel=0.05)
 
     def test_get_heat_gain(self):
         state_manager = MemoryStateManager(DummyEventManager())
