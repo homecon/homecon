@@ -21,7 +21,6 @@ class MemoryStateManager(IStateManager):
             return self._states.get(key, None)
         else:
             for state in self._states.values():
-                print(state)
                 if state.path == path:
                     return state
 

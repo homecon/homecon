@@ -83,177 +83,48 @@ class TestState(TestCase):
         assert states[0].path == '/mystate1/shading/position'
         assert states[1].path == '/mystate2/mystate3/shading/position'
 
-    #
-    # def test_triggers(self):
-    #     State.add('mystate', config={'someattr': True})
-    #     State.add('myotherstate', config={'someattr': True})
-    #     State.add('mycomputedstate', config={
-    #         'triggers': '[state.path for state in State.all()'
-    #                     ' if (`someattr` in state.config and state.config[`someattr`])]',
-    #         'computed': '5*State.get(`mystate`).value + State.get(`myotherstate`).value'})
-    #     self.assertEqual(State.get('mycomputedstate').triggers, ['/mystate', '/myotherstate'])
-    #     self.assertEqual(State.get('mystate').triggers, [])
-    #     self.assertEqual(State.get('myotherstate').triggers, [])
-    #
-    # def test_computed(self):
-    #     State.add('mystate', config={'someattr': True})
-    #     State.add('myotherstate', config={'someattr': True})
-    #     State.add('mycomputedstate', config={
-    #         'triggers': '[state.path for state in State.all()'
-    #                     ' if (`someattr` in state.config and state.config[`someattr`])]',
-    #         'computed': '5*State.get(`mystate`).value + np.exp(State.get(`myotherstate`).value)'})
-    #     State.get('mystate').value = 10
-    #     State.get('myotherstate').value = 5
-    #     self.assertEqual(State.get('mycomputedstate').computed, 50 + np.exp(5))
-    #
-    # def test_find(self):
-    #     State.add('parent/child1/state')
-    #     State.add('parent/child2/state')
-    #     State.add('parent/aha/state')
-    #     states = State.find('.*/child.*/state')
-    #     print(states)
+    def test_export_import(self):
+        state_manager = MemoryStateManager(EventManager())
+        s0 = state_manager.add('mystate1')
+        s1 = state_manager.add('mystate2')
+        s2 = state_manager.add('mystate3', parent=s1)
 
-    # def test_trigger(self):
-    #     State.add('mystate', config={'someattr': True})
-    #     State.add('myotherstate', config={'someattr': True})
-    #     State.add('mycomputedstate', config={
-    #         'triggers': '[state.path for state in State.all()'
-    #                     ' if (`someattr` in state.config and state.config[`someattr`])]',
-    #         'computed': '5*states[`mystate`].value'})
-    #
-    #     self.assertEqual(State.get('mystate').triggers, ['mycomputedstate'])
-    #     self.assertEqual(State.get('myotherstate').triggers, ['mycomputedstate'])
-    #     self.assertEqual(State.get('mycomputedstate').triggers, [])
+        exported = state_manager.export_states()
+        print(exported)
+        assert exported[0]['key'] == s0.key
+        assert exported[0]['name'] == s0.name
+        assert exported[0]['parent'] is None
 
-    #
-    # def test_trigger_reinitialize(self):
-    #     states = homecon.core.states
-    #
-    #     states.add('mystate',config={'someattr':True})
-    #     states.add('myotherstate',config={'someattr':True})
-    #     states.add('mycomputedstate',config={'triggers':'[state.path for state in states.values() if (`someattr` in state.config and state.config[`someattr`])]','computed':'5*states[`mystate`].value'})
-    #
-    #     states = None
-    #     homecon.core.state.State.container = {}
-    #
-    #     states = homecon.core.states
-    #
-    #     self.assertEqual(states['mystate'].trigger, [states['mycomputedstate']])
-    #     self.assertEqual(states['myotherstate'].trigger, [states['mycomputedstate']])
-    #     self.assertEqual(states['mycomputedstate'].trigger, [])
-    #
-    #
-    # def test_trigger_delete(self):
-    #     states = homecon.core.states
-    #
-    #     states.add('mystate',config={'someattr':True})
-    #     states.add('myotherstate',config={'someattr':True})
-    #     states.add('mycomputedstate',config={'triggers':'[state.path for state in states.values() if (`someattr` in state.config and state.config[`someattr`])]','computed':'5*states[`mystate`].value'})
-    #
-    #     states.delete('myotherstate')
-    #     self.assertEqual(states['mystate'].trigger, [states['mycomputedstate']])
-    #     self.assertEqual(states['mycomputedstate'].trigger, [])
-    #
-    #
-    # def test_computed(self):
-    #     states = homecon.core.states
-    #
-    #     states.add('mystate',config={'someattr':True})
-    #     states.add('myotherstate',config={'someattr':True})
-    #     states.add('mycomputedstate',config={'triggers':'[state.path for state in states.values() if (`someattr` in state.config and state.config[`someattr`])]','computed':'sum([state.value for state in states.values() if (`someattr` in state.config and state.config[`someattr`])])'})
-    #
-    #     # set values
-    #     states['mystate'].set(10,async=False)
-    #     states['myotherstate'].set(20,async=False)
-    #
-    #     self.assertEqual(states['mycomputedstate'].value, 10+20)
-    #
-    #
-    # def test_history(self):
-    #     states = homecon.core.states
-    #
-    #     mystate = states.add('mystate')
-    #
-    #     # add data tot the database
-    #     timestamps = np.array([ int( (datetime.datetime.utcnow()-datetime.datetime(1970, 1, 1)).total_seconds() ) + 100*(i-10) for i in range(10) ])
-    #     values = np.array([i for i,ts in enumerate(timestamps)])
-    #
-    #
-    #     connection,cursor = homecon.core.measurements_db.create_cursor()
-    #     for ts,val in zip(timestamps,values):
-    #         cursor.execute('INSERT INTO measurements (`time`,`path`,`value`) VALUES ({},{},{})'.format(ts,'\'{}\''.format(mystate.path),val  ))
-    #     connection.commit()
-    #     connection.close()
-    #
-    #     hist = mystate.history(timestamps)
-    #
-    #     self.assertEqual(max(abs(hist-values)), 0)
-    #
-    #
-    # def test_history_interpolate(self):
-    #     states = homecon.core.states
-    #
-    #     mystate = states.add('mystate')
-    #
-    #     # add data tot the database
-    #     timestamps = np.array([ int( (datetime.datetime.utcnow()-datetime.datetime(1970, 1, 1)).total_seconds() ) + 100*(i-10) for i in range(10) ])
-    #     values = np.array([i for i,ts in enumerate(timestamps)])
-    #
-    #
-    #     connection,cursor = homecon.core.measurements_db.create_cursor()
-    #     for ts,val in zip(timestamps,values):
-    #         cursor.execute('INSERT INTO measurements (`time`,`path`,`value`) VALUES ({},{},{})'.format(ts,'\'{}\''.format(mystate.path),val  ))
-    #     connection.commit()
-    #     connection.close()
-    #
-    #     intermediatetimestamps = timestamps[1:]-50
-    #     hist = mystate.history(intermediatetimestamps)
-    #
-    #     self.assertEqual(max(abs(hist-np.interp(intermediatetimestamps,timestamps,values))), 0)
-    #
-    #
-    # def test_history_extrapolate(self):
-    #     states = homecon.core.states
-    #
-    #     mystate = states.add('mystate')
-    #
-    #     # add data tot the database
-    #     timestamps = np.array([ int( (datetime.datetime.utcnow()-datetime.datetime(1970, 1, 1)).total_seconds() ) + 100*(i-10) for i in range(10) ])
-    #     values = np.array([i for i,ts in enumerate(timestamps)])
-    #
-    #
-    #     connection,cursor = homecon.core.measurements_db.create_cursor()
-    #     for ts,val in zip(timestamps,values):
-    #         cursor.execute('INSERT INTO measurements (`time`,`path`,`value`) VALUES ({},{},{})'.format(ts,'\'{}\''.format(mystate.path),val  ))
-    #     connection.commit()
-    #     connection.close()
-    #
-    #     intermediatetimestamps = timestamps-250
-    #     hist = mystate.history(intermediatetimestamps)
-    #
-    #     self.assertTrue(np.isnan(hist[0]))
-    #     self.assertTrue(np.isnan(hist[1]))
-    #     self.assertTrue(np.isnan(hist[2]))
-    #
-    #
-    # def test_history_nodata(self):
-    #     states = homecon.core.states
-    #
-    #     mystate = states.add('mystate')
-    #
-    #     timestamps = np.array([ int( (datetime.datetime.utcnow()-datetime.datetime(1970, 1, 1)).total_seconds() ) + 100*(i-10) for i in range(10) ])
-    #     values = np.array([i for i,ts in enumerate(timestamps)])
-    #
-    #
-    #     connection,cursor = homecon.core.measurements_db.create_cursor()
-    #     for ts,val in zip(timestamps,values):
-    #         cursor.execute('INSERT INTO measurements (`time`,`path`,`value`) VALUES ({},{},{})'.format(ts,'\'{}\''.format(mystate.path),val  ))
-    #     connection.commit()
-    #     connection.close()
-    #
-    #     hist = mystate.history(timestamps-10000)
-    #     self.assertTrue(all(np.isnan(hist)))
-    #
-    #
-    #
-    #
+        assert exported[1]['key'] == s1.key
+        assert exported[1]['name'] == s1.name
+        assert exported[1]['parent'] is None
+
+        assert exported[2]['key'] == s2.key
+        assert exported[2]['name'] == s2.name
+        assert exported[2]['parent'] == s2.parent.key
+
+        state_manager.import_states(exported)
+        s2i = state_manager.get('/mystate2/mystate3')
+
+        assert s2i.parent.key == s1.key
+        assert s2i.parent.name == s1.name
+        assert s2i.parent.path == s1.path
+
+    def test_import(self):
+        state_manager = MemoryStateManager(EventManager())
+        data = [{
+            'key': '17dab170-1d71-4537-9022-d1c0d0622151', 'name': 'mystate3', 'parent': '9d609478-0f09-469c-a6c8-0f066f982faf',
+            'type': None, 'quantity': None, 'unit': None, 'label': None, 'description': None, 'config': {}, 'value': None
+        }, {
+            'key': 'ddde8956-2472-4ac7-9a10-bf6ba2a39747', 'name': 'mystate1', 'parent': None,
+            'type': None, 'quantity': None, 'unit': None, 'label': None, 'description': None, 'config': {}, 'value': None
+        }, {
+            'key': '9d609478-0f09-469c-a6c8-0f066f982faf', 'name': 'mystate2', 'parent': None,
+            'type': None, 'quantity': None, 'unit': None, 'label': None, 'description': None, 'config': {}, 'value': None
+        }]
+
+        state_manager.import_states(data)
+        s1 = state_manager.get('/mystate2')
+        s2 = state_manager.get('/mystate2/mystate3')
+
+        assert s2.parent == s1

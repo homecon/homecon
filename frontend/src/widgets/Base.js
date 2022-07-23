@@ -273,7 +273,7 @@ function BaseAlarm(props){
 
       <div style={{width: '100%', marginTop: '5px'}}>
         <InputLabel id="action-select-label">Action</InputLabel>
-        <Select style={{width: '80%'}} labelId="action-select-label" id="demo-simple-select-helper" value={action.key} onChange={handleActionChange}>
+        <Select style={{width: '80%'}} labelId="action-select-label" id="action-select" value={action.key} onChange={handleActionChange}>
           {actions.map((a) => {
             return <MenuItem key={a.key} value={a.key}>{a.label}</MenuItem>
           })}

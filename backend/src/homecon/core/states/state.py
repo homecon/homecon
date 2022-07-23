@@ -1,10 +1,14 @@
 #!/usr/bin/env python3
+import logging
 
 from typing import Any, List, Optional
 from dataclasses import dataclass
 from uuid import uuid4
 
 from homecon.core.event import IEventManager
+
+
+logger = logging.getLogger(__name__)
 
 
 class StateEventsTypes:
@@ -192,7 +196,7 @@ class IStateManager:
             dict_ = {
                 'key': state.key,
                 'name': state.name,
-                'parent_path': state.parent.path if state.parent is not None else None,
+                'parent': state.parent.key if state.parent is not None else None,
                 'type': state.type,
                 'quantity': state.quantity,
                 'unit': state.unit,
@@ -211,5 +215,24 @@ class IStateManager:
         for state in old_states:
             self.delete(state)
 
-        for state_dict in sorted(states_list, key=lambda x: len(x.get('parent_path') or '')):
-            self.add(**state_dict)
+        maximum_depth = 20
+        remaining_states = states_list
+        for i in range(maximum_depth):
+            if len(remaining_states) == 0:
+                break
+            new_remaining_states = []
+            for state_dict in remaining_states:
+                parent = None
+                parent_key = state_dict.get('parent')
+                if parent_key is not None:
+                    parent = self.get(key=parent_key)
+                    if parent is None:
+                        new_remaining_states.append(state_dict)
+                        continue
+
+                state_dict['parent'] = parent
+                self.add(**state_dict)
+            remaining_states = new_remaining_states
+
+        if len(remaining_states) > 0:
+            logger.warning(f'{remaining_states} do not have valid parents and have not been added')
