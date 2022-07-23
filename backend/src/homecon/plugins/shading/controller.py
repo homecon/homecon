@@ -211,7 +211,7 @@ class ShadingController:
                         pass
 
             if reschedule:
-                logger.debug('scheduled controller run in 5 seconds')
+                logger.debug(f'scheduled controller run in {interval} seconds')
                 self._run_job = self.scheduler.add_job(self.run, trigger=DateTrigger(datetime.now() + timedelta(seconds=interval)))
 
     def listen_state_value_changed(self, event: Event):
