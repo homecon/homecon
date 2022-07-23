@@ -79,7 +79,7 @@ class Pages(BasePlugin):
 
     def listen_pages_export(self, event):
         # FIXME check permissions
-        d = self._pages_manager.serialize(self._state_manager, convert_state_ids_to_paths=True, include_paths=False, include_ids=False)
+        d = self._pages_manager.serialize(self._state_manager, convert_state_keys_to_paths=True, include_paths=False, include_ids=False)
         event.reply({'id': '', 'value': json.dumps(d, indent=2)})
 
     def listen_pages_import(self, event):

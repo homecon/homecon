@@ -1,6 +1,6 @@
 from homecon.core.states.memory_state_manager import MemoryStateManager
 from homecon.core.event import EventManager
-from homecon.core.states.util import config_state_paths_to_ids, config_state_ids_to_paths
+from homecon.core.states.util import config_state_paths_to_keys, config_state_keys_to_paths
 
 
 class TestUtil:
@@ -9,7 +9,7 @@ class TestUtil:
         state_manager = MemoryStateManager(EventManager())
         s = state_manager.add('mystate')
 
-        config = config_state_paths_to_ids({
+        config = config_state_paths_to_keys({
             'state': s.path
         }, state_manager)
         assert config['state'] == s.key
@@ -19,7 +19,7 @@ class TestUtil:
         s1 = state_manager.add('mystate')
         s2 = state_manager.add('myotherstate')
 
-        config = config_state_paths_to_ids({
+        config = config_state_paths_to_keys({
             'states': [s1.path, s2.path]
         }, state_manager)
         assert config['states'] == [s1.key, s2.key]
@@ -29,7 +29,7 @@ class TestUtil:
         s1 = state_manager.add('mystate')
         s2 = state_manager.add('myotherstate')
 
-        config = config_state_paths_to_ids({
+        config = config_state_paths_to_keys({
             'states': {'a': s1.path, 'b': s2.path}
         }, state_manager)
         assert config['states'] == {'a': s1.key, 'b': s2.key}
@@ -38,7 +38,7 @@ class TestUtil:
         state_manager = MemoryStateManager(EventManager())
         s = state_manager.add('mystate')
 
-        config = config_state_ids_to_paths({
+        config = config_state_keys_to_paths({
             'state': s.key
         }, state_manager)
         assert config['state'] == s.path
@@ -48,7 +48,7 @@ class TestUtil:
         s1 = state_manager.add('mystate')
         s2 = state_manager.add('myotherstate')
 
-        config = config_state_ids_to_paths({
+        config = config_state_keys_to_paths({
             'states': [s1.key, s2.key]
         }, state_manager)
         assert config['states'] == [s1.path, s2.path]
@@ -58,7 +58,7 @@ class TestUtil:
         s1 = state_manager.add('mystate')
         s2 = state_manager.add('myotherstate')
 
-        config = config_state_ids_to_paths({
+        config = config_state_keys_to_paths({
             'states': {'a': s1.key, 'b': s2.key}
         }, state_manager)
         assert config['states'] == {'a': s1.path, 'b': s2.path}

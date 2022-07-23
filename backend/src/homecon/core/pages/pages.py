@@ -5,7 +5,7 @@ import os
 import json
 
 from homecon.core.states.state import IStateManager
-from homecon.core.states.util import config_state_paths_to_ids, config_state_ids_to_paths
+from homecon.core.states.util import config_state_paths_to_keys, config_state_keys_to_paths
 
 
 class Group:
@@ -271,7 +271,7 @@ class IPagesManager:
             pages = group.pop('pages', [])
             group.pop('path', None)
             if state_manager is not None:
-                config_state_paths_to_ids(group.get('config', {}).get('widget', {}).get('config'), state_manager)
+                config_state_paths_to_keys(group.get('config', {}).get('widget', {}).get('config'), state_manager)
             g = self.add_group(name, **group)
             for page in pages:
                 page.pop('id', None)
@@ -279,7 +279,7 @@ class IPagesManager:
                 sections = page.pop('sections', [])
                 page.pop('path', None)
                 if state_manager is not None:
-                    config_state_paths_to_ids(page.get('config', {}).get('widget', {}).get('config'), state_manager)
+                    config_state_paths_to_keys(page.get('config', {}).get('widget', {}).get('config'), state_manager)
                 p = self.add_page(name, g, **page)
                 for section in sections:
                     section.pop('id', None)
@@ -287,7 +287,7 @@ class IPagesManager:
                     widgets = section.pop('widgets', [])
                     section.pop('path', None)
                     if state_manager is not None:
-                        config_state_paths_to_ids(section.get('config', {}).get('widget', {}).get('config'), state_manager)
+                        config_state_paths_to_keys(section.get('config', {}).get('widget', {}).get('config'), state_manager)
                     s = self.add_section(name, p, **section)
                     for widget in widgets:
                         widget.pop('id', None)
@@ -295,15 +295,15 @@ class IPagesManager:
                         _type = widget.pop('type', None)
                         widget.pop('path', None)
                         if state_manager is not None:
-                            config_state_paths_to_ids(widget.get('config'), state_manager)
+                            config_state_paths_to_keys(widget.get('config'), state_manager)
                         self.add_widget(name, s, _type, **widget)
 
-    def serialize(self, state_manager: IStateManager = None, convert_state_ids_to_paths=False, include_paths=True, include_ids=True):
+    def serialize(self, state_manager: IStateManager = None, convert_state_keys_to_paths=False, include_paths=True, include_ids=True):
         d = []
         for group in self.all_groups():
             config = deepcopy(group.config)
-            if convert_state_ids_to_paths:
-                config_state_ids_to_paths(config, state_manager)
+            if convert_state_keys_to_paths:
+                config_state_keys_to_paths(config, state_manager)
             g = {
                 'name': group.name,
                 'config': config,
@@ -316,8 +316,8 @@ class IPagesManager:
 
             for page in group.pages:
                 config = deepcopy(page.config)
-                if convert_state_ids_to_paths:
-                    config_state_ids_to_paths(config, state_manager)
+                if convert_state_keys_to_paths:
+                    config_state_keys_to_paths(config, state_manager)
                 p = {
                     'name': page.name,
                     'config': config,
@@ -330,8 +330,8 @@ class IPagesManager:
 
                 for section in page.sections:
                     config = deepcopy(section.config)
-                    if convert_state_ids_to_paths:
-                        config_state_ids_to_paths(config, state_manager)
+                    if convert_state_keys_to_paths:
+                        config_state_keys_to_paths(config, state_manager)
                     s = {
                         'name': section.name,
                         'config': config,
@@ -344,8 +344,8 @@ class IPagesManager:
 
                     for widget in section.widgets:
                         config = deepcopy(widget.config)
-                        if convert_state_ids_to_paths:
-                            config_state_ids_to_paths(config, state_manager)
+                        if convert_state_keys_to_paths:
+                            config_state_keys_to_paths(config, state_manager)
                         w = {
                             'name': widget.name,
                             'type': widget.type,
