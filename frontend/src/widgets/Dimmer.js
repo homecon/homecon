@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 
 import { createStyles, Theme, makeStyles } from '@material-ui/core/styles';
 
@@ -60,7 +60,7 @@ function HomeconDimmer(props){
   const classes = useStyles();
 
   const setValue = (value) => {
-    ws.send({event: 'state_value', data: {id: state.id, value: value}});
+    ws.send({event: 'state_value', data: {key: state.key, value: value}});
   }
 
   const handleClick = (event) => {

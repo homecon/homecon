@@ -56,10 +56,9 @@ class Action:
         state_actions = []
         for v in state.value:
 
-            if isinstance(v['state'], int):
-                states = [state_manager.get(id=v['state'])]
-            else:
-                states = state_manager.find(v['state'])
+            # search for the key and search matching paths, it is very unlikely that a path will match a key exactly
+            states = [state_manager.get(key=v['state'])]
+            states.extend(state_manager.find(v['state']))
 
             delay = v.get('delay', 0)
             value = v['value']
@@ -128,7 +127,7 @@ class Alarms(BasePlugin):
         if state.value['action'] is not None:
             def func():
                 logger.debug('executing scheduler {}'.format(state))
-                action_state = self._state_manager.get(id=state.value['action'])
+                action_state = self._state_manager.get(key=state.value['action'])
                 action = Action.from_state(action_state, self._state_manager)
                 action.execute(source=f'schedule {state}')
 
@@ -171,8 +170,8 @@ class Alarms(BasePlugin):
             self.delete_job(state)
 
     def listen_add_schedule(self, event: Event):
-        if 'id' in event.data:
-            state = self._state_manager.get(id=event.data['id'])
+        if 'key' in event.data:
+            state = self._state_manager.get(key=event.data['key'])
             if state is not None:
                 default_schedule_value = {
                     'trigger': {'hour': '0', 'minute': '0', 'day_of_week': '0,1,2,3,4'},
@@ -182,8 +181,8 @@ class Alarms(BasePlugin):
                                         type=self.ALARM_STATE_TYPE, value=default_schedule_value)
 
     def listen_delete_schedule(self, event: Event):
-        if 'id' in event.data:
-            state = self._state_manager.get(id=event.data['id'])
+        if 'key' in event.data:
+            state = self._state_manager.get(key=event.data['key'])
             if state is not None:
                 if state.type == self.ALARM_STATE_TYPE:
                     self._state_manager.delete(state)

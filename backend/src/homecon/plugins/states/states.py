@@ -55,24 +55,24 @@ class States(BasePlugin):
         logger.debug('States plugin Initialized')
 
     def listen_state(self, event: Event):
-        if 'id' in event.data:
-            state = self._state_manager.get(id=event.data['id'])
-            event.reply({'id': event.data['id'], 'value': state.serialize()})
+        if 'key' in event.data:
+            state = self._state_manager.get(key=event.data['key'])
+            event.reply({'key': event.data['key'], 'value': state.serialize()})
 
     def listen_state_value(self, event: Event):
         logger.info(event)
-        if 'id' in event.data and 'value' not in event.data:
-            state = self._state_manager.get(id=event.data['id'])
+        if 'key' in event.data and 'value' not in event.data:
+            state = self._state_manager.get(key=event.data['key'])
             if state is not None:
-                event.reply({'id': event.data['id'], 'value': state.value})
+                event.reply({'key': event.data['key'], 'value': state.value})
 
         elif 'path' in event.data and 'value' not in event.data:
             state = self._state_manager.get(path=event.data['path'])
             if state is not None:
                 event.reply({'path': event.data['path'], 'value': state.value})
 
-        elif 'id' in event.data and 'value' in event.data:
-            state = self._state_manager.get(id=event.data['id'])
+        elif 'key' in event.data and 'value' in event.data:
+            state = self._state_manager.get(key=event.data['key'])
             if state is not None:
                 state.set_value(event.data['value'], event.source)
 
@@ -83,14 +83,14 @@ class States(BasePlugin):
 
     def listen_state_list(self, event: Event):
         states = [s.serialize() for s in self._state_manager.all()]
-        event.reply({'id': '', 'value': states})
+        event.reply({'key': '', 'value': states})
 
     def listen_state_add(self, event):
         kwargs = dict(event.data)
         name = kwargs.pop('name')
-        parent_id = kwargs.pop('parent', None)
-        if parent_id is not None:
-            parent = self._state_manager.get(id=parent_id)
+        parent_key = kwargs.pop('parent', None)
+        if parent_key is not None:
+            parent = self._state_manager.get(key=parent_key)
         else:
             parent = None
         self._state_manager.add(name, parent=parent, **kwargs)
@@ -103,9 +103,9 @@ class States(BasePlugin):
 
             if state is not None:
                 if 'parent' in kwargs:
-                    parent_id = kwargs.pop('parent')
-                    if parent_id is not None:
-                        kwargs['parent'] = self._state_manager.get(id=parent_id)
+                    parent_key = kwargs.pop('parent')
+                    if parent_key is not None:
+                        kwargs['parent'] = self._state_manager.get(key=parent_key)
                     else:
                         kwargs['parent'] = None
 
@@ -114,15 +114,18 @@ class States(BasePlugin):
                 logger.error('cannot update state, state not found')
 
         else:
-            logger.error('cannot update state, no id supplied')
+            logger.error('cannot update state, no key supplied')
 
     def listen_state_delete(self, event):
-        if 'id' in event.data:
-            state = self._state_manager.get(id=event.data['id'])
-            state.delete()
+        if 'key' in event.data:
+            state = self._state_manager.get(key=event.data['key'])
+            if state is not None:
+                self._state_manager.delete(state)
+            else:
+                logger.warning('state not found')
 
     def listen_states_export(self, event):
-        event.reply({'id': '', 'value': json.dumps(self._state_manager.export_states(), indent=2)})
+        event.reply({'key': '', 'value': json.dumps(self._state_manager.export_states(), indent=2)})
 
     def listen_states_import(self, event):
         self._state_manager.import_states(json.loads(event.data['value']))

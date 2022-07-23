@@ -117,3 +117,13 @@ class TestDALStateManager(TestCase):
         assert timeseries0[1].value == 0
         assert timeseries0[0].timestamp < now
         assert timeseries0[1].timestamp >= now
+
+    def test_find(self):
+        state_manager = DALStateManager(self.DB_DIR, self.DB_URI, EventManager())
+        s0 = state_manager.add('mystate')
+        s1 = state_manager.add('parent')
+        s2 = state_manager.add('child1', parent=s1)
+        s3 = state_manager.add('child2', parent=s1)
+
+        assert state_manager.find('/mystate') == [s0]
+        assert state_manager.find('/parent/.*') == [s2, s3]

@@ -110,7 +110,7 @@ class HomeconWebsocket {
         this.send({'event': 'pages_timestamp', data: {'id': null}})
 
         // states
-        this.send({'event': 'state_list', data: {'id': null}})
+        this.send({'event': 'state_list', data: {'key': null}})
 
         that.timeout = 250; // reset timer to 250 on open of websocket connection
         clearTimeout(connectInterval); // clear Interval on on open of websocket connection
@@ -159,7 +159,7 @@ class HomeconWebsocket {
         else if(message.event === 'state_list'){
           const states = {};
           message.data.value.forEach((item, index) => {
-             states[item.id] = item;
+             states[item.key] = item;
           });
           this.app.setState({
             states: states
@@ -170,11 +170,11 @@ class HomeconWebsocket {
         else if(message.event === 'state_value'){
 
           var states = {...this.app.state.states}
-          if(states === undefined || states[message.data.id] === undefined){
-            console.info(`no state with id ${message.data.id}`)
+          if(states === undefined || states[message.data.key] === undefined){
+            console.info(`no state with id ${message.data.key}`)
           }
           else{
-            states[message.data.id].value = message.data.value;
+            states[message.data.key].value = message.data.value;
           }
 
           this.app.setState({
@@ -184,11 +184,11 @@ class HomeconWebsocket {
 
         else if(message.event === 'state_timeseries'){
           var states = {...this.app.state.states}
-          if(states === undefined || states[message.data.id] === undefined){
-            console.info(`no state with id ${message.data.id}`)
+          if(states === undefined || states[message.data.key] === undefined){
+            console.info(`no state with key ${message.data.key}`)
           }
           else{
-            states[message.data.id].timeseries = message.data.timeseries;
+            states[message.data.key].timeseries = message.data.timeseries;
           }
           this.app.setState({
             states: states
@@ -197,11 +197,11 @@ class HomeconWebsocket {
 
         else if(message.event === 'state_timeseries_update'){
           var states = {...this.app.state.states}
-          if(states === undefined || states[message.data.id] === undefined){
-            console.info(`no state with id ${message.data.id}`)
+          if(states === undefined || states[message.data.key] === undefined){
+            console.info(`no state with key ${message.data.key}`)
           }
           else{
-            states[message.data.id].timeseries.push(...message.data.timeseries);
+            states[message.data.key].timeseries.push(...message.data.timeseries);
           }
 
           this.app.setState({

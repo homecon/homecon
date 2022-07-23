@@ -42,7 +42,7 @@ function HomeconChart(props){
 
   useEffect(() => {
     allStates.forEach(state => {
-      if(state !== null && state.id !== undefined && state.timeseries === undefined) {
+      if(state !== null && state.key !== undefined && state.timeseries === undefined) {
         const now = parseInt((new Date()).getTime()/1000)
         const from = now - days * 24 * 3600;
         let event = {'event': 'state_timeseries', 'data': {'id': state.id, 'since': from}};

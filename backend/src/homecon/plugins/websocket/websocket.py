@@ -177,7 +177,7 @@ class Websocket(BasePlugin):
             'event': 'state_value',
             'data': {
                 'path': event.data['state'].path,
-                'id': event.data['state'].key,
+                'key': event.data['state'].key,
                 'value': event.data['state'].value
             }
         })
@@ -187,14 +187,14 @@ class Websocket(BasePlugin):
             'event': 'state',
             'data': {
                 'path': event.data['state'].path,
-                'id': event.data['state'].key,
+                'key': event.data['state'].key,
                 'value': event.data['state'].serialize()
             }
         })
         self.send({
             'event': 'state_list',
             'data': {
-                'id': '',
+                'key': '',
                 'value': [s.serialize() for s in self._state_manager.all()]
             }
         })
@@ -203,7 +203,7 @@ class Websocket(BasePlugin):
         self.send({
             'event': 'state_list',
             'data': {
-                'id': '',
+                'key': '',
                 'value': [s.serialize() for s in self._state_manager.all()]
             }
         })
@@ -212,7 +212,7 @@ class Websocket(BasePlugin):
         self.send({
             'event': 'state_list',
             'data': {
-                'id': '',
+                'key': '',
                 'value': [s.serialize() for s in self._state_manager.all()]
             }
         })

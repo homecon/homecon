@@ -122,9 +122,9 @@ function BaseAlarm(props){
 
   const [dayOfWeekTrigger, setDayOfWeekTrigger] = React.useState(JSON.parse(`[${alarm.value.trigger.day_of_week}]`));
 
-  let action = {id: 'no_action', 'label': 'No action'};
+  let action = {key: 'no_action', 'label': 'No action'};
   actions.forEach((a) => {
-    if(alarm.value.action === a.id){
+    if(alarm.value.action === a.key){
       action = a;
     }
   });
@@ -273,9 +273,9 @@ function BaseAlarm(props){
 
       <div style={{width: '100%', marginTop: '5px'}}>
         <InputLabel id="action-select-label">Action</InputLabel>
-        <Select style={{width: '80%'}} labelId="action-select-label" id="demo-simple-select-helper" value={action.id} onChange={handleActionChange}>
+        <Select style={{width: '80%'}} labelId="action-select-label" id="demo-simple-select-helper" value={action.key} onChange={handleActionChange}>
           {actions.map((a) => {
-            return <MenuItem key={a.id} value={a.id}>{a.label}</MenuItem>
+            return <MenuItem key={a.key} value={a.key}>{a.label}</MenuItem>
           })}
         </Select>
       </div>

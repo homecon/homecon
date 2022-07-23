@@ -70,7 +70,7 @@ function HomeconShading(props){
   const classes = useStyles();
 
   const setValue = (value) => {
-    ws.send({event: 'state_value', data: {id: state.id, value: value}});
+    ws.send({event: 'state_value', data: {key: state.key, value: value}});
   }
 
   const openShading = (event) => {

@@ -51,7 +51,7 @@ function HomeconSwitch(props){
   const classes = useStyles();
 
   const handleClick = (event) => {
-    ws.send({event: 'state_value', data: {id: state.id, value: state.value > valueThreshold ? valueOff : valueOn}})
+    ws.send({event: 'state_value', data: {key: state.key, value: state.value > valueThreshold ? valueOff : valueOn}})
   }
 
   return (

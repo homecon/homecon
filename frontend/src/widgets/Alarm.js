@@ -50,7 +50,7 @@ function HomeconAlarm(props){
   let actionStates = []
 
   Object.values(states).forEach((s) => {
-    if(s.parent === state.id){
+    if(s.parent === state.key){
       if(s.type === 'alarm'){
         alarmStates.push(s)
       }
@@ -61,15 +61,15 @@ function HomeconAlarm(props){
   });
 
   const addAlarm = () => {
-    ws.send({event: 'add_schedule', data: {id: state.id}})
+    ws.send({event: 'add_schedule', data: {key: state.key}})
   }
 
   const handleAlarmChange = (alarm) => {
-    ws.send({event: 'state_value', data: {id: alarm.id, value: alarm.value}})
+    ws.send({event: 'state_value', data: {key: alarm.key, value: alarm.value}})
   }
 
   const handleAlarmDelete = (alarm) => {
-    ws.send({event: 'delete_schedule', data: {id: alarm.id}})
+    ws.send({event: 'delete_schedule', data: {key: alarm.key}})
   }
 
   return (
@@ -78,7 +78,7 @@ function HomeconAlarm(props){
       <div>
         {alarmStates.map((alarm) => {
           return (
-            <div key={alarm.id} style={{marginBottom: '5px'}}>
+            <div key={alarm.key} style={{marginBottom: '5px'}}>
               <BaseAlarm alarm={alarm} actions={actionStates} onChange={handleAlarmChange} onDelete={handleAlarmDelete}/>
             </div>
           );

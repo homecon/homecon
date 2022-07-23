@@ -190,6 +190,7 @@ class IStateManager:
         states_list = []
         for state in self.all():
             dict_ = {
+                'key': state.key,
                 'name': state.name,
                 'parent_path': state.parent.path if state.parent is not None else None,
                 'type': state.type,
