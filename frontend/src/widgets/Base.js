@@ -50,7 +50,7 @@ function BaseValueDisplay(props){
   let displayValue = value
 
   if(typeof value == 'number'){
-  scaledValue = parseFloat(value) * parseFloat(scale)
+    let scaledValue = parseFloat(value) * parseFloat(scale)
     displayValue = scaledValue.toFixed(precision)
   }
 

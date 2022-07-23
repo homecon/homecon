@@ -132,7 +132,6 @@ class TestStateBasedHeatingCurveWantedHeatGainCalculator:
             State(state_manager, DummyEventManager(), 1, 'ambient_temperature_max', value=18.0),
             State(state_manager, DummyEventManager(), 1, 'heat_demand_max', value=8000.0),
             State(state_manager, DummyEventManager(), 1, 'indoor_temperature_correction_factor', value=0.2),
-
         )
         heat = calculator.calculate_wanted_heat_gain()
         assert heat == approx(2285, rel=0.01)
@@ -145,7 +144,6 @@ class TestStateBasedHeatingCurveWantedHeatGainCalculator:
             State(state_manager, DummyEventManager(), 1, 'ambient_temperature_max', value=18.0),
             State(state_manager, DummyEventManager(), 1, 'heat_demand_max', value=8000.0),
             State(state_manager, DummyEventManager(), 1, 'indoor_temperature_correction_factor', value=0.2),
-
         )
         heat = calculator.calculate_wanted_heat_gain()
         assert heat == 0
@@ -158,7 +156,6 @@ class TestStateBasedHeatingCurveWantedHeatGainCalculator:
             State(state_manager, DummyEventManager(), 1, 'ambient_temperature_max', value=18.0),
             State(state_manager, DummyEventManager(), 1, 'heat_demand_max', value=8000.0),
             State(state_manager, DummyEventManager(), 1, 'indoor_temperature_correction_factor', value=0.2),
-
         )
         heat = calculator.calculate_wanted_heat_gain()
         assert heat == -0.2 * 8000
@@ -171,7 +168,6 @@ class TestStateBasedHeatingCurveWantedHeatGainCalculator:
             State(state_manager, DummyEventManager(), 1, 'ambient_temperature_max', value=18.0),
             State(state_manager, DummyEventManager(), 1, 'heat_demand_max', value=8000.0),
             State(state_manager, DummyEventManager(), 1, 'indoor_temperature_correction_factor', value=0.2),
-
         )
         heat = calculator.calculate_wanted_heat_gain()
         assert heat == approx(342, rel=0.01)

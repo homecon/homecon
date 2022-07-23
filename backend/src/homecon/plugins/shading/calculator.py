@@ -113,37 +113,37 @@ class StateBasedHeatingCurveWantedHeatGainCalculator(IWantedHeatGainCalculator):
     def _get_ambient_temperature(self) -> float:
         default = 15.
         if self._ambient_temperature_state is not None:
-            return self._ambient_temperature_state.value or default
+            return self._ambient_temperature_state.value if self._ambient_temperature_state.value is not None else default
         return default
 
     def _get_indoor_temperature(self) -> float:
         default = 20.
         if self._indoor_temperature_state is not None:
-            return self._indoor_temperature_state.value or default
+            return self._indoor_temperature_state.value if self._indoor_temperature_state.value is not None else default
         return default
 
     def _get_setpoint_temperature(self) -> float:
         default = 21.
         if self._setpoint_temperature_state is not None:
-            return self._setpoint_temperature_state.value or default
+            return self._setpoint_temperature_state.value if self._setpoint_temperature_state.value is not None else default
         return default
 
     def _get_ambient_temperature_min(self) -> float:
         default = -10.
         if self._ambient_temperature_min_state is not None:
-            return self._ambient_temperature_min_state.value or default
+            return self._ambient_temperature_min_state.value if self._ambient_temperature_min_state.value is not None else default
         return default
 
     def _get_ambient_temperature_max(self) -> float:
         default = 18.
         if self._ambient_temperature_max_state is not None:
-            return self._ambient_temperature_max_state.value or default
+            return self._ambient_temperature_max_state.value if self._ambient_temperature_max_state.value is not None else default
         return default
 
     def _get_heat_demand_max(self) -> float:
         default = 8000.
         if self._heat_demand_max_state is not None:
-            return self._heat_demand_max_state.value or default
+            return self._heat_demand_max_state.value if self._heat_demand_max_state.value is not None else default
         return default
 
     def _get_indoor_temperature_correction_factor(self) -> float:
