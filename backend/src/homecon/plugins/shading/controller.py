@@ -218,7 +218,8 @@ class ShadingController:
         state = event.data['state']
         if state.parent is not None and state.parent.type == self.SHADING_STATE_TYPE:
             if event.source != self.EVENT_SOURCE:
-                if state.name == 'position' and event.source == 'websocket':
-                    self.set_override(state.parent)
-                if event.data['old'] != event.data['new']:
+                if state.name == 'position':
+                    if event.source == 'websocket':
+                        self.set_override(state.parent)
+                elif event.data['old'] != event.data['new']:
                     self.schedule_run(5)
