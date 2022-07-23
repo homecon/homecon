@@ -26,21 +26,19 @@ class IrradianceThresholdPositionCalculator(IShadingPositionCalculator):
         logger.debug(f'get positions for shadings: {shadings}')
         date = self._now()
 
-        maximum_heat_gains = [s.get_heat_gain(s.minimum_position, date, cloud_cover) for s in shadings]
-        minimum_heat_gains = [s.get_heat_gain(s.maximum_position, date, cloud_cover) for s in shadings]
-
-        logger.debug(f'calculated minimum_heat_gains: {minimum_heat_gains}')
-        logger.debug(f'calculated maximum_heat_gains: {maximum_heat_gains}')
-
         if wanted_heat_gain > self._wanted_heat_gain_threshold:
             # heating mode
+            logger.debug(f'heating mode, returning minimum positions')
             return [s.minimum_position for s in shadings]
 
         else:
+            # cooling mode
+            logger.debug(f'cooling mode, calculating positions')
             positions = []
             for shading in shadings:
                 p = 0.0
                 irradiance = shading.get_irradiance(0.0, date, cloud_cover)
+                logger.debug(f'calculated irradiance for {shading}: {irradiance:.1f} W/m2')
                 for threshold, position in self._irradiance_thresholds:
                     if irradiance > threshold:
                         p = position
@@ -113,7 +111,10 @@ class StateBasedHeatingCurveWantedHeatGainCalculator(IWantedHeatGainCalculator):
         self._indoor_temperature_correction_factor_state = indoor_temperature_correction_factor_state
 
     def _get_ambient_temperature(self) -> float:
-        return self._ambient_temperature_state.value
+        default = 15.
+        if self._ambient_temperature_state is not None:
+            return self._ambient_temperature_state.value or default
+        return default
 
     def _get_indoor_temperature(self) -> float:
         default = 20.
