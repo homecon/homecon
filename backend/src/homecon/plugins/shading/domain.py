@@ -27,6 +27,9 @@ class IShading:
     def maximum_position(self) -> float:
         raise NotImplementedError
 
+    def get_irradiance(self, position: float, date: datetime, cloud_cover: Optional[float] = 0.0) -> float:
+        raise NotImplementedError
+
     def get_heat_gain(self, position: float, date: datetime, cloud_cover: Optional[float] = 0.0) -> float:
         raise NotImplementedError
 
@@ -41,7 +44,11 @@ class StateBasedShading(IShading):
                  maximum_position: Optional[float] = None,
                  controller_override: Optional[bool] = False,
                  area: float = 1., transparency: float = 0., azimuth: float = 180., tilt: float = 90.,
-                 longitude: float = 0, latitude: float = 0, elevation: float = 80.):
+                 longitude: float = 0, latitude: float = 0, elevation: float = 80.,
+                 horizon_solar_altitude: float = 5.0,
+                 direct_irradiation_coefficient: float = 1.0,
+                 diffuse_irradiation_coefficient: float = 0.5,
+                 ground_irradiation_coefficient: float = 0.0):
         self._name = name
         self._position = position
         self._set_position = set_position
@@ -55,14 +62,21 @@ class StateBasedShading(IShading):
         self._longitude = longitude
         self._latitude = latitude
         self._elevation = elevation
+        self._horizon_solar_altitude = horizon_solar_altitude
+        self._direct_irradiation_coefficient = direct_irradiation_coefficient
+        self._diffuse_irradiation_coefficient = diffuse_irradiation_coefficient
+        self._ground_irradiation_coefficient = ground_irradiation_coefficient
 
     def get_shading_factor(self, position):
         return position * self.transparency + (1 - position) * 1
 
     def get_heat_gain(self, position: float, date: datetime, cloud_cover: Optional[float] = 0.0) -> float:
-        return self.get_shading_factor(position) * self.get_maximum_heat_gain(date, cloud_cover)
+        return self._area * self.get_irradiance(position, date, cloud_cover)
 
-    def get_maximum_heat_gain(self, date: datetime, cloud_cover: Optional[float] = 0.0) -> float:
+    def get_irradiance(self, position: float, date: datetime, cloud_cover: Optional[float] = 0.0) -> float:
+        return self.get_shading_factor(position) * self.get_maximum_irradiance(date, cloud_cover)
+
+    def get_maximum_irradiance(self, date: datetime, cloud_cover: Optional[float] = 0.0) -> float:
         solar_azimuth, solar_altitude = sunposition(self._latitude, self._longitude, self._elevation,
                                                     timestamp=int(date.timestamp()))
         irradiance_direct_clearsky, irradiance_diffuse_clearsky = clearskyirrradiance(solar_azimuth, solar_altitude)
@@ -74,7 +88,14 @@ class StateBasedShading(IShading):
             incidentirradiance(
                 irradiance_direct, irradiance_diffuse, solar_azimuth, solar_altitude, self._azimuth, self._tilt)
 
-        return irradiance_total_surface * self._area
+        irradiance = (
+            self.get_blocking_factor(solar_azimuth, solar_altitude) * self._direct_irradiation_coefficient * irradiance_direct_surface +
+            self._diffuse_irradiation_coefficient * irradiance_diffuse_surface +
+            self._ground_irradiation_coefficient * irradiance_ground_surface)
+        return irradiance
+
+    def get_blocking_factor(self, solar_azimuth: float, solar_altitude: float) -> float:
+        return max(0., min(1., solar_altitude / self._horizon_solar_altitude))
 
     @property
     def minimum_position(self) -> float:

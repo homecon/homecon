@@ -1,4 +1,6 @@
-from datetime import datetime
+from datetime import datetime, timedelta
+
+import pytz
 
 from homecon.core.states.state import State
 from homecon.core.states.memory_state_manager import MemoryStateManager
@@ -147,6 +149,7 @@ class TestShadingController:
             State(state_manager, DummyEventManager(), 2, 'latitude', value=50),
             State(state_manager, DummyEventManager(), 3, 'elevation', value=50),
         )
+        controller.start()
         controller.run()
         assert shading_position1.value == 0.0
         assert shading_position2.value == 0.0
@@ -156,20 +159,30 @@ class TestShadingController:
         controller.listen_state_value_changed(
             Event(DummyEventManager(), 'state_value_changed', {'state': shading_minimum1, 'old': 0.1, 'new': 0.0})
         )
+        controller.listen_state_value_changed(
+            Event(DummyEventManager(), 'state_value_changed', {'state': shading_minimum1, 'old': 0.0, 'new': 0.2})
+        )
 
         assert controller._run_job is not None
         jobs = controller.scheduler.get_jobs()
-        assert len(jobs) == 2
+        assert len(jobs) == 1
+        assert jobs[0].next_run_time < datetime.now(tz=pytz.UTC) + timedelta(seconds=20)
+        assert controller._run_job == jobs[0]
 
         # execute the job inline
-        jobs[1].func()
+        jobs[0].func()
 
         assert shading_position1.value == 1.0
         assert shading_position2.value == 0.0
         assert shading_position3.value == 0.0
-        assert controller._run_job is None
+        assert controller._run_job is not None
+        assert controller._run_job.next_run_time > datetime.now(tz=pytz.UTC) + timedelta(seconds=20)
+        assert len(controller.scheduler.get_jobs()) == 1
 
         controller.listen_state_value_changed(
             Event(DummyEventManager(), 'state_value_changed', {'state': shading_minimum1, 'old': 0.1, 'new': 0.0})
         )
         assert controller._run_job is not None
+        assert controller._run_job.next_run_time < datetime.now(tz=pytz.UTC) + timedelta(seconds=20)
+        assert len(controller.scheduler.get_jobs()) == 1
+        controller.stop()

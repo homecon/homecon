@@ -1,6 +1,6 @@
 import logging
 from datetime import datetime
-from typing import List, Optional, Callable
+from typing import List, Optional, Callable, Tuple
 
 from homecon.core.states.state import State
 from homecon.plugins.shading.domain import IShading
@@ -12,6 +12,42 @@ logger = logging.getLogger(__name__)
 class IShadingPositionCalculator:
     def get_positions(self, shadings: List[IShading], wanted_heat_gain: float, cloud_cover: Optional[float] = 0.0) -> List[float]:
         raise NotImplementedError
+
+
+class IrradianceThresholdPositionCalculator(IShadingPositionCalculator):
+    def __init__(self, wanted_heat_gain_threshold: float = 0,
+                 irradiance_thresholds: List[Tuple[float, float]] = None,
+                 now: Callable[[], datetime] = datetime.now):
+        self._wanted_heat_gain_threshold = wanted_heat_gain_threshold
+        self._irradiance_thresholds = irradiance_thresholds or [(100, 1.0), (75, 0.5)]
+        self._now = now
+
+    def get_positions(self, shadings: List[IShading], wanted_heat_gain: float, cloud_cover: Optional[float] = 0.0):
+        logger.debug(f'get positions for shadings: {shadings}')
+        date = self._now()
+
+        maximum_heat_gains = [s.get_heat_gain(s.minimum_position, date, cloud_cover) for s in shadings]
+        minimum_heat_gains = [s.get_heat_gain(s.maximum_position, date, cloud_cover) for s in shadings]
+
+        logger.debug(f'calculated minimum_heat_gains: {minimum_heat_gains}')
+        logger.debug(f'calculated maximum_heat_gains: {maximum_heat_gains}')
+
+        if wanted_heat_gain > self._wanted_heat_gain_threshold:
+            # heating mode
+            return [s.minimum_position for s in shadings]
+
+        else:
+            positions = []
+            for shading in shadings:
+                p = 0.0
+                irradiance = shading.get_irradiance(0.0, date, cloud_cover)
+                for threshold, position in self._irradiance_thresholds:
+                    if irradiance > threshold:
+                        p = position
+                        break
+
+                positions.append(p)
+            return positions
 
 
 class EqualShadingPositionCalculator(IShadingPositionCalculator):

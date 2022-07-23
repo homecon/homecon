@@ -6,17 +6,19 @@ from pytest import approx
 from homecon.core.states.memory_state_manager import MemoryStateManager
 from homecon.core.states.state import State
 
-from homecon.plugins.shading.calculator import EqualShadingPositionCalculator, StateBasedHeatingCurveWantedHeatGainCalculator
+from homecon.plugins.shading.calculator import EqualShadingPositionCalculator, StateBasedHeatingCurveWantedHeatGainCalculator, \
+    IrradianceThresholdPositionCalculator
 from homecon.plugins.shading.domain import IShading
 from mocks import DummyEventManager
 
 
 class MockShading(IShading):
-    def __init__(self, position=0.0, minimum_position=0.0, maximum_position=1.0, heat_gain=1000.):
+    def __init__(self, position=0.0, minimum_position=0.0, maximum_position=1.0, irradiance=250., area=4.):
         self._position = position
         self._minimum_position = minimum_position
         self._maximum_position = maximum_position
-        self._heat_gain = heat_gain
+        self._irradiance = irradiance
+        self._area = area
 
     @property
     def position(self) -> float:
@@ -34,7 +36,37 @@ class MockShading(IShading):
         return self._maximum_position
 
     def get_heat_gain(self, position: float, date: datetime, cloud_cover: Optional[float] = 0.0) -> float:
-        return (1-position) * (1-cloud_cover) * self._heat_gain
+        return (1-position) * (1-cloud_cover) * self._irradiance * self._area
+
+    def get_irradiance(self, position: float, date: datetime, cloud_cover: Optional[float] = 0.0) -> float:
+        return (1-position) * (1-cloud_cover) * self._irradiance
+
+
+class TestIrradianceThresholdPositionCalculator:
+
+    def test_get_positions_empty(self):
+        shadings = []
+        calculator = IrradianceThresholdPositionCalculator()
+        positions = calculator.get_positions(shadings, 1000)
+        assert positions == []
+
+    def test_get_positions_open(self):
+        shadings = [MockShading(), MockShading()]
+        calculator = IrradianceThresholdPositionCalculator()
+        positions = calculator.get_positions(shadings, 5000)
+        assert positions == [0.0, 0.0]
+
+    def test_get_positions_closed(self):
+        shadings = [MockShading(), MockShading()]
+        calculator = IrradianceThresholdPositionCalculator()
+        positions = calculator.get_positions(shadings, -1)
+        assert positions == [1.0, 1.0]
+
+    def test_get_positions_half(self):
+        shadings = [MockShading(irradiance=80), MockShading(irradiance=80, area=50)]
+        calculator = IrradianceThresholdPositionCalculator()
+        positions = calculator.get_positions(shadings, -1)
+        assert positions == [0.5, 0.5]
 
 
 class TestEqualShadingPositionCalculator:
@@ -70,20 +102,20 @@ class TestEqualShadingPositionCalculator:
         assert positions == [1.0, 1.0]
 
     def test_get_positions_different_gains(self):
-        shadings = [MockShading(heat_gain=1000), MockShading(heat_gain=2000)]
+        shadings = [MockShading(irradiance=250), MockShading(irradiance=500)]
         calculator = EqualShadingPositionCalculator()
         positions = calculator.get_positions(shadings, 1000)
         assert positions == [0.65, 0.65]
 
     def test_get_positions_different_bounds(self):
-        shadings = [MockShading(heat_gain=1000, minimum_position=0.2, maximum_position=0.3),
-                    MockShading(heat_gain=1000, minimum_position=0.7, maximum_position=0.8)]
+        shadings = [MockShading(irradiance=250, minimum_position=0.2, maximum_position=0.3),
+                    MockShading(irradiance=250, minimum_position=0.7, maximum_position=0.8)]
         calculator = EqualShadingPositionCalculator()
         positions = calculator.get_positions(shadings, 5000)
         assert positions == [0.2, 0.7]
 
     def test_get_positions_threshold(self):
-        shadings = [MockShading(heat_gain=20), MockShading(heat_gain=100)]
+        shadings = [MockShading(irradiance=5), MockShading(irradiance=25)]
         calculator = EqualShadingPositionCalculator()
         positions = calculator.get_positions(shadings, -5000, cloud_cover=0.0)
         assert positions == [0.0, 1.0]

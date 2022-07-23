@@ -1,10 +1,14 @@
 import logging
 from datetime import datetime, timedelta
 from threading import Lock
+from typing import Optional
 
+import pytz
 from apscheduler.executors.pool import ThreadPoolExecutor
+from apscheduler.jobstores.base import JobLookupError
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.date import DateTrigger
+from apscheduler.job import Job
 
 from homecon.core.event import Event
 from homecon.core.states.state import State, IStateManager
@@ -49,6 +53,7 @@ class ShadingController:
         self._latitude_state = latitude_state
         self._elevation_state = elevation_state
         self._override_duration = override_duration
+        self._interval = interval
 
         executors = {
             'default': ThreadPoolExecutor(5),
@@ -59,14 +64,14 @@ class ShadingController:
             'misfire_grace_time': 3600
         }
         self.scheduler = BackgroundScheduler(executors=executors, job_defaults=job_defaults)
-        self.scheduler.add_job(self.schedule_run, trigger='interval', seconds=interval)
-        self._run_job = None
+
+        self._run_job: Optional[Job] = None
         self._run_job_lock = Lock()
         self._reset_jobs = {}
 
     def start(self):
         self.scheduler.start()
-        self.schedule_run()
+        self.schedule_run(30)
         logger.info('started shading controller')
 
     def stop(self):
@@ -118,7 +123,11 @@ class ShadingController:
             tilt=state.config.get('tilt', 90.0),
             longitude=self._longitude_state.value or 0.0,
             latitude=self._latitude_state.value or 0.0,
-            elevation=self._elevation_state.value or 0.0
+            elevation=self._elevation_state.value or 0.0,
+            horizon_solar_altitude=state.config.get('horizon_solar_altitude', 5.0),
+            direct_irradiation_coefficient=state.config.get('direct_irradiation_coefficient', 1.0),
+            diffuse_irradiation_coefficient=state.config.get('diffuse_irradiation_coefficient', 0.5),
+            ground_irradiation_coefficient=state.config.get('ground_irradiation_coefficient', 0.0),
         )
 
     def set_override(self, state: State):
@@ -149,7 +158,12 @@ class ShadingController:
     def run(self):
         logger.info('running shading controller')
         with self._run_job_lock:
-            self._run_job = None
+            if self._run_job is not None:
+                try:
+                    self._run_job.remove()
+                except JobLookupError:
+                    pass
+            self._run_job = self.scheduler.add_job(self.run, trigger=DateTrigger(datetime.now() + timedelta(seconds=self._interval)))
 
         rain = self._rain_calculator.calculate_rain()
 
@@ -173,13 +187,32 @@ class ShadingController:
         for shading, position in zip(shadings, positions):
             shading.set_position(position)
 
-    def schedule_run(self):
+    @staticmethod
+    def _job_is_scheduled(job: Job, threshold: float):
+        now = datetime.now(tz=pytz.UTC)
+        try:
+            next_run_time = job.next_run_time
+        except AttributeError:
+            return False
+        return job.next_run_time is not None and now <= next_run_time < now + timedelta(seconds=threshold)
+
+    def schedule_run(self, interval: float):
         with self._run_job_lock:
-            if self._run_job is None:
+            reschedule = True
+            if self._run_job is not None:
+                if self._job_is_scheduled(self._run_job, 5):
+                    reschedule = False
+
+                    logger.debug('controller already scheduled')
+                else:
+                    try:
+                        self._run_job.remove()
+                    except JobLookupError:
+                        pass
+
+            if reschedule:
                 logger.debug('scheduled controller run in 5 seconds')
-                self._run_job = self.scheduler.add_job(self.run, trigger=DateTrigger(datetime.now() + timedelta(seconds=5)))
-            else:
-                logger.debug('controller already scheduled')
+                self._run_job = self.scheduler.add_job(self.run, trigger=DateTrigger(datetime.now() + timedelta(seconds=interval)))
 
     def listen_state_value_changed(self, event: Event):
         state = event.data['state']
@@ -188,4 +221,4 @@ class ShadingController:
                 if state.name == 'position' and event.source == 'websocket':
                     self.set_override(state.parent)
                 if event.data['old'] != event.data['new']:
-                    self.schedule_run()
+                    self.schedule_run(5)

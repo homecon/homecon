@@ -3,7 +3,7 @@ import logging
 from homecon.core.event import Event
 from homecon.core.plugins.plugin import BasePlugin
 from homecon.plugins.shading.controller import ShadingController
-from homecon.plugins.shading.calculator import EqualShadingPositionCalculator, StateBasedHeatingCurveWantedHeatGainCalculator, \
+from homecon.plugins.shading.calculator import IrradianceThresholdPositionCalculator, StateBasedHeatingCurveWantedHeatGainCalculator, \
     DummyCloudCoverCalculator, WeatherForecastCloudCoverCalculator, StateRainCalculator
 
 logger = logging.getLogger(__name__)
@@ -77,7 +77,7 @@ class Shading(BasePlugin):
             cloud_cover_calculator,
             cloud_cover_state,
             rain_calculator,
-            EqualShadingPositionCalculator(),
+            IrradianceThresholdPositionCalculator(),
             longitude_state, latitude_state, elevation_state
         )
 
