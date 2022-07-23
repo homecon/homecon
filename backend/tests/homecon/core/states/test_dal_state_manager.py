@@ -48,15 +48,13 @@ class TestDALStateManager(TestCase):
         state_manager = DALStateManager(self.DB_DIR, self.DB_URI, EventManager())
         s = state_manager.add('mystate')
 
-        assert s.id == 1
         assert s.name == 'mystate'
         assert s.parent is None
         assert s.value is None
         assert s.log_key == s.NO_LOGGING_KEY
 
         state_manager = DALStateManager(self.DB_DIR, self.DB_URI, EventManager())
-        s = state_manager.get(id=1)
-        assert s.id == 1
+        s = state_manager.get(key=s.key)
         assert s.name == 'mystate'
         assert s.parent is None
         assert s.value is None
@@ -70,7 +68,7 @@ class TestDALStateManager(TestCase):
         assert s0.children[0].name == 'child'
 
         state_manager = DALStateManager(self.DB_DIR, self.DB_URI, EventManager())
-        s0 = state_manager.get(id=1)
+        s0 = state_manager.get(key=s0.key)
         assert s0.children[0].name == 'child'
 
     def test_update(self):
@@ -78,10 +76,12 @@ class TestDALStateManager(TestCase):
         s = state_manager.add('mystate')
         s.update(name='test')
         assert s.name == 'test'
+        key = s.key
+        print(key)
 
         state_manager = DALStateManager(self.DB_DIR, self.DB_URI, EventManager())
         s = state_manager.get(path='/test')
-        assert s.id == 1
+        assert s.key == key
 
     def test_update_log_values(self):
         state_manager = DALStateManager(self.DB_DIR, self.DB_URI, EventManager())

@@ -118,7 +118,7 @@ class Alarms(BasePlugin):
 
     @staticmethod
     def get_job_id(state: State):
-        return 'state#{}'.format(state.id)
+        return 'state#{}'.format(state.key)
 
     def update_job(self, state):
         if 'trigger' not in state.value or 'action' not in state.value:

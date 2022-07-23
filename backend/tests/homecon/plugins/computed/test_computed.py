@@ -51,7 +51,7 @@ class TestComputed:
         computed = Computed('computed', event_manager, state_manager, IPagesManager)
         a = state_manager.add('a', config={'computed': asdict(self.test_config)})
         computed.listen_state_added(Event(event_manager, 'state_added', {'state': a}))
-        assert computed._computed_mapping == {0: self.test_config}
+        assert computed._computed_mapping == {a.key: self.test_config}
 
     def test_listen_state_added_mis_configured(self):
         event_manager = DummyEventManager()
@@ -88,7 +88,7 @@ class TestComputed:
         computed = Computed('computed', event_manager, state_manager, IPagesManager)
         a.config = {'computed': asdict(self.test_config)}
         computed.listen_state_updated(Event(event_manager, 'state_changed', {'state': a}))
-        assert computed._computed_mapping == {0: self.test_config}
+        assert computed._computed_mapping == {a.key: self.test_config}
 
     def test_listen_state_updated_edit_computed(self):
         event_manager = DummyEventManager()
@@ -99,7 +99,7 @@ class TestComputed:
         new_config = ComputedConfig('123', '/c')
         a.config = {'computed': asdict(new_config)}
         computed.listen_state_updated(Event(event_manager, 'state_changed', {'state': a}))
-        assert computed._computed_mapping == {0: new_config}
+        assert computed._computed_mapping == {a.key: new_config}
 
     def test_listen_state_value_changed(self):
         event_manager = DummyEventManager()

@@ -74,13 +74,13 @@ class TimeSeries(IPlugin):
                 self._add_subscription(
                     Subscription(
                         target=event.reply_to,
-                        state_id=state.id,
+                        state_id=state.key,
                         valid_until=int(time.time() + self.DEFAULT_VALIDITY_TIME),
                         last_timestamp=timeseries[-1].timestamp if len(timeseries) > 0 else since
                     )
                 )
             # push data
-            event.reply(data={'id': state.id, 'timeseries': [(value.timestamp, value.value) for value in timeseries]})
+            event.reply(data={'id': state.key, 'timeseries': [(value.timestamp, value.value) for value in timeseries]})
 
     def _handle_state_value_changed_event(self, event: Event):
         state = event.data['state']
@@ -90,7 +90,7 @@ class TimeSeries(IPlugin):
 
         data = None
         for subscription in self._subscriptions:
-            if state.id == subscription.state_id:
+            if state.key == subscription.state_id:
 
                 # get data
                 if data is None:
@@ -98,7 +98,7 @@ class TimeSeries(IPlugin):
                     if len(timeseries) > 0:
                         subscription.last_timestamp = timeseries[-1].timestamp
 
-                    data = {'id': state.id, 'timeseries': [(value.timestamp, value.value) for value in timeseries]}
+                    data = {'id': state.key, 'timeseries': [(value.timestamp, value.value) for value in timeseries]}
 
                 # push new data
                 self._event_manager.fire('reply',

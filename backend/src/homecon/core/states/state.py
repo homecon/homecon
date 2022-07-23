@@ -25,14 +25,14 @@ class State:
     NO_LOGGING_KEY = ''
 
     # noinspection PyShadowingBuiltins
-    def __init__(self, state_manager: 'IStateManager', event_manager: 'IEventManager', id_, name,
+    def __init__(self, state_manager: 'IStateManager', event_manager: 'IEventManager', key, name,
                  parent: 'State' = None,
                  type: str = None, quantity: str = None, unit: str = None, label: str = None, description: str = None,
                  log_key: Optional[str] = '',
                  config: dict = None, value: Any = None):
         self._state_manager = state_manager
         self._event_manager = event_manager
-        self.id = id_
+        self.key = key
         self.name = name
         self.parent = parent
         self.type = type
@@ -99,7 +99,7 @@ class State:
 
     @property
     def children(self) -> List['State']:
-        return [s for s in self._state_manager.all() if s.parent is not None and s.parent.id == self.id]
+        return [s for s in self._state_manager.all() if s.parent is not None and s.parent.key == self.key]
 
     @property
     def path(self) -> str:
@@ -115,16 +115,20 @@ class State:
         return self.value
 
     def __repr__(self):
-        return f'<State: {self.id}, name: {self.name}, value: {self.value}>'
+        return f'<State: {self.key}, name: {self.name}, value: {self.value}>'
 
     def serialize(self):
         return {
-            'id': self.id, 'name': self.name, 'path': self.path, 'value': self.value,
-            'parent': None if self.parent is None else self.parent.id,
+            'key': self.key, 'name': self.name, 'path': self.path, 'value': self.value,
+            'parent': None if self.parent is None else self.parent.key,
             'type': self.type, 'quantity': self.quantity, 'unit': self.unit, 'label': self.label,
             'description': self.description, 'log_key': self.log_key,
             'config': self.config or {}
         }
+
+
+class CouldNotStoreStateException(Exception):
+    pass
 
 
 class IStateManager:
@@ -134,8 +138,7 @@ class IStateManager:
     def all(self) -> List[State]:
         raise NotImplementedError
 
-    # noinspection PyShadowingBuiltins
-    def get(self, path: str = None, id: int = None) -> Optional[State]:
+    def get(self, path: str = None, key: str = None) -> Optional[State]:
         raise NotImplementedError
 
     def find(self, expr: str) -> List[State]:
@@ -144,7 +147,7 @@ class IStateManager:
     def exists(self, name: str, parent: Optional[State] = None):
         raise NotImplementedError
 
-    def _create_state(self, name: str, parent: Optional[State] = None,
+    def _create_state(self, key: str, name: str, parent: Optional[State] = None,
                       type: Optional[str] = None, quantity: Optional[str] = None, unit: Optional[str] = None,
                       label: Optional[str] = None, description: Optional[str] = None, log_key: Optional[str] = '',
                       config: Optional[dict] = None, value: Optional[Any] = None) -> State:
@@ -159,7 +162,9 @@ class IStateManager:
     def add(self, name: str, parent: Optional[State] = None, parent_path: Optional[str] = None,
             type: Optional[str] = None, quantity: Optional[str] = None, unit: Optional[str] = None,
             label: Optional[str] = None, description: Optional[str] = None, log_key: Optional[str] = '',
-            config: Optional[dict] = None, value: Optional[Any] = None):
+            config: Optional[dict] = None, value: Optional[Any] = None, key: Optional[str] = None):
+
+        key = key or str(uuid4())
 
         if parent is None:
             if parent_path is not None:
@@ -169,10 +174,14 @@ class IStateManager:
         if existing_state:
             return existing_state
 
-        state = self._create_state(name, parent=parent, type=type, quantity=quantity, unit=unit,
-                                   label=label, description=description, config=config, log_key=log_key, value=value)
-        state.notify_created()
-        return state
+        try:
+            state = self._create_state(key, name, parent=parent, type=type, quantity=quantity, unit=unit,
+                                       label=label, description=description, config=config, log_key=log_key, value=value)
+        except CouldNotStoreStateException:
+            pass
+        else:
+            state.notify_created()
+            return state
 
     def get_state_values_log(self, state: State, since: float, until: float) -> List[TimestampedValue]:
         raise NotImplementedError

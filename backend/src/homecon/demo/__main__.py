@@ -75,12 +75,12 @@ def create_states(state_manager: IStateManager):
     state_manager.add('myalarms')
     state_manager.add('all_lights_off', label='All lights off', parent=state_manager.get('/myalarms'), type='action', value=[
         {'state': '.*/lights/.*', 'value': 0},
-        {'state': state_manager.get('/ground_floor/kitchen/some_value').id, 'value': 10, 'delay': 0},
-        {'state': state_manager.get('/ground_floor/kitchen/some_value').id, 'value': 0, 'delay': 5}
+        {'state': state_manager.get('/ground_floor/kitchen/some_value').key, 'value': 10, 'delay': 0},
+        {'state': state_manager.get('/ground_floor/kitchen/some_value').key, 'value': 0, 'delay': 5}
     ])
     state_manager.add('1', parent=state_manager.get('/myalarms'), type='alarm',
                       value={'trigger': {'day_of_week': '0,1,2,3,6', 'hour': '20', 'minute': '0'},
-                             'action': state_manager.get('/myalarms/all_lights_off').id})
+                             'action': state_manager.get('/myalarms/all_lights_off').key})
     state_manager.add('central')
     state_manager.add('ventilation', parent=state_manager.get('/central'))
     state_manager.add('speed', parent=state_manager.get('/central/ventilation'),

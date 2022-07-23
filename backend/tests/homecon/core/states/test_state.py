@@ -28,7 +28,6 @@ class TestState(TestCase):
         state_manager = MemoryStateManager(EventManager())
         s = state_manager.add('mystate')
 
-        assert s.id == 0
         assert s.name == 'mystate'
         assert s.parent is None
         assert s.value is None

@@ -36,7 +36,7 @@ class ValueComputer:
         return self._state_manger.get(path).value
 
     def _state_values(self, expr: str) -> List[Any]:
-        values = {state.id: state.value for state in self._state_manger.find(expr)}
+        values = {state.key: state.value for state in self._state_manger.find(expr)}
         logger.debug(values)
         return list(values.values())
 
@@ -73,7 +73,7 @@ class Computed(BasePlugin):
             computed_config = state.config.get(self.COMPUTED)
             if computed_config is not None:
                 try:
-                    self._computed_mapping[state.id] = ComputedConfig.from_dict(computed_config)
+                    self._computed_mapping[state.key] = ComputedConfig.from_dict(computed_config)
                 except TypeError:
                     logger.exception('could not add state to computed_mapping')
         logger.debug('Computed plugin initialized')
@@ -83,13 +83,13 @@ class Computed(BasePlugin):
         if computed_config_dict is not None:
             try:
                 computed_config = ComputedConfig.from_dict(computed_config_dict)
-                self._computed_mapping[state.id] = computed_config
-                logger.debug(f'added state {state.id} to the computed mapping with config {computed_config}')
+                self._computed_mapping[state.key] = computed_config
+                logger.debug(f'added state {state.key} to the computed mapping with config {computed_config}')
             except TypeError:
                 logger.exception('could not add state to computed_mapping')
-        elif state.id in self._computed_mapping:
-            del self._computed_mapping[state.id]
-            logger.debug(f'removed state {state.id} from the computed mapping')
+        elif state.key in self._computed_mapping:
+            del self._computed_mapping[state.key]
+            logger.debug(f'removed state {state.key} from the computed mapping')
 
     def listen_state_added(self, event: Event):
         state = event.data['state']
@@ -101,15 +101,15 @@ class Computed(BasePlugin):
 
     def listen_state_deleted(self, event: Event):
         state = event.data['state']
-        if state.id in self._computed_mapping:
-            del self._computed_mapping[state.id]
-            logger.debug(f'removed state {state.id} from the computed mapping')
+        if state.key in self._computed_mapping:
+            del self._computed_mapping[state.key]
+            logger.debug(f'removed state {state.key} from the computed mapping')
 
     def listen_state_value_changed(self, event: Event):
-        for state_id, computed_config in self._computed_mapping.items():
-            trigger_state_ids = [state.id for state in self._state_manager.find(computed_config.trigger)]
-            if event.data['state'].id in trigger_state_ids:
-                state = self._state_manager.get(id=state_id)
+        for state_key, computed_config in self._computed_mapping.items():
+            trigger_state_ids = [state.key for state in self._state_manager.find(computed_config.trigger)]
+            if event.data['state'].key in trigger_state_ids:
+                state = self._state_manager.get(key=state_key)
                 try:
                     value = self._value_computer.compute_value(computed_config.value)
                 except EvaluationError:

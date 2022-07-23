@@ -12,7 +12,7 @@ class TestUtil:
         config = config_state_paths_to_ids({
             'state': s.path
         }, state_manager)
-        assert config['state'] == s.id
+        assert config['state'] == s.key
 
     def test_config_state_paths_to_ids_list(self):
         state_manager = MemoryStateManager(EventManager())
@@ -22,7 +22,7 @@ class TestUtil:
         config = config_state_paths_to_ids({
             'states': [s1.path, s2.path]
         }, state_manager)
-        assert config['states'] == [s1.id, s2.id]
+        assert config['states'] == [s1.key, s2.key]
 
     def test_config_state_paths_to_ids_dict(self):
         state_manager = MemoryStateManager(EventManager())
@@ -32,14 +32,14 @@ class TestUtil:
         config = config_state_paths_to_ids({
             'states': {'a': s1.path, 'b': s2.path}
         }, state_manager)
-        assert config['states'] == {'a': s1.id, 'b': s2.id}
+        assert config['states'] == {'a': s1.key, 'b': s2.key}
 
     def test_config_state_ids_to_paths(self):
         state_manager = MemoryStateManager(EventManager())
         s = state_manager.add('mystate')
 
         config = config_state_ids_to_paths({
-            'state': s.id
+            'state': s.key
         }, state_manager)
         assert config['state'] == s.path
 
@@ -49,7 +49,7 @@ class TestUtil:
         s2 = state_manager.add('myotherstate')
 
         config = config_state_ids_to_paths({
-            'states': [s1.id, s2.id]
+            'states': [s1.key, s2.key]
         }, state_manager)
         assert config['states'] == [s1.path, s2.path]
 
@@ -59,6 +59,6 @@ class TestUtil:
         s2 = state_manager.add('myotherstate')
 
         config = config_state_ids_to_paths({
-            'states': {'a': s1.id, 'b': s2.id}
+            'states': {'a': s1.key, 'b': s2.key}
         }, state_manager)
         assert config['states'] == {'a': s1.path, 'b': s2.path}

@@ -177,7 +177,7 @@ class Websocket(BasePlugin):
             'event': 'state_value',
             'data': {
                 'path': event.data['state'].path,
-                'id': event.data['state'].id,
+                'id': event.data['state'].key,
                 'value': event.data['state'].value
             }
         })
@@ -187,7 +187,7 @@ class Websocket(BasePlugin):
             'event': 'state',
             'data': {
                 'path': event.data['state'].path,
-                'id': event.data['state'].id,
+                'id': event.data['state'].key,
                 'value': event.data['state'].serialize()
             }
         })

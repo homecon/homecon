@@ -1,6 +1,7 @@
 import re
 import time
 from typing import Optional, List, Any
+from uuid import uuid4
 
 from homecon.core.states.state import IStateManager, State, TimestampedValue
 
@@ -15,11 +16,12 @@ class MemoryStateManager(IStateManager):
         return list(self._states.values())
 
     # noinspection PyShadowingBuiltins
-    def get(self, path: str = None, id: int = None):
-        if id is not None:
-            return self._states.get(id, None)
+    def get(self, path: str = None, key: str = None):
+        if key is not None:
+            return self._states.get(key, None)
         else:
             for state in self._states.values():
+                print(state)
                 if state.path == path:
                     return state
 
@@ -34,14 +36,8 @@ class MemoryStateManager(IStateManager):
         return [state for state in self._states.values() if compiled.match(state.path)]
 
     def delete(self, state: State):
-        del self._states[state.id]
+        del self._states[state.key]
         super().delete(state)
-
-    def get_new_id(self):
-        id_ = 0
-        if len(self._states) > 0:
-            id_ = max(self._states.keys()) + 1
-        return id_
 
     def update(self, state: State):
         if state.log_key != state.NO_LOGGING_KEY:
@@ -59,15 +55,14 @@ class MemoryStateManager(IStateManager):
                 timeseries = [initial_values[-1]] + timeseries
         return timeseries
 
-    def _create_state(self, name: str, parent: Optional[State] = None,
+    def _create_state(self, key: str, name: str, parent: Optional[State] = None,
                       type: Optional[str] = None, quantity: Optional[str] = None, unit: Optional[str] = None,
                       label: Optional[str] = None, description: Optional[str] = None, log_key: Optional[str] = '',
                       config: Optional[dict] = None, value: Optional[Any] = None) -> State:
 
-        id_ = self.get_new_id()
-        state = State(self, self.event_manager, id_, name, parent=parent, type=type,
+        state = State(self, self.event_manager, key, name, parent=parent, type=type,
                       quantity=quantity, unit=unit, label=label,
                       description=description, log_key=log_key, config=config,
                       value=value)
-        self._states[state.id] = state
+        self._states[state.key] = state
         return state

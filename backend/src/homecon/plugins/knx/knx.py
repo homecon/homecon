@@ -104,7 +104,7 @@ class Knx(BasePlugin):
         for state in self._state_manager.all():
             knx_ga_read = state.config.get(self.KNX_GA_READ)
             if knx_ga_read is not None:
-                self.ga_read_mapping.add(knx_ga_read, state.id)
+                self.ga_read_mapping.add(knx_ga_read, state.key)
 
         self.connect()
         logger.debug('KNX plugin Initialized')
@@ -130,8 +130,8 @@ class Knx(BasePlugin):
             logger.debug('received message {}'.format(message))
             try:
                 # find a state with the dst address
-                for state_id in self.ga_read_mapping.get(message.dst):
-                    state = self._state_manager.get(id=state_id)
+                for state_key in self.ga_read_mapping.get(message.dst):
+                    state = self._state_manager.get(key=state_key)
                     logger.debug('found state {} corresponding to message {}'.format(state, message))
                     dpt = state.config.get(self.KNX_DPT, self.DEFAULT_DPT)
                     eval_read = state.config.get(self.KNX_EVAL_READ)
@@ -166,18 +166,18 @@ class Knx(BasePlugin):
     def listen_state_added(self, event: Event):
         state = event.data['state']
         if self.KNX_GA_READ in state.config:
-            self.ga_read_mapping.add(state.config[self.KNX_GA_READ], state.id)
+            self.ga_read_mapping.add(state.config[self.KNX_GA_READ], state.key)
 
     def listen_state_updated(self, event: Event):
         state = event.data['state']
         if self.KNX_GA_READ in state.config:
-            self.ga_read_mapping.add(state.config[self.KNX_GA_READ], state.id)
+            self.ga_read_mapping.add(state.config[self.KNX_GA_READ], state.key)
         else:
             self.ga_read_mapping.remove(state)
 
     def listen_state_deleted(self, event: Event):
         state = event.data['state']
-        self.ga_read_mapping.remove(state.id)
+        self.ga_read_mapping.remove(state.key)
 
     @property
     def settings_sections(self):
@@ -188,13 +188,13 @@ class Knx(BasePlugin):
             'widgets': [{
                 'type': 'value-input',
                 'config': {
-                    'state': self._state_manager.get(path='/settings/knxd/address').id,
+                    'state': self._state_manager.get(path='/settings/knxd/address').key,
                     'label': 'Address',
                 }
             }, {
                 'type': 'value-input',
                 'config': {
-                    'state': self._state_manager.get(path='/settings/knxd/port').id,
+                    'state': self._state_manager.get(path='/settings/knxd/port').key,
                     'label': 'Port',
                 }
             }

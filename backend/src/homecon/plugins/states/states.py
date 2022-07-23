@@ -54,72 +54,6 @@ class States(BasePlugin):
     def start(self):
         logger.debug('States plugin Initialized')
 
-    #
-    # def parse_triggers(self):
-    #     for path in State.all_paths():
-    #         self.triggers[path] = {}
-    #         state = State.get(path=path)
-    #         for path in state.triggers:
-    #             if path in self._states and state not in self._states[path].trigger:
-    #                 self._states[path].trigger.append(state)
-
-    # def list(self):
-    #     """
-    #     Returns a list of states which can be edited
-    #     """
-    #
-    #     stateslist = []
-    #     for state in core.states.values():
-    #         if not 'private' in state.config or not state.config['private']:
-    #             stateslist.append({'path': state.path, 'config': state.config})
-    #
-    #     newlist = sorted(stateslist, key=lambda k: k['path'])
-    #
-    #     return newlist
-
-    # def listen_list_states(self, event):
-    #     if event.type == 'list_states':
-    #         core.websocket.send({'event': 'list_states', 'path': '', 'value': self.list()}, clients=[event.client])
-    #
-    # def listen_add_state(self, event):
-    #     state = core.states.add(event.data['path'], config=event.data['config'])
-    #
-    #     if state:
-    #         core.event.fire('state_added', {'state': state})
-    #         core.websocket.send({'event': 'list_states', 'path': '', 'value': self.list()}, clients=[event.client])
-    #
-    # def listen_edit_state(self,event):
-    #     if event.data['path'] in core.states:
-    #
-    #         state = core.states[event.data['path']]
-    #
-    #         config = dict(state.config)
-    #         for key,val in event.data['config'].items():
-    #             config[key] = val
-    #
-    #         state.config = config
-    #         core.states.parse_triggers()
-    #
-    #         core.websocket.send({'event':'list_states', 'path':'', 'value':self.list()}, clients=[event.client])
-    #
-    # def listen_state_config(self,event):
-    #     if event.data['path'] in core.states:
-    #
-    #         state = core.states[event.data['path']]
-    #
-    #         if not 'value' in event.data:
-    #             core.websocket.send({'event':'state_config', 'path':state.path, 'value':state.config}, clients=[event.client])
-    #
-    #         else:
-    #             logger.warning('listen_state_config, edit state config :' + state.path)
-    #             #config = dict(state.config)
-    #             #for key,val in event.data['config'].items():
-    #             #    config[key] = val
-    #
-    #             #state.config = config
-    #             #core.websocket.send({'event':'state_config', 'path':state.path, 'value':state.config}, clients=[event.client])
-    #             #core.websocket.send({'event':'list_states', 'path':'', 'value':self.list()}, clients=[event.client])
-
     def listen_state(self, event: Event):
         if 'id' in event.data:
             state = self._state_manager.get(id=event.data['id'])
@@ -147,20 +81,6 @@ class States(BasePlugin):
             if state is not None:
                 state.set_value(event.data['value'], event.source)
 
-    # def listen_state_children(self, event):
-    #     if 'id' in event.data:
-    #         if event.data['id'] is None or int(event.data['id']) == 0:
-    #             states = [s.serialize() for s in State.all() if s.parent is None]
-    #         else:
-    #             parent = State.get(id=int(event.data['id']))
-    #             if parent is not None:
-    #                 states = [s.serialize() for s in parent.children]
-    #             else:
-    #                 raise Exception('parent does not exist')
-    #         event.reply('websocket_reply', {'event': 'state_children',
-    #                                         'data': {'id': event.data['id'],
-    #                                                  'value': states}})
-
     def listen_state_list(self, event: Event):
         states = [s.serialize() for s in self._state_manager.all()]
         event.reply({'id': '', 'value': states})
@@ -176,10 +96,10 @@ class States(BasePlugin):
         self._state_manager.add(name, parent=parent, **kwargs)
 
     def listen_state_update(self, event):
-        if 'id' in event.data:
+        if 'key' in event.data:
             kwargs = dict(event.data)
-            id = kwargs.pop('id')
-            state = self._state_manager.get(id=id)
+            key = kwargs.pop('key')
+            state = self._state_manager.get(key=key)
 
             if state is not None:
                 if 'parent' in kwargs:
@@ -216,25 +136,25 @@ class States(BasePlugin):
             'widgets': [{
                 'type': 'value-input',
                 'config': {
-                    'state': self._state_manager.get(path='/settings/location/timezone').id,
+                    'state': self._state_manager.get(path='/settings/location/timezone').key,
                     'label': 'Timezone',
                 }
             }, {
                 'type': 'value-input',
                 'config': {
-                    'state': self._state_manager.get(path='/settings/location/longitude').id,
+                    'state': self._state_manager.get(path='/settings/location/longitude').key,
                     'label': 'Longitude',
                 }
             }, {
                 'type': 'value-input',
                 'config': {
-                    'state': self._state_manager.get(path='/settings/location/latitude').id,
+                    'state': self._state_manager.get(path='/settings/location/latitude').key,
                     'label': 'Latitude',
                 }
             }, {
                 'type': 'value-input',
                 'config': {
-                    'state': self._state_manager.get(path='/settings/location/elevation').id,
+                    'state': self._state_manager.get(path='/settings/location/elevation').key,
                     'label': 'Elevation',
                 }
             }]

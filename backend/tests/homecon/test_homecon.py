@@ -47,8 +47,8 @@ class MockPlugin(BasePlugin):
 
     def listen_state_value_changed(self, event):
         self.handled_events.append(event)
-        if event.data['state'].id == 0:
-            state = self._state_manager.get(id=1)
+        if event.data['state'].key == '0':
+            state = self._state_manager.get(key='1')
             state.value = 1
 
 
@@ -61,10 +61,10 @@ class TestHomecon(TestCase):
         plugin_manager = PluginManager({'MockPlugin': mock_plugin})
 
         hc = HomeCon(event_manager, plugin_manager, SyncExecutor())
-        state1 = State(state_manager, event_manager, 0, 'test1')
-        state2 = State(state_manager, event_manager, 1, 'test1')
-        state_manager._states[0] = state1
-        state_manager._states[1] = state2
+        state1 = State(state_manager, event_manager, '0', 'test1')
+        state2 = State(state_manager, event_manager, '1', 'test1')
+        state_manager._states['0'] = state1
+        state_manager._states['1'] = state2
 
         event = event_manager.fire('state_value_changed', {'state': state1})
         hc.get_and_handle_event()

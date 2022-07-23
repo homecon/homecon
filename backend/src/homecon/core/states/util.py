@@ -12,7 +12,7 @@ def config_state_paths_to_ids(config: Union[dict, list, str], state_manager: ISt
             pass
         else:
             if state is not None:
-                return state.id
+                return state.key
 
     def cond(v) -> bool:
         return isinstance(v, str) and v.startswith('/')
@@ -37,9 +37,9 @@ def config_state_ids_to_paths(config: dict, state_manager: IStateManager):
     Checks for state ids in a dict and converts them to the correct state path.
     """
 
-    def try_get_state_path(state_id: int) -> Optional[str]:
+    def try_get_state_path(state_key: str) -> Optional[str]:
         try:
-            state = state_manager.get(id=state_id)
+            state = state_manager.get(key=state_key)
         except:
             pass
         else:
@@ -47,12 +47,12 @@ def config_state_ids_to_paths(config: dict, state_manager: IStateManager):
                 return state.path
 
     def cond(v) -> bool:
-        return isinstance(v, int)
+        return isinstance(v, str)
 
     if config is not None:
         for key, val in config.items():
             if 'state' in key:
-                if isinstance(val, int):
+                if isinstance(val, str):
                     config[key] = try_get_state_path(val)
                 elif isinstance(val, list):
                     config[key] = [try_get_state_path(v) if cond(v) else v for v in val]

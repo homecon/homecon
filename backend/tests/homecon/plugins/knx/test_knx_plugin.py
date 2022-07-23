@@ -32,7 +32,7 @@ class TestKnx:
         state_manager = MemoryStateManager(event_manager)
         pages_manager = MemoryPagesManager()
 
-        state_manager._create_state('test', parent=None, type='float',
+        state_manager._create_state('0', 'test', parent=None, type='float',
                                     config={'knx_ga_read': '1/1/1', 'knx_dpt': '1', 'knx_eval_read': 'value / 255'})
 
         knx_plugin = Knx('knx', event_manager, state_manager, pages_manager)
@@ -48,7 +48,7 @@ class TestKnx:
         state_manager = MemoryStateManager(event_manager)
         pages_manager = MemoryPagesManager()
 
-        state_manager._create_state('test', parent=None, type='float',
+        state_manager._create_state('0', 'test', parent=None, type='float',
                                     config={Knx.KNX_GA_WRITE: '1/1/1', Knx.KNX_DPT: '1', Knx.KNX_EVAL_WRITE: 'value * 255'})
 
         knx_plugin = Knx('knx', event_manager, state_manager, pages_manager)
