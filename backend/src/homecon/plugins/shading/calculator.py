@@ -38,13 +38,14 @@ class IrradianceThresholdPositionCalculator(IShadingPositionCalculator):
             for shading in shadings:
                 p = 0.0
                 irradiance = shading.get_irradiance(0.0, date, cloud_cover)
-                logger.debug(f'calculated irradiance for {shading}: {irradiance:.1f} W/m2')
                 for threshold, position in self._irradiance_thresholds:
                     if irradiance > threshold:
                         p = position
                         break
 
-                positions.append(p)
+                pos = min(max(p, shading.minimum_position), shading.maximum_position)
+                positions.append(pos)
+                logger.debug(f'calculated position for {shading}: {pos} based on irradiance {irradiance:.1f} W/m2')
             return positions
 
 

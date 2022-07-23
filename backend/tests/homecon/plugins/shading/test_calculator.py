@@ -56,6 +56,12 @@ class TestIrradianceThresholdPositionCalculator:
         positions = calculator.get_positions(shadings, 5000)
         assert positions == [0.0, 0.0]
 
+    def test_get_positions_minimum_position(self):
+        shadings = [MockShading(minimum_position=0.5), MockShading(minimum_position=1.0)]
+        calculator = IrradianceThresholdPositionCalculator()
+        positions = calculator.get_positions(shadings, 5000)
+        assert positions == [0.5, 1.0]
+
     def test_get_positions_closed(self):
         shadings = [MockShading(), MockShading()]
         calculator = IrradianceThresholdPositionCalculator()
