@@ -1,7 +1,7 @@
 FROM python:3.8
 
 ARG project=homecon
-
+ARG version
 
 ENV TERM=xterm \
     TZ=Europe/Brussels \
@@ -49,5 +49,5 @@ WORKDIR /
 # homecon
 RUN mkdir /homecon
 RUN python3 -m venv /homecon/venv
-COPY ./dist/homecon-0.0.0.tar.gz /homecon
-RUN /homecon/venv/bin/pip --no-cache-dir install /homecon/homecon-0.0.0.tar.gz
+COPY ./dist/homecon-${version}.tar.gz /homecon
+RUN /homecon/venv/bin/pip --no-cache-dir install /homecon/homecon-${version}.tar.gz
