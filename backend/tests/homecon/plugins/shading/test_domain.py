@@ -93,5 +93,6 @@ class TestStateBasedShading:
 
             print('')
             for d, n, e, s, w, n_min, e_min, s_min, w_min in zip(dates, heat_gains_north, heat_gains_east, heat_gains_south, heat_gains_west,
-                                                                 heat_gains_north_min, heat_gains_east_min, heat_gains_south_min, heat_gains_west_min):
+                                                                 heat_gains_north_min, heat_gains_east_min,
+                                                                 heat_gains_south_min, heat_gains_west_min):
                 print(f'{d}:    {n:>6.2f} -{n_min:>6.2f}    {e:>6.2f} -{e_min:>6.2f}    {s:>6.2f} -{s_min:>6.2f}    {w:>6.2f} -{w_min:>6.2f}')

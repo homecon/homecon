@@ -44,8 +44,6 @@ function EditStateDialog(props){
   const parentState = props.parentState || null;
   const states = props.states;
 
-  console.log(parentState)
-
   const onCancel = props.onCancel;
   const onSave = props.onSave;
 
@@ -74,7 +72,7 @@ function EditStateDialog(props){
       setValue(state.value !== null ? JSON.stringify(state.value) : '');
     }
     else if(parentState !== null){
-      setParent(parentState.id);
+      setParent(parentState.key);
     }
   }, [state, parentState]);
 
@@ -119,7 +117,7 @@ function EditStateDialog(props){
 
     let newState = {}
     if(state !== null){
-      newState.id = state.id;
+      newState.key = state.key;
     }
     newState.name = name;
     newState.parent = parent;
@@ -155,10 +153,10 @@ function EditStateDialog(props){
         <div style={{display: 'flex', flexDirection: 'column'}}>
           <TextField label="Name" value={name} onChange={(e) => setName(e.target.value)}/>
           <InputLabel id="Parent-select-label">Parent</InputLabel>
-          <Select style={{width: '80%'}} labelId="action-select-label" id="demo-simple-select-helper" value={parent} onChange={(e) => setParent(e.target.value)}>
+          <Select style={{width: '80%'}} labelId="action-select-label" id="demo-simple-select-helper" value={parent} onChange={(e) => setParent(e.target.value)} MenuProps={{style: {top: "100px", maxHeight: "500px"}}}>
             <MenuItem value={null}>/</MenuItem>
             {states.map((a) => {
-              return <MenuItem key={a.id} value={a.id}>{a.path}</MenuItem>
+              return <MenuItem key={a.key} value={a.key}>{a.path}</MenuItem>
             })}
           </Select>
           <TextField label="Type" value={type} onChange={(e) => setType(e.target.value)}/>
@@ -192,11 +190,15 @@ function StatesList(props) {
   const states = props.states;
   const updateState = props.updateState;
   const addState = props.addState;
+  const deleteState = props.deleteState;
 
   const [editStateDialogOpen, setEditStateDialogOpen] = useState(false)
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+
   const [selectedState, setSelectedState] = useState(null)
   const [parentState, setParentState] = useState(null)
   const [menuAnchorEl, setMenuAnchorEl] = React.useState(null);
+  const [filter, setFilter] = React.useState('');
 
   const openMenu = (event, state) => {
     setSelectedState(state);
@@ -219,28 +221,38 @@ function StatesList(props) {
     setSelectedState(null);
     setEditStateDialogOpen(true);
   }
+  const deleteStateDialog = () => {
+    closeMenu();
+    setDeleteDialogOpen(true);
+  }
 
 
   const handleSave = (state) => {
     setEditStateDialogOpen(false)
-    if(state.id === undefined){
+    if(state.key === undefined){
       addState(state)
     }
     else {
       updateState(state)
     }
   }
+  const handleDeleteState = () => {
+    setDeleteDialogOpen(false)
+    if(selectedState.key !== undefined){
+      deleteState(selectedState)
+    }
+  }
 
   const classes = useStyles();
 
-  const makeStateList = (states) => {
+  const makeStateList = (states, filter) => {
     if (states === null ){
       return [];
     }
     else {
       const statesList = Object.values(states).map((value) => {
         return value;
-      })
+      }).filter(el => filter === '' || el.path.toLowerCase().indexOf(filter) > -1)
       statesList.sort((a, b) => {
         if(a.path > b.path) {
           return 1
@@ -255,6 +267,7 @@ function StatesList(props) {
 
   return (
     <div>
+      <TextField label="Filter" value={filter} onChange={(e) => setFilter(e.target.value.toLowerCase())} variant="outlined"/>
       <TableContainer>
         <Table>
           <TableHead>
@@ -265,8 +278,8 @@ function StatesList(props) {
             </TableRow>
           </TableHead>
           <TableBody>
-            {makeStateList(states).map((state) => (
-              <TableRow key={state.id}>
+            {makeStateList(states, filter).map((state) => (
+              <TableRow key={state.key}>
                 <TableCell component="th" scope="row" classes={classes.tableCell}>
                   {state.path}
                 </TableCell>
@@ -297,7 +310,7 @@ function StatesList(props) {
           </ListItemIcon>
           <ListItemText primary="Add Child" />
         </MenuItem>
-        <MenuItem onClick={closeMenu}>
+        <MenuItem onClick={deleteStateDialog}>
           <ListItemIcon style={{color: "#ffffff"}}>
             <DeleteIcon/>
           </ListItemIcon>
@@ -307,8 +320,14 @@ function StatesList(props) {
 
       <Dialog open={editStateDialogOpen} onClose={(e) => setEditStateDialogOpen(false)} fullWidth maxWidth="sm">
         <div style={{padding: '10px'}}>
-          <EditStateDialog state={selectedState} parentState={parentState} states={makeStateList(states)} onCancel={(e) => setEditStateDialogOpen(false)} onSave={handleSave}/>
+          <EditStateDialog state={selectedState} parentState={parentState} states={makeStateList(states, '')} onCancel={(e) => setEditStateDialogOpen(false)} onSave={handleSave}/>
         </div>
+      </Dialog>
+
+      <Dialog open={deleteDialogOpen} onClose={(e) => setDeleteDialogOpen(false)}>
+          <h3>Delete state?</h3>
+          <Button variant="contained" onClick={() => setDeleteDialogOpen(false)}>cancel</Button>
+          <Button variant="contained" color="primary" onClick={(e) => handleDeleteState()}>Delete</Button>
       </Dialog>
 
       <Fab color="primary" aria-label="add" style={{float: 'right', marginRight: '20px', marginTop: '-5px'}} onClick={addStateDialog}>
@@ -375,7 +394,8 @@ function ViewStates(props) {
       <PageSection type="raised">
         <StatesList states={states}
          updateState={(state) => ws.send({event: 'state_update', data: state})}
-         addState={(state) => ws.send({event: 'state_add', data: state})} />
+         addState={(state) => ws.send({event: 'state_add', data: state})}
+         deleteState={(state)=> ws.send({event: 'state_delete', data: state})} />
       </PageSection>
     </div>
   );
