@@ -57,8 +57,10 @@ class Action:
         for v in state.value:
 
             # search for the key and search matching paths, it is very unlikely that a path will match a key exactly
-            states = [state_manager.get(key=v['state'])]
-            states.extend(state_manager.find(v['state']))
+            states = state_manager.find(v['state'])
+            key_state = state_manager.get(key=v['state'])
+            if key_state is not None:
+                states.append(key_state)
 
             delay = v.get('delay', 0)
             value = v['value']
