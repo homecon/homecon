@@ -68,7 +68,7 @@ function HomeconSwitch(props){
 function HomeconMultiSwitch(props){
   const config = props.config;
 
-  const stateId = config.state;
+  const stateKey = config.state;
   const levels = config.values || [
     {value: 0, icon: 'vent_ventilation_level_0'},
     {value: 1, icon: 'vent_ventilation_level_1'},
@@ -83,7 +83,7 @@ function HomeconMultiSwitch(props){
 
   let state = undefined;
   if(states !== null){
-    state = states[stateId];
+    state = states[stateKey];
   }
   if(state === undefined){
     state = {value: 0, label: ''};
@@ -92,8 +92,8 @@ function HomeconMultiSwitch(props){
 
   const handleClick = (value) => {
     const handle = (event) => {
-      console.log({id: state.id, value: value})
-      ws.send({event: 'state_value', data: {id: state.id, value: value}})
+      console.log({key: state.key, value: value})
+      ws.send({event: 'state_value', data: {key: state.key, value: value}})
     };
     return handle;
   }

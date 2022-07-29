@@ -8,3 +8,8 @@ image:
 	docker build --build-arg project=$(PROJECT) --build-arg version=$(VERSION) -t brechtba/homecon .
 	docker tag brechtba/homecon brechtba/homecon:$(VERSION)
 	docker push brechtba/homecon
+
+
+.PHONY: push
+push:
+	docker push brechtba/homecon

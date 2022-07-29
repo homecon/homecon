@@ -78,6 +78,9 @@ class State:
         self.notify_value_changed(old_val=old_val, source=source)
 
     def update(self, **kwargs) -> None:
+        old_value = None
+        notify_value_changed = False
+
         if 'name' in kwargs:
             self.name = kwargs['name']
         if 'parent' in kwargs:
@@ -97,9 +100,14 @@ class State:
         if 'config' in kwargs:
             self.config = kwargs['config']
         if 'value' in kwargs:
+            old_value = self._value
             self._value = kwargs['value']
+            notify_value_changed = True
+
         self._state_manager.update(self)
         self.notify_updated()
+        if notify_value_changed:
+            self.notify_value_changed(old_value)
 
     @property
     def children(self) -> List['State']:
