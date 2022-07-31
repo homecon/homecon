@@ -30,6 +30,17 @@ class TestValueComputer:
         value = value_computer.compute_value('10 * Value("/a/b")["mykey"]')
         assert value == 10 * b.value['mykey']
 
+    def test_for_loop(self):
+        state_manager = MemoryStateManager(DummyEventManager())
+        a = state_manager.add('a', None)
+        b = state_manager.add('0', parent=a, value=10)
+        c = state_manager.add('1', parent=a, value=20)
+        d = state_manager.add('2', parent=a, value=30)
+
+        value_computer = ValueComputer(state_manager)
+        value = value_computer.compute_value('sum(Value(f"/a/{i}") for i in range(3))')
+        assert value == b.value + c.value + d.value
+
     def test_values(self):
         state_manager = MemoryStateManager(DummyEventManager())
         a = state_manager.add('a', None)

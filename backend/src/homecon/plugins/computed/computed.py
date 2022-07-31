@@ -30,6 +30,7 @@ class ValueComputer:
             'abs': np.abs,
             'min': min,
             'max': max,
+            'mean': np.nanmean,
         }
 
     def _state_value(self, path: str) -> Any:
