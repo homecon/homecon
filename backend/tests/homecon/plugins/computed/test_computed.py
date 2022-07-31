@@ -149,12 +149,12 @@ class TestComputed:
         event_manager = DummyEventManager()
         state_manager = MemoryStateManager(event_manager)
         a = state_manager.add('a', config={'computed': asdict(self.test_config)}, value=1)
-        a.set_value = MagicMock()
         b = state_manager.add('b', value=5)
         c = state_manager.add('c', value=1)
 
         computed = Computed('computed', event_manager, state_manager, IPagesManager)
         computed.start()
-        computed.listen_state_value_changed(Event(event_manager, 'state_changed', {'state': c}))
 
+        a.set_value = MagicMock()
+        computed.listen_state_value_changed(Event(event_manager, 'state_changed', {'state': c}))
         assert not a.set_value.called

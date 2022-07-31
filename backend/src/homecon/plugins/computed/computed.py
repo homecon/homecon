@@ -92,6 +92,8 @@ class Computed(BasePlugin):
                 logger.debug(f'added state {state.key} to the computed mapping with config {computed_config}')
             except TypeError:
                 logger.exception('could not add state to computed_mapping')
+            else:
+                self._compute_and_set_value(state.key, computed_config)
         elif state.key in self._computed_mapping:
             del self._computed_mapping[state.key]
             logger.debug(f'removed state {state.key} from the computed mapping')
