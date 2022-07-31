@@ -5,7 +5,7 @@ from typing import Any, List, Optional
 from dataclasses import dataclass
 from uuid import uuid4
 
-from homecon.core.event import IEventManager
+from homecon.core.event import IEventManager, Event
 
 
 logger = logging.getLogger(__name__)
@@ -16,6 +16,41 @@ class StateEventsTypes:
     STATE_UPDATED = 'state_updated'
     STATE_DELETED = 'state_deleted'
     STATE_ADDED = 'state_added'
+
+
+class InvalidEventException(Exception):
+    pass
+
+
+@dataclass
+class StateValueChangedEvent:
+    type = StateEventsTypes.STATE_VALUE_CHANGED
+    state: 'State'
+    old: Any
+    source: Optional[str] = None
+    target: Optional[str] = None
+    reply_to: Optional[str] = None
+
+    @staticmethod
+    def from_event(event: Event) -> 'StateValueChangedEvent':
+        if event.type != StateEventsTypes.STATE_VALUE_CHANGED:
+            raise InvalidEventException('invalid event type')
+
+        try:
+            return StateValueChangedEvent(
+                event.data['state'], event.data['old'],
+                event.source, event.target, event.reply_to
+            )
+        except KeyError as e:
+            raise InvalidEventException from e
+
+    def event_data(self) -> dict:
+        return {'state': self.state, 'old': self.old, 'new': self.state.value}
+
+    def fire(self, event_manager: IEventManager):
+        event_manager.fire(self.type,
+                           data={'state': self.state, 'old': self.old, 'new': self.state.value},
+                           source=self.source, target=self.target, reply_to=self.reply_to)
 
 
 @dataclass
@@ -58,9 +93,7 @@ class State:
         self._event_manager.fire(StateEventsTypes.STATE_UPDATED, data={'state': self})
 
     def notify_value_changed(self, old_val=None, source=None):
-        self._event_manager.fire(StateEventsTypes.STATE_VALUE_CHANGED,
-                                 data={'state': self, 'old': old_val, 'new': self._value},
-                                 source=source)
+        StateValueChangedEvent(self, old_val, source=source).fire(self._event_manager)
 
     @property
     def value(self):

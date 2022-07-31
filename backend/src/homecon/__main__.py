@@ -123,6 +123,7 @@ def get_homecon():
     from homecon.plugins.pages.pages import Pages
     from homecon.plugins.alarms.alarms import Alarms
     from homecon.plugins.knx.knx import Knx
+    from homecon.plugins.heat_demand.heat_demand import HeatDemand
     from homecon.plugins.shading.shading import Shading
     from homecon.plugins.computed.computed import Computed
     from homecon.plugins.weather.weather import Weather
@@ -136,6 +137,7 @@ def get_homecon():
         'states': States('states', event_manager, state_manager, pages_manager),
         'pages': Pages('pages', event_manager, state_manager, pages_manager),
         'alarms': Alarms('alarms', event_manager, state_manager, pages_manager),
+        'heat_demand': HeatDemand('heat_demand', event_manager, state_manager, pages_manager),
         'shading': Shading('shading', event_manager, state_manager, pages_manager),
         'knx': Knx('knx', event_manager, state_manager, pages_manager),
         'computed': Computed('computed', event_manager, state_manager, pages_manager),
