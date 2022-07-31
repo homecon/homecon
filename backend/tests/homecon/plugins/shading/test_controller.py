@@ -7,17 +7,9 @@ from homecon.core.states.memory_state_manager import MemoryStateManager
 from homecon.core.event import Event
 
 from homecon.plugins.shading.controller import ShadingController
-from homecon.plugins.shading.calculator import EqualShadingPositionCalculator, IWantedHeatGainCalculator, \
+from homecon.plugins.shading.calculator import EqualShadingPositionCalculator, \
     ICloudCoverCalculator, IRainCalculator
 from mocks import DummyEventManager
-
-
-class MockHeatGainCalculator(IWantedHeatGainCalculator):
-    def __init__(self, wanted_heat_gain: float = 0.0):
-        self._wanted_heat_gain = wanted_heat_gain
-
-    def calculate_wanted_heat_gain(self) -> float:
-        return self._wanted_heat_gain
 
 
 class MockCloudCoverCalculator(ICloudCoverCalculator):
@@ -58,12 +50,11 @@ class TestShadingController:
             state_manager, 'shading2', {'area': 2.0, 'azimuth': 180., 'tilt': 90., 'transparency': 0.0})
         shading3, shading_position3, shading_minimum3, shading_maximum3 = self.create_shading_state(
             state_manager, 'shading3', {'area': 3.0, 'azimuth': 270., 'tilt': 90., 'transparency': 0.0})
-        wanted_heat_gain_state = State(state_manager, state_manager.event_manager, 1, 'wanted_heat_gain')
+        wanted_heat_gain_state = State(state_manager, state_manager.event_manager, 1, 'wanted_heat_gain', value=8000)
         cloud_cover_state = State(state_manager, state_manager.event_manager, 1, 'cloud_cover')
 
         controller = ShadingController(
             state_manager,
-            MockHeatGainCalculator(8000),
             wanted_heat_gain_state,
             MockCloudCoverCalculator(),
             cloud_cover_state,
@@ -78,9 +69,9 @@ class TestShadingController:
         assert shading_position2.value == 0.0
         assert shading_position3.value == 0.0
 
+        wanted_heat_gain_state.value = 0
         controller = ShadingController(
             state_manager,
-            MockHeatGainCalculator(0),
             wanted_heat_gain_state,
             MockCloudCoverCalculator(),
             cloud_cover_state,
@@ -103,7 +94,7 @@ class TestShadingController:
             state_manager, 'shading2', {'area': 2.0, 'azimuth': 180., 'tilt': 90., 'transparency': 0.0})
         shading3, shading_position3, shading_minimum3, shading_maximum3 = self.create_shading_state(
             state_manager, 'shading3', {'area': 3.0, 'azimuth': 270., 'tilt': 90., 'transparency': 0.0})
-        wanted_heat_gain_state = State(state_manager, state_manager.event_manager, 1, 'wanted_heat_gain')
+        wanted_heat_gain_state = State(state_manager, state_manager.event_manager, 1, 'wanted_heat_gain', value=8000)
         cloud_cover_state = State(state_manager, state_manager.event_manager, 1, 'cloud_cover')
 
         shading_minimum1.value = 1.0
@@ -111,7 +102,6 @@ class TestShadingController:
 
         controller = ShadingController(
             state_manager,
-            MockHeatGainCalculator(8000),
             wanted_heat_gain_state,
             MockCloudCoverCalculator(),
             cloud_cover_state,
@@ -134,12 +124,11 @@ class TestShadingController:
             state_manager, 'shading2', {'area': 2.0, 'azimuth': 180., 'tilt': 90., 'transparency': 0.0})
         shading3, shading_position3, shading_minimum3, shading_maximum3 = self.create_shading_state(
             state_manager, 'shading3', {'area': 3.0, 'azimuth': 270., 'tilt': 90., 'transparency': 0.0})
-        wanted_heat_gain_state = State(state_manager, state_manager.event_manager, 1, 'wanted_heat_gain')
+        wanted_heat_gain_state = State(state_manager, state_manager.event_manager, 1, 'wanted_heat_gain', value=8000)
         cloud_cover_state = State(state_manager, state_manager.event_manager, 1, 'cloud_cover')
 
         controller = ShadingController(
             state_manager,
-            MockHeatGainCalculator(8000),
             wanted_heat_gain_state,
             MockCloudCoverCalculator(),
             cloud_cover_state,

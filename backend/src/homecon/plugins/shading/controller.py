@@ -12,7 +12,7 @@ from apscheduler.job import Job
 
 from homecon.core.event import Event
 from homecon.core.states.state import State, IStateManager
-from homecon.plugins.shading.calculator import IShadingPositionCalculator, IWantedHeatGainCalculator, ICloudCoverCalculator, IRainCalculator
+from homecon.plugins.shading.calculator import IShadingPositionCalculator, ICloudCoverCalculator, IRainCalculator
 from homecon.plugins.shading.domain import StateBasedShading
 
 
@@ -30,7 +30,6 @@ class ShadingController:
 
     def __init__(self,
                  state_manager: IStateManager,
-                 wanted_heat_gain_calculator: IWantedHeatGainCalculator,
                  wanted_heat_gain_state: State,
                  cloud_cover_calculator: ICloudCoverCalculator,
                  cloud_cover_state: State,
@@ -39,7 +38,6 @@ class ShadingController:
                  longitude_state: State, latitude_state: State, elevation_state: State,
                  interval: int = 1800, override_duration: int = 4 * 3600):
         self._state_manager = state_manager
-        self._wanted_heat_gain_calculator = wanted_heat_gain_calculator
         self._wanted_heat_gain_state = wanted_heat_gain_state
 
         self._cloud_cover_calculator = cloud_cover_calculator
@@ -173,9 +171,8 @@ class ShadingController:
                 logger.debug(f'creating shading object for state {state}')
                 shadings.append(self._get_shading_from_state(state, rain))
 
-        wanted_heat_gain = self._wanted_heat_gain_calculator.calculate_wanted_heat_gain()
-        logger.debug(f'calculated wanted heat gain: {wanted_heat_gain:.0f} W')
-        self._wanted_heat_gain_state.set_value(wanted_heat_gain)
+        wanted_heat_gain = self._wanted_heat_gain_state.value or 0
+        logger.debug(f'retrieved wanted heat gain: {wanted_heat_gain:.0f} W')
 
         cloud_cover = self._cloud_cover_calculator.calculate_cloud_cover()
         logger.debug(f'calculated cloud cover: {cloud_cover:.2f}')
