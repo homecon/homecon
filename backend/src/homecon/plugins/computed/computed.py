@@ -77,6 +77,10 @@ class Computed(BasePlugin):
                     self._computed_mapping[state.key] = ComputedConfig.from_dict(computed_config)
                 except TypeError:
                     logger.exception('could not add state to computed_mapping')
+
+        for state_key, computed_config in self._computed_mapping.items():
+            self._compute_and_set_value(state_key, computed_config)
+
         logger.debug('Computed plugin initialized')
 
     def _try_to_add_state_to_mapping(self, state):
@@ -91,6 +95,19 @@ class Computed(BasePlugin):
         elif state.key in self._computed_mapping:
             del self._computed_mapping[state.key]
             logger.debug(f'removed state {state.key} from the computed mapping')
+
+    def _compute_and_set_value(self, state_key: str, computed_config: ComputedConfig):
+        state = self._state_manager.get(key=state_key)
+        try:
+            value = self._value_computer.compute_value(computed_config.value)
+        except EvaluationError:
+            logger.exception(f'could not compute value for {state} from {computed_config}')
+        else:
+            if state.value != value:
+                logger.info(f'computed new value {value} for {state} from {computed_config}')
+                state.set_value(value, source=self.name)
+            else:
+                logger.debug(f'computed equal value {value} for {state} from {computed_config}')
 
     def listen_state_added(self, event: Event):
         state = event.data['state']
@@ -110,14 +127,4 @@ class Computed(BasePlugin):
         for state_key, computed_config in self._computed_mapping.items():
             trigger_state_ids = [state.key for state in self._state_manager.find(computed_config.trigger)]
             if event.data['state'].key in trigger_state_ids:
-                state = self._state_manager.get(key=state_key)
-                try:
-                    value = self._value_computer.compute_value(computed_config.value)
-                except EvaluationError:
-                    logger.exception(f'could not compute value for {state} from {computed_config}')
-                else:
-                    if state.value != value:
-                        logger.info(f'computed new value {value} for {state} from {computed_config}')
-                        state.set_value(value, source=self.name)
-                    else:
-                        logger.debug(f'computed equal value {value} for {state} from {computed_config}')
+                self._compute_and_set_value(state_key, computed_config)
