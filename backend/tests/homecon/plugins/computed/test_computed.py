@@ -21,6 +21,15 @@ class TestValueComputer:
         value = value_computer.compute_value('10 * Value("/a/b")')
         assert value == 10 * b.value
 
+    def test_value_dict(self):
+        state_manager = MemoryStateManager(DummyEventManager())
+        a = state_manager.add('a', None)
+        b = state_manager.add('b', parent=a, value={'mykey': 10})
+
+        value_computer = ValueComputer(state_manager)
+        value = value_computer.compute_value('10 * Value("/a/b")["mykey"]')
+        assert value == 10 * b.value['mykey']
+
     def test_values(self):
         state_manager = MemoryStateManager(DummyEventManager())
         a = state_manager.add('a', None)
