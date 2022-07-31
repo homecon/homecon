@@ -23,7 +23,7 @@ class Shading(BasePlugin):
         wanted_heat_gain_state = self._state_manager.add(
             'wanted_heat_gain', parent_path='/settings/shading',
             type='float', quantity='Power', unit='W',
-            label='', description='Wanted heat gain', value=0)
+            label='', description='Wanted heat gain', value=-1)
         cloud_cover_state = self._state_manager.add(
             'cloud_cover', parent_path='/settings/shading',
             type='float', quantity='', unit='-',
