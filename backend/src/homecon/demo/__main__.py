@@ -67,7 +67,7 @@ def create_states(state_manager: IStateManager):
                       type='float', quantity='', unit='',
                       label='Position', description='')
     state_manager.add('west', parent=state_manager.get('/ground_floor/kitchen/windows'))
-    state_manager.add('shading', parent=state_manager.get('/ground_floor/kitchen/windows/west'))
+    state_manager.add('shading', parent=state_manager.get('/ground_floor/kitchen/windows/west'), type='shading')
     state_manager.add('position', parent=state_manager.get('/ground_floor/kitchen/windows/west/shading'),
                       type='float', quantity='', unit='',
                       label='Position', description='')
@@ -86,6 +86,12 @@ def create_states(state_manager: IStateManager):
     state_manager.add('speed', parent=state_manager.get('/central/ventilation'),
                       type='int', quantity='', unit='',
                       label='Ventilation speed', description='')
+    state_manager.add('average_temperature', config={
+        "computed": {
+            "value": "mean([Value(f'/weather/forecast/hourly/{i}')['temperature'] for i in range(3)])",
+            "trigger": "/weather/forecast/hourly/.*"
+        }
+    })
 
 
 def create_pages(state_manager: IStateManager, pages_manager: IPagesManager):

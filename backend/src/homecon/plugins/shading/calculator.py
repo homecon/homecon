@@ -1,4 +1,5 @@
 import logging
+from dataclasses import dataclass
 from datetime import datetime
 from typing import List, Optional, Callable, Tuple
 
@@ -14,81 +15,80 @@ class IShadingPositionCalculator:
         raise NotImplementedError
 
 
-class IrradianceThresholdPositionCalculator(IShadingPositionCalculator):
-    def __init__(self, wanted_heat_gain_threshold: float = 0,
-                 irradiance_thresholds: List[Tuple[float, float]] = None,
-                 now: Callable[[], datetime] = datetime.now):
+@dataclass
+class IrradanceThreshold:
+    irradiance: float
+    position: float
+
+
+class IIrradianceThresholdCalculator:
+    def get_irradiance_thresholds(self, wanted_heat_gain: float) -> List[IrradanceThreshold]:
+        raise NotImplementedError
+
+
+class ConstantIrradianceThresholdCalculator(IIrradianceThresholdCalculator):
+    def __init__(self, wanted_heat_gain_threshold: float = 0, irradiance_thresholds: List[IrradanceThreshold] = None):
         self._wanted_heat_gain_threshold = wanted_heat_gain_threshold
-        self._irradiance_thresholds = irradiance_thresholds or [(100, 1.0), (75, 0.5)]
-        self._now = now
+        self._irradiance_thresholds = irradiance_thresholds or [IrradanceThreshold(100, 1.0), IrradanceThreshold(75, 0.5)]
 
-    def get_positions(self, shadings: List[IShading], wanted_heat_gain: float, cloud_cover: Optional[float] = 0.0):
-        logger.debug(f'get positions for shadings: {shadings}')
-        date = self._now()
-
+    def get_irradiance_thresholds(self, wanted_heat_gain: float) -> List[IrradanceThreshold]:
         if wanted_heat_gain > self._wanted_heat_gain_threshold:
             # heating mode
-            logger.debug(f'heating mode, returning minimum positions')
-            return [s.minimum_position for s in shadings]
-
+            logger.debug(f'heating mode')
+            return []
         else:
-            # cooling mode
-            logger.debug(f'cooling mode, calculating positions')
-            positions = []
-            for shading in shadings:
-                p = 0.0
-                irradiance = shading.get_irradiance(0.0, date, cloud_cover)
-                for threshold, position in self._irradiance_thresholds:
-                    if irradiance > threshold:
-                        p = position
-                        break
-
-                pos = min(max(p, shading.minimum_position), shading.maximum_position)
-                positions.append(pos)
-                logger.debug(f'calculated position for {shading}: {pos} based on irradiance {irradiance:.1f} W/m2')
-            return positions
+            logger.debug(f'cooling mode')
+            return self._irradiance_thresholds
 
 
-class EqualShadingPositionCalculator(IShadingPositionCalculator):
-    def __init__(self, heat_gain_threshold: float = 50, position_step: float = 0.05,
+class LinearIrradianceThresholdCalculator(IIrradianceThresholdCalculator):
+    def __init__(self, minimum_wanted_heat_gain: float = -2000, zero_wanted_heat_gain: float = 0,
+                 minimum_threshold: float = 20, zero_threshold: float = 100):
+        self._zero_wanted_heat_gain = zero_wanted_heat_gain
+        self._minimum_wanted_heat_gain = minimum_wanted_heat_gain
+        self._minimum_threshold = minimum_threshold
+        self._zero_threshold = zero_threshold
+
+    def get_irradiance_thresholds(self, wanted_heat_gain: float) -> List[IrradanceThreshold]:
+        if wanted_heat_gain > self._zero_wanted_heat_gain:
+            logger.debug(f'heating mode')
+            return []
+        else:
+            logger.debug(f'cooling mode')
+            threshold = self._minimum_threshold + (
+                    self._minimum_wanted_heat_gain - wanted_heat_gain
+            ) / self._minimum_wanted_heat_gain * (self._zero_threshold - self._minimum_threshold)
+            threshold = max(threshold, self._minimum_threshold)
+            return [IrradanceThreshold(threshold, 1.0), IrradanceThreshold(0.75 * threshold, 0.5)]
+
+
+class IrradianceThresholdPositionCalculator(IShadingPositionCalculator):
+    def __init__(self, irradiance_threshold_calculator: IIrradianceThresholdCalculator = None,
                  now: Callable[[], datetime] = datetime.now):
-        self.position_step = position_step
-        self.heat_gain_threshold = heat_gain_threshold
+        self._irradiance_threshold_calculator = irradiance_threshold_calculator or ConstantIrradianceThresholdCalculator()
         self._now = now
 
     def get_positions(self, shadings: List[IShading], wanted_heat_gain: float, cloud_cover: Optional[float] = 0.0):
         logger.debug(f'get positions for shadings: {shadings}')
         date = self._now()
 
-        maximum_heat_gains = [s.get_heat_gain(s.minimum_position, date, cloud_cover) for s in shadings]
-        minimum_heat_gains = [s.get_heat_gain(s.maximum_position, date, cloud_cover) for s in shadings]
+        logger.debug(f'calculating positions')
+        irradiance_thresholds = self._irradiance_threshold_calculator.get_irradiance_thresholds(wanted_heat_gain)
+        logger.debug(f'calculated irradiance thresholds: {irradiance_thresholds}')
 
-        logger.debug(f'calculated minimum_heat_gains: {minimum_heat_gains}')
-        logger.debug(f'calculated maximum_heat_gains: {maximum_heat_gains}')
+        positions = []
+        for shading in shadings:
+            p = 0.0
+            irradiance = shading.get_irradiance(0.0, date, cloud_cover)
+            for threshold in irradiance_thresholds:
+                if irradiance > threshold.irradiance:
+                    p = threshold.position
+                    break
 
-        if wanted_heat_gain > sum(maximum_heat_gains):
-            return [s.minimum_position for s in shadings]
-
-        elif wanted_heat_gain < sum(minimum_heat_gains):
-            return [s.maximum_position if g > self.heat_gain_threshold else s.minimum_position
-                    for s, g in zip(shadings, maximum_heat_gains)]
-
-        else:
-            def _get_positions(pos: float):
-                return [min(max(pos, s.minimum_position), s.maximum_position)
-                        if g > self.heat_gain_threshold else s.minimum_position
-                        for s, g in zip(shadings, maximum_heat_gains)]
-
-            p = 1
-            while p > 0:
-                positions = _get_positions(p)
-                heat_gain = sum([s.get_heat_gain(p, date) for s, p in zip(shadings, positions)])
-                if heat_gain >= wanted_heat_gain:
-                    return positions
-
-                p -= self.position_step
-                p = round(p / self.position_step) * self.position_step
-            return _get_positions(0)
+            pos = min(max(p, shading.minimum_position), shading.maximum_position)
+            positions.append(pos)
+            logger.debug(f'calculated position for {shading}: {pos} based on irradiance {irradiance:.1f} W/m2')
+        return positions
 
 
 class ICloudCoverCalculator:
