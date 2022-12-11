@@ -71,7 +71,7 @@ function HomeconStateValueButton(props){
   return HomeconButton({
     config: {
       event: 'state_value',
-      data: {id: stateId, value: value},
+      data: {key: stateId, value: value},
       label: config.label,
       state: config.statusState,
       icon: config.icon,
