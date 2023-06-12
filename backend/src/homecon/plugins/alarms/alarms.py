@@ -136,12 +136,18 @@ class Alarms(BasePlugin):
             job = self.scheduler.get_job(self.get_job_id(state))
             if job is None:
                 logger.debug('adding scheduler job for {}'.format(state))
-                self.scheduler.add_job(func, trigger='cron', **state.value['trigger'], timezone=self.timezone,
-                                       id=self.get_job_id(state))
+                try:
+                    self.scheduler.add_job(func, trigger='cron', **state.value['trigger'], timezone=self.timezone,
+                                           id=self.get_job_id(state))
+                except:
+                    logger.exception("could not schedule job")
             else:
                 logger.debug('updating scheduler job for {}'.format(state))
                 job.modify(func=func)
-                job.reschedule(CronTrigger(**state.value['trigger']))
+                try:
+                    job.reschedule(CronTrigger(**state.value['trigger']))
+                except:
+                    logger.exception("could not reschedule job")
         else:
             job = self.scheduler.get_job(self.get_job_id(state))
             if job is not None:
