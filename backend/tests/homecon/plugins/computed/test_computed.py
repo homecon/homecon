@@ -6,7 +6,7 @@ from dataclasses import asdict
 from homecon.core.event import Event
 from homecon.core.states.memory_state_manager import MemoryStateManager
 from homecon.core.pages.pages import IPagesManager
-from homecon.plugins.computed.computed import ValueComputer, EvaluationError, Computed, ComputedConfig
+from homecon.plugins.computed.computed import ValueComputer, EvaluationError, Computed, ComputedConfig, StateNotFoundError
 
 from mocks import DummyEventManager
 
@@ -52,11 +52,33 @@ class TestValueComputer:
         value = value_computer.compute_value('sum(Values("/a/.*"))')
         assert value == b.value + c.value + d.value
 
-    def test_exception(self):
+    def test_and(self):
+        state_manager = MemoryStateManager(DummyEventManager())
+        a = state_manager.add('a', None)
+        state_manager.add('b', parent=a, value=-1000)
+        state_manager.add('c', parent=a, value=25)
+        state_manager.add('d', parent=a, value=16)
+
+        value_computer = ValueComputer(state_manager)
+        value = value_computer.compute_value("Value('/a/b') < -500 and Value('/a/c') > Value('/a/d') + 2")
+        assert value == 1
+
+    def test_state_not_found_error_value(self):
         state_manager = MemoryStateManager(DummyEventManager())
         value_computer = ValueComputer(state_manager)
+        with pytest.raises(StateNotFoundError):
+            value_computer.compute_value('Value("/a")')
+
+    def test_evaluation_error(self):
+        state_manager = MemoryStateManager(DummyEventManager())
+        a = state_manager.add('a', None)
+        state_manager.add('b', parent=a, value={"test": 123})
+        state_manager.add('c', parent=a, value=25)
+
+        value_computer = ValueComputer(state_manager)
         with pytest.raises(EvaluationError):
-            value_computer.compute_value('sum(Value("/a/.*"))')
+            value_computer.compute_value('sum(Values("/a/.*"))')
+
 
 
 class TestComputed:

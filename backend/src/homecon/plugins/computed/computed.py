@@ -17,6 +17,10 @@ class EvaluationError(Exception):
     pass
 
 
+class StateNotFoundError(EvaluationError):
+    pass
+
+
 class ValueComputer:
     def __init__(self, state_manger: IStateManager):
         self._state_manger = state_manger
@@ -34,16 +38,19 @@ class ValueComputer:
         }
 
     def _state_value(self, path: str) -> Any:
-        return self._state_manger.get(path).value
-
+        try:
+            return self._state_manger.get(path).value
+        except:
+            raise StateNotFoundError
     def _state_values(self, expr: str) -> List[Any]:
         values = {state.key: state.value for state in self._state_manger.find(expr)}
-        logger.debug(values)
         return list(values.values())
 
     def compute_value(self, expr: str) -> Any:
         try:
             value = eval(expr, self._locals, {})
+        except StateNotFoundError as e:
+            raise e
         except Exception as e:
             raise EvaluationError from e
 
